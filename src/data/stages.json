@@ -1,0 +1,51 @@
+{
+  "confirmed": true,
+  "source": "\"Schedule is Complete!\" committee thread — Thomas Helland / TDawg Presents + Hallie Meushaw, confirmed as of 2026-08-31",
+  "stages": [
+    {
+      "id": "main-stage",
+      "name": "Main Stage",
+      "sponsor": "ANNA K Intown / SweetWater",
+      "category": "stage",
+      "lineup": {
+        "saturday": [
+          { "time": "10:30–11:30", "act": null, "note": "Opener not yet confirmed as filled — check with Thomas/Hallie before this goes live." },
+          { "time": "Noon–1:00", "act": "Peet Midnite & The Back Taxes" },
+          { "time": "1:30–2:30", "act": "Run Katie Run" },
+          { "time": "3:00–4:00", "act": "Asydequest", "note": "Can't be publicly announced until after their Sept 25 Terminal West show — show a mystery-artist placeholder until then." },
+          { "time": "4:30–5:30", "act": "The Squirrelheads" },
+          { "time": "6:00–7:00", "act": "Chickasaw Mudd Puppies" }
+        ],
+        "sunday": [
+          { "time": "10:30–11:30", "act": "Linapalooza" },
+          { "time": "Noon–1:00", "act": "CJ Jones & The Spirit Bones" },
+          { "time": "1:30–2:30", "act": "Jules & The Gents" },
+          { "time": "3:00–4:00", "act": "Danny Wytanis & Friends" },
+          { "time": "4:30–5:30", "act": "Jeff Mosier & Friends" },
+          { "time": "6:00–7:00", "act": "Blue Velvet Atlanta" }
+        ]
+      }
+    },
+    {
+      "id": "acoustic-stage",
+      "name": "Acoustic Stage",
+      "category": "stage",
+      "lineup": {
+        "saturday": [
+          { "time": "11:30–12:30", "act": "Wild Angels" },
+          { "time": "1:00–1:45", "act": "Matt Donald" },
+          { "time": "2:15–3:00", "act": "Veronika Jackson" },
+          { "time": "3:30–4:30", "act": "Dusty Roads" },
+          { "time": "5:00–6:00", "act": "Brother Sam & The Peachtree Jam" }
+        ],
+        "sunday": [
+          { "time": "11:30–12:30", "act": "Midtown HS Coffeehouse" },
+          { "time": "1:00–1:45", "act": "Ralph Roddenbery" },
+          { "time": "2:15–3:00", "act": "Pickled Holler" },
+          { "time": "3:30–4:30", "act": "Ben Bostick" },
+          { "time": "5:00–6:00", "act": "Revival Wren & The Wravens" }
+        ]
+      }
+    }
+  ]
+}

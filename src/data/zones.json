@@ -1,0 +1,31 @@
+{
+  "source": "Traced from the 2025 official Candler Park Fall Fest site map (grounds-reference.md). Confirm against the 2026 site plan when issued.",
+  "categories": [
+    { "id": "food", "label": "Food", "icon": "ForkKnife", "colorVar": "--pin-food" },
+    { "id": "drinks", "label": "Drinks", "icon": "BeerStein", "colorVar": "--pin-drinks" },
+    { "id": "restroom", "label": "Restrooms", "icon": "Toilet", "colorVar": "--pin-restroom" },
+    { "id": "water", "label": "Water", "icon": "Drop", "colorVar": "--pin-water" },
+    { "id": "info", "label": "Info", "icon": "Info", "colorVar": "--pin-info" },
+    { "id": "stage", "label": "Stages / Music", "icon": "MusicNotes", "colorVar": "--pin-stage" },
+    { "id": "kids", "label": "Kids", "icon": "Baby", "colorVar": "--pin-kids" },
+    { "id": "firstaid", "label": "First aid", "icon": "FirstAidKit", "colorVar": "--pin-firstaid" }
+  ],
+  "pins": [
+    { "id": "main-stage", "category": "stage", "label": "Main Stage", "x": 190, "y": 140 },
+    { "id": "acoustic-stage", "category": "stage", "label": "Acoustic Stage", "x": 250, "y": 380 },
+    { "id": "food-court", "category": "food", "label": "Food Court", "x": 230, "y": 120, "cluster": true },
+    { "id": "kidlandia", "category": "kids", "label": "Kidlandia", "x": 90, "y": 210 },
+    { "id": "art-market", "category": "info", "label": "Art Market", "x": 210, "y": 300, "note": "164 booths — see zones/booths in grounds-reference.md" },
+    { "id": "pool", "category": "info", "label": "Pool", "x": 170, "y": 60 },
+    { "id": "first-aid", "category": "firstaid", "label": "First Aid / EMS", "x": 260, "y": 210 },
+    { "id": "water-1", "category": "water", "label": "Water Station", "x": 140, "y": 260 },
+    { "id": "restroom-north", "category": "restroom", "label": "Restrooms (North)", "x": 240, "y": 90 },
+    { "id": "restroom-south", "category": "restroom", "label": "Restrooms (South)", "x": 200, "y": 400 },
+    { "id": "bike-valet", "category": "info", "label": "Bike Valet Parking", "x": 160, "y": 400 }
+  ],
+  "notesForBuild": [
+    "These x/y values are placeholder positions on a 340×460 viewBox (matches fall-fest-map-trace-1.svg) — replace with real traced coordinates once the illustrated basemap SVG layers are finalized in Figma.",
+    "Artist market booths (164 total: K1–K8 + 1–61 in-park, 62–88 McLendon, 89–164 Candler Park Dr) are not enumerated individually here yet — model as a BoothGrid/cluster once booth-level pins are needed (Phase 3+).",
+    "GPS lat/long → map x/y conversion (Phase 4) reads gps-calibration.md for the four corner points."
+  ]
+}

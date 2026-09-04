@@ -1,0 +1,13 @@
+/* Manrope's font-face rules are imported directly in main.jsx via @fontsource
+   (self-hosted, so the app works fully offline — no CDN dependency at the festival
+   gate, where wifi/cell can be unreliable). Nothing needed here for Manrope.
+
+   Brice (display) — see src/assets/fonts/README.md. Add @font-face blocks here once
+   the real .otf files are dropped in, e.g.:
+
+   @font-face {
+     font-family: 'Brice';
+     src: url('../assets/fonts/Brice-Black.otf') format('opentype');
+     font-weight: 900;
+   }
+*/

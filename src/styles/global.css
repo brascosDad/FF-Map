@@ -1,0 +1,29 @@
+@import './tokens.css';
+@import './fonts.css';
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--surface-base);
+  color: var(--text-on-navy);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+}
+
+.ff-app {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-base);
+}

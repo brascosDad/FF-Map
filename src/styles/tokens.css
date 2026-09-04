@@ -1,0 +1,44 @@
+/* Fall Fest 2026 — design tokens
+   Source of truth: claude/color-tokens.md in the project. Keep these two in sync —
+   if the palette changes there, mirror the change here. */
+:root {
+  /* Core brand */
+  --ff-navy: #23385B;
+  --ff-cream: #F5EFDA;
+  --ff-teal: #56AC9B;
+  --ff-coral: #E89370;
+
+  /* Extended */
+  --ff-navy-deep: #1A2B45;
+  --ff-navy-panel: #2F476E;
+  --ff-cream-shade: #E7DFC5;
+  --ff-teal-muted: #9BC1B8;
+  --ff-coral-muted: #F0C1AC;
+
+  /* Category pins (POI wayfinding) */
+  --pin-food: #C97636;
+  --pin-drinks: #B78B34;
+  --pin-restroom: #3D9E6E;
+  --pin-water: #3D8FA4;
+  --pin-info: #407EB5;
+  --pin-stage: #8F71B7;
+  --pin-kids: #C25B7E;
+  --pin-firstaid: #C84B46;
+
+  /* Structural / neutral */
+  --cat-booth: #47597A;
+  --cat-utility: #6E7C93;
+
+  /* Semantic roles */
+  --surface-base: var(--ff-navy);
+  --surface-panel: var(--ff-navy-panel);
+  --surface-land: var(--ff-cream);
+  --text-on-navy: var(--ff-cream);
+  --text-on-cream: var(--ff-navy);
+  --pin-inactive: var(--ff-teal-muted);
+  --you-are-here: var(--ff-coral);
+
+  /* Type */
+  --font-display: 'Brice', 'Manrope', system-ui, sans-serif; /* falls back until real Brice .otf files are dropped in — see src/assets/fonts/README.md */
+  --font-ui: 'Manrope', system-ui, sans-serif;
+}

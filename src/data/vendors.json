@@ -1,0 +1,21 @@
+{
+  "confirmed": false,
+  "note": "2026 food-truck / vendor list has not arrived yet (checked 2026-09-03; nudge sent to Amy). This is the 2025 list, kept as a structural placeholder so the UI has real rows to render — swap the 'name' values (and add descriptions) once the 2026 list comes in.",
+  "vendors": [
+    { "id": "v01", "name": "Sokome", "category": "food" },
+    { "id": "v02", "name": "Snowie Atlanta Creations", "category": "food" },
+    { "id": "v03", "name": "Sweet Auburn BBQ", "category": "food" },
+    { "id": "v04", "name": "The Pickle Food Truck", "category": "food" },
+    { "id": "v05", "name": "Makara's Mediterranean", "category": "food" },
+    { "id": "v06", "name": "Hermanita by Tio Lucho's", "category": "food" },
+    { "id": "v07", "name": "Coffyn Pyes", "category": "food" },
+    { "id": "v08", "name": "Smash Hit Burgers", "category": "food" },
+    { "id": "v09", "name": "Azucar Cuban Cuisine", "category": "food" },
+    { "id": "v10", "name": "Sweetacular Treats", "category": "food" },
+    { "id": "v11", "name": "Island Noodles", "category": "food" },
+    { "id": "v12", "name": "Jalapeno Corndog Concessions", "category": "food" },
+    { "id": "v13", "name": "Curated Coffee", "category": "food" },
+    { "id": "v14", "name": "Any Given Sundae", "category": "food", "note": "TBD in 2025 source" },
+    { "id": "v15", "name": "King of Pops", "category": "food", "note": "2 locations in 2025" }
+  ]
+}
