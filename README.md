@@ -5,6 +5,8 @@ This is Phase 1 of the build plan (`buildplan.pdf` in the FF map project) — th
 React + Vite foundation, with the mobile prototype's map/zoom logic ported into
 production components and wired to real data where it exists.
 
+Live site: https://fall-fest-map-ernest-sons-projects.vercel.app
+
 ## Getting started
 
 ```bash
