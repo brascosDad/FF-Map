@@ -4,11 +4,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // decision landed on: the overview you land on is the fixed, most-zoomed-out
 // floor, and zooming in snaps between a fixed number of levels. Edit LEVELS
 // (viewBox widths) to try 3 vs. 4 vs. 5 stops; everything else adapts.
-export const LEVELS = [360, 210, 140, 90];
+//
+// All figures below are in the canonical export's 1440x900 map space (see
+// assets/basemapTrace.js). They are the old 340x460 stops scaled by ~1.94 and
+// then reframed: the overview deliberately does NOT show the whole 1440-wide
+// canvas, because several hundred units either side are empty park and street.
+// It frames the festival footprint (roughly x 385-1055, y 110-830) instead.
+export const LEVELS = [700, 410, 270, 175];
 export const LEVEL_LABELS = ['Overview', 'Zone', 'Detail', 'Booth level'];
 
-const HOME = { x: -10, y: -140, w: 360, h: 741 };
-const PAN_BOUNDS = { minX: -140, minY: -320, maxX: 480, maxY: 700 };
+// h is the tall-phone companion to w: with preserveAspectRatio="xMidYMid slice"
+// the viewBox has to be at least as tall-and-narrow as the screen, or the map
+// gets cropped horizontally instead of letterboxed.
+const HOME = { x: 370, y: -270, w: 700, h: 1440 };
+const PAN_BOUNDS = { minX: 250, minY: -100, maxX: 1200, maxY: 1000 };
 const STEP_COOLDOWN = 420;
 
 function clampPan(vb) {

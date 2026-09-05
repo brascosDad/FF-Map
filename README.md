@@ -26,15 +26,16 @@ npm run preview   # serve the production build locally
   arrived yet, so this is last year's (2025) roster as a structural placeholder.
   Swap the `vendors` array once the real list comes in; the UI needs no other changes.
 - **Pin positions & basemap** (`src/assets/pins.js`, `src/assets/basemapTrace.js`,
-  `src/assets/basemapCoords.js`) — carried over exactly from the locked mobile
-  prototype (`fall-fest-mobile-wireframe.html` / `fall-fest-zoom-level-test.html` in
-  the project), which traces the 2025 official site map. Replace with the real
-  illustrated basemap SVG (Phase 2, in Figma) when it's ready — the pin/zoom system
-  doesn't care what the underlying art looks like, only the viewBox coordinate space.
-  One exception: the **Bike Valet** pin (`src/assets/pins.js`) is a rough
-  cross-reference from the red placeholder circle in
-  `fall-fest-desktop-map-wireframe.svg`, not a locked-prototype coordinate — nudge it
-  once the real basemap lands.
+  `src/assets/basemapCoords.js`) — real, extracted from the canonical Figma export
+  `fall-fest-desktop-map-wireframe.svg`. The basemap is that file's
+  "static map elements" group; the pins and booth ticks are the marker positions
+  from its "festival elements (z=2)" group, so the coordinate space is the export's
+  own **1440×900** canvas (it was 340×460 while the map came from the mobile
+  prototype). The Bike Valet pin is no longer a cross-referenced guess — it is the
+  export's own circle, recolored from its placeholder red to the utility neutral.
+  What is *not* yet settled is the illustrated art that will sit under these
+  coordinates; the pin/zoom system doesn't care what the art looks like, only that
+  it stays on this viewBox.
 - **Brice font** — not included (proprietary .otf files aren't in this session).
   See `src/assets/fonts/README.md` for the two-step drop-in.
 - **Discrete zoom levels** (`src/hooks/useMapView.js`) — currently 4 stops

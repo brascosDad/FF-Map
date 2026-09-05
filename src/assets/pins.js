@@ -1,26 +1,40 @@
-// Pin positions extracted verbatim from the locked mobile prototype
-// (fall-fest-zoom-level-test.html) so the coordinates carry over exactly —
-// these sit on the same 340×460 viewBox as fall-fest-map-trace-1.svg.
-// Replace with real traced coordinates once the illustrated basemap SVG is finalized.
+// Pin positions taken from the "festival elements (z=2)" group of the canonical
+// Figma export (fall-fest-desktop-map-wireframe, 1440x900). Each x/y is the
+// marker circle's own cx/cy in that export -- these replace the hand-placed
+// coordinates carried over from the mobile prototype.
+//
+// `c` is the category key: it drives both PIN_COLOR below and the Phosphor glyph
+// looked up in assets/icons.js, so it has to stay one of the keys already in
+// this file. `d` is the DetailSheet entry the pin opens.
 export const PINS = [
-  { x: 296, y: 120, c: 'food', d: 'food', label: 'Food Court' },
-  { x: 212, y: 138, c: 'stage', d: 'stageMain', label: 'Main Stage' },
-  { x: 300, y: 414, c: 'stage', d: 'stageAcoustic', label: 'Acoustic' },
-  { x: 120, y: 200, c: 'kids', d: 'kids', label: 'Kidlandia' },
-  { x: 255, y: 258, c: 'drinks', d: 'drinks' },
-  { x: 312, y: 60, c: 'wc', d: 'wc' },
-  { x: 150, y: 352, c: 'wc', d: 'wc' },
-  { x: 235, y: 232, c: 'firstaid', d: 'firstaid' },
-  { x: 175, y: 300, c: 'water', d: 'water' },
-  { x: 95, y: 300, c: 'info', d: 'info' },
-  // Position is approximate: back-derived from the red circle Ernest marked
-  // "bike-valet" in fall-fest-desktop-map-wireframe.svg (cx 702.386, cy 730.147
-  // on that file's 1440x900 canvas), roughly cross-referenced against nearby
-  // POIs shared between that file and this 340x460 viewBox (restrooms, info,
-  // water). That cross-reference wasn't precise enough to trust to the pixel —
-  // nudge this once the real illustrated basemap is finalized (same caveat as
-  // the other placeholder coordinates in this file).
-  { x: 185, y: 320, c: 'bikevalet', d: 'bikevalet' },
+  // Markers that carry a standing label on the map
+  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court' },
+  { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage' },
+  { x: 938.5, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic' },
+  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia' },
+
+  // Beer / beverage stations -- the export marks four
+  { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks' },
+  { x: 734.7, y: 442.0, c: 'drinks', d: 'drinks' },
+  { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks' },
+  { x: 897.3, y: 747.3, c: 'drinks', d: 'drinks' },
+
+  // Restrooms (category key is `wc`, matching icons.js and the filter chips)
+  { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
+  { x: 601.6, y: 665.1, c: 'wc', d: 'wc' },
+
+  { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
+
+  // Water refill stations -- the export marks two
+  { x: 668.2, y: 318.7, c: 'water', d: 'water' },
+  { x: 588.1, y: 708.3, c: 'water', d: 'water' },
+
+  { x: 644.3, y: 733.3, c: 'info', d: 'info' },
+
+  // Drawn as a placeholder red circle in the export; recolored here to the
+  // utility neutral. The position itself is real, so it is no longer the
+  // approximation the previous coordinate was.
+  { x: 702.4, y: 730.1, c: 'bikevalet', d: 'bikevalet' },
 ];
 
 // Matches claude/color-tokens.md's Category pin palette exactly.
@@ -38,6 +52,11 @@ export const PIN_COLOR = {
   // quiet neutral (--cat-utility) instead of each taking a vivid pin hue.
   bikevalet: '#6E7C93',
 };
+
+// Marker radius in map units. The export draws its own markers at r 17.25-21.27;
+// this sits at the top of that range so the tap target survives the overview
+// zoom level.
+export const PIN_R = 22;
 
 export const SLATE = '#47597A';
 export const NAVY = '#23385B';
