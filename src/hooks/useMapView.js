@@ -15,17 +15,31 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 //   0 Overview - area blobs, no individual booths, whole festival in frame
 //   1 Booths   - blobs give way to the individual squares
 //   2 Detail   - area names appear alongside them
-// Level 0 is deliberately wide enough to show the McLendon x Candler Park Dr
-// corner: the Candler Park Dr market runs right down that edge and gets clipped
-// at anything tighter.
-export const LEVELS = [760, 430, 240];
+//
+// The stops are RATIOS, not fixed widths, because the right overview width
+// depends on the shape of the container. A phone is tall and narrow, a desktop
+// map pane is wide and short; with preserveAspectRatio="slice" a single fixed
+// viewBox would crop one of them badly. Level 0 is computed to fit the whole
+// festival box in whatever shape it is given, and 1 and 2 step in from there.
+export const LEVEL_RATIOS = [1, 0.565, 0.315];
 export const LEVEL_LABELS = ['Overview', 'Booths', 'Detail'];
 
-// h is the tall-phone companion to w: with preserveAspectRatio="xMidYMid slice"
-// the viewBox has to be at least as tall-and-narrow as the screen, or the map
-// gets cropped horizontally instead of letterboxed.
-const HOME = { x: 340, y: -331, w: 760, h: 1563 };
-const PAN_BOUNDS = { minX: 300, minY: -100, maxX: 1180, maxY: 1000 };
+// The festival footprint in map space, plus breathing room so the McLendon x
+// Candler Park Dr corner never sits flush against the edge.
+const FESTIVAL = { x: 385, y: 110, w: 670, h: 720 };
+const MARGIN = 45;
+const CX = FESTIVAL.x + FESTIVAL.w / 2;
+const CY = FESTIVAL.y + FESTIVAL.h / 2;
+
+const PAN_BOUNDS = { minX: 250, minY: -120, maxX: 1230, maxY: 1020 };
+
+/** Overview viewBox width that fits the festival box in a container of this
+ *  aspect (height / width). Wide containers are limited by height, tall ones
+ *  by width -- take whichever constraint binds. */
+function overviewWidth(aspect) {
+  return Math.max(FESTIVAL.w + MARGIN * 2, (FESTIVAL.h + MARGIN * 2) / aspect);
+}
+
 const STEP_COOLDOWN = 420;
 
 function clampPan(vb) {
@@ -42,10 +56,19 @@ function clampPan(vb) {
  * wrapRef to the <svg> and its wrapping <div> respectively.
  */
 export function useMapView() {
-  const [vb, setVb] = useState({ ...HOME });
+  // Container aspect (height / width). Seeded tall-and-narrow so the very first
+  // paint on a phone is right; the observer below corrects it immediately.
+  const [aspect, setAspect] = useState(2.05);
+  const levels = LEVEL_RATIOS.map((r) => overviewWidth(aspect) * r);
+  const [vb, setVb] = useState(() => {
+    const w = overviewWidth(2.05);
+    return { x: CX - w / 2, y: CY - (w * 2.05) / 2, w, h: w * 2.05 };
+  });
   const [levelIdx, setLevelIdx] = useState(0);
   const mapRef = useRef(null);
   const wrapRef = useRef(null);
+  const aspectRef = useRef(aspect);
+  useEffect(() => { aspectRef.current = aspect; }, [aspect]);
   const suppressClickRef = useRef(false);
   const vbRef = useRef(vb);
   const levelRef = useRef(levelIdx);
@@ -62,19 +85,47 @@ export function useMapView() {
   }, []);
 
   const setLevel = useCallback((idx, cx, cy) => {
-    idx = Math.min(Math.max(idx, 0), LEVELS.length - 1);
+    idx = Math.min(Math.max(idx, 0), LEVEL_RATIOS.length - 1);
     setVb((prev) => {
-      const nw = LEVELS[idx];
+      const nw = overviewWidth(aspectRef.current) * LEVEL_RATIOS[idx];
       const af = nw / prev.w;
       const p = (cx != null && cy != null) ? toSvg(cx, cy) : { x: prev.x + prev.w / 2, y: prev.y + prev.h / 2 };
-      const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: prev.h * af };
+      const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: nw * aspectRef.current };
       return clampPan(next);
     });
     setLevelIdx(idx);
   }, [toSvg]);
 
   const stepLevel = useCallback((dir, cx, cy) => setLevel(levelRef.current + dir, cx, cy), [setLevel]);
-  const resetToOverview = useCallback(() => setLevel(0), [setLevel]);
+  const resetToOverview = useCallback(() => {
+    const a = aspectRef.current;
+    const w = overviewWidth(a);
+    setVb(clampPan({ x: CX - w / 2, y: CY - (w * a) / 2, w, h: w * a }));
+    setLevelIdx(0);
+  }, []);
+
+  // Re-fit whenever the container changes shape (rotation, window resize, the
+  // side panel appearing at a breakpoint). The viewBox keeps its current level
+  // and center, but takes the new aspect so nothing gets cropped.
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (!width || !height) return;
+      const a = height / width;
+      if (Math.abs(a - aspectRef.current) < 0.005) return;
+      aspectRef.current = a;
+      setAspect(a);
+      setVb((prev) => {
+        const w = overviewWidth(a) * LEVEL_RATIOS[levelRef.current];
+        const h = w * a;
+        return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h });
+      });
+    });
+    ro.observe(wrap);
+    return () => ro.disconnect();
+  }, []);
 
   // Pan (single pointer) + pinch step-zoom (two pointers) + wheel step-zoom + dblclick step-in.
   useEffect(() => {
@@ -139,7 +190,7 @@ export function useMapView() {
     }
     function onDblClick(e) {
       e.preventDefault();
-      if (levelRef.current >= LEVELS.length - 1) setLevel(0, e.clientX, e.clientY);
+      if (levelRef.current >= LEVEL_RATIOS.length - 1) setLevel(0, e.clientX, e.clientY);
       else stepLevel(1, e.clientX, e.clientY);
     }
 
@@ -160,5 +211,5 @@ export function useMapView() {
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, setLevel, stepLevel, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, levels, overview, detail, setLevel, stepLevel, resetToOverview };
 }

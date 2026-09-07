@@ -5,7 +5,7 @@
      B #DCE4EC  same hue, deeper
      C #F2F5F8  palest, nearly white
      D #ECEAE1  the original warm grey                                       */
-:root { --ff-surround: #E8EDF2; }
+:root { --ff-surround: #E8EDF2; --ff-panel-w: 300px; }
 
 /* Ported from the locked mobile prototype (fall-fest-mobile-wireframe.html /
    fall-fest-zoom-level-test.html), rewired to real React class names. */
@@ -25,7 +25,7 @@
 
 .topbar {
   position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding: 12px 12px 14px;
-  background: linear-gradient(180deg, rgba(236,234,225,.97) 52%, rgba(236,234,225,0));
+  background: linear-gradient(180deg, rgba(232,237,242,.97) 52%, rgba(232,237,242,0));
 }
 .tbrow { display: flex; align-items: center; gap: 10px; margin: 0 2px 10px; }
 .brandline { font-size: 13px; color: var(--ff-navy); margin: 0; }
@@ -95,3 +95,55 @@
 .li { display: flex; align-items: flex-start; gap: 9px; padding: 6px 4px; font-size: 13.5px; color: #4a5262; line-height: 1.4; }
 .li .b { width: 6px; height: 6px; border-radius: 50%; background: var(--ff-teal); margin-top: 6px; flex: 0 0 6px; }
 .sheet .foot { font-size: 11px; color: #9aa0ac; margin-top: 12px; padding-top: 8px; border-top: 1px solid #eee; }
+
+
+/* ---------------------------------------------------------------------------
+   Three breakpoints.
+
+   Mobile  (<768)      map fills the screen, detail arrives as a bottom sheet.
+   Tablet  (768-1179)  map plus a 300px docked panel.
+   Desktop (>=1180)    same, panel widens to 380px.
+
+   The panel is the same DetailSheet component, restyled -- it is the desktop
+   wireframe's right panel, and it responds to map clicks rather than being a
+   static list. When nothing is selected it shows PanelHome instead of sliding
+   away. The map's viewBox re-fits itself to whatever width is left over (see
+   useMapView's ResizeObserver), so no breakpoint crops the festival.
+--------------------------------------------------------------------------- */
+
+.mapstage { position: absolute; inset: 0; }
+
+.ff-screen.docked { display: flex; }
+.ff-screen.docked .mapstage { position: relative; flex: 1 1 auto; min-width: 0; height: 100%; }
+.ff-screen.docked .sheetwrap { flex: 0 0 var(--ff-panel-w); height: 100%; }
+
+.ff-screen.docked .sheet {
+  position: static; transform: none;
+  height: 100%; max-height: none;      /* the mobile sheet caps at 72% of screen */
+  border-radius: 0; box-shadow: none; border-left: 1px solid #dfe4ea;
+  overflow-y: auto; padding: 18px 18px 24px;
+}
+.ff-screen.docked .sheet .grip { display: none; }
+.ff-screen.docked .sheet .close { top: 16px; right: 18px; }
+
+/* Panel resting state */
+.panel-list { margin: 14px 0 0; display: flex; flex-direction: column; gap: 2px; }
+.panel-list + .panel-list { margin-top: 18px; padding-top: 14px; border-top: 1px solid #eef0f3; }
+.panel-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+.panel-row .dot {
+  width: 28px; height: 28px; border-radius: 50%; flex: 0 0 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.panel-row .dot.sm { width: 22px; height: 22px; flex: 0 0 22px; }
+.panel-row b { display: block; font-size: 13px; font-weight: 700; color: var(--ff-navy); }
+.panel-row em { display: block; font-style: normal; font-size: 11px; color: #8b91a1; margin-top: 1px; }
+
+@media (min-width: 1180px) {
+  :root { --ff-panel-w: 380px; }
+  .ff-screen.docked .sheet { padding: 22px 22px 28px; }
+}
+
+/* On a docked layout the map has room, so the floating controls tuck in a
+   little further from the panel edge. */
+.ff-screen.docked .zoomctl,
+.ff-screen.docked .locate { right: 18px; }

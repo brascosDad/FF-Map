@@ -1,5 +1,5 @@
 import Icon from './Icon';
-import { PIN_COLOR, SLATE } from '../assets/pins';
+import { PIN_COLOR, PINS, SLATE } from '../assets/pins';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -84,16 +84,67 @@ function GenericPoi({ id }) {
   );
 }
 
-export default function DetailSheet({ openId, openArea, onClose }) {
+
+// Resting state of the docked side panel. On mobile the sheet simply stays
+// down when nothing is selected; on tablet/desktop the panel is always on
+// screen, so it needs something to say.
+const PANEL_AREAS = [
+  { key: 'stage', title: 'Two stages', sub: 'Main Stage + Acoustic Stage' },
+  { key: 'food', title: 'Food court', sub: '16 trucks along the car path' },
+  { key: 'art', title: 'Art market', sub: 'Three runs: in the park, McLendon, Candler Park Dr', color: SLATE },
+  { key: 'kids', title: 'Kidlandia', sub: 'Family activity zone' },
+];
+
+function PanelHome() {
+  const counts = PINS.reduce((a, p) => ({ ...a, [p.c]: (a[p.c] || 0) + 1 }), {});
+  return (
+    <>
+      <div className="hd">
+        <h3>Candler Park Fall Fest</h3>
+      </div>
+      <div className="sub" style={{ paddingLeft: 0 }}>October 4–5, 2026</div>
+      <div className="panel-list">
+        {PANEL_AREAS.map((a) => (
+          <div className="panel-row" key={a.key}>
+            <span className="dot" style={{ background: a.color || PIN_COLOR[a.key] || SLATE }}>
+              <Icon name={a.key === 'art' ? 'art' : a.key} size={15} color="#fff" />
+            </span>
+            <span>
+              <b>{a.title}</b>
+              <em>{a.sub}</em>
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="panel-list">
+        {[['wc', 'Restrooms'], ['water', 'Water'], ['drinks', 'Beer & drinks'],
+          ['firstaid', 'First aid'], ['info', 'Info'], ['bikevalet', 'Bike valet']].map(([k, label]) => (
+          counts[k] ? (
+            <div className="panel-row compact" key={k}>
+              <span className="dot sm" style={{ background: PIN_COLOR[k] }}>
+                <Icon name={k} size={12} color="#fff" />
+              </span>
+              <span><b>{label}</b><em>{counts[k]} on the map</em></span>
+            </div>
+          ) : null
+        ))}
+      </div>
+      <div className="foot">Tap anything on the map for details.</div>
+    </>
+  );
+}
+
+export default function DetailSheet({ openId, openArea, onClose, docked = false }) {
   const isOpen = !!(openId || openArea);
   let body = null;
   if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
   else if (openId === 'food') body = <FoodCourt />;
   else if (openId) body = <GenericPoi id={openId} />;
   else if (openArea) body = <ArtMarketArea area={openArea} />;
+  else if (docked) body = <PanelHome />;
 
   return (
-    <div className={`sheet${isOpen ? ' open' : ''}`}>
+    <div className={`sheet${isOpen ? ' open' : ''}${docked ? ' docked' : ''}`}>
       <div className="grip" />
       {isOpen && <button className="close" onClick={onClose}><Icon name="close" size={20} /></button>}
       {body}

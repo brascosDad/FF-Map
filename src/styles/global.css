@@ -27,3 +27,10 @@ button {
   overflow: hidden;
   background: var(--surface-base);
 }
+
+/* Above the phone breakpoint the app stops pretending to be a phone and takes
+   the whole viewport, so the map has real room next to the docked panel.
+   Below it, the 480px cap stays: a phone-width column centred on any screen. */
+@media (min-width: 768px) {
+  .ff-app { max-width: none; }
+}
