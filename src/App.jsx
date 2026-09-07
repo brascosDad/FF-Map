@@ -8,7 +8,7 @@ import Icon from './components/Icon';
 import './styles/map.css';
 
 export default function App() {
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, detail, stepLevel, resetToOverview } = useMapView();
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, stepLevel, resetToOverview } = useMapView();
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
@@ -60,6 +60,7 @@ export default function App() {
           wrapRef={wrapRef}
           viewBox={viewBox}
           filter={filter}
+          overview={overview}
           detail={detail}
           gps={gps}
           onPinClick={handlePinClick}

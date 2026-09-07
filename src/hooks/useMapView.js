@@ -10,14 +10,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // then reframed: the overview deliberately does NOT show the whole 1440-wide
 // canvas, because several hundred units either side are empty park and street.
 // It frames the festival footprint (roughly x 385-1055, y 110-830) instead.
-export const LEVELS = [700, 410, 270, 175];
-export const LEVEL_LABELS = ['Overview', 'Zone', 'Detail', 'Booth level'];
+//
+// Three stops, not four, and each one means something specific on the map:
+//   0 Overview - area blobs, no individual booths, whole festival in frame
+//   1 Booths   - blobs give way to the individual squares
+//   2 Detail   - area names appear alongside them
+// Level 0 is deliberately wide enough to show the McLendon x Candler Park Dr
+// corner: the Candler Park Dr market runs right down that edge and gets clipped
+// at anything tighter.
+export const LEVELS = [760, 430, 240];
+export const LEVEL_LABELS = ['Overview', 'Booths', 'Detail'];
 
 // h is the tall-phone companion to w: with preserveAspectRatio="xMidYMid slice"
 // the viewBox has to be at least as tall-and-narrow as the screen, or the map
 // gets cropped horizontally instead of letterboxed.
-const HOME = { x: 370, y: -270, w: 700, h: 1440 };
-const PAN_BOUNDS = { minX: 250, minY: -100, maxX: 1200, maxY: 1000 };
+const HOME = { x: 340, y: -331, w: 760, h: 1563 };
+const PAN_BOUNDS = { minX: 300, minY: -100, maxX: 1180, maxY: 1000 };
 const STEP_COOLDOWN = 420;
 
 function clampPan(vb) {
@@ -148,7 +156,9 @@ export function useMapView() {
   }, [setLevel, stepLevel]);
 
   const viewBoxStr = `${vb.x} ${vb.y} ${vb.w} ${vb.h}`;
-  const detail = levelIdx >= 2; // semantic swap (e.g. food-court dots -> real list) ties to a level, not a pixel width
+  // Semantic swaps tie to a level, not a pixel width.
+  const overview = levelIdx === 0; // area blobs instead of individual booths
+  const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, detail, setLevel, stepLevel, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, setLevel, stepLevel, resetToOverview };
 }

@@ -1,5 +1,6 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { CPD, MCL, SPN, FOOD } from '../assets/basemapCoords';
+import { BLOBS } from '../assets/basemapBlobs';
 import { PINS, PIN_COLOR, PIN_R, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
@@ -23,10 +24,20 @@ function boxes(coords, color) {
   ));
 }
 
+// At the furthest-out level the individual squares are illegible, so each area
+// collapses to a single blob: filled soft, stroked firm. Organic shape, ordered
+// edge -- and tight enough to its own footprint that it never reads as spilling
+// into the area next door.
+function Blobs({ paths, color }) {
+  return paths.map((d, i) => (
+    <path key={i} d={d} fill={color} fillOpacity={0.28} stroke={color} strokeOpacity={0.55} strokeWidth={2} />
+  ));
+}
+
 const CLUSTERS = [
-  { id: 'cpd', coords: CPD, mk: [411.5, 541.5], label: null, name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
-  { id: 'mcl', coords: MCL, mk: [666.4, 787.9], label: null, name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
-  { id: 'spine', coords: SPN, mk: [774.9, 509.3], label: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
+  { id: 'cpd', blobs: BLOBS.cpd, coords: CPD, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
+  { id: 'mcl', blobs: BLOBS.mcl, coords: MCL, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
+  { id: 'spine', blobs: BLOBS.spine, coords: SPN, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
 
 function Label({ x, y, text }) {
@@ -37,7 +48,7 @@ function Label({ x, y, text }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, detail, gps, onPinClick, onAreaClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, detail, gps, onPinClick, onAreaClick }) {
   const dim = (cat) => (filter && filter !== cat ? 0.28 : 1);
   const clusterDim = filter ? 0.28 : 1;
 
@@ -62,21 +73,20 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, detail, gp
         <text x={411} y={130} fontSize={15} fill="#8b91a1" textAnchor="middle" stroke="#fff" strokeWidth={3.4} paintOrder="stroke" transform="rotate(-90 411 130)">Candler Park Dr NE</text>
         <text x={610} y={818} fontSize={15} fill="#8b91a1" textAnchor="middle" stroke="#fff" strokeWidth={3.4} paintOrder="stroke">McLendon Ave NE</text>
 
-        {/* Food court: dot-cluster at overview/zone levels, real list once you're zoomed to Detail+ */}
-        {detail ? (
-          <text x={872} y={230} fontSize={10} fontWeight={800} fill="#b07a3f" textAnchor="middle" stroke="#fff" strokeWidth={2.8} paintOrder="stroke">FOOD COURT</text>
-        ) : (
-          boxes(FOOD, '#C97636')
+        {/* Food court: blob at overview, individual stalls once you step in */}
+        {overview ? <Blobs paths={BLOBS.food} color="#C97636" /> : boxes(FOOD, '#C97636')}
+        {detail && (
+          <text x={872} y={228} fontSize={11} fontWeight={800} fill="#a86f36" textAnchor="middle" stroke="#fff" strokeWidth={3} paintOrder="stroke">FOOD COURT</text>
         )}
 
         {CLUSTERS.map((cl) => (
           <g key={cl.id} className="ff-tap" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
-            {boxes(cl.coords, SLATE)}
+            {overview ? <Blobs paths={cl.blobs} color={SLATE} /> : boxes(cl.coords, SLATE)}
             <g filter="url(#ds)">
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={PIN_R - 2} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={24} />
             </g>
-            {cl.label && <Label x={cl.mk[0]} y={cl.mk[1]} text={cl.label} />}
+            {(cl.label || detail) && <Label x={cl.mk[0]} y={cl.mk[1]} text={cl.label || cl.shortName} />}
           </g>
         ))}
 

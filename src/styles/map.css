@@ -1,3 +1,12 @@
+/* Surround: the band above and below the map once it is clipped to its own
+   1440x900 rectangle. Swap --ff-surround to retint it; the map itself does not
+   care. Candidates rendered for review:
+     A #E8EDF2  blue-grey, keyed to the street fill  (current)
+     B #DCE4EC  same hue, deeper
+     C #F2F5F8  palest, nearly white
+     D #ECEAE1  the original warm grey                                       */
+:root { --ff-surround: #E8EDF2; }
+
 /* Ported from the locked mobile prototype (fall-fest-mobile-wireframe.html /
    fall-fest-zoom-level-test.html), rewired to real React class names. */
 
@@ -6,7 +15,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #ECEAE1;
+  background: var(--ff-surround, #E8EDF2);
 }
 
 .mapwrap { position: absolute; inset: 0; touch-action: none; overflow: hidden; }
