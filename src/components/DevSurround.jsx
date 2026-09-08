@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 /**
  * TEMPORARY dev-only control for dialling in the surround colour.
  *
- * Renders only when import.meta.env.DEV is true, so it is stripped from any
- * production build automatically -- `npm run build` cannot ship it. To remove it
- * for good: delete this file and its two lines in App.jsx.
+ * Shown when running `npm run dev`, OR on any build when the URL carries ?dev
+ * -- that second route is what makes it usable on the Vercel preview link,
+ * including on a phone, where there is no dev server. A normal visitor never
+ * sees it. To remove it for good: delete this file and its two lines in App.jsx.
  *
  * The choice is kept in localStorage so it survives reloads while you compare.
  */
@@ -19,6 +20,15 @@ const PRESETS = [
   ['#FFFFFF', 'G · white'],
 ];
 const KEY = 'ff-surround';
+
+export function devToolsRequested() {
+  if (import.meta.env.DEV) return true;
+  try {
+    return new URLSearchParams(window.location.search).has('dev');
+  } catch {
+    return false;
+  }
+}
 
 // Safari private mode throws on localStorage access rather than returning null,
 // which would take the whole app down on first paint.
