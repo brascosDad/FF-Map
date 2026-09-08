@@ -1,5 +1,6 @@
 import Icon from './Icon';
 import { PIN_COLOR, PINS, SLATE } from '../assets/pins';
+import { BOOTH_CAVEAT } from '../data/booths';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -134,10 +135,31 @@ function PanelHome() {
   );
 }
 
-export default function DetailSheet({ openId, openArea, onClose, docked = false }) {
-  const isOpen = !!(openId || openArea);
+function BoothDetail({ booth }) {
+  const isFood = booth.area === 'Food Court';
+  return (
+    <>
+      <div className="hd">
+        <span className="dot" style={{ background: isFood ? PIN_COLOR.food : SLATE }}>
+          <Icon name={isFood ? 'food' : 'art'} size={17} color="#fff" />
+        </span>
+        <h3>{booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}</h3>
+      </div>
+      <div className="sub">{booth.area}{booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}</div>
+      {booth.vendor
+        ? <div className="li"><span className="b" />Food truck — menu and hours to come.</div>
+        : <div className="li"><span className="b" />Artist assignment arrives with the 2026 vendor list.</div>}
+      <div className="li"><span className="b" />Photos go here once we have them.</div>
+      <div className="foot">{BOOTH_CAVEAT}</div>
+    </>
+  );
+}
+
+export default function DetailSheet({ openId, openArea, openBooth, onClose, docked = false }) {
+  const isOpen = !!(openId || openArea || openBooth);
   let body = null;
-  if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
+  if (openBooth) body = <BoothDetail booth={openBooth} />;
+  else if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
   else if (openId === 'food') body = <FoodCourt />;
   else if (openId) body = <GenericPoi id={openId} />;
   else if (openArea) body = <ArtMarketArea area={openArea} />;

@@ -33,11 +33,27 @@ const CY = FESTIVAL.y + FESTIVAL.h / 2;
 
 const PAN_BOUNDS = { minX: 250, minY: -120, maxX: 1230, maxY: 1020 };
 
-/** Overview viewBox width that fits the festival box in a container of this
- *  aspect (height / width). Wide containers are limited by height, tall ones
- *  by width -- take whichever constraint binds. */
-function overviewWidth(aspect) {
-  return Math.max(FESTIVAL.w + MARGIN * 2, (FESTIVAL.h + MARGIN * 2) / aspect);
+/** Overview viewBox that fits the festival box into a container of this pixel
+ *  size. Wide containers are limited by height, tall ones by width -- take
+ *  whichever constraint binds.
+ *
+ *  `insetRight` is how many pixels on the right are covered by the floating
+ *  panel. The map still paints full-bleed underneath it (that is the Google
+ *  Maps look), but the festival is fitted and centred into the part you can
+ *  actually see, so nothing important ends up hidden behind the panel. */
+function fitOverview(px, py, insetRight = 0) {
+  const usable = Math.max(px - insetRight, 120);
+  const w = Math.max(
+    ((FESTIVAL.w + MARGIN * 2) * px) / usable,
+    ((FESTIVAL.h + MARGIN * 2) * px) / py
+  );
+  return w;
+}
+
+function homeFor(px, py, insetRight = 0) {
+  const w = fitOverview(px, py, insetRight);
+  const h = (w * py) / px;
+  return clampPan({ x: CX - w / 2 + (insetRight * w) / (2 * px), y: CY - h / 2, w, h });
 }
 
 const STEP_COOLDOWN = 420;
@@ -55,20 +71,17 @@ function clampPan(vb) {
  * (pan + step-zoom), instead of free continuous scaling. Wire mapRef and
  * wrapRef to the <svg> and its wrapping <div> respectively.
  */
-export function useMapView() {
-  // Container aspect (height / width). Seeded tall-and-narrow so the very first
-  // paint on a phone is right; the observer below corrects it immediately.
-  const [aspect, setAspect] = useState(2.05);
-  const levels = LEVEL_RATIOS.map((r) => overviewWidth(aspect) * r);
-  const [vb, setVb] = useState(() => {
-    const w = overviewWidth(2.05);
-    return { x: CX - w / 2, y: CY - (w * 2.05) / 2, w, h: w * 2.05 };
-  });
+export function useMapView({ insetRight = 0 } = {}) {
+  // Container size in px. Seeded phone-shaped so the very first paint is right;
+  // the ResizeObserver below corrects it immediately.
+  const sizeRef = useRef({ px: 390, py: 800 });
+  const insetRef = useRef(insetRight);
+  useEffect(() => { insetRef.current = insetRight; }, [insetRight]);
+
+  const [vb, setVb] = useState(() => homeFor(390, 800, insetRight));
   const [levelIdx, setLevelIdx] = useState(0);
   const mapRef = useRef(null);
   const wrapRef = useRef(null);
-  const aspectRef = useRef(aspect);
-  useEffect(() => { aspectRef.current = aspect; }, [aspect]);
   const suppressClickRef = useRef(false);
   const vbRef = useRef(vb);
   const levelRef = useRef(levelIdx);
@@ -87,10 +100,11 @@ export function useMapView() {
   const setLevel = useCallback((idx, cx, cy) => {
     idx = Math.min(Math.max(idx, 0), LEVEL_RATIOS.length - 1);
     setVb((prev) => {
-      const nw = overviewWidth(aspectRef.current) * LEVEL_RATIOS[idx];
+      const { px, py } = sizeRef.current;
+      const nw = fitOverview(px, py, insetRef.current) * LEVEL_RATIOS[idx];
       const af = nw / prev.w;
       const p = (cx != null && cy != null) ? toSvg(cx, cy) : { x: prev.x + prev.w / 2, y: prev.y + prev.h / 2 };
-      const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: nw * aspectRef.current };
+      const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: (nw * py) / px };
       return clampPan(next);
     });
     setLevelIdx(idx);
@@ -98,34 +112,38 @@ export function useMapView() {
 
   const stepLevel = useCallback((dir, cx, cy) => setLevel(levelRef.current + dir, cx, cy), [setLevel]);
   const resetToOverview = useCallback(() => {
-    const a = aspectRef.current;
-    const w = overviewWidth(a);
-    setVb(clampPan({ x: CX - w / 2, y: CY - (w * a) / 2, w, h: w * a }));
+    const { px, py } = sizeRef.current;
+    setVb(homeFor(px, py, insetRef.current));
     setLevelIdx(0);
   }, []);
 
   // Re-fit whenever the container changes shape (rotation, window resize, the
-  // side panel appearing at a breakpoint). The viewBox keeps its current level
-  // and center, but takes the new aspect so nothing gets cropped.
+  // panel appearing at a breakpoint). Keeps the current level and centre, but
+  // takes the new size so nothing gets cropped.
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap || typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      if (!width || !height) return;
-      const a = height / width;
-      if (Math.abs(a - aspectRef.current) < 0.005) return;
-      aspectRef.current = a;
-      setAspect(a);
+      const { width: px, height: py } = entry.contentRect;
+      if (!px || !py) return;
+      const prevSize = sizeRef.current;
+      if (Math.abs(px - prevSize.px) < 1 && Math.abs(py - prevSize.py) < 1) return;
+      sizeRef.current = { px, py };
       setVb((prev) => {
-        const w = overviewWidth(a) * LEVEL_RATIOS[levelRef.current];
-        const h = w * a;
+        const w = fitOverview(px, py, insetRef.current) * LEVEL_RATIOS[levelRef.current];
+        const h = (w * py) / px;
         return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h });
       });
     });
     ro.observe(wrap);
     return () => ro.disconnect();
   }, []);
+
+  // The panel appearing or disappearing changes the usable area, so re-home.
+  useEffect(() => {
+    const { px, py } = sizeRef.current;
+    if (levelRef.current === 0) setVb(homeFor(px, py, insetRight));
+  }, [insetRight]);
 
   // Pan (single pointer) + pinch step-zoom (two pointers) + wheel step-zoom + dblclick step-in.
   useEffect(() => {
@@ -211,5 +229,5 @@ export function useMapView() {
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, levels, overview, detail, setLevel, stepLevel, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, setLevel, stepLevel, resetToOverview };
 }

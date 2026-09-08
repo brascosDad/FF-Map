@@ -1,6 +1,6 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
-import { CPD, MCL, SPN, FOOD } from '../assets/basemapCoords';
 import { BLOBS } from '../assets/basemapBlobs';
+import { BOOTHS } from '../data/booths';
 import { PINS, PIN_COLOR, PIN_R, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
@@ -9,18 +9,20 @@ import { IconAt } from './Icon';
 // rows reading as a single system.
 const TICK = 8;
 
-function boxes(coords, color) {
-  return coords.map(([cx, cy], i) => (
-    <rect
-      key={i}
-      x={cx - TICK / 2}
-      y={cy - TICK / 2}
-      width={TICK}
-      height={TICK}
-      rx={1.6}
-      fill={color}
-      fillOpacity={0.6}
-    />
+function boxes(booths, color, { numbers = false, onTap } = {}) {
+  return booths.map((b) => (
+    <g key={b.id} className={onTap ? 'ff-tap' : undefined}
+       onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
+      <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
+            rx={1.6} fill={color} fillOpacity={0.6} />
+      {/* Generous invisible hit area -- an 8-unit square is an unhittable
+          target on a phone even at the closest zoom. */}
+      {onTap && <rect x={b.x - 9} y={b.y - 9} width={18} height={18} fill="transparent" />}
+      {numbers && (
+        <text x={b.x} y={b.y - 7} fontSize={7} fontWeight={700} fill="#3b4a63"
+              textAnchor="middle" stroke="#fff" strokeWidth={2} paintOrder="stroke">{b.n}</text>
+      )}
+    </g>
   ));
 }
 
@@ -28,16 +30,17 @@ function boxes(coords, color) {
 // collapses to a single blob: filled soft, stroked firm. Organic shape, ordered
 // edge -- and tight enough to its own footprint that it never reads as spilling
 // into the area next door.
-function Blobs({ paths, color }) {
+function Blobs({ paths, color, clip }) {
   return paths.map((d, i) => (
-    <path key={i} d={d} fill={color} fillOpacity={0.28} stroke={color} strokeOpacity={0.55} strokeWidth={2} />
+    <path key={i} d={d} clipPath={clip ? `url(#${clip})` : undefined}
+          fill={color} fillOpacity={0.26} stroke={color} strokeOpacity={0.5} strokeWidth={2} />
   ));
 }
 
 const CLUSTERS = [
-  { id: 'cpd', blobs: BLOBS.cpd, coords: CPD, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
-  { id: 'mcl', blobs: BLOBS.mcl, coords: MCL, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
-  { id: 'spine', blobs: BLOBS.spine, coords: SPN, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
+  { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
+  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
+  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
 
 function Label({ x, y, text }) {
@@ -48,7 +51,7 @@ function Label({ x, y, text }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, detail, gps, onPinClick, onAreaClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, gps, onPinClick, onAreaClick, onBoothClick }) {
   const dim = (cat) => (filter && filter !== cat ? 0.28 : 1);
   const clusterDim = filter ? 0.28 : 1;
 
@@ -64,6 +67,12 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           <filter id="ds" x="-40%" y="-40%" width="180%" height="180%">
             <feDropShadow dx={0} dy={4} stdDeviation={4.3} floodColor="#23385B" floodOpacity={0.3} />
           </filter>
+          {/* The two street markets are clipped to their own street band, taken
+              from the export's stroke geometry: Candler Park Dr is centred on
+              x 411.556 and McLendon on y 789.889, both 28 units wide. A blob
+              physically cannot spill onto the grass or across a kerb. */}
+          <clipPath id="clip-cpd"><rect x={397.556} y={-580} width={28} height={1354} /></clipPath>
+          <clipPath id="clip-mcl"><rect x={-486} y={775.889} width={2308} height={28} /></clipPath>
         </defs>
         <g dangerouslySetInnerHTML={{ __html: TRACE_BASE }} />
 
@@ -74,14 +83,16 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
         <text x={610} y={818} fontSize={15} fill="#8b91a1" textAnchor="middle" stroke="#fff" strokeWidth={3.4} paintOrder="stroke">McLendon Ave NE</text>
 
         {/* Food court: blob at overview, individual stalls once you step in */}
-        {overview ? <Blobs paths={BLOBS.food} color="#C97636" /> : boxes(FOOD, '#C97636')}
+        {showBlobs ? <Blobs paths={BLOBS.food} color="#C97636" />
+          : boxes(BOOTHS.food, '#C97636', { numbers: showNumbers, onTap: onBoothClick })}
         {detail && (
           <text x={872} y={228} fontSize={11} fontWeight={800} fill="#a86f36" textAnchor="middle" stroke="#fff" strokeWidth={3} paintOrder="stroke">FOOD COURT</text>
         )}
 
         {CLUSTERS.map((cl) => (
           <g key={cl.id} className="ff-tap" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
-            {overview ? <Blobs paths={cl.blobs} color={SLATE} /> : boxes(cl.coords, SLATE)}
+            {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
+              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick })}
             <g filter="url(#ds)">
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={PIN_R - 2} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={24} />

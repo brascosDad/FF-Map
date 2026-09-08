@@ -5,44 +5,54 @@ import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
 import Icon from './components/Icon';
+import DevSurround from './components/DevSurround';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
 // same content into a persistent side panel, which is what the desktop
 // wireframe's right panel is for.
 const PANEL_AT = '(min-width: 768px)';
+const DESKTOP_AT = '(min-width: 1180px)';
+const PANEL_W = { tablet: 300, desktop: 380 };
+const GAP = 16; // matches --ff-gap in map.css
 
-function useDocked() {
-  const [docked, setDocked] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia(PANEL_AT).matches
-  );
+function useMedia(query) {
+  const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
   useEffect(() => {
-    const mq = window.matchMedia(PANEL_AT);
-    const on = (e) => setDocked(e.matches);
-    mq.addEventListener('change', on);
-    setDocked(mq.matches);
-    return () => mq.removeEventListener('change', on);
-  }, []);
-  return docked;
+    const mq = window.matchMedia(query);
+    const h = (e) => setOn(e.matches);
+    mq.addEventListener('change', h);
+    setOn(mq.matches);
+    return () => mq.removeEventListener('change', h);
+  }, [query]);
+  return on;
 }
 
 export default function App() {
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, stepLevel, resetToOverview } = useMapView();
+  const docked = useMedia(PANEL_AT);
+  const isDesktop = useMedia(DESKTOP_AT);
+  // The panel floats over a full-bleed map, so tell the map how much of its
+  // right edge is covered and it will fit the festival into what is left.
+  const insetRight = docked ? (isDesktop ? PANEL_W.desktop : PANEL_W.tablet) + GAP * 2 : 0;
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, stepLevel, resetToOverview } =
+    useMapView({ insetRight });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
+  const [openBooth, setOpenBooth] = useState(null);
   const [gps, setGps] = useState(false);
-  const docked = useDocked();
 
   function closeAll() {
     setOpenId(null);
     setOpenArea(null);
+    setOpenBooth(null);
   }
 
   function handlePinClick(pin) {
     if (suppressClickRef.current) return;
     setFilter(null);
     setOpenArea(null);
+    setOpenBooth(null);
     setOpenId(pin.d);
   }
 
@@ -50,7 +60,16 @@ export default function App() {
     if (suppressClickRef.current) return;
     setFilter(null);
     setOpenId(null);
+    setOpenBooth(null);
     setOpenArea(cluster);
+  }
+
+  function handleBoothClick(booth) {
+    if (suppressClickRef.current) return;
+    setFilter(null);
+    setOpenId(null);
+    setOpenArea(null);
+    setOpenBooth(booth);
   }
 
   function handleChipToggle(catId) {
@@ -66,7 +85,7 @@ export default function App() {
   }
 
   function handleBackgroundClick() {
-    if (filter || openId || openArea) {
+    if (filter || openId || openArea || openBooth) {
       setFilter(null);
       closeAll();
     }
@@ -81,11 +100,13 @@ export default function App() {
           wrapRef={wrapRef}
           viewBox={viewBox}
           filter={filter}
-          overview={overview}
+          showBlobs={overview && !isDesktop}
+          showNumbers={detail}
           detail={detail}
           gps={gps}
           onPinClick={handlePinClick}
           onAreaClick={handleAreaClick}
+          onBoothClick={handleBoothClick}
         />
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
@@ -112,8 +133,10 @@ export default function App() {
 
         </div>
 
+        {import.meta.env.DEV && <DevSurround />}
+
         <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
-          <DetailSheet docked={docked} openId={openId} openArea={openArea} onClose={closeAll} />
+          <DetailSheet docked={docked} openId={openId} openArea={openArea} openBooth={openBooth} onClose={closeAll} />
         </div>
       </div>
     </div>
