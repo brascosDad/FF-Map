@@ -31,7 +31,11 @@ const MARGIN = 45;
 const CX = FESTIVAL.x + FESTIVAL.w / 2;
 const CY = FESTIVAL.y + FESTIVAL.h / 2;
 
-const PAN_BOUNDS = { minX: 250, minY: -120, maxX: 1230, maxY: 1020 };
+// Generous now that the ground continues past the old artboard: these only stop
+// you wandering off into empty green, they no longer have to hold the viewBox
+// inside a 1440x900 rectangle. The old tight bounds silently overrode the
+// panel-aware centring below, which is what pushed the festival under the panel.
+const PAN_BOUNDS = { minX: -400, minY: -700, maxX: 1900, maxY: 1650 };
 
 /** Overview viewBox that fits the festival box into a container of this pixel
  *  size. Wide containers are limited by height, tall ones by width -- take
@@ -41,17 +45,18 @@ const PAN_BOUNDS = { minX: 250, minY: -120, maxX: 1230, maxY: 1020 };
  *  panel. The map still paints full-bleed underneath it (that is the Google
  *  Maps look), but the festival is fitted and centred into the part you can
  *  actually see, so nothing important ends up hidden behind the panel. */
-function fitOverview(px, py, insetRight = 0) {
+function fitOverview(px, py, insetRight = 0, zoom = 1) {
   const usable = Math.max(px - insetRight, 120);
   const w = Math.max(
     ((FESTIVAL.w + MARGIN * 2) * px) / usable,
     ((FESTIVAL.h + MARGIN * 2) * px) / py
   );
-  return w;
+  // zoom > 1 draws the map bigger by showing less of it.
+  return w / zoom;
 }
 
-function homeFor(px, py, insetRight = 0) {
-  const w = fitOverview(px, py, insetRight);
+function homeFor(px, py, insetRight = 0, zoom = 1) {
+  const w = fitOverview(px, py, insetRight, zoom);
   const h = (w * py) / px;
   return clampPan({ x: CX - w / 2 + (insetRight * w) / (2 * px), y: CY - h / 2, w, h });
 }
@@ -71,14 +76,16 @@ function clampPan(vb) {
  * (pan + step-zoom), instead of free continuous scaling. Wire mapRef and
  * wrapRef to the <svg> and its wrapping <div> respectively.
  */
-export function useMapView({ insetRight = 0 } = {}) {
+export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   // Container size in px. Seeded phone-shaped so the very first paint is right;
   // the ResizeObserver below corrects it immediately.
   const sizeRef = useRef({ px: 390, py: 800 });
   const insetRef = useRef(insetRight);
   useEffect(() => { insetRef.current = insetRight; }, [insetRight]);
+  const zoomRef = useRef(overviewZoom);
+  useEffect(() => { zoomRef.current = overviewZoom; }, [overviewZoom]);
 
-  const [vb, setVb] = useState(() => homeFor(390, 800, insetRight));
+  const [vb, setVb] = useState(() => homeFor(390, 800, insetRight, overviewZoom));
   const [levelIdx, setLevelIdx] = useState(0);
   const mapRef = useRef(null);
   const wrapRef = useRef(null);
@@ -101,7 +108,7 @@ export function useMapView({ insetRight = 0 } = {}) {
     idx = Math.min(Math.max(idx, 0), LEVEL_RATIOS.length - 1);
     setVb((prev) => {
       const { px, py } = sizeRef.current;
-      const nw = fitOverview(px, py, insetRef.current) * LEVEL_RATIOS[idx];
+      const nw = fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[idx];
       const af = nw / prev.w;
       const p = (cx != null && cy != null) ? toSvg(cx, cy) : { x: prev.x + prev.w / 2, y: prev.y + prev.h / 2 };
       const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: (nw * py) / px };
@@ -113,7 +120,7 @@ export function useMapView({ insetRight = 0 } = {}) {
   const stepLevel = useCallback((dir, cx, cy) => setLevel(levelRef.current + dir, cx, cy), [setLevel]);
   const resetToOverview = useCallback(() => {
     const { px, py } = sizeRef.current;
-    setVb(homeFor(px, py, insetRef.current));
+    setVb(homeFor(px, py, insetRef.current, zoomRef.current));
     setLevelIdx(0);
   }, []);
 
@@ -129,8 +136,18 @@ export function useMapView({ insetRight = 0 } = {}) {
       const prevSize = sizeRef.current;
       if (Math.abs(px - prevSize.px) < 1 && Math.abs(py - prevSize.py) < 1) return;
       sizeRef.current = { px, py };
+      // At the overview, re-home properly: homeFor re-applies the panel-aware
+      // offset that keeps the festival clear of the docked panel. Preserving the
+      // previous centre here (as this used to) silently discarded that offset on
+      // every resize, including the very first one after mount -- which is why
+      // the panel was still sitting on top of the festival's east edge.
+      // Once zoomed in, preserving the centre is the right behaviour.
+      if (levelRef.current === 0) {
+        setVb(homeFor(px, py, insetRef.current, zoomRef.current));
+        return;
+      }
       setVb((prev) => {
-        const w = fitOverview(px, py, insetRef.current) * LEVEL_RATIOS[levelRef.current];
+        const w = fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[levelRef.current];
         const h = (w * py) / px;
         return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h });
       });
@@ -142,8 +159,8 @@ export function useMapView({ insetRight = 0 } = {}) {
   // The panel appearing or disappearing changes the usable area, so re-home.
   useEffect(() => {
     const { px, py } = sizeRef.current;
-    if (levelRef.current === 0) setVb(homeFor(px, py, insetRight));
-  }, [insetRight]);
+    if (levelRef.current === 0) setVb(homeFor(px, py, insetRight, overviewZoom));
+  }, [insetRight, overviewZoom]);
 
   // Pan (single pointer) + pinch step-zoom (two pointers) + wheel step-zoom + dblclick step-in.
   useEffect(() => {

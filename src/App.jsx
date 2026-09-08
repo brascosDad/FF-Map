@@ -15,6 +15,9 @@ const PANEL_AT = '(min-width: 768px)';
 const DESKTOP_AT = '(min-width: 1180px)';
 const PANEL_W = { tablet: 300, desktop: 380 };
 const GAP = 16; // matches --ff-gap in map.css
+// Phone screens get the map drawn ~10% larger at the overview. The festival
+// still fits, but only just -- about 10 map units (~6px) of margin either side.
+const MOBILE_OVERVIEW_ZOOM = 1.1;
 
 function useMedia(query) {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -35,7 +38,7 @@ export default function App() {
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? (isDesktop ? PANEL_W.desktop : PANEL_W.tablet) + GAP * 2 : 0;
   const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, stepLevel, resetToOverview } =
-    useMapView({ insetRight });
+    useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);

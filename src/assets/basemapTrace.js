@@ -16,8 +16,16 @@
 // areas" is a stroke-only path with no fill attribute of its own; in the source
 // file they inherit fill:none from the root <svg>. Injected into a bare <g> they
 // would default to black and flood the map.
-export const TRACE_BASE = `<g fill="none" clip-path="url(#clip0_5906_4939)" opacity="0.75">
-<rect width="1440" height="900" fill="#ADD29E"/>
+//
+// The map is NOT clipped to the export's 1440x900 artboard, and the ground rect
+// runs far beyond it. That is deliberate: clipping left dead bands above and
+// below the map on a phone, where the viewBox is taller than the artboard.
+// Letting the ground continue means there is always map under the viewport, the
+// way Google Maps behaves. Several features in the source already extend past
+// the artboard and now read correctly -- McLendon runs x -486..1822, Candler
+// Park Dr y -580..774, Mell Ave down to y 1282, Marlbrook out to x 1787.
+export const TRACE_BASE = `<g fill="none" opacity="0.75">
+<rect x="-1600" y="-1600" width="4640" height="4100" fill="#ADD29E"/>
 <path id="candler park outline" d="M414.5 789.278V-581.444H1206.5V11.5C1220.76 20.8704 1236.69 42.3779 1235.22 61.4445C1233.76 80.5112 1255.8 145.167 1267 175.111C1255.19 182.445 1231.31 203.711 1230.33 230.111C1229.11 263.111 1263.94 279.611 1279.83 306.5C1295.72 333.389 1342.78 418.945 1237.06 416.5C1184.5 415.285 1140 506 1140 530.5V789.278H414.5Z" fill="#ADD29E"/>
 <path id="festival outline" d="M411.556 797.222V227C478 230 474.056 221.311 498.5 205.667C529.056 186.111 559.445 165.333 601.611 164.111C626.534 163.389 654.372 172.872 676.778 195.278C690.222 208.722 696.945 233.166 702.445 192.222L702.478 191.97C704.52 176.765 708.33 148.391 734.833 140.277C764.778 131.11 787.389 149.444 803.278 161.666C816.745 172.025 805.472 187.609 820.389 205.667C832 219.722 843 219.111 861.945 229.5L880.889 187.333C880.482 182.852 877.929 178.233 884.556 161.666C890.422 147 914.5 140.278 935.278 153.722C950.556 163.608 950.251 184.886 943.833 197.722C937.722 209.944 923.463 215.852 915.111 213.611L899.222 248.444L910.833 257L887 315.667C895.759 323.611 911.445 341.333 915.111 368.833C922.77 426.278 902.889 500.171 902.889 532.611C902.889 577.222 961.556 660.897 1008 705.555C1033.42 730 1037.33 760.555 1037.33 797.222H411.556Z" fill="#F7F7F7"/>
 <g id="paved areas">
@@ -56,7 +64,6 @@ export const TRACE_BASE = `<g fill="none" clip-path="url(#clip0_5906_4939)" opac
 </g>
 </g>
 <defs>
-<clipPath id="clip0_5906_4939"><rect width="1440" height="900" fill="white"/></clipPath>
 <clipPath id="clip1_5906_4939"><rect x="483.667" y="551.556" width="119.778" height="47.6667" fill="white"/></clipPath>
 </defs>`;
 
