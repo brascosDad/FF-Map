@@ -277,9 +277,13 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   }, [setLevel, stepLevel]);
 
   const viewBoxStr = `${vb.x} ${vb.y} ${vb.w} ${vb.h}`;
+  // Map units per CSS pixel. Anything that should hold a constant SCREEN size
+  // (pins, labels) multiplies its pixel size by this; anything that represents
+  // real ground (booth footprints, blobs, streets) does not.
+  const unitsPerPx = vb.w / (sizeRef.current.px || 1);
   // Semantic swaps tie to a level, not a pixel width.
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, setLevel, stepLevel, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, resetToOverview };
 }

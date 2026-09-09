@@ -147,9 +147,34 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: booth numbers at Detail`, numbersAtDetail.some((t) => /^\d+$/.test(t)));
   await zoomOut(p);
   const atBooths = await p.locator('svg.ff-map text').allTextContents();
-  check(`${name}: pin labels return at Booths level`,
-    atBooths.some((t) => /Kidlandia|Main Stage|Art Market/.test(t)));
+  check(`${name}: pin labels stay off at every level`,
+    !atBooths.some((t) => /Kidlandia|Main Stage|Acoustic|Food Court|Art Market/.test(t)), atBooths.join(' | '));
   check(`${name}: no booth numbers at Booths level`, !atBooths.some((t) => /^\d+$/.test(t)));
+
+  // ---- pins hold a constant screen size across zooms ----
+  await safe(`${name}: pin size constant across zoom`, async () => {
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForTimeout(800);
+    // measure a category pin specifically -- area markers are a separate class
+    const sizeAt = async () => {
+      const b = await p.locator('svg.ff-map g.ff-pin circle').first().boundingBox();
+      return b ? b.width : null;
+    };
+    const s0 = await sizeAt();
+    await zoomIn(p);
+    const s1 = await sizeAt();
+    await zoomIn(p);
+    const s2 = await sizeAt();
+    const sizes = [s0, s1, s2].filter(Boolean);
+    const spread = Math.max(...sizes) - Math.min(...sizes);
+    check(`${name}: pin size constant across zoom`, spread <= 2,
+      sizes.map((v) => v.toFixed(0)).join(' / ') + 'px');
+    check(`${name}: pin meets the 40px touch target`, Math.min(...sizes) >= 39,
+      `${Math.min(...sizes).toFixed(0)}px`);
+    const area = await p.locator('svg.ff-map g.ff-area circle').first().boundingBox();
+    check(`${name}: area marker also meets 40px`, !!area && area.width >= 39,
+      area ? `${area.width.toFixed(0)}px` : 'none');
+  });
 
   // ---- taps ----
   // reload first: the pan stress-test above leaves the map in a corner, so

@@ -53,10 +53,9 @@ export const PIN_COLOR = {
   bikevalet: '#6E7C93',
 };
 
-// Marker radius in map units. The export draws its own markers at r 17.25-21.27;
-// this sits at the top of that range so the tap target survives the overview
-// zoom level.
-export const PIN_R = 22;
+// NOTE: pin size now lives in MapCanvas as PIN_PX, a CSS-pixel constant scaled
+// by the current zoom, so a pin holds one physical size at every level. It is
+// a control, not a piece of ground -- and 40px is the touch-target floor.
 
 export const SLATE = '#47597A';
 export const NAVY = '#23385B';

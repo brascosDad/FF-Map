@@ -1,7 +1,7 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS } from '../data/booths';
-import { PINS, PIN_COLOR, PIN_R, SLATE } from '../assets/pins';
+import { PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
 // Side of one booth / food-truck square, in map units. The export draws its own
@@ -9,24 +9,32 @@ import { IconAt } from './Icon';
 // rows reading as a single system.
 const TICK = 8;
 
+// Screen-constant sizes, in CSS pixels. These are multiplied by unitsPerPx at
+// render so a pin is the same physical size at every zoom -- it is a control,
+// not a piece of ground. 40px is the touch-target floor.
+const PIN_PX = 40;      // pin diameter
+const PIN_ICON_PX = 22;
+const CLUSTER_PX = 40;  // area markers are tappable too -- same floor
+const STREET_PX = 13;
+const NUMBER_PX = 9;
+
 // Street labels: dark, no halo, sitting in the street band. Deliberately not the
 // category slate -- these are ground, not content. Size is shared so the two
 // street names cannot drift apart.
 const STREET_LABEL = '#5C6570';
-const STREET_SIZE = 15;
 
-function boxes(booths, color, { numbers = false, onTap } = {}) {
+function boxes(booths, color, { numbers = false, onTap, k = 1 } = {}) {
   return booths.map((b) => (
     <g key={b.id} className={onTap ? 'ff-tap' : undefined}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
             rx={1.6} fill={color} fillOpacity={0.6} />
-      {/* Generous invisible hit area -- an 8-unit square is an unhittable
-          target on a phone even at the closest zoom. */}
-      {onTap && <rect x={b.x - 9} y={b.y - 9} width={18} height={18} fill="transparent" />}
+      {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
+          overlap the neighbours and make the wrong booth win the tap. */}
+      {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
       {numbers && (
-        <text x={b.x} y={b.y - 7} fontSize={7} fontWeight={700} fill="#3b4a63"
-              textAnchor="middle" stroke="#fff" strokeWidth={2} paintOrder="stroke">{b.n}</text>
+        <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill="#3b4a63"
+              textAnchor="middle" stroke="#fff" strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
       )}
     </g>
   ));
@@ -49,15 +57,11 @@ const CLUSTERS = [
   { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
 
-function Label({ x, y, text }) {
-  return (
-    <text x={x} y={y + PIN_R + 22} fontSize={17} fontWeight={700} fill="#33445f" stroke="#fff" strokeWidth={5} paintOrder="stroke" textAnchor="middle">
-      {text}
-    </text>
-  );
-}
-
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNames, showNumbers, detail, gps, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, gps, unitsPerPx = 1, onPinClick, onAreaClick, onBoothClick }) {
+  // k converts a CSS pixel into map units at the current zoom.
+  const k = unitsPerPx;
+  const pinR = (PIN_PX / 2) * k;
+  const clusterR = (CLUSTER_PX / 2) * k;
   const dim = (cat) => (filter && filter !== cat ? 0.28 : 1);
   const clusterDim = filter ? 0.28 : 1;
 
@@ -71,7 +75,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
       >
         <defs>
           <filter id="ds" x="-40%" y="-40%" width="180%" height="180%">
-            <feDropShadow dx={0} dy={4} stdDeviation={4.3} floodColor="#23385B" floodOpacity={0.3} />
+            <feDropShadow dx={0} dy={2 * k} stdDeviation={2.2 * k} floodColor="#23385B" floodOpacity={0.3} />
           </filter>
           {/* The two street markets are clipped to their own street band, taken
               from the export's stroke geometry: Candler Park Dr is centred on
@@ -93,25 +97,24 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
             mistake. The cost is that the tail clips at the mobile overview;
             that is a deliberate trade, since panning or one zoom step brings
             it back and nobody mistakes which street it is. */}
-        <text x={411.5} y={130} fontSize={STREET_SIZE} fill={STREET_LABEL} textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
-        <text x={1015} y={795} fontSize={STREET_SIZE} fill={STREET_LABEL} textAnchor="start">McLendon Ave</text>
+        <text x={411.5} y={130} fontSize={STREET_PX * k} fill={STREET_LABEL} textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
+        <text x={1015} y={795} fontSize={STREET_PX * k} fill={STREET_LABEL} textAnchor="start">McLendon Ave</text>
 
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color="#C97636" />
-          : boxes(BOOTHS.food, '#C97636', { numbers: showNumbers, onTap: onBoothClick })}
+          : boxes(BOOTHS.food, '#C97636', { numbers: showNumbers, onTap: onBoothClick, k })}
         {detail && (
-          <text x={872} y={228} fontSize={11} fontWeight={800} fill="#a86f36" textAnchor="middle" stroke="#fff" strokeWidth={3} paintOrder="stroke">FOOD COURT</text>
+          <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill="#a86f36" textAnchor="middle" stroke="#fff" strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
         )}
 
         {CLUSTERS.map((cl) => (
-          <g key={cl.id} className="ff-tap" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
+          <g key={cl.id} className="ff-tap ff-area" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
-              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick })}
+              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k })}
             <g filter="url(#ds)">
-              <circle cx={cl.mk[0]} cy={cl.mk[1]} r={PIN_R - 2} fill={SLATE} />
-              <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={24} />
+              <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
+              <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />
             </g>
-            {showNames && <Label x={cl.mk[0]} y={cl.mk[1]} text={cl.label || cl.shortName} />}
           </g>
         ))}
 
@@ -120,20 +123,19 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
           const color = PIN_COLOR[p.c] || '#23385B';
           const o = dim(p.c);
           return (
-            <g key={i} className="ff-tap" opacity={o} onClick={() => onPinClick(p)}>
+            <g key={i} className="ff-tap ff-pin" opacity={o} onClick={() => onPinClick(p)}>
               <g filter="url(#ds)">
-                <circle cx={p.x} cy={p.y} r={PIN_R} fill={color} />
-                <IconAt name={p.c} x={p.x} y={p.y} size={26} />
+                <circle cx={p.x} cy={p.y} r={pinR} fill={color} />
+                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
               </g>
-              {showNames && p.label && <Label x={p.x} y={p.y} text={p.label} />}
             </g>
           );
         })}
 
         {gps && (
           <g>
-            <circle cx={725} cy={600} r={33} fill="#E89370" opacity={0.22} />
-            <circle cx={725} cy={600} r={15} fill="#E89370" stroke="#fff" strokeWidth={5} />
+            <circle cx={725} cy={600} r={30 * k} fill="#E89370" opacity={0.22} />
+            <circle cx={725} cy={600} r={13 * k} fill="#E89370" stroke="#fff" strokeWidth={4 * k} />
           </g>
         )}
       </svg>
