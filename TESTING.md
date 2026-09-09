@@ -150,22 +150,15 @@ Drag the window edge slowly through each threshold.
 
 ---
 
-## 6. Colour picker (temporary)
+## 6. Surround colour — resolved, nothing to test
 
-- [ ] Click each of the 7 swatches — surround updates instantly.
-- [ ] Type a hex directly (with or without `#`).
-- [ ] Use the native colour well for free choice.
-- [ ] Reload — your choice persists.
-- [ ] `×` collapses it to a small 🎨 button; clicking that reopens it.
-- [ ] Try **E (park green)** and **F (lighter green)** on **desktop** — this is
-      your "maybe it just becomes green" idea. On desktop the surround only
-      shows as thin edges, so green may make it read as one continuous map.
-- [ ] Try the same on **mobile**, where the surround is a large band top and
-      bottom. The right answer may differ per breakpoint — worth knowing.
+The dev colour picker is gone. It became moot once the map's ground was
+extended past every viewport: there is no longer a band to tint. `--ff-surround`
+survives in `map.css` for first paint and for the narrow window below 768px
+where the app is capped at 480px and centred.
 
-**When you've decided, just tell me the hex and I'll bake it in and delete the picker.**
-
----
+`?dev` on the preview URL still works — it just does nothing at the moment. Keep
+the bookmark; if we add another dev-only control it will hang off the same flag.
 
 ## 7. Data honesty check
 
@@ -186,6 +179,5 @@ The point here is that nothing invented is presented as real.
 - "Main Stage" and "Food Court" labels collide at Overview on narrow screens.
 - Zoom pill still says "Overview" on desktop even though that level now shows
   squares — the label and the behaviour have drifted apart.
-- The surround still shows as a band on mobile; that's the colour decision above.
 - Booth counts: Candler Park Dr draws 74 squares against a stated 76, and the
   in-park market 62 against 69. McLendon matches exactly at 27.

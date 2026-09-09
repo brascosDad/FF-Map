@@ -5,7 +5,6 @@ import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
 import Icon from './components/Icon';
-import DevSurround, { devToolsRequested } from './components/DevSurround';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
@@ -136,8 +135,6 @@ export default function App() {
         </button>
 
         </div>
-
-        {devToolsRequested() && <DevSurround />}
 
         <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
           <DetailSheet docked={docked} openId={openId} openArea={openArea} openBooth={openBooth} onClose={closeAll} />
