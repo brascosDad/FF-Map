@@ -22,7 +22,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // viewBox would crop one of them badly. Level 0 is computed to fit the whole
 // festival box in whatever shape it is given, and 1 and 2 step in from there.
 export const LEVEL_RATIOS = [1, 0.565, 0.315];
-export const LEVEL_LABELS = ['Overview', 'Booths', 'Detail'];
+// (The level names live in the comment above rather than an exported array --
+// nothing renders them now that the zoom readout is gone.)
 
 // The festival footprint in map space, plus breathing room so the McLendon x
 // Candler Park Dr corner never sits flush against the edge.
@@ -31,11 +32,23 @@ const MARGIN = 45;
 const CX = FESTIVAL.x + FESTIVAL.w / 2;
 const CY = FESTIVAL.y + FESTIVAL.h / 2;
 
-// Generous now that the ground continues past the old artboard: these only stop
-// you wandering off into empty green, they no longer have to hold the viewBox
-// inside a 1440x900 rectangle. The old tight bounds silently overrode the
-// panel-aware centring below, which is what pushed the festival under the panel.
-const PAN_BOUNDS = { minX: -400, minY: -700, maxX: 1900, maxY: 1650 };
+// You can pan around the festival, and nowhere else. This is not a general
+// street map: Callan Circle and the neighbourhood exist to give the desktop
+// view context, not to be explored. REGION is the only ground the viewport is
+// ever allowed over -- the festival footprint plus a little slack.
+//
+// Deliberately ONE region rather than a table of per-zoom limits. The reachable
+// pan range already scales with the zoom on its own: the constraint is that the
+// viewport stays inside REGION, so a wide overview viewport has almost no room
+// to move while a close one can roam the whole festival. A per-level table would
+// restate the same thing and drift out of sync with LEVEL_RATIOS.
+const PAN_SLACK = 30;
+const REGION = {
+  x0: FESTIVAL.x - PAN_SLACK,
+  y0: FESTIVAL.y - PAN_SLACK,
+  x1: FESTIVAL.x + FESTIVAL.w + PAN_SLACK,
+  y1: FESTIVAL.y + FESTIVAL.h + PAN_SLACK,
+};
 
 /** Overview viewBox that fits the festival box into a container of this pixel
  *  size. Wide containers are limited by height, tall ones by width -- take
@@ -58,16 +71,38 @@ function fitOverview(px, py, insetRight = 0, zoom = 1) {
 function homeFor(px, py, insetRight = 0, zoom = 1) {
   const w = fitOverview(px, py, insetRight, zoom);
   const h = (w * py) / px;
-  return clampPan({ x: CX - w / 2 + (insetRight * w) / (2 * px), y: CY - h / 2, w, h });
+  // Placement is entirely clampPan's job now -- it centres on the usable
+  // viewport, which is what keeps the festival clear of the panel.
+  return clampPan({ x: CX - w / 2, y: CY - h / 2, w, h }, px, insetRight);
 }
 
 const STEP_COOLDOWN = 420;
 
-function clampPan(vb) {
-  const loX = PAN_BOUNDS.minX, hiX = PAN_BOUNDS.maxX - vb.w;
-  vb.x = hiX < loX ? (loX + hiX) / 2 : Math.min(Math.max(vb.x, loX), hiX);
-  const loY = PAN_BOUNDS.minY, hiY = PAN_BOUNDS.maxY - vb.h;
-  vb.y = hiY < loY ? (loY + hiY) / 2 : Math.min(Math.max(vb.y, loY), hiY);
+/**
+ * Hold the viewport over REGION.
+ *
+ * The comparison is against the USABLE viewport -- the part not hidden behind
+ * the floating panel -- so the festival is never pushed under it. When the
+ * usable viewport is larger than REGION the region is centred in it (there is
+ * nothing to pan to); when smaller, it is clamped so it cannot leave.
+ *
+ * Because the viewBox aspect is kept equal to the container aspect, the viewBox
+ * and the visible area are the same rectangle, so this can clamp vb directly.
+ */
+function clampPan(vb, px = 1, insetRight = 0) {
+  const insetMap = px > 0 ? (insetRight * vb.w) / px : 0;
+  const usableW = Math.max(vb.w - insetMap, 1);
+  const regionW = REGION.x1 - REGION.x0;
+  const regionH = REGION.y1 - REGION.y0;
+
+  vb.x = usableW >= regionW
+    ? REGION.x0 - (usableW - regionW) / 2
+    : Math.min(Math.max(vb.x, REGION.x0), REGION.x1 - usableW);
+
+  vb.y = vb.h >= regionH
+    ? REGION.y0 - (vb.h - regionH) / 2
+    : Math.min(Math.max(vb.y, REGION.y0), REGION.y1 - vb.h);
+
   return vb;
 }
 
@@ -112,7 +147,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       const af = nw / prev.w;
       const p = (cx != null && cy != null) ? toSvg(cx, cy) : { x: prev.x + prev.w / 2, y: prev.y + prev.h / 2 };
       const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: (nw * py) / px };
-      return clampPan(next);
+      return clampPan(next, px, insetRef.current);
     });
     setLevelIdx(idx);
   }, [toSvg]);
@@ -149,7 +184,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       setVb((prev) => {
         const w = fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[levelRef.current];
         const h = (w * py) / px;
-        return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h });
+        return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h }, px, insetRef.current);
       });
     });
     ro.observe(wrap);
@@ -183,7 +218,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         const scale = Math.max(r.width / vbRef.current.w, r.height / vbRef.current.h);
         const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
         if (Math.abs(dx) + Math.abs(dy) > 2) dragMoved = true;
-        setVb((cur) => clampPan({ ...cur, x: cur.x - dx / scale, y: cur.y - dy / scale }));
+        setVb((cur) => clampPan({ ...cur, x: cur.x - dx / scale, y: cur.y - dy / scale }, sizeRef.current.px, insetRef.current));
       } else if (pointers.size === 2) {
         const pts = [...pointers.values()];
         const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);

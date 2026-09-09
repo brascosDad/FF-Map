@@ -1,4 +1,21 @@
-# Fall Fest Map — manual test pass
+# Fall Fest Map — test pass
+
+## Automated first
+
+```
+npm install        # one time — playwright was added as a dev dependency
+npm run test:e2e
+```
+
+`scripts/e2e.mjs` runs 79 assertions across mobile / tablet / desktop: zoom-level
+semantics, pan clamping at every level, tap targets, drag-vs-tap, filters, panel
+geometry, and a check that nothing renders "undefined". It exits non-zero on
+failure, and drops screenshots in `.e2e-out/`.
+
+It cannot judge whether the map LOOKS right, and it deliberately does not assert
+on the cases marked **?** below — those are design decisions, not bugs.
+
+## Then by hand
 
 Run in `npm run dev`. Where a case says **BUG**, it's a known open issue, not
 something you need to find. Where it says **?**, I genuinely don't know what the

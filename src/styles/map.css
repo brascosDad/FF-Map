@@ -52,30 +52,32 @@
 .chip.on .ci { color: var(--ff-cream); }
 
 .float { position: absolute; z-index: 3; }
+
+/* Zoom is a segmented control: one card, one border, one shadow, with the two
+   buttons sharing a hairline divider. Locate is the same footprint and the same
+   corner radius, set apart by a gap -- so the pair reads as "one control that
+   does two things" and "a separate control", rather than three loose chips. */
+.zoomctl {
+  right: 12px; bottom: 74px; display: flex; flex-direction: column;
+  background: #fff; border: 1px solid #e0dccb; border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15); overflow: hidden;
+}
+.zbtn {
+  width: 42px; height: 42px; background: none; border: none;
+  display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700;
+  color: var(--ff-navy); cursor: pointer; line-height: 1; padding: 0;
+}
+.zbtn + .zbtn { border-top: 1px solid #ece8dc; }
+.zbtn:active { background: #f0ede4; }
+.zbtn.disabled { opacity: .35; } /* deliberately keeps pointer-events on — clamped in JS, not visually blocked */
+
 .locate {
-  right: 12px; bottom: 16px; width: 44px; height: 44px; border-radius: 50%; background: #fff;
+  right: 12px; bottom: 16px; width: 42px; height: 42px; border-radius: 12px; background: #fff;
   border: 1px solid #e0dccb; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: pointer; padding: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15); cursor: pointer; padding: 0;
 }
 .locate.on { background: var(--ff-coral); border-color: var(--ff-coral); }
 .locate.on svg { color: #fff; }
-
-.zoomctl { right: 12px; bottom: 68px; display: flex; flex-direction: column; gap: 6px; }
-.zbtn {
-  width: 36px; height: 36px; border-radius: 10px; background: #fff; border: 1px solid #e0dccb;
-  display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700;
-  color: var(--ff-navy); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.15); line-height: 1; padding: 0;
-}
-.zbtn:active { background: #f0ede4; }
-.zbtn.disabled { opacity: .35; } /* deliberately keeps pointer-events on — clamped in JS, not visually blocked */
-.zlevel {
-  left: 12px; top: 96px; display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,.95);
-  border: 1px solid #e0dccb; border-radius: 14px; padding: 6px 11px; font-size: 11.5px; font-weight: 700;
-  color: var(--ff-navy); box-shadow: 0 2px 8px rgba(0,0,0,.12); pointer-events: none;
-}
-.zdots { display: flex; gap: 4px; }
-.zdot { width: 6px; height: 6px; border-radius: 50%; background: #d7d2c2; }
-.zdot.on { background: var(--ff-coral); }
 
 .sheet {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #fff; border-radius: 20px 20px 0 0;
@@ -140,7 +142,6 @@
 .ff-screen.docked .topbar { background: none; padding: var(--ff-gap); }
 
 .ff-screen.docked .zoomctl, .ff-screen.docked .locate { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
-.ff-screen.docked .zlevel { left: var(--ff-gap); }
 
 /* Panel resting state */
 .panel-list { margin: 14px 0 0; display: flex; flex-direction: column; gap: 2px; }
