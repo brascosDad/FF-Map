@@ -10,8 +10,10 @@ import { IconAt } from './Icon';
 const TICK = 8;
 
 // Street labels: dark, no halo, sitting in the street band. Deliberately not the
-// category slate -- these are ground, not content.
+// category slate -- these are ground, not content. Size is shared so the two
+// street names cannot drift apart.
 const STREET_LABEL = '#5C6570';
+const STREET_SIZE = 15;
 
 function boxes(booths, color, { numbers = false, onTap } = {}) {
   return booths.map((b) => (
@@ -84,12 +86,15 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
             not redundant with the pin icons or the panel key. Streets only:
             the pool reads clearly enough from its own blue shape.
             Both streets are set the same way: dark, no white halo, sitting
-            inside the street band itself. McLendon sits east of the Acoustic
-            stage so it clears the booth rows -- centred in that gap, because
-            the gap is only 105 map units wide and the spelled-out "McLendon
-            Ave Northeast" needed 175, which clipped off a phone screen. */}
-        <text x={411.5} y={130} fontSize={15} fill={STREET_LABEL} textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
-        <text x={1012} y={795} fontSize={15} fill={STREET_LABEL} textAnchor="middle">McLendon Ave</text>
+            inside the street band itself, at STREET_SIZE.
+
+            McLendon starts 55 units clear of the Acoustic pin rather than
+            butting against it -- an icon sitting on a street name reads as a
+            mistake. The cost is that the tail clips at the mobile overview;
+            that is a deliberate trade, since panning or one zoom step brings
+            it back and nobody mistakes which street it is. */}
+        <text x={411.5} y={130} fontSize={STREET_SIZE} fill={STREET_LABEL} textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
+        <text x={1015} y={795} fontSize={STREET_SIZE} fill={STREET_LABEL} textAnchor="start">McLendon Ave</text>
 
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color="#C97636" />
