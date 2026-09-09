@@ -80,14 +80,14 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         </defs>
         <g dangerouslySetInnerHTML={{ __html: TRACE_BASE }} />
 
-        {/* Street and place names. These survive at every zoom -- they are
-            wayfinding, not redundant with the pin icons or the panel key.
+        {/* Street names. These survive at every zoom -- they are wayfinding,
+            not redundant with the pin icons or the panel key. Streets only:
+            the pool reads clearly enough from its own blue shape.
             Both streets are set the same way: dark, no white halo, sitting
             inside the street band itself. McLendon sits east of the Acoustic
             stage so it clears the booth rows -- centred in that gap, because
             the gap is only 105 map units wide and the spelled-out "McLendon
             Ave Northeast" needed 175, which clipped off a phone screen. */}
-        <text x={758} y={194} fontSize={16} fontWeight={500} fill={STREET_LABEL} textAnchor="middle">Pool</text>
         <text x={411.5} y={130} fontSize={15} fill={STREET_LABEL} textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
         <text x={1012} y={795} fontSize={15} fill={STREET_LABEL} textAnchor="middle">McLendon Ave</text>
 
