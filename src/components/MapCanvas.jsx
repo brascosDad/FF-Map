@@ -9,6 +9,10 @@ import { IconAt } from './Icon';
 // rows reading as a single system.
 const TICK = 8;
 
+// Street labels: dark, no halo, sitting in the street band. Deliberately not the
+// category slate -- these are ground, not content.
+const STREET_LABEL = '#5C6570';
+
 function boxes(booths, color, { numbers = false, onTap } = {}) {
   return booths.map((b) => (
     <g key={b.id} className={onTap ? 'ff-tap' : undefined}
@@ -51,7 +55,7 @@ function Label({ x, y, text }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, gps, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNames, showNumbers, detail, gps, onPinClick, onAreaClick, onBoothClick }) {
   const dim = (cat) => (filter && filter !== cat ? 0.28 : 1);
   const clusterDim = filter ? 0.28 : 1;
 
@@ -76,11 +80,14 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         </defs>
         <g dangerouslySetInnerHTML={{ __html: TRACE_BASE }} />
 
-        {/* Street / feature names. The export carries these as outlined text; they
-            are re-set as live <text> here so they stay crisp and restyleable. */}
-        <text x={758} y={194} fontSize={16} fontWeight={500} fill="#7f8b78" textAnchor="middle" stroke="#fff" strokeWidth={3.6} paintOrder="stroke">Pool</text>
-        <text x={411} y={130} fontSize={15} fill="#8b91a1" textAnchor="middle" stroke="#fff" strokeWidth={3.4} paintOrder="stroke" transform="rotate(-90 411 130)">Candler Park Dr NE</text>
-        <text x={610} y={818} fontSize={15} fill="#8b91a1" textAnchor="middle" stroke="#fff" strokeWidth={3.4} paintOrder="stroke">McLendon Ave NE</text>
+        {/* Street and place names. These survive at every zoom -- they are
+            wayfinding, not redundant with the pin icons or the panel key.
+            Both streets are set the same way: dark, no white halo, sitting
+            inside the street band itself. McLendon is placed east of the
+            Acoustic stage so it clears the booth rows. */}
+        <text x={758} y={194} fontSize={16} fontWeight={500} fill={STREET_LABEL} textAnchor="middle">Pool</text>
+        <text x={411.5} y={130} fontSize={15} fill={STREET_LABEL} textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr Northeast</text>
+        <text x={995} y={795} fontSize={15} fill={STREET_LABEL} textAnchor="start">McLendon Ave Northeast</text>
 
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color="#C97636" />
@@ -97,7 +104,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={PIN_R - 2} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={24} />
             </g>
-            {(cl.label || detail) && <Label x={cl.mk[0]} y={cl.mk[1]} text={cl.label || cl.shortName} />}
+            {showNames && <Label x={cl.mk[0]} y={cl.mk[1]} text={cl.label || cl.shortName} />}
           </g>
         ))}
 
@@ -111,7 +118,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
                 <circle cx={p.x} cy={p.y} r={PIN_R} fill={color} />
                 <IconAt name={p.c} x={p.x} y={p.y} size={26} />
               </g>
-              {p.label && <Label x={p.x} y={p.y} text={p.label} />}
+              {showNames && p.label && <Label x={p.x} y={p.y} text={p.label} />}
             </g>
           );
         })}

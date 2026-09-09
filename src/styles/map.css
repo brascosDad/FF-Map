@@ -25,9 +25,15 @@
 
 .topbar {
   position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding: 12px 12px 14px;
-  background: linear-gradient(180deg, rgba(232,237,242,.97) 52%, rgba(232,237,242,0));
+  background: none; /* map runs under it; the controls carry their own chips */
 }
 .tbrow { display: flex; align-items: center; gap: 10px; margin: 0 2px 10px; }
+/* With the scrim gone the brand sits directly on the map, so it carries its own
+   chip -- same treatment as the filter pills and the zoom readout. */
+.brandline {
+  background: rgba(255,255,255,.92); border: 1px solid #dfe4ea;
+  padding: 6px 12px; border-radius: 18px;
+}
 .brandline { font-size: 13px; color: var(--ff-navy); margin: 0; }
 .brandline b { font-weight: 800; }
 .brandline span { color: #8a8f7f; font-weight: 500; }
@@ -136,10 +142,7 @@
 /* No grey header band once the map is full-bleed -- the controls float directly
    on the map, so the scrim would just be a stripe across the park. */
 .ff-screen.docked .topbar { background: none; padding: var(--ff-gap); }
-.ff-screen.docked .brandline {
-  background: rgba(255,255,255,.92); border: 1px solid #dfe4ea;
-  padding: 6px 12px; border-radius: 18px;
-}
+
 .ff-screen.docked .zoomctl, .ff-screen.docked .locate { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
 .ff-screen.docked .zlevel { left: var(--ff-gap); }
 

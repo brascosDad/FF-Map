@@ -104,6 +104,7 @@ export default function App() {
           viewBox={viewBox}
           filter={filter}
           showBlobs={overview && !isDesktop}
+          showNames={!overview}
           showNumbers={detail}
           detail={detail}
           gps={gps}
