@@ -1,7 +1,8 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS } from '../data/booths';
-import { NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { AREAS } from '../data/areas';
+import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
 // Side of one booth / food-truck square, in map units. The export draws its own
@@ -60,13 +61,21 @@ function Blobs({ paths, color, clip }) {
   ));
 }
 
-const CLUSTERS = [
-  { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
-  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
-  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
-];
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, onPinClick, onAreaClick, onBoothClick }) {
+// What "selected" looks like on a marker. A booth turns navy, per the system --
+// it has no colour of its own to lose. A pin cannot: its hue IS its category,
+// so it keeps it and takes a navy ring instead. Selecting a category rings every
+// pin in it, which is the honest answer to "where are the restrooms".
+function SelectRing({ x, y, r, k }) {
+  return (
+    <>
+      <circle cx={x} cy={y} r={r + 4.5 * k} fill="none" stroke={CREAM} strokeWidth={5 * k} />
+      <circle cx={x} cy={y} r={r + 4.5 * k} fill="none" stroke={NAVY} strokeWidth={2.5 * k} />
+    </>
+  );
+}
+
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   const pinR = (PIN_PX / 2) * k;
@@ -117,7 +126,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
           <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill={FOOD_LABEL} textAnchor="middle" stroke={MAP_HALO} strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
         )}
 
-        {CLUSTERS.map((cl) => (
+        {AREAS.map((cl) => (
           <g key={cl.id} className="ff-tap ff-area" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
               : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
@@ -125,6 +134,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />
             </g>
+            {cl.id === selectedAreaId && <SelectRing x={cl.mk[0]} y={cl.mk[1]} r={clusterR} k={k} />}
           </g>
         ))}
 
@@ -138,6 +148,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
                 <circle cx={p.x} cy={p.y} r={pinR} fill={color} />
                 <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
               </g>
+              {p.d === selectedPoiId && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}
             </g>
           );
         })}
@@ -147,4 +158,3 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
   );
 }
 
-export { CLUSTERS };

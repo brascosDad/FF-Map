@@ -90,6 +90,34 @@ export default function App() {
     setOpenBooth(booth);
   }
 
+  /**
+   * A row in the docked directory. Three shapes, because three things are being
+   * pointed at:
+   *   poi   one pin -- fly to it and open its detail
+   *   cat   several pins of one category (restrooms, beer) -- there is no single
+   *         point to fly to, so filter the map to them and open the shared
+   *         detail; the map stays where it is rather than picking a favourite
+   *   area  an art-market run -- fly to its marker and open the area
+   */
+  function handleDirectorySelect(row) {
+    setOpenBooth(null);
+    if (row.kind === 'area') {
+      setFilter(null);
+      setOpenId(null);
+      setOpenArea(row.area);
+      centerOn(row.at[0], row.at[1]);
+      return;
+    }
+    setOpenArea(null);
+    setOpenId(row.d);
+    if (row.kind === 'cat') {
+      setFilter(row.filter);
+    } else {
+      setFilter(null);
+      centerOn(row.at[0], row.at[1]);
+    }
+  }
+
   function handleChipToggle(catId) {
     setFilter((cur) => (cur === catId ? null : catId));
     closeAll();
@@ -126,6 +154,8 @@ export default function App() {
           onAreaClick={handleAreaClick}
           onBoothClick={handleBoothClick}
           selectedBoothId={openBooth?.id}
+          selectedPoiId={openId}
+          selectedAreaId={openArea?.id}
         />
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
@@ -151,6 +181,7 @@ export default function App() {
             openArea={openArea}
             openBooth={openBooth}
             onStepBooth={stepBooth}
+            onSelect={handleDirectorySelect}
             onClose={closeAll}
             onFocusReturn={() => mapRef.current?.focus()}
           />

@@ -56,13 +56,19 @@
   <div class="swatches" id="pins"></div>
   <h3>Neutrals</h3>
   <div class="swatches" id="neutrals"></div>
+  <h3>Basemap</h3>
+  <p style="color:var(--text-muted);font-size:var(--text-sm)">The ground itself. Every fill in
+     <code>src/assets/basemapTrace.js</code> points at one of these, so a palette change is a token edit
+     rather than a hunt through path data.</p>
+  <div class="swatches" id="basemap"></div>
 
   <h3>Colour meaning</h3>
   <div class="card">
     <table>
       <tr><th>Coral</th><td><b>Reserved for "now".</b> Its only uses were you-are-here and locate-on; GPS was cut for time, so it is currently unused in the app. Kept defined so "now" has a colour when something needs one. Never decoration.</td></tr>
       <tr><th>Teal</th><td><b>Zones.</b> Area fills only.</td></tr>
-      <tr><th>Navy fill</th><td><b>Selected.</b> The only selected signal — never rely on opacity alone.</td></tr>
+      <tr><th>Navy fill</th><td><b>Selected</b>, where the thing has no colour of its own to lose — a booth square.</td></tr>
+      <tr><th>Navy ring</th><td><b>Selected</b>, where it does — a pin keeps its category hue and takes a cream-backed navy ring instead. Selecting a category (restrooms, beer) rings every pin in it.</td></tr>
       <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid.</td></tr>
     </table>
   </div>
@@ -147,6 +153,27 @@
     </p>
   </div>
 
+  <h3>Directory row</h3>
+  <div class="card">
+    <div style="max-width:340px">
+      <button class="ffc-poirow">
+        <span class="dot" style="width:28px;height:28px;flex:0 0 28px;border-radius:var(--radius-pill);background:var(--pin-stage)"></span>
+        <span class="ffc-poirow__text"><b>Main Stage</b><em>Music both days</em></span>
+        <span class="ffc-poirow__go">›</span>
+      </button>
+      <button class="ffc-poirow">
+        <span class="dot" style="width:28px;height:28px;flex:0 0 28px;border-radius:var(--radius-pill);background:var(--pin-restroom)"></span>
+        <span class="ffc-poirow__text"><b>Restrooms</b><em>2 on the map</em></span>
+        <span class="ffc-poirow__go">›</span>
+      </button>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
+      The docked panel's rows. Full-width button, 44px minimum, badge · name · count · chevron.
+      One pin flies the map to it; a category with several pins filters the map instead, because there
+      is no single point to fly to.
+    </p>
+  </div>
+
   <h3>Stepper</h3>
   <div class="card">
     <div class="ffc-step">
@@ -189,13 +216,28 @@
   <h3>Legend · scale · brand</h3>
   <div class="card">
     <div class="row" style="align-items:flex-start">
-      <div class="ffc-legend">
-        <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-food)"></span> Food</div>
-        <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-stage)"></span> Stages</div>
-        <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--cat-booth)"></span> Art market</div>
+      <div>
+        <div class="ffc-legend">
+          <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-food)"></span> Food</div>
+          <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-stage)"></span> Stages</div>
+          <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--cat-booth)"></span> Art market</div>
+        </div>
+        <p style="font-size:var(--text-xs);color:var(--text-muted);margin:var(--space-2) 0 0">card — floating over the map</p>
+        <div class="ffc-legend ffc-legend--inline" style="margin-top:var(--space-3);max-width:280px">
+          <span class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-food)"></span> Food</span>
+          <span class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-stage)"></span> Stage</span>
+          <span class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-restroom)"></span> Restroom</span>
+          <span class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--cat-booth)"></span> Art booth</span>
+        </div>
+        <p style="font-size:var(--text-xs);color:var(--text-muted);margin:var(--space-2) 0 0">inline — what ships, in the panel footer</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:var(--space-3)">
-        <span class="ffc-scale"><span class="ffc-scale__bar"></span> 100 m</span>
+        <span class="ffc-scale"><span class="ffc-scale__bar"></span> ? ft</span>
+        <p style="font-size:var(--text-xs);color:var(--text-muted);margin:0;max-width:220px">
+          Defined but <b>not shipped</b>. The artboard is a stylised trace with no surveyed
+          dimension on it, so there is nothing to derive a distance from yet — a scale bar with a
+          guessed number is worse than none. Needs one confirmed ground measurement.
+        </p>
         <span class="ffc-brand"><span class="ffc-brand__name">Fall Fest</span><span class="ffc-brand__dates">Oct 4–5, 2026</span></span>
       </div>
     </div>
@@ -230,6 +272,10 @@
                 ['--cat-booth','art market'],['--cat-utility','utility']]);
   grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
                     ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
+  grid('basemap', [['--map-ground','outside the park'],['--map-park','park footprint'],['--map-lawn','mown lawns'],
+                   ['--map-festival','festival footprint'],['--map-street','roads, paths'],['--map-structure','buildings'],
+                   ['--map-water','pool'],['--map-kids','Kidlandia zone'],['--map-label','street names'],
+                   ['--map-number','booth numbers']]);
 
   const { ICONS } = await import('/src/assets/icons.js');
   const map = [['food','--pin-food'],['drinks','--pin-drinks'],['wc','--pin-restroom'],['water','--pin-water'],

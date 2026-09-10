@@ -100,22 +100,43 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--border-control);
   box-shadow: var(--shadow-panel);
-  overflow-y: auto; padding: var(--space-4);
+  /* Header and legend are pinned; only the middle scrolls. A directory this
+     long would otherwise carry its own key off the bottom of the screen. */
+  display: flex; flex-direction: column;
+  overflow: hidden; padding: 0;
 }
+.ff-screen.docked .panel-scroll { flex: 1; overflow-y: auto; padding: var(--space-4); }
+.ff-screen.docked .panel-head { padding: var(--space-4) var(--space-4) var(--space-3); border-bottom: 1px solid var(--sand-100); }
+.ff-screen.docked .panel-head h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--text-strong); }
+.ff-screen.docked .panel-head p { margin: 2px 0 0; font-size: var(--text-xs); color: var(--text-muted); }
+.ff-screen.docked .panel-foot { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--sand-100); }
+
+/* Back, not close. The docked panel is furniture -- there is nothing to
+   dismiss, only a list to return to. */
+.ff-screen.docked .panel-back {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 0; border-bottom: 1px solid var(--sand-100);
+  background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--text-muted);
+}
+.ff-screen.docked .panel-back:hover { color: var(--text-strong); }
+.ff-screen.docked .panel-back:active { background: var(--surface-pressed); }
+.ff-screen.docked .panel-back span { font-size: 20px; line-height: 1; }
+
+/* ===== Directory ==========================================================
+   Section headings plus tappable rows. Structure only -- the row itself is
+   .ffc-poirow in components.css.
+========================================================================== */
+.dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }
+.dir-title { margin: 0 0 var(--space-1); font: var(--weight-black) var(--text-xs)/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.ffc-poirow .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
 .ff-screen.docked .sheet .grip { display: none; }
 .ff-screen.docked .topbar { padding: var(--ff-gap); }
 /* Clear the floating panel: gap + panel + gap. Without this the zoom stack sits
    underneath the panel and cannot be clicked at all. */
 .ff-screen.docked .zoomctl { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
-
-/* ===== Panel resting state ================================================ */
-.panel-list { margin: var(--space-4) 0 0; display: flex; flex-direction: column; gap: 2px; }
-.panel-list + .panel-list { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--sand-100); }
-.panel-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; }
-.panel-row .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
-.panel-row .dot.sm { width: 22px; height: 22px; flex: 0 0 22px; }
-.panel-row b { display: block; font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-strong); }
-.panel-row em { display: block; font-style: normal; font-size: var(--text-xs); color: var(--text-muted); margin-top: 1px; }
 
 /* ===== Booth stepper ======================================================
    Position only — appearance is .ffc-step in components.css.

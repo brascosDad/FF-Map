@@ -147,10 +147,23 @@ Drag the window edge slowly through each threshold.
       east edge of the park and the Acoustic stage are clear of the panel.
 - [ ] **Resize with a sheet open** across 1024px — content should survive the
       switch from sheet to panel, not reset.
-- [ ] **Panel at rest** (nothing selected) shows the festival summary, not a
-      blank card.
-- [ ] Tap the panel's **×** → returns to that resting summary, doesn't leave an
-      empty panel.
+- [ ] **Panel at rest** (nothing selected) is a directory: five sections
+      (Stages, Eat & drink, Art market, Family, Amenities) over a colour key
+      pinned to the footer.
+- [ ] **The key never scrolls away.** Scroll the directory to Amenities — the
+      header and the key stay put; only the middle moves.
+- [ ] **Every row goes somewhere.** Tap Main Stage → the panel swaps to its
+      schedule and the pin picks up a navy ring on the map.
+- [ ] **Back, not close.** The docked detail has a "‹ All locations" row instead
+      of an ×; tapping it returns to the list, not to an empty panel.
+- [ ] **A category row rings all of them.** Tap Restrooms → its chip lights up,
+      the other pins dim, and both restroom pins are ringed. There is no single
+      restroom to fly to, so the map should NOT jump.
+- [ ] **Counts match the map.** "4 on the map" next to Beer & drinks should be
+      four beer pins, not three.
+- [ ] ? Should a row at the overview zoom in as well as centre? Right now it
+      centres at the current level, which at the desktop overview is a no-op
+      because the whole festival already fits.
 
 ### Layout edge cases
 

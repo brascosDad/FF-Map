@@ -101,8 +101,48 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: panel inset ${GAP}px on all three sides`,
       gaps.every((g) => Math.abs(g) <= 1.5), `right/top/bottom off by ${gaps.map((g) => g.toFixed(1)).join('/')}`);
     check(`${name}: panel width ${PANEL}px`, Math.abs(panel.width - PANEL) <= 1.5, `${panel.width.toFixed(0)}px`);
-    check(`${name}: panel shows resting summary, not a blank card`,
-      (await p.locator('.panel-list').count()) > 0);
+
+    // The panel is the desktop way into everything on the map, so it has to
+    // actually list everything -- a summary card is what it replaced.
+    const sections = await p.locator('.dir-section').count();
+    const rows = await p.locator('.ffc-poirow').count();
+    check(`${name}: panel lists every section`, sections === 5, `${sections} sections`);
+    check(`${name}: panel lists every location`, rows >= 12, `${rows} rows`);
+    check(`${name}: directory rows are real touch targets`, await (async () => {
+      for (let i = 0; i < rows; i++) {
+        const b = await p.locator('.ffc-poirow').nth(i).boundingBox();
+        if (!b || b.height < 44) return false;
+      }
+      return true;
+    })());
+    check(`${name}: key sits in the panel footer`,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 10,
+      `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
+    check(`${name}: no scroll region hides the key`,
+      await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
+
+    // Row -> detail -> back. Closing a docked detail returns to the list; it
+    // does not dismiss the panel, because the panel is furniture.
+    await p.locator('.ffc-poirow', { hasText: 'Main Stage' }).first().click();
+    await p.waitForTimeout(400);
+    check(`${name}: directory row opens its detail`,
+      (await p.locator('.sheet h3').first().innerText()).includes('Main Stage'));
+    check(`${name}: selected pin is ringed on the map`,
+      (await p.locator('svg.ff-map .ff-pin circle[stroke]').count()) >= 2);
+    check(`${name}: docked detail offers back, not close`,
+      (await p.locator('.panel-back').count()) === 1 && (await p.locator('.sheet .close').count()) === 0);
+    await p.locator('.panel-back').click();
+    await p.waitForTimeout(400);
+    check(`${name}: back returns to the full list`,
+      (await p.locator('.ffc-poirow').count()) === rows);
+
+    // A multi-pin category has no single point to fly to, so it filters instead.
+    await p.locator('.ffc-poirow', { hasText: 'Restrooms' }).first().click();
+    await p.waitForTimeout(400);
+    check(`${name}: category row filters the map`,
+      (await p.locator('.chips .ffc-chip[aria-pressed="true"]').count()) === 1);
+    await p.locator('.panel-back').click();
+    await p.waitForTimeout(400);
   }
 
   // ---- no grey header scrim ----
