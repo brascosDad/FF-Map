@@ -65,7 +65,7 @@
   <h3>Colour meaning</h3>
   <div class="card">
     <table>
-      <tr><th>Coral</th><td><b>Reserved for "now".</b> Its only uses were you-are-here and locate-on; GPS was cut for time, so it is currently unused in the app. Kept defined so "now" has a colour when something needs one. Never decoration.</td></tr>
+      <tr><th>Coral</th><td><b>Reserved for "now".</b> No live use since GPS was cut — see section 4.</td></tr>
       <tr><th>Teal</th><td><b>Zones.</b> Area fills only.</td></tr>
       <tr><th>Navy fill</th><td><b>Selected</b>, where the thing has no colour of its own to lose — a booth square.</td></tr>
       <tr><th>Navy ring</th><td><b>Selected</b>, where it does — a pin keeps its category hue and takes a cream-backed navy ring instead. Selecting a category (restrooms, beer) rings every pin in it.</td></tr>
@@ -243,13 +243,28 @@
     </div>
   </div>
 
-  <h2>4 · Accessibility floor</h2>
+  <h2>4 · What is defined but not shipped</h2>
+  <div class="card">
+    <table>
+      <tr><th>--current</th><td>Coral, reserved for "now". Its only uses were you-are-here and locate-on; GPS was cut for time. Kept so "now" has a colour when something needs one — never as decoration.</td></tr>
+      <tr><th>.ffc-scale</th><td>Scale bar. Needs one confirmed ground measurement before it can carry a number.</td></tr>
+      <tr><th>--font-display</th><td>Brice, for the brand lockup. Falls back to Manrope until the licensed file lands — see <code>src/assets/fonts/README.md</code>.</td></tr>
+    </table>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
+      Everything else in this page is live in the app. Tokens that no component reads have been
+      removed rather than left as a menu of options — <code>--surface-panel</code>,
+      <code>--pin-inactive</code>, <code>--you-are-here</code> and the unused brand shades went in
+      the cleanup step.
+    </p>
+  </div>
+
+  <h2>5 · Accessibility floor</h2>
   <div class="card">
     <table>
       <tr><th>Contrast</th><td>4.5:1 for text. <code>--text-muted</code> is 5.4:1 on white; the greys it replaces (#9aa0ac, #8b90a0, #8a8f7f) all failed.</td></tr>
       <tr><th>Tap</th><td>44px minimum hit area, even where the visual is 28 or 40.</td></tr>
       <tr><th>Type</th><td>12px floor. No 11px.</td></tr>
-      <tr><th>Selection</th><td>Never opacity alone — fill, or fill plus ring.</td></tr>
+      <tr><th>Selection</th><td>Never opacity alone — a navy fill, or a navy ring where the fill carries category.</td></tr>
       <tr><th>Focus</th><td>2px navy ring, 2px offset, on every interactive element.</td></tr>
       <tr><th>Closed UI</th><td>Hidden, not just translated off-screen, so it leaves the tab order.</td></tr>
     </table>

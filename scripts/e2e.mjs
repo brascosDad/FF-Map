@@ -384,7 +384,7 @@ for (const [name, w, h] of SIZES) {
     await zoomIn(p);
     await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click();
     await p.waitForTimeout(450);
-    const dimmed = await p.locator('svg.ff-map g[opacity="0.28"]').count();
+    const dimmed = await p.locator('svg.ff-map g.ffc-dimmed').count();
     check(`${name}: filter dims non-matching pins`, dimmed > 0, `${dimmed} dimmed`);
     const mutedChips = await p.locator('.ffc-chip--muted').count();
     check(`${name}: unselected chips go muted, not faded`, mutedChips === 2, `${mutedChips} muted`);

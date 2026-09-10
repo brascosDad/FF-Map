@@ -12,10 +12,25 @@ const TICK = 8;
 
 // Screen-constant sizes, in CSS pixels. These are multiplied by unitsPerPx at
 // render so a pin is the same physical size at every zoom -- it is a control,
-// not a piece of ground. 40px is the touch-target floor.
-const PIN_PX = 40;      // pin diameter
+// not a piece of ground.
+//
+// The pin diameter is read from --pin-size rather than repeated here: it is a
+// token, and a second copy of the number is how the two drift apart. Read once
+// and cached -- the stylesheet is in the document well before first render, and
+// getComputedStyle on every pan frame is a layout read we do not need.
+let sizes = null;
+function pinPx() {
+  if (sizes) return sizes;
+  const cs = getComputedStyle(document.documentElement);
+  const px = (name, fallback) => {
+    const n = parseFloat(cs.getPropertyValue(name));
+    return Number.isFinite(n) ? n : fallback;
+  };
+  sizes = { pin: px('--pin-size', 40) };
+  return sizes;
+}
+
 const PIN_ICON_PX = 22;
-const CLUSTER_PX = 40;  // area markers are tappable too -- same floor
 const STREET_PX = 13;
 const NUMBER_PX = 9;
 
@@ -78,10 +93,13 @@ function SelectRing({ x, y, r, k }) {
 export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
-  const pinR = (PIN_PX / 2) * k;
-  const clusterR = (CLUSTER_PX / 2) * k;
-  const dim = (cat) => (filter && filter !== cat ? 0.28 : 1);
-  const clusterDim = filter ? 0.28 : 1;
+  // Area markers are tappable too, so they take the same floor as a pin.
+  const pinR = (pinPx().pin / 2) * k;
+  const clusterR = pinR;
+  // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
+  // that says how far "not what you asked for" fades, and it lives in one file.
+  const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
+  const clusterDim = filter ? ' ffc-dimmed' : '';
 
   return (
     <div className="mapwrap" ref={wrapRef}>
@@ -127,7 +145,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         )}
 
         {AREAS.map((cl) => (
-          <g key={cl.id} className="ff-tap ff-area" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
+          <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={() => onAreaClick(cl)}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
               : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
             <g filter="url(#ds)">
@@ -140,12 +158,13 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
 
         {PINS.map((p, i) => {
           if (detail && p.c === 'food') return null;
-          const color = PIN_COLOR[p.c] || NAVY;
-          const o = dim(p.c);
+          // The class carries the category and the category carries the colour:
+          // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
+          // lookup table in JS either.
           return (
-            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}`} opacity={o} onClick={() => onPinClick(p)}>
+            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}${dim(p.c)}`} onClick={() => onPinClick(p)}>
               <g filter="url(#ds)">
-                <circle cx={p.x} cy={p.y} r={pinR} fill={color} />
+                <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
                 <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
               </g>
               {p.d === selectedPoiId && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}

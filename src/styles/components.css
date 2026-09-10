@@ -9,18 +9,13 @@
    time. Nothing here changes the current build until a component is switched.
 
    Everything tappable is at least --tap-min (44px) in its hit area even where
-   the visual is smaller — that is what ::after on the small controls is for.
+   the visual is smaller. On the map that hit area is an SVG rect drawn by
+   MapCanvas; in chrome it is the control's own min-height.
 --------------------------------------------------------------------------- */
 
-/* Shared: an invisible hit area that brings any small control up to 44px. */
-.ffc-tap::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  width: max(100%, var(--tap-min));
-  height: max(100%, var(--tap-min));
-  transform: translate(-50%, -50%);
-}
+/* Shared: "not what you asked for". One rule so the fade has one value, on map
+   features and chrome alike. */
+.ffc-dimmed { opacity: var(--opacity-dimmed); }
 
 :where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-step button):focus-visible {
   outline: 2px solid var(--focus-ring);
@@ -118,12 +113,18 @@
 .ffc-zoom button[aria-disabled='true'] { opacity: var(--opacity-disabled); cursor: default; }
 
 /* ===== MapPin =============================================================
-   Rendered as SVG, so these are the CSS custom properties the SVG reads —
-   pins.js stops carrying duplicate hex values. Size is applied in on-screen px
-   by counter-scaling with the zoom, so a pin holds one physical size.
-   States: default · pressed · selected · dimmed.
+   Rendered as SVG, so these are the custom properties the SVG reads: the pin's
+   group carries .ffc-pin--<category>, the circle is filled with var(--pin-fill).
+   Category lives in one place — the class — rather than in a JS lookup table
+   and a stylesheet at once.
+
+   Diameter is --pin-size, read by MapCanvas and applied in on-screen px by
+   counter-scaling with the zoom, so a pin holds one physical size at every
+   level. Selected is a ring drawn around the pin, not a bigger pin: growing it
+   would read as a different pin rather than the same one, chosen.
+   States: default · pressed · selected (ring) · dimmed (.ffc-dimmed).
 ========================================================================== */
-.ffc-pin { --pin-fill: var(--cat-booth); --pin-d: var(--pin-size); }
+.ffc-pin { --pin-fill: var(--cat-booth); }
 .ffc-pin--food { --pin-fill: var(--pin-food); }
 .ffc-pin--drinks { --pin-fill: var(--pin-drinks); }
 .ffc-pin--wc { --pin-fill: var(--pin-restroom); }
@@ -133,8 +134,6 @@
 .ffc-pin--kids { --pin-fill: var(--pin-kids); }
 .ffc-pin--firstaid { --pin-fill: var(--pin-firstaid); }
 .ffc-pin--bikevalet { --pin-fill: var(--cat-utility); }
-.ffc-pin--selected { --pin-d: var(--pin-size-selected); }
-.ffc-pin--dimmed { opacity: var(--opacity-dimmed); }
 .ffc-pin:active { opacity: 0.9; }
 
 /* ===== Panel ==============================================================

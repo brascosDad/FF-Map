@@ -18,13 +18,6 @@
   --ff-teal: #56AC9B;
   --ff-coral: #E89370;
 
-  /* Extended — unchanged */
-  --ff-navy-deep: #1A2B45;
-  --ff-navy-panel: #2F476E;
-  --ff-cream-shade: #E7DFC5;
-  --ff-teal-muted: #9BC1B8;
-  --ff-coral-muted: #F0C1AC;
-
   /* Category pins (POI wayfinding) — unchanged */
   --pin-food: #C97636;
   --pin-drinks: #B78B34;
@@ -51,7 +44,6 @@
   --slate-800: #3B4A63;  /* booth numbers */
   --ground-100: #ECEAE1;
   --ground-200: #E4E1D7;
-  --ground-300: #D9D6CC;
 
   /* Basemap greens/greys, straight off the Figma artboard. The bright lawn
      green is the export's own value; the neighbourhood green is our recolour of
@@ -70,7 +62,6 @@
 
   /* Surfaces */
   --surface-base: var(--ff-navy);
-  --surface-land: var(--ff-cream);
   --surface-chrome: rgb(255 255 255 / 95%);  /* floating controls over the map */
   --surface-chrome-solid: var(--ff-white);
   --surface-pressed: var(--sand-100);
@@ -83,12 +74,13 @@
   --text-body: var(--slate-700);
   --text-muted: var(--slate-500);
   --text-on-navy: var(--ff-cream);
-  --text-on-cream: var(--ff-navy);
 
-  /* Meaning. Coral is "you / now" and nothing else. Teal is zones and nothing
-     else. A navy fill means selected. Pin hues mean category. */
+  /* Meaning. Coral is "now" and nothing else -- GPS was cut for time, so it has
+     no live use in the app and stays reserved rather than becoming decoration.
+     Teal is zones. A navy fill means selected where the thing has no colour of
+     its own to lose (a booth); a navy ring means it where it does (a pin, whose
+     hue IS its category). Pin hues mean category. */
   --current: var(--ff-coral);
-  --you-are-here: var(--current);
   --zone-fill: var(--ff-teal);
   --focus-ring: var(--ff-navy);
 
@@ -155,7 +147,6 @@
      and the input lockout are the same duration on purpose. */
   --motion-press: 120ms;
   --motion-panel: 250ms;
-  --motion-zoom: 420ms;
   --ease: cubic-bezier(0.2, 0, 0.2, 1);
 
   /* Sizing */
@@ -163,23 +154,10 @@
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
      where 28 read as too small. The tap area is 44 either way. */
   --pin-size: 40px;
-  --pin-size-selected: 46px;
   --panel-width: 360px;
   --sheet-max-height: 72%;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --motion-press: 0ms; --motion-panel: 0ms; --motion-zoom: 0ms; }
-}
-
-/* ===== Deprecated =========================================================
-   Kept as aliases so nothing breaks mid-migration. Remove in the cleanup step.
-   --surface-panel  navy panel; chrome is light now.
-   --pin-inactive   superseded by the chip/pin "muted" state.
-   --you-are-here   GPS was cut for time. Coral now has no live use in the app;
-                    it stays defined as --current, reserved for "now".
-========================================================================== */
-:root {
-  --surface-panel: var(--ff-navy-panel);
-  --pin-inactive: var(--ff-teal-muted);
+  :root { --motion-press: 0ms; --motion-panel: 0ms; }
 }
