@@ -19,7 +19,7 @@ mkdirSync(OUT, { recursive: true });
 const FEST = { x0: 385, y0: 110, x1: 1055, y1: 830 };
 const SLACK = 30;
 const R = { x0: FEST.x0 - SLACK, y0: FEST.y0 - SLACK, x1: FEST.x1 + SLACK, y1: FEST.y1 + SLACK };
-const GAP = 16, PANEL = { tablet: 300, desktop: 380 };
+const GAP = 20, PANEL = 360;   // --space-5, --panel-width
 
 const results = [];
 const check = (name, pass, detail = '') => {
@@ -44,18 +44,27 @@ async function bareMapPoint(p, w, h) {
   }, { w, h });
 }
 
-/** First tappable map feature whose box is actually inside the viewport. */
+/**
+ * First tappable map feature that is actually reachable -- inside the viewport
+ * AND not underneath floating chrome. The topbar and panel sit over the map, so
+ * a feature can be perfectly visible in the SVG and still un-clickable.
+ */
 async function visibleTap(p, w, h) {
   const n = await p.locator('svg.ff-map g.ff-tap').count();
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < Math.min(n, 120); i++) {
     const b = await p.locator('svg.ff-map g.ff-tap').nth(i).boundingBox();
-    if (b && b.x > 4 && b.y > 4 && b.x + b.width < w - 4 && b.y + b.height < h - 4) return b;
+    if (!b || b.x <= 4 || b.y <= 4 || b.x + b.width >= w - 4 || b.y + b.height >= h - 4) continue;
+    const reachable = await p.evaluate(([x, y]) => {
+      const el = document.elementFromPoint(x, y);
+      return !!el && !!el.closest('svg.ff-map');
+    }, [b.x + b.width / 2, b.y + b.height / 2]);
+    if (reachable) return b;
   }
   return null;
 }
 
 const SIZES = [['mobile', 390, 800], ['tablet', 834, 1112], ['desktop', 1440, 900]];
-const reserveFor = (w, docked) => (docked ? (w >= 1180 ? PANEL.desktop : PANEL.tablet) + GAP * 2 : 0);
+const reserveFor = (w, docked) => (docked ? PANEL + GAP * 2 : 0);
 
 async function viewBox(p) {
   return (await p.locator('svg.ff-map').getAttribute('viewBox')).split(' ').map(Number);
@@ -82,18 +91,16 @@ for (const [name, w, h] of SIZES) {
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(900);
   const docked = (await p.locator('.ff-screen.docked').count()) > 0;
-  const isDesktop = w >= 1180;
   const reserve = reserveFor(w, docked);
 
   // ---- layout ----
-  check(`${name}: ${docked ? 'docked panel' : 'bottom sheet'} at this width`, docked === (w >= 768));
+  check(`${name}: ${docked ? 'docked panel' : 'bottom sheet'} at this width`, docked === (w >= 1024));
   if (docked) {
     const panel = await p.locator('.sheetwrap').boundingBox();
     const gaps = [panel.x + panel.width - (w - GAP), panel.y - GAP, (h - GAP) - (panel.y + panel.height)];
     check(`${name}: panel inset ${GAP}px on all three sides`,
       gaps.every((g) => Math.abs(g) <= 1.5), `right/top/bottom off by ${gaps.map((g) => g.toFixed(1)).join('/')}`);
-    check(`${name}: panel width ${isDesktop ? PANEL.desktop : PANEL.tablet}px`,
-      Math.abs(panel.width - (isDesktop ? PANEL.desktop : PANEL.tablet)) <= 1.5, `${panel.width.toFixed(0)}px`);
+    check(`${name}: panel width ${PANEL}px`, Math.abs(panel.width - PANEL) <= 1.5, `${panel.width.toFixed(0)}px`);
     check(`${name}: panel shows resting summary, not a blank card`,
       (await p.locator('.panel-list').count()) > 0);
   }
@@ -104,8 +111,8 @@ for (const [name, w, h] of SIZES) {
 
   // ---- overview semantics ----
   const blobCount = await p.locator('svg.ff-map path[stroke-opacity="0.5"]').count();
-  check(`${name}: overview shows ${isDesktop ? 'squares (desktop)' : 'blobs'}`,
-    isDesktop ? blobCount === 0 : blobCount > 0, `${blobCount} blob paths`);
+  check(`${name}: overview shows ${docked ? 'squares (docked)' : 'blobs'}`,
+    docked ? blobCount === 0 : blobCount > 0, `${blobCount} blob paths`);
   const labels = await p.locator('svg.ff-map text').allTextContents();
   check(`${name}: no pin labels at overview`,
     !labels.some((t) => /Kidlandia|Main Stage|Acoustic|Food Court|Art Market/.test(t)), labels.join(' | '));
@@ -117,11 +124,8 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: zoom-out disabled at overview`,
     (await p.locator('.zbtn').last().getAttribute('class')).includes('disabled'));
   const zc = await p.locator('.zoomctl').boundingBox();
-  const lc = await p.locator('.locate').boundingBox();
-  check(`${name}: locate matches zoom button size`,
-    Math.abs(lc.width - 42) <= 1 && Math.abs(lc.height - 42) <= 1, `${lc.width}x${lc.height}`);
-  check(`${name}: gap between zoom group and locate`,
-    lc.y - (zc.y + zc.height) > 4, `${(lc.y - (zc.y + zc.height)).toFixed(0)}px`);
+  check(`${name}: locate button removed (GPS cut)`, (await p.locator('.locate').count()) === 0);
+  check(`${name}: zoom control is a single segmented card`, !!zc && zc.height > 60, `${zc?.height?.toFixed(0)}px tall`);
 
   // ---- pan clamping, every level ----
   for (let lvl = 0; lvl < 3; lvl++) {
@@ -263,28 +267,23 @@ for (const [name, w, h] of SIZES) {
       start ? `${start.i} of ${start.total} in ${start.area}` : 'unparsed');
     if (!start) return;
 
-    // walk the whole area forward; area must never change, and it must wrap
-    const areas = new Set([start.area]);
-    let sawWrap = false, prev = start.i;
-    for (let step = 0; step < start.total; step++) {
-      await p.locator('.bn').last().click();
-      await p.waitForTimeout(120);
-      const cur = await readPos();
-      if (!cur) break;
-      areas.add(cur.area);
-      if (cur.i === 1 && prev === cur.total) sawWrap = true;
-      prev = cur.i;
-    }
-    check(`${name}: stepping never leaves the area`, areas.size === 1, [...areas].join(' + '));
-    check(`${name}: stepping wraps at the end of the area`, sawWrap);
-
-    const back = await readPos();
-    await p.locator('.bn').first().click();
+    // Wrap is checked in one click rather than by walking the whole area --
+    // stepping 60+ booths three times over is what made this suite crawl.
+    await p.locator('.bn').first().click();   // previous
     await p.waitForTimeout(150);
-    const afterBack = await readPos();
-    check(`${name}: back caret steps backwards`,
-      afterBack && afterBack.i === (back.i === 1 ? back.total : back.i - 1),
-      afterBack ? `${back.i} -> ${afterBack.i}` : 'unparsed');
+    const back = await readPos();
+    const expected = start.i === 1 ? start.total : start.i - 1;
+    check(`${name}: back caret steps back${start.i === 1 ? ', wrapping to the end' : ''}`,
+      back && back.i === expected, back ? `${start.i} -> ${back.i} (expected ${expected})` : 'unparsed');
+    check(`${name}: stepping stays in the same area`, back && back.area === start.area,
+      back ? `${start.area} -> ${back.area}` : 'unparsed');
+    check(`${name}: total matches the area, not all booths`,
+      [74, 27, 62, 16].includes(start.total), `${start.total} in ${start.area}`);
+
+    await p.locator('.bn').last().click();    // forward again
+    await p.waitForTimeout(150);
+    const fwd = await readPos();
+    check(`${name}: forward caret returns`, fwd && fwd.i === start.i, fwd ? `${back?.i} -> ${fwd.i}` : 'unparsed');
 
     const btn = await p.locator('.bn').first().boundingBox();
     check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,

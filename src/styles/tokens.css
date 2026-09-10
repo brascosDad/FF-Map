@@ -121,8 +121,10 @@
 
   /* Sizing */
   --tap-min: 44px;        /* everything tappable; the visual may be smaller */
-  --pin-size: 28px;
-  --pin-size-selected: 34px;
+  /* 40px, not the 28px the draft spec proposed: judged against the real map,
+     where 28 read as too small. The tap area is 44 either way. */
+  --pin-size: 40px;
+  --pin-size-selected: 46px;
   --panel-width: 360px;
   --sheet-max-height: 72%;
 }
@@ -135,6 +137,8 @@
    Kept as aliases so nothing breaks mid-migration. Remove in the cleanup step.
    --surface-panel  navy panel; chrome is light now.
    --pin-inactive   superseded by the chip/pin "muted" state.
+   --you-are-here   GPS was cut for time. Coral now has no live use in the app;
+                    it stays defined as --current, reserved for "now".
 ========================================================================== */
 :root {
   --surface-panel: var(--ff-navy-panel);

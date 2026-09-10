@@ -60,7 +60,7 @@ const CLUSTERS = [
   { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, gps, unitsPerPx = 1, selectedBoothId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   const pinR = (PIN_PX / 2) * k;
@@ -135,12 +135,6 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
           );
         })}
 
-        {gps && (
-          <g>
-            <circle cx={725} cy={600} r={30 * k} fill="#E89370" opacity={0.22} />
-            <circle cx={725} cy={600} r={13 * k} fill="#E89370" stroke="#fff" strokeWidth={4 * k} />
-          </g>
-        )}
       </svg>
     </div>
   );

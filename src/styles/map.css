@@ -1,7 +1,7 @@
 /* Backs .ff-screen. Largely vestigial now that the map's ground runs past every
    viewport -- it shows only during first paint, and in the narrow window below
    the 768px breakpoint where the app is capped at 480px and centred. */
-:root { --ff-surround: #E8EDF2; --ff-panel-w: 300px; --ff-gap: 16px; }
+:root { --ff-surround: #E8EDF2; --ff-panel-w: var(--panel-width); --ff-gap: var(--space-5); }
 
 /* Ported from the locked mobile prototype (fall-fest-mobile-wireframe.html /
    fall-fest-zoom-level-test.html), rewired to real React class names. */
@@ -58,7 +58,7 @@
    corner radius, set apart by a gap -- so the pair reads as "one control that
    does two things" and "a separate control", rather than three loose chips. */
 .zoomctl {
-  right: 12px; bottom: 74px; display: flex; flex-direction: column;
+  right: 12px; bottom: 16px; display: flex; flex-direction: column;
   background: #fff; border: 1px solid #e0dccb; border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,.15); overflow: hidden;
 }
@@ -71,13 +71,6 @@
 .zbtn:active { background: #f0ede4; }
 .zbtn.disabled { opacity: .35; } /* deliberately keeps pointer-events on — clamped in JS, not visually blocked */
 
-.locate {
-  right: 12px; bottom: 16px; width: 42px; height: 42px; border-radius: 12px; background: #fff;
-  border: 1px solid #e0dccb; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15); cursor: pointer; padding: 0;
-}
-.locate.on { background: var(--ff-coral); border-color: var(--ff-coral); }
-.locate.on svg { color: #fff; }
 
 .sheet {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #fff; border-radius: 20px 20px 0 0;
@@ -141,8 +134,9 @@
    on the map, so the scrim would just be a stripe across the park. */
 .ff-screen.docked .topbar { background: none; padding: var(--ff-gap); }
 
-.ff-screen.docked .zoomctl, .ff-screen.docked .locate { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
-
+/* Clear the floating panel: gap + panel + gap. Without this the zoom stack
+   sits underneath the panel and cannot be clicked. */
+.ff-screen.docked .zoomctl { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
 /* Panel resting state */
 .panel-list { margin: 14px 0 0; display: flex; flex-direction: column; gap: 2px; }
 .panel-list + .panel-list { margin-top: 18px; padding-top: 14px; border-top: 1px solid #eef0f3; }
@@ -155,9 +149,11 @@
 .panel-row b { display: block; font-size: 13px; font-weight: 700; color: var(--ff-navy); }
 .panel-row em { display: block; font-style: normal; font-size: 11px; color: #8b91a1; margin-top: 1px; }
 
-@media (min-width: 1180px) {
-  :root { --ff-panel-w: 380px; }
-  .ff-screen.docked .sheet { padding: 22px 22px 26px; }
+/* Tablet keeps the bottom sheet, but centred and capped rather than running the
+   full width of a 1024px-wide screen. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .sheet { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }
+  .sheet.open { transform: translate(-50%, 0); }
 }
 
 /* Booth stepper. The carets are the primary way through a dense row -- sized as

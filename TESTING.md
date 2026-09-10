@@ -7,7 +7,7 @@ npm install        # one time — playwright was added as a dev dependency
 npm run test:e2e
 ```
 
-`scripts/e2e.mjs` runs 79 assertions across mobile / tablet / desktop: zoom-level
+`scripts/e2e.mjs` runs 106 assertions across mobile / tablet / desktop: zoom-level
 semantics, pan clamping at every level, tap targets, drag-vs-tap, filters, panel
 geometry, and a check that nothing renders "undefined". It exits non-zero on
 failure, and drops screenshots in `.e2e-out/`.
@@ -130,23 +130,22 @@ Mobile width (narrow window, under 768px).
 
 Drag the window edge slowly through each threshold.
 
-- [ ] **Under 768px** — bottom sheet, map full width, app capped at 480px wide
+- [ ] **Under 768px (phone)** — bottom sheet, full width, app capped at 480px
       and centred.
-- [ ] **768–1179px (tablet)** — 300px panel floating on the right with an even
-      margin all round.
-- [ ] **1180px+ (desktop)** — panel widens to 380px, same margin.
+- [ ] **768–1023px (tablet)** — still a bottom sheet, but capped at 560px and
+      centred; map runs full width behind it.
+- [ ] **1024px+ (desktop)** — 360px panel floating on the right, 20px inset.
 - [ ] **Margins match.** The panel's gap to the screen edge should equal the gap
-      the zoom buttons and the top-left controls use (16px).
-- [ ] **Desktop shows squares at 1/3**, not blobs — this is the change you asked
-      for. Tablet and mobile still show blobs.
-- [ ] **Cross 1180px while sitting at 1/3** and watch the blobs swap to squares
+      the zoom buttons and the top-left controls use (20px).
+- [ ] **Desktop shows squares at 1/3**, not blobs. Phone and tablet show blobs.
+- [ ] **Cross 1024px while sitting at 1/3** and watch the blobs swap to squares
       live, without a reload.
 - [ ] **No grey header band** on tablet/desktop. The brand pill and chips float
       directly on the map.
 - [ ] **Nothing important hides behind the panel.** The map runs full-bleed under
       it, but the festival should be fitted into the visible part. Check the
       east edge of the park and the Acoustic stage are clear of the panel.
-- [ ] **Resize with a sheet open** across 768px — content should survive the
+- [ ] **Resize with a sheet open** across 1024px — content should survive the
       switch from sheet to panel, not reset.
 - [ ] **Panel at rest** (nothing selected) shows the festival summary, not a
       blank card.
@@ -156,9 +155,9 @@ Drag the window edge slowly through each threshold.
 ### Layout edge cases
 
 - [ ] **iPhone SE width (320px)** — chips shouldn't overflow or wrap badly.
-- [ ] **Landscape phone (844 × 390)** — this crosses into "docked" at 768px
-      while being only 390 tall. **?** A floating panel on a 390px-tall screen
-      may be wrong; maybe the breakpoint should consider height too.
+- [ ] **Landscape phone (844 × 390)** — now stays a bottom sheet, since docking
+      starts at 1024px. Check the 560px-capped sheet doesn't eat the whole
+      screen at 390px tall.
 - [ ] **Very wide desktop (2560px)** — map shouldn't look absurdly zoomed out,
       panel shouldn't stretch.
 - [ ] **Browser zoom to 150%** then resize — layout should still switch cleanly.
@@ -190,7 +189,12 @@ The point here is that nothing invented is presented as real.
 
 ---
 
-## 8. Known open items (don't file these, they're mine)
+## 8. Cut from scope
+
+- **GPS / "you are here"** was cut for time. The locate button is gone; coral is
+  now unused in the app and reserved for "now" in the token file.
+
+## 9. Known open items (don't file these, they're mine)
 
 - Booth numbers at 3/3 overlap slightly on the tightest rows.
 - "Main Stage" and "Food Court" labels collide at Overview on narrow screens.

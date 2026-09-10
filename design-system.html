@@ -60,7 +60,7 @@
   <h3>Colour meaning</h3>
   <div class="card">
     <table>
-      <tr><th>Coral</th><td><b>You / now.</b> You-are-here, locate-on, current zoom. Never decoration.</td></tr>
+      <tr><th>Coral</th><td><b>Reserved for "now".</b> Its only uses were you-are-here and locate-on; GPS was cut for time, so it is currently unused in the app. Kept defined so "now" has a colour when something needs one. Never decoration.</td></tr>
       <tr><th>Teal</th><td><b>Zones.</b> Area fills only.</td></tr>
       <tr><th>Navy fill</th><td><b>Selected.</b> The only selected signal — never rely on opacity alone.</td></tr>
       <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid.</td></tr>
@@ -120,15 +120,15 @@
   <h3>IconButton</h3>
   <div class="card">
     <div class="row">
-      <button class="ffc-iconbtn" aria-label="Locate">◎</button>
-      <button class="ffc-iconbtn ffc-iconbtn--on" aria-label="Locate on">◎</button>
+      <button class="ffc-iconbtn" aria-label="Round">◎</button>
+      <button class="ffc-iconbtn ffc-iconbtn--on" aria-label="Toggled">◎</button>
       <button class="ffc-iconbtn ffc-iconbtn--square" aria-label="Zoom in">+</button>
       <button class="ffc-iconbtn ffc-iconbtn--ghost" aria-label="Close">✕</button>
       <button class="ffc-iconbtn" aria-disabled="true" aria-label="At limit">−</button>
     </div>
     <table style="margin-top:var(--space-3)">
-      <tr><th>Variants</th><td>round 44 (locate) · square 40 (zoom) · ghost 44 (close / back)</td></tr>
-      <tr><th>Toggled</th><td>Coral fill, <b>navy</b> glyph. White on coral is 2.4:1 and fails.</td></tr>
+      <tr><th>Variants</th><td>round 44 · square 40 (zoom) · ghost 44 (close / back)</td></tr>
+      <tr><th>Toggled</th><td>Coral fill, <b>navy</b> glyph — white on coral is 2.4:1 and fails. No live use since GPS was cut; kept for the next toggle.</td></tr>
       <tr><th>At limit</th><td><code>aria-disabled</code>, dimmed, <b>still focusable</b> — a keyboard user can reach it and hear why.</td></tr>
     </table>
   </div>
@@ -164,7 +164,7 @@
   <h3>Panel</h3>
   <div class="card">
     <table>
-      <tr><th>bottom</th><td>below 1024px — full width on phone, 560 max centred on tablet, grip. <code>role="dialog"</code>, <code>hidden</code> when closed so it leaves the tab order, Esc closes, focus returns to the pin.</td></tr>
+      <tr><th>bottom</th><td>below 1024px — full width on phone, 560 max centred on tablet (768–1023), grip. <code>role="dialog"</code>, <code>hidden</code> when closed so it leaves the tab order, Esc closes, focus returns to the pin.</td></tr>
       <tr><th>right</th><td>1024px and up — floating, 20px inset, persistent list of all locations with the legend in its footer. Tapping a pin or row swaps to detail with a back button.</td></tr>
       <tr><th>Anatomy</th><td>header (32px badge · title · subtitle · close/back) → scrolling body → optional footer</td></tr>
     </table>

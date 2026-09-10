@@ -11,10 +11,12 @@ import './styles/map.css';
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
 // same content into a persistent side panel, which is what the desktop
 // wireframe's right panel is for.
-const PANEL_AT = '(min-width: 768px)';
-const DESKTOP_AT = '(min-width: 1180px)';
-const PANEL_W = { tablet: 300, desktop: 380 };
-const GAP = 16; // matches --ff-gap in map.css
+// One breakpoint, not two. Below it the detail arrives as a bottom sheet (full
+// width on a phone, 560 max and centred on a tablet); at and above it the panel
+// docks to the right. Tablet portrait is too narrow to give up 360px.
+const PANEL_AT = '(min-width: 1024px)';
+const PANEL_W = 360;  // --panel-width
+const GAP = 20;       // --ff-gap / --space-5
 // Phone screens get the map drawn ~10% larger at the overview. The festival
 // still fits, but only just -- about 10 map units (~6px) of margin either side.
 const MOBILE_OVERVIEW_ZOOM = 1.1;
@@ -33,17 +35,15 @@ function useMedia(query) {
 
 export default function App() {
   const docked = useMedia(PANEL_AT);
-  const isDesktop = useMedia(DESKTOP_AT);
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
-  const insetRight = docked ? (isDesktop ? PANEL_W.desktop : PANEL_W.tablet) + GAP * 2 : 0;
+  const insetRight = docked ? PANEL_W + GAP * 2 : 0;
   const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, centerOn, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
   const [openBooth, setOpenBooth] = useState(null);
-  const [gps, setGps] = useState(false);
 
   function closeAll() {
     setOpenId(null);
@@ -119,11 +119,10 @@ export default function App() {
           wrapRef={wrapRef}
           viewBox={viewBox}
           filter={filter}
-          showBlobs={overview && !isDesktop}
+          showBlobs={overview && !docked}
           unitsPerPx={unitsPerPx}
           showNumbers={detail}
           detail={detail}
-          gps={gps}
           onPinClick={handlePinClick}
           onAreaClick={handleAreaClick}
           onBoothClick={handleBoothClick}
@@ -143,14 +142,6 @@ export default function App() {
         <div onClick={(e) => e.stopPropagation()}>
           <ZoomControls levelIdx={levelIdx} onStep={stepLevel} />
         </div>
-
-        <button
-          className={`float locate${gps ? ' on' : ''}`}
-          title="You are here"
-          onClick={(e) => { e.stopPropagation(); setGps((v) => !v); }}
-        >
-          <Icon name="locate" size={22} />
-        </button>
 
         </div>
 
