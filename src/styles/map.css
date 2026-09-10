@@ -30,6 +30,12 @@
 /* Floating chrome. No scrim: the map runs underneath and each control carries
    its own chip, so a band across the park is unnecessary. */
 .topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding: var(--space-3); }
+/* The bar spans the full width but only its controls should catch taps. Without
+   this, the empty strip beside the chips swallowed taps on any pin underneath it
+   (e.g. Main Stage and Food Court on a landscape phone). Children opt back in;
+   the chip row still scrolls sideways because the swipe starts on a chip. */
+.topbar, .tbrow, .chips { pointer-events: none; }
+.tbrow > *, .chips > * { pointer-events: auto; }
 .tbrow { display: flex; align-items: center; gap: var(--space-3); margin: 0 2px var(--space-3); }
 .chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .chips::-webkit-scrollbar { display: none; }

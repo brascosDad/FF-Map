@@ -135,6 +135,10 @@ for (const [name, w, h] of SIZES) {
     await p.waitForTimeout(400);
     check(`${name}: back returns to the full list`,
       (await p.locator('.ffc-poirow').count()) === rows);
+    // A single-place row now flies the map in a level (decided 9/10), and "back"
+    // leaves the map where it is. Reset like a user would before the overview checks.
+    await p.locator('.zoomctl button[aria-label="Reset to overview"]').click();
+    await p.waitForTimeout(400);
 
     // A multi-pin category has no single point to fly to, so it filters instead.
     await p.locator('.ffc-poirow', { hasText: 'Restrooms' }).first().click();
@@ -399,6 +403,67 @@ for (const [name, w, h] of SIZES) {
   });
 
   await p.screenshot({ path: `${OUT}/${name}.png` });
+  await p.close();
+}
+
+// ---- chrome must not swallow taps ----
+// The topbar spans the full width. Its empty strip used to sit invisibly over
+// any pin beneath it (Main Stage and Food Court on a landscape phone). A pin may
+// be covered by a real control -- a chip, the zoom buttons -- but never by the
+// bare bar around them.
+for (const [name, w, h] of [['landscape phone', 844, 390], ['small phone', 320, 568], ['mobile', 390, 800]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const swallowed = await p.evaluate(({ w, h }) => {
+    const out = [];
+    for (const g of document.querySelectorAll('svg.ff-map g.ff-pin')) {
+      const r = g.getBoundingClientRect();
+      const x = r.left + r.width / 2, y = r.top + r.height / 2;
+      if (x < 0 || y < 0 || x > w || y > h) continue;
+      const el = document.elementFromPoint(x, y);
+      if (!el || el.closest('svg.ff-map g.ff-tap, button, a, .sheet, .sheetwrap')) continue;
+      out.push(`${Math.round(x)},${Math.round(y)} under ${el.className?.baseVal ?? el.className ?? el.tagName}`);
+    }
+    return out;
+  }, { w, h });
+  check(`${name}: no pin hidden under empty chrome`, swallowed.length === 0, swallowed.join(' | '));
+  await p.close();
+}
+
+// ---- tap semantics (decided 9/10) ----
+// Single tap on a pin opens it. A second pin swaps the sheet rather than closing
+// it. A double-tap on a pin is two opens, not a zoom; a double-tap on bare map
+// zooms in. On desktop, a directory row for one place flies in a level.
+for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const title = async () => (await p.locator('.sheet .hd h3').allTextContents()).join('|');
+  const centre = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  const vb = () => p.locator('svg.ff-map').getAttribute('viewBox');
+  await safe(`${name}: second pin swaps the sheet`, async () => {
+    await p.mouse.click(...await centre('g.ffc-pin--kids')); await p.waitForTimeout(400);
+    await p.mouse.click(...await centre('g.ffc-pin--firstaid')); await p.waitForTimeout(400);
+    const t = await title();
+    check(`${name}: second pin swaps the sheet`, /First Aid/.test(t), t || '(closed)');
+  });
+  await safe(`${name}: double-tap on a pin opens, does not zoom`, async () => {
+    const v0 = await vb();
+    await p.mouse.dblclick(...await centre('g.ffc-pin--water')); await p.waitForTimeout(600);
+    const t = await title();
+    check(`${name}: double-tap on a pin opens, does not zoom`, /Water/.test(t) && v0 === await vb(), `${t || '(closed)'}; zoomed=${v0 !== await vb()}`);
+  });
+  if (w >= 1024) {
+    await safe(`${name}: directory row flies in a level`, async () => {
+      await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(700);
+      const w0 = Number((await vb()).split(' ')[2]);
+      await p.locator('.sheetwrap').getByText('Main Stage', { exact: true }).first().click();
+      await p.waitForTimeout(700);
+      const w1 = Number((await vb()).split(' ')[2]);
+      check(`${name}: directory row flies in a level`, w1 < w0 * 0.8, `${Math.round(w0)} -> ${Math.round(w1)} units wide`);
+    });
+  }
   await p.close();
 }
 

@@ -145,10 +145,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         )}
 
         {AREAS.map((cl) => (
-          <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={() => onAreaClick(cl)}>
+          <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={(e) => { e.stopPropagation(); onAreaClick(cl); }}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
               : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
-            <g filter="url(#ds)">
+            <g className="ff-marker" filter="url(#ds)">
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />
             </g>
@@ -162,7 +162,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.
           return (
-            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}${dim(p.c)}`} onClick={() => onPinClick(p)}>
+            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}${dim(p.c)}`} onClick={(e) => { e.stopPropagation(); onPinClick(p); }}>
               <g filter="url(#ds)">
                 <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
                 <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />

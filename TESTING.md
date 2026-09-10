@@ -55,29 +55,35 @@ Mobile width (narrow window, under 768px).
       3/3 and stay there, not skip a level or get stuck between two.
 - [ ] **Double-click the map** — steps in one level.
 - [ ] **Double-click at 3/3** — wraps back to Overview (deliberate).
-- [ ] **Double-click directly on a pin** — does it open the sheet *and* zoom? **?**
-      I think zoom-only is right, but it currently may do both.
+- [ ] **Double-click directly on a pin, booth or area marker** — opens it,
+      twice, and does *not* zoom. Decided 9/10: tapping a feature means open it,
+      so the view mustn't jump out from under the sheet. Double-tap anywhere
+      else on the map still steps the zoom in.
 - [ ] **Scroll wheel / trackpad pinch** over the map steps the zoom.
 - [ ] Zoom into a corner, then zoom out — you should not end up off in blank
       space; the view re-centres.
 
 ---
 
-## 2. Blobs (the part you flagged)
+## 2. Blobs
 
-- [ ] **Candler Park Dr blob sits inside the street.** It should not touch grass
-      on either side. It's clipped to the 28-unit street band, so this is
-      enforced, but eyeball it.
-- [ ] **McLendon is two blobs**, with a gap where Mell Ave meets it. It should
-      not draw across the intersection.
-- [ ] **Art market (in the park) is three pieces, not one.** Two long ribbons
-      flanking the car path, plus a short one at the north end of the west row.
-      That break is real — there's a genuine ~58-unit gap in the booth row
-      there. **?** If that gap is an entrance, three shapes is right. If the
-      booths are actually continuous, the source map is wrong and I should
-      bridge it.
+The blobs are now **hand-drawn in Figma** (layers named `blob-*`), not generated
+from the booth positions. `scripts/extract-blobs.py` pulls them out of
+`design/basemap.svg` into `src/assets/basemapBlobs.js` — change the shape in
+Figma, re-export, re-run the script. Don't hand-edit the JS.
+
+- [ ] **Candler Park Dr is one bar**, sitting inside the street. It's still
+      clipped to the 28-unit street band, so it can't touch grass, but eyeball it.
+- [ ] **McLendon is one bar and runs across Mell Ave.** Deliberate: the market
+      is continuous there, and the old two-piece version put a gap in it that
+      isn't real.
+- [ ] **The in-park market is one ribbon** down the car path, not three pieces.
+      Also deliberate — the ~58-unit gap the generated version broke on is booth
+      spacing, not an entrance.
 - [ ] **Every blob contains every square.** Switch between 1/3 and 2/3 a few
       times and watch whether any square pops out beyond where the blob was.
+      **Two food stalls sit just past the tip of the food-court blob** — known,
+      and Ernest's call whether the blob grows or the stalls move.
 - [ ] Food court blob hugs the trucks and doesn't reach the pool or the path.
 
 ---
@@ -103,10 +109,16 @@ Mobile width (narrow window, under 768px).
       the sheet. This is the one I'd most expect to be flaky.
 - [ ] **Drag starting on a booth square** — same.
 - [ ] **Tap a pin, then tap a different pin** — sheet swaps content, doesn't
-      stack or flicker.
+      stack or flicker. *(Fixed 9/10: the second tap used to bubble to the map
+      background and close the sheet instead of swapping it.)*
+- [ ] **Landscape phone (844 × 390): tap Main Stage and Food Court.** They sit
+      under the top bar's empty strip. Both should open. *(Fixed 9/10: the bar
+      spans the full width and was swallowing taps on the pins beneath it. Only
+      its actual controls catch taps now — a pin may be covered by a chip or the
+      zoom stack, never by the bare bar around them.)*
 - [ ] **Tap a booth square at 3/3, then zoom out to 1/3** while the sheet is
-      open. The square no longer exists at that level. **?** Right now the sheet
-      stays open. Should it close?
+      open. The sheet **stays open**. Decided 9/10: zooming out to get your
+      bearings shouldn't throw away what you were reading.
 - [ ] Booth squares are tiny — check you can actually hit one with a **finger**
       (or narrow window + touch emulation), not just a mouse. There's an
       invisible 18-unit hit area around each.
@@ -119,8 +131,8 @@ Mobile width (narrow window, under 768px).
       the map resets to Overview.
 - [ ] Tap **Restrooms** again → everything returns to normal.
 - [ ] Tap **Restrooms**, then **Water** → switches cleanly, only one active.
-- [ ] With a filter on, tap a **dimmed** pin. **?** It currently still opens.
-      Should dimmed pins be tappable at all?
+- [ ] With a filter on, tap a **dimmed** pin — it opens. Decided 9/10: dimmed
+      means "not what you asked for", not "disabled".
 - [ ] With a filter on, tap the map background → filter clears.
 - [ ] With a filter on, do the **art market blobs dim too**? They should.
 
@@ -161,9 +173,15 @@ Drag the window edge slowly through each threshold.
       restroom to fly to, so the map should NOT jump.
 - [ ] **Counts match the map.** "4 on the map" next to Beer & drinks should be
       four beer pins, not three.
-- [ ] ? Should a row at the overview zoom in as well as centre? Right now it
-      centres at the current level, which at the desktop overview is a no-op
-      because the whole festival already fits.
+- [ ] **A single-place row eases the map in a level and centres it** — Main
+      Stage, Kidlandia, the info booth, an art-market run. Decided 9/10. The
+      motion is a 320ms ease so the eye can follow where it went; grabbing the
+      map or scrolling mid-flight cancels it, and reduced-motion snaps instead.
+- [ ] **A category row (Restrooms, Beer & drinks, Water) does not move the map.**
+      There are several of them, so there is no single point to fly to; it
+      filters instead and rings all of them.
+- [ ] **"‹ All locations" leaves the map where it is** — it returns you to the
+      list, it doesn't undo your navigation.
 
 ### Layout edge cases
 
@@ -204,8 +222,10 @@ The point here is that nothing invented is presented as real.
 
 ## 8. Cut from scope
 
-- **GPS / "you are here"** was cut for time. The locate button is gone; coral is
-  now unused in the app and reserved for "now" in the token file.
+- **GPS / "you are here"** was cut for time. Coral is now unused in the app and
+  reserved for "now" in the token file. The third zoom-stack button is a reset,
+  not a locate — it wears arrows-out ("show me the whole thing") rather than the
+  crosshair, which read as "find my location".
 
 ## 9. Known open items (don't file these, they're mine)
 

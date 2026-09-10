@@ -18,15 +18,14 @@ export default function ZoomControls({ levelIdx, onStep, onReset }) {
     <div className="float ffc-zoom zoomctl">
       <button aria-label="Zoom in" aria-disabled={atMax} onClick={() => !atMax && onStep(1)}>+</button>
       <button aria-label="Zoom out" aria-disabled={atMin} onClick={() => !atMin && onStep(-1)}>&minus;</button>
-      {/* Crosshair rather than the map-trifold the spec names: that glyph is not
-          in the bundled Phosphor subset, and the crosshair was freed up when GPS
-          was cut. It reads as "recentre", which is what this does.
+      {/* Arrows out to the corners: "show me the whole thing". It used to be a
+          crosshair, but that reads as "find my location", and GPS is cut.
 
           Never disabled, even at the overview: it also clears any active filter
           and recentres after a pan, so it is not a no-op just because the zoom
           is already out. */}
       <button aria-label="Reset to overview" onClick={onReset}>
-        <Icon name="locate" size={19} color="currentColor" />
+        <Icon name="fit" size={19} color="currentColor" />
       </button>
     </div>
   );

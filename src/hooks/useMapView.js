@@ -164,6 +164,33 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       return clampPan({ ...prev, x: x - (prev.w - insetMap) / 2, y: y - prev.h / 2 }, px, insetRef.current);
     });
   }, []);
+  /** Fly to a map point for a directory row: zoom in to at least `minLevel`
+   *  (never out), centre the point in the usable viewport, and ease there so
+   *  the eye can follow where it went. Snaps instead when the user has asked
+   *  for reduced motion. */
+  const flyRef = useRef(0);
+  const focusOn = useCallback((x, y, minLevel = 1) => {
+    const idx = Math.min(Math.max(levelRef.current, minLevel), LEVEL_RATIOS.length - 1);
+    const { px, py } = sizeRef.current;
+    const from = vbRef.current;
+    const nw = idx === levelRef.current ? from.w : fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[idx];
+    const nh = px > 0 ? (nw * py) / px : from.h;
+    const insetMap = px > 0 ? (insetRef.current * nw) / px : 0;
+    const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - nh / 2, w: nw, h: nh }, px, insetRef.current);
+    setLevelIdx(idx);
+    cancelAnimationFrame(flyRef.current);
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof requestAnimationFrame === 'undefined') { setVb(to); return; }
+    const DUR = 320, t0 = performance.now();
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => {
+      const t = Math.min(1, (now - t0) / DUR), e = ease(t);
+      setVb({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e,
+              w: from.w + (to.w - from.w) * e, h: from.h + (to.h - from.h) * e });
+      if (t < 1) flyRef.current = requestAnimationFrame(step);
+    };
+    flyRef.current = requestAnimationFrame(step);
+  }, []);
   const resetToOverview = useCallback(() => {
     const { px, py } = sizeRef.current;
     setVb(homeFor(px, py, insetRef.current, zoomRef.current));
@@ -258,12 +285,14 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       }
     }
     function onDown(e) {
+      cancelAnimationFrame(flyRef.current); // a grab stops any fly-to in progress
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       window.addEventListener('pointermove', onMove);
       window.addEventListener('pointerup', onUp);
     }
     function onWheel(e) {
       e.preventDefault();
+      cancelAnimationFrame(flyRef.current);
       const now = Date.now();
       if (now - lastWheelStep < STEP_COOLDOWN) return;
       lastWheelStep = now;
@@ -271,6 +300,10 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     }
     function onDblClick(e) {
       e.preventDefault();
+      // Tap a pin, booth or area marker = open it. Double-tap anywhere else =
+      // zoom in. A double-tap that lands on a tappable feature is two opens,
+      // not a zoom, so the view doesn't jump out from under the sheet.
+      if (e.target.closest?.('.ff-pin, .ff-booth, .ff-marker')) return;
       if (levelRef.current >= LEVEL_RATIOS.length - 1) setLevel(0, e.clientX, e.clientY);
       else stepLevel(1, e.clientX, e.clientY);
     }
@@ -296,5 +329,5 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, centerOn, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, centerOn, focusOn, resetToOverview };
 }
