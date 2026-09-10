@@ -78,8 +78,8 @@ async function drag(p, dx, dy) {
   await p.mouse.up();
   await p.waitForTimeout(200);
 }
-const zoomIn = async (p) => { await p.locator('.zbtn').first().click(); await p.waitForTimeout(600); };
-const zoomOut = async (p) => { await p.locator('.zbtn').last().click(); await p.waitForTimeout(600); };
+const zoomIn = async (p) => { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); };
+const zoomOut = async (p) => { await p.locator('.zoomctl button').nth(1).click(); await p.waitForTimeout(600); };
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const pageErrors = [];
@@ -122,10 +122,23 @@ for (const [name, w, h] of SIZES) {
 
   // ---- zoom buttons ----
   check(`${name}: zoom-out disabled at overview`,
-    (await p.locator('.zbtn').last().getAttribute('class')).includes('disabled'));
+    (await p.locator('.zoomctl button').nth(1).getAttribute('aria-disabled')) === 'true');
+  check(`${name}: reset button present in the zoom stack`,
+    (await p.locator('.zoomctl button').count()) === 3);
+  check(`${name}: reset caret removed from the topbar`, (await p.locator('.navbtn').count()) === 0);
   const zc = await p.locator('.zoomctl').boundingBox();
   check(`${name}: locate button removed (GPS cut)`, (await p.locator('.locate').count()) === 0);
-  check(`${name}: zoom control is a single segmented card`, !!zc && zc.height > 60, `${zc?.height?.toFixed(0)}px tall`);
+  check(`${name}: zoom control is a single segmented card of 3`, !!zc && zc.height > 110, `${zc?.height?.toFixed(0)}px tall`);
+
+  // ---- audit: touch targets and selection semantics ----
+  await safe(`${name}: control sizes`, async () => {
+    const chip = await p.locator('.ffc-chip').first().boundingBox();
+    check(`${name}: chip meets the 44px touch target`, chip && chip.height >= 43, `${chip?.height?.toFixed(0)}px tall`);
+    const pressed = await p.locator('.ffc-chip').first().getAttribute('aria-pressed');
+    check(`${name}: chip carries aria-pressed`, pressed !== null, String(pressed));
+    const zb = await p.locator('.zoomctl button').first().boundingBox();
+    check(`${name}: zoom button is 40px`, zb && Math.abs(zb.height - 40) <= 1, `${zb?.height?.toFixed(0)}px`);
+  });
 
   // ---- pan clamping, every level ----
   for (let lvl = 0; lvl < 3; lvl++) {
@@ -144,7 +157,7 @@ for (const [name, w, h] of SIZES) {
       locked ? 'viewport larger than festival — locked' : `escape ${eH.toFixed(1)}u / ${eV.toFixed(1)}u`);
   }
   check(`${name}: zoom-in disabled at closest level`,
-    (await p.locator('.zbtn').first().getAttribute('class')).includes('disabled'));
+    (await p.locator('.zoomctl button').first().getAttribute('aria-disabled')) === 'true');
 
   // ---- level semantics on the way back out ----
   const numbersAtDetail = await p.locator('svg.ff-map text').allTextContents();
@@ -258,7 +271,7 @@ for (const [name, w, h] of SIZES) {
     if (!opened) return;
 
     const readPos = async () => {
-      const t = await p.locator('.bnpos').textContent();
+      const t = await p.locator('.ffc-step__pos').textContent();
       const m = t.match(/^(\d+) of (\d+) · (.+)$/);
       return m ? { i: +m[1], total: +m[2], area: m[3] } : null;
     };
@@ -269,7 +282,7 @@ for (const [name, w, h] of SIZES) {
 
     // Wrap is checked in one click rather than by walking the whole area --
     // stepping 60+ booths three times over is what made this suite crawl.
-    await p.locator('.bn').first().click();   // previous
+    await p.locator('.ffc-step button').first().click();   // previous
     await p.waitForTimeout(150);
     const back = await readPos();
     const expected = start.i === 1 ? start.total : start.i - 1;
@@ -280,12 +293,12 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: total matches the area, not all booths`,
       [74, 27, 62, 16].includes(start.total), `${start.total} in ${start.area}`);
 
-    await p.locator('.bn').last().click();    // forward again
+    await p.locator('.ffc-step button').last().click();    // forward again
     await p.waitForTimeout(150);
     const fwd = await readPos();
     check(`${name}: forward caret returns`, fwd && fwd.i === start.i, fwd ? `${back?.i} -> ${fwd.i}` : 'unparsed');
 
-    const btn = await p.locator('.bn').first().boundingBox();
+    const btn = await p.locator('.ffc-step button').first().boundingBox();
     check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,
       btn ? `${btn.width}x${btn.height}` : 'none');
   });
@@ -295,13 +308,17 @@ for (const [name, w, h] of SIZES) {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
     await zoomIn(p);
-    await p.locator('.chip', { hasText: 'Restrooms' }).click();
+    await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click();
     await p.waitForTimeout(450);
     const dimmed = await p.locator('svg.ff-map g[opacity="0.28"]').count();
     check(`${name}: filter dims non-matching pins`, dimmed > 0, `${dimmed} dimmed`);
+    const mutedChips = await p.locator('.ffc-chip--muted').count();
+    check(`${name}: unselected chips go muted, not faded`, mutedChips === 2, `${mutedChips} muted`);
+    const op = await p.locator('.ffc-chip--muted').first().evaluate((el) => getComputedStyle(el).opacity);
+    check(`${name}: muted chip keeps full opacity`, Number(op) === 1, op);
     check(`${name}: filter resets to overview`,
-      (await p.locator('.zbtn').last().getAttribute('class')).includes('disabled'));
-    await p.locator('.chip', { hasText: 'Restrooms' }).click();
+      (await p.locator('.zoomctl button').nth(1).getAttribute('aria-disabled')) === 'true');
+    await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click();
     await p.waitForTimeout(450);
     check(`${name}: filter toggles off`,
       (await p.locator('svg.ff-map g[opacity="0.28"]').count()) === 0);

@@ -153,10 +153,10 @@ function BoothDetail({ booth, onStep }) {
           real way through a row. They wrap inside this area only -- running off
           the end of the car-path market returns you to its start rather than
           dumping you into the food trucks. */}
-      <div className="boothnav">
-        <button className="bn" onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
-        <span className="bnpos">{pos} of {group.length} · {booth.area}</span>
-        <button className="bn" onClick={() => onStep(1)} aria-label="Next booth">›</button>
+      <div className="boothnav ffc-step">
+        <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+        <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
+        <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
       </div>
 
       {booth.vendor

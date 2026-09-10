@@ -5,7 +5,6 @@ import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
-import Icon from './components/Icon';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
@@ -131,16 +130,16 @@ export default function App() {
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
           <div className="tbrow">
-            <button className="navbtn" title="Reset to overview" onClick={handleBack}>
-              <Icon name="caretright" size={15} className="ci" />
-            </button>
-            <div className="brandline"><b>Fall Fest</b> <span>· Oct 4–5, 2026</span></div>
+            <span className="ffc-brand">
+              <span className="ffc-brand__name">Fall Fest</span>
+              <span className="ffc-brand__dates">Oct 4–5, 2026</span>
+            </span>
           </div>
           <FilterChips active={filter} onToggle={handleChipToggle} />
         </div>
 
         <div onClick={(e) => e.stopPropagation()}>
-          <ZoomControls levelIdx={levelIdx} onStep={stepLevel} />
+          <ZoomControls levelIdx={levelIdx} onStep={stepLevel} onReset={handleBack} />
         </div>
 
         </div>

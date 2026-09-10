@@ -42,11 +42,12 @@
   display: inline-flex; align-items: center; gap: var(--space-2);
   min-height: var(--tap-min);
   padding: var(--space-2) var(--space-4);
+  white-space: nowrap;   /* "First aid" wrapped to two lines without this */
   border: 1px solid var(--chip-border);
   border-radius: var(--radius-pill);
   background: var(--chip-bg);
   color: var(--chip-fg);
-  font: var(--weight-bold) var(--text-lg)/1 var(--font-ui);
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui);
   cursor: pointer;
   transition: background var(--motion-press) var(--ease), color var(--motion-press) var(--ease);
 }

@@ -1,170 +1,116 @@
-/* Backs .ff-screen. Largely vestigial now that the map's ground runs past every
-   viewport -- it shows only during first paint, and in the narrow window below
-   the 768px breakpoint where the app is capped at 480px and centred. */
-:root { --ff-surround: #E8EDF2; --ff-panel-w: var(--panel-width); --ff-gap: var(--space-5); }
+/* Fall Fest map — layout and the pieces not yet migrated to components.css.
+   ---------------------------------------------------------------------------
+   This file is now positioning and structure. Appearance for chips, buttons,
+   the zoom stack and the brand lockup lives in components.css; the sheet/panel
+   follows in the next step. Every colour here comes from a token — no raw hex.
+--------------------------------------------------------------------------- */
 
-/* Ported from the locked mobile prototype (fall-fest-mobile-wireframe.html /
-   fall-fest-zoom-level-test.html), rewired to real React class names. */
+/* Backs .ff-screen. Largely vestigial now that the map's ground runs past every
+   viewport: it shows during first paint, and in the narrow window below 768px
+   where the app is capped at 480px and centred. */
+:root {
+  --ff-surround: #E8EDF2;
+  --ff-panel-w: var(--panel-width);
+  --ff-gap: var(--space-5);
+}
 
 .ff-screen {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   overflow: hidden;
-  background: var(--ff-surround, #E8EDF2);
+  background: var(--ff-surround);
 }
 
+.mapstage { position: absolute; inset: 0; }
 .mapwrap { position: absolute; inset: 0; touch-action: none; overflow: hidden; }
 .ff-map { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; }
 .ff-map:active { cursor: grabbing; }
 .ff-tap { cursor: pointer; }
 
-.topbar {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding: 12px 12px 14px;
-  background: none; /* map runs under it; the controls carry their own chips */
-}
-.tbrow { display: flex; align-items: center; gap: 10px; margin: 0 2px 10px; }
-/* With the scrim gone the brand sits directly on the map, so it carries its own
-   chip -- same treatment as the filter pills and the zoom readout. */
-.brandline {
-  background: rgba(255,255,255,.92); border: 1px solid #dfe4ea;
-  padding: 6px 12px; border-radius: 18px;
-}
-.brandline { font-size: 13px; color: var(--ff-navy); margin: 0; }
-.brandline b { font-weight: 800; }
-.brandline span { color: #8a8f7f; font-weight: 500; }
-.navbtn {
-  width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 1px solid #e0dccb;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12); padding: 0; flex: 0 0 32px;
-}
-.navbtn .ci { transform: scaleX(-1); color: var(--ff-navy); }
-
-.chips { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+/* Floating chrome. No scrim: the map runs underneath and each control carries
+   its own chip, so a band across the park is unnecessary. */
+.topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding: var(--space-3); }
+.tbrow { display: flex; align-items: center; gap: var(--space-3); margin: 0 2px var(--space-3); }
+.chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .chips::-webkit-scrollbar { display: none; }
-.chip {
-  flex: 0 0 auto; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
-  padding: 7px 12px; border-radius: 18px; border: 1px solid #d7d2c2; background: rgba(255,255,255,.95);
-  color: var(--ff-navy); cursor: pointer; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.08);
-}
-.chip.off { opacity: .45; }
-.chip.on { background: var(--ff-navy); color: var(--ff-cream); border-color: var(--ff-navy); }
-.chip.on .ci { color: var(--ff-cream); }
 
 .float { position: absolute; z-index: 3; }
+/* Position only — appearance is .ffc-zoom in components.css. */
+.zoomctl { right: var(--space-3); bottom: var(--space-4); }
 
-/* Zoom is a segmented control: one card, one border, one shadow, with the two
-   buttons sharing a hairline divider. Locate is the same footprint and the same
-   corner radius, set apart by a gap -- so the pair reads as "one control that
-   does two things" and "a separate control", rather than three loose chips. */
-.zoomctl {
-  right: 12px; bottom: 16px; display: flex; flex-direction: column;
-  background: #fff; border: 1px solid #e0dccb; border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15); overflow: hidden;
-}
-.zbtn {
-  width: 42px; height: 42px; background: none; border: none;
-  display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700;
-  color: var(--ff-navy); cursor: pointer; line-height: 1; padding: 0;
-}
-.zbtn + .zbtn { border-top: 1px solid #ece8dc; }
-.zbtn:active { background: #f0ede4; }
-.zbtn.disabled { opacity: .35; } /* deliberately keeps pointer-events on — clamped in JS, not visually blocked */
-
-
+/* ===== Sheet / panel ======================================================
+   One component, two presentations, chosen by viewport:
+     below 1024   bottom sheet — full width on a phone, 560 capped and centred
+                  on a tablet
+     1024 and up  docked right, floating over a full-bleed map, --ff-gap inset
+   useMapView is told how much of the right edge the panel covers, so the
+   festival is fitted into what remains and nothing hides behind it.
+   (Migrates onto .ffc-panel in the next step, along with the dialog semantics.)
+========================================================================== */
 .sheet {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: #fff; border-radius: 20px 20px 0 0;
-  box-shadow: 0 -6px 24px rgba(0,0,0,.18); padding: 8px 18px 22px; max-height: 72%; overflow: auto;
-  transform: translateY(100%); transition: transform .25s ease;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--surface-chrome-solid);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-sheet);
+  padding: var(--space-2) var(--space-4) var(--space-5);
+  max-height: var(--sheet-max-height); overflow: auto;
+  transform: translateY(100%);
+  transition: transform var(--motion-panel) var(--ease);
 }
 .sheet.open { transform: translateY(0); }
-.sheet .grip { width: 38px; height: 4px; background: #d7d2c2; border-radius: 3px; margin: 5px auto 12px; }
-.sheet .hd { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; }
-.sheet .hd .dot { width: 30px; height: 30px; border-radius: 50%; flex: 0 0 30px; display: flex; align-items: center; justify-content: center; }
-.sheet h3 { font-weight: 800; margin: 0; font-size: 18px; color: var(--ff-navy); }
-.sheet .sub { font-size: 12px; color: #8a8f7f; margin: 2px 0 12px; padding-left: 40px; }
-.sheet .close { position: absolute; top: 14px; right: 16px; cursor: pointer; color: #9aa0ac; background: none; border: none; padding: 0; }
-.day { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #9aa0ac; font-weight: 700; margin: 13px 0 3px; }
-.evt { display: flex; gap: 12px; padding: 7px 4px; border-bottom: 1px solid #f0ede4; font-size: 13.5px; }
+.sheet .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; margin: var(--space-1) auto var(--space-3); }
+.sheet .hd { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 2px; }
+.sheet .hd .dot { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
+.sheet h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--text-strong); }
+.sheet .sub { font-size: var(--text-xs); color: var(--text-muted); margin: 2px 0 var(--space-3); padding-left: 44px; }
+.sheet .close { position: absolute; top: var(--space-3); right: var(--space-4); width: var(--tap-min); height: var(--tap-min); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 0; }
+
+/* Day headings are sentence case, not uppercase-tracked. */
+.day { font-size: var(--text-md); font-weight: var(--weight-black); color: var(--text-strong); margin: var(--space-4) 0 var(--space-1); }
+.evt { display: flex; gap: var(--space-3); padding: var(--space-2) var(--space-1); border-bottom: 1px solid var(--sand-100); font-size: var(--text-md); }
 .evt:last-child { border-bottom: none; }
-.evt .t { flex: 0 0 70px; color: var(--ff-navy); font-weight: 700; }
-.evt .a { color: #4a5262; }
-.li { display: flex; align-items: flex-start; gap: 9px; padding: 6px 4px; font-size: 13.5px; color: #4a5262; line-height: 1.4; }
-.li .b { width: 6px; height: 6px; border-radius: 50%; background: var(--ff-teal); margin-top: 6px; flex: 0 0 6px; }
-.sheet .foot { font-size: 11px; color: #9aa0ac; margin-top: 12px; padding-top: 8px; border-top: 1px solid #eee; }
+.evt .t { flex: 0 0 72px; color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
+.evt .a { color: var(--text-body); }
+.li { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2) var(--space-1); font-size: var(--text-md); color: var(--text-body); line-height: 1.45; }
+.li .b { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--zone-fill); margin-top: 7px; }
+.sheet .foot { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--sand-100); }
 
+/* Tablet: still a sheet, but capped and centred rather than spanning a 1023px
+   screen edge to edge. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .sheet { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }
+  .sheet.open { transform: translate(-50%, 0); }
+}
 
-/* ---------------------------------------------------------------------------
-   Three breakpoints.
-
-   Mobile  (<768)      map fills the screen, detail arrives as a bottom sheet.
-   Tablet  (768-1179)  map plus a 300px docked panel.
-   Desktop (>=1180)    same, panel widens to 380px.
-
-   The panel is the same DetailSheet component, restyled -- it is the desktop
-   wireframe's right panel, and it responds to map clicks rather than being a
-   static list. When nothing is selected it shows PanelHome instead of sliding
-   away. The map's viewBox re-fits itself to whatever width is left over (see
-   useMapView's ResizeObserver), so no breakpoint crops the festival.
---------------------------------------------------------------------------- */
-
-.mapstage { position: absolute; inset: 0; }
-
-/* Docked layouts: the map runs full-bleed edge to edge (Google Maps style) and
-   the panel floats over it, inset by --ff-gap on all three sides so it matches
-   the spacing of every other floating control. useMapView is told how much of
-   the right edge is covered, so the festival is fitted into what is visible and
-   nothing important hides behind the panel. */
-.ff-screen.docked .mapstage { position: absolute; inset: 0; }
+/* Docked (>=1024): map full-bleed, panel floating over it. */
 .ff-screen.docked .sheetwrap {
   position: absolute; top: var(--ff-gap); right: var(--ff-gap); bottom: var(--ff-gap);
   width: var(--ff-panel-w); z-index: 6;
 }
 .ff-screen.docked .sheet {
   position: static; transform: none;
-  height: 100%; max-height: none;      /* the mobile sheet caps at 72% of screen */
-  border-radius: 16px; border: 1px solid #dfe4ea;
-  box-shadow: 0 8px 30px rgba(35, 56, 91, .13);
-  overflow-y: auto; padding: 18px 18px 22px;
+  height: 100%; max-height: none;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-control);
+  box-shadow: var(--shadow-panel);
+  overflow-y: auto; padding: var(--space-4);
 }
 .ff-screen.docked .sheet .grip { display: none; }
-.ff-screen.docked .sheet .close { top: 16px; right: 18px; }
-
-/* No grey header band once the map is full-bleed -- the controls float directly
-   on the map, so the scrim would just be a stripe across the park. */
-.ff-screen.docked .topbar { background: none; padding: var(--ff-gap); }
-
-/* Clear the floating panel: gap + panel + gap. Without this the zoom stack
-   sits underneath the panel and cannot be clicked. */
+.ff-screen.docked .topbar { padding: var(--ff-gap); }
+/* Clear the floating panel: gap + panel + gap. Without this the zoom stack sits
+   underneath the panel and cannot be clicked at all. */
 .ff-screen.docked .zoomctl { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
-/* Panel resting state */
-.panel-list { margin: 14px 0 0; display: flex; flex-direction: column; gap: 2px; }
-.panel-list + .panel-list { margin-top: 18px; padding-top: 14px; border-top: 1px solid #eef0f3; }
-.panel-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
-.panel-row .dot {
-  width: 28px; height: 28px; border-radius: 50%; flex: 0 0 28px;
-  display: flex; align-items: center; justify-content: center;
-}
+
+/* ===== Panel resting state ================================================ */
+.panel-list { margin: var(--space-4) 0 0; display: flex; flex-direction: column; gap: 2px; }
+.panel-list + .panel-list { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--sand-100); }
+.panel-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; }
+.panel-row .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
 .panel-row .dot.sm { width: 22px; height: 22px; flex: 0 0 22px; }
-.panel-row b { display: block; font-size: 13px; font-weight: 700; color: var(--ff-navy); }
-.panel-row em { display: block; font-style: normal; font-size: 11px; color: #8b91a1; margin-top: 1px; }
+.panel-row b { display: block; font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--text-strong); }
+.panel-row em { display: block; font-style: normal; font-size: var(--text-xs); color: var(--text-muted); margin-top: 1px; }
 
-/* Tablet keeps the bottom sheet, but centred and capped rather than running the
-   full width of a 1024px-wide screen. */
-@media (min-width: 768px) and (max-width: 1023.98px) {
-  .sheet { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }
-  .sheet.open { transform: translate(-50%, 0); }
-}
-
-/* Booth stepper. The carets are the primary way through a dense row -- sized as
-   real touch targets, not decoration. */
-.boothnav {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  margin: 12px 0 4px; padding: 4px; background: #f4f6f8; border-radius: 12px;
-}
-.bn {
-  width: 44px; height: 40px; flex: 0 0 44px; border: 1px solid #dfe4ea; border-radius: 9px;
-  background: #fff; color: var(--ff-navy); font-size: 20px; line-height: 1; cursor: pointer; padding: 0;
-}
-.bn:active { background: #eceff3; }
-.bnpos { flex: 1; text-align: center; font-size: 11.5px; font-weight: 700; color: #6b7280; }
+/* ===== Booth stepper ======================================================
+   Position only — appearance is .ffc-step in components.css.
+========================================================================== */
+.boothnav { margin: var(--space-3) 0 var(--space-1); }
