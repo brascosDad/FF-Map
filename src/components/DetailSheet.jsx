@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Icon from './Icon';
 import { PIN_COLOR, PINS, SLATE } from '../assets/pins';
 import { BOOTH_CAVEAT, BOOTHS } from '../data/booths';
@@ -168,8 +169,11 @@ function BoothDetail({ booth, onStep }) {
   );
 }
 
-export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onClose, docked = false }) {
+export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
+  const closeRef = useRef(null);
+  const wasOpen = useRef(false);
+
   let body = null;
   if (openBooth) body = <BoothDetail booth={openBooth} onStep={onStepBooth} />;
   else if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
@@ -178,10 +182,40 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
   else if (openArea) body = <ArtMarketArea area={openArea} />;
   else if (docked) body = <PanelHome />;
 
+  // Focus moves into the sheet when it opens and goes back to the map when it
+  // closes, so a keyboard user is never dropped on <body> with no landmark.
+  // Only the bottom variant does this: the docked panel is always present and
+  // stealing focus on every map tap would be hostile.
+  useEffect(() => {
+    if (docked) return;
+    if (isOpen && !wasOpen.current) closeRef.current?.focus();
+    if (!isOpen && wasOpen.current) onFocusReturn?.();
+    wasOpen.current = isOpen;
+  }, [isOpen, docked, onFocusReturn]);
+
+  useEffect(() => {
+    if (!isOpen || docked) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, docked, onClose]);
+
   return (
-    <div className={`sheet${isOpen ? ' open' : ''}${docked ? ' docked' : ''}`}>
-      <div className="grip" />
-      {isOpen && <button className="close" onClick={onClose}><Icon name="close" size={20} /></button>}
+    <div
+      className={`sheet ffc-panel${isOpen ? ' open' : ''}${docked ? ' docked ffc-panel--right' : ' ffc-panel--bottom'}`}
+      // The bottom variant is a dialog. The docked panel is not -- it is
+      // persistent page furniture, not something you dismiss.
+      role={docked ? undefined : 'dialog'}
+      aria-modal={docked ? undefined : 'false'}
+      aria-label={docked ? undefined : 'Location detail'}
+      data-open={isOpen ? 'true' : 'false'}
+    >
+      {!docked && <div className="grip" />}
+      {isOpen && (
+        <button className="close" ref={closeRef} onClick={onClose} aria-label="Close detail">
+          <Icon name="close" size={20} />
+        </button>
+      )}
       {body}
     </div>
   );

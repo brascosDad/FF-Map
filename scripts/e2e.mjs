@@ -130,6 +130,21 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: locate button removed (GPS cut)`, (await p.locator('.locate').count()) === 0);
   check(`${name}: zoom control is a single segmented card of 3`, !!zc && zc.height > 110, `${zc?.height?.toFixed(0)}px tall`);
 
+  // ---- audit: closed dialog must leave the tab order ----
+  await safe(`${name}: closed sheet accessibility`, async () => {
+    if (docked) {
+      check(`${name}: docked panel is not a dialog`,
+        (await p.locator('.sheet').getAttribute('role')) === null);
+      return;
+    }
+    const vis = await p.locator('.sheet').evaluate((el) => getComputedStyle(el).visibility);
+    check(`${name}: closed sheet is visibility:hidden, not just translated`, vis === 'hidden', vis);
+    check(`${name}: closed sheet has no focusable children`,
+      (await p.locator('.sheet button:visible').count()) === 0);
+    check(`${name}: bottom sheet is role=dialog`,
+      (await p.locator('.sheet').getAttribute('role')) === 'dialog');
+  });
+
   // ---- audit: touch targets and selection semantics ----
   await safe(`${name}: control sizes`, async () => {
     const chip = await p.locator('.ffc-chip').first().boundingBox();
@@ -301,6 +316,25 @@ for (const [name, w, h] of SIZES) {
     const btn = await p.locator('.ffc-step button').first().boundingBox();
     check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,
       btn ? `${btn.width}x${btn.height}` : 'none');
+  });
+
+  // ---- Esc closes, focus returns to the map ----
+  await safe(`${name}: escape and focus return`, async () => {
+    if (docked) return;
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForTimeout(800);
+    await zoomIn(p);
+    const t = await visibleTap(p, w, h);
+    if (!t) return;
+    await p.mouse.click(t.x + t.width / 2, t.y + t.height / 2);
+    await p.waitForTimeout(450);
+    const focusedOnOpen = await p.evaluate(() => document.activeElement?.className || '');
+    check(`${name}: focus moves into the sheet on open`, /close/.test(focusedOnOpen), focusedOnOpen || '(none)');
+    await p.keyboard.press('Escape');
+    await p.waitForTimeout(450);
+    check(`${name}: Escape closes the sheet`, (await p.locator('.sheet.open').count()) === 0);
+    const focusedAfter = await p.evaluate(() => document.activeElement?.tagName + '.' + (document.activeElement?.className?.baseVal ?? document.activeElement?.className ?? ''));
+    check(`${name}: focus returns to the map, not <body>`, /ff-map/.test(focusedAfter), focusedAfter);
   });
 
   // ---- filters ----

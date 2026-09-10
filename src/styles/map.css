@@ -58,6 +58,13 @@
   transition: transform var(--motion-panel) var(--ease);
 }
 .sheet.open { transform: translateY(0); }
+
+/* Closed means GONE, not merely pushed off-screen. A translated sheet keeps its
+   buttons in the tab order, so a keyboard user tabs into an invisible dialog.
+   visibility flips after the slide finishes, so the animation still plays. */
+.sheet:not(.docked) { visibility: hidden; transition: transform var(--motion-panel) var(--ease), visibility 0s var(--motion-panel); }
+.sheet.open:not(.docked) { visibility: visible; transition: transform var(--motion-panel) var(--ease), visibility 0s; }
+.ff-map:focus { outline: none; }
 .sheet .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; margin: var(--space-1) auto var(--space-3); }
 .sheet .hd { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 2px; }
 .sheet .hd .dot { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }

@@ -145,7 +145,15 @@ export default function App() {
         </div>
 
         <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
-          <DetailSheet docked={docked} openId={openId} openArea={openArea} openBooth={openBooth} onStepBooth={stepBooth} onClose={closeAll} />
+          <DetailSheet
+            docked={docked}
+            openId={openId}
+            openArea={openArea}
+            openBooth={openBooth}
+            onStepBooth={stepBooth}
+            onClose={closeAll}
+            onFocusReturn={() => mapRef.current?.focus()}
+          />
         </div>
       </div>
     </div>

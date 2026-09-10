@@ -1,7 +1,7 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS } from '../data/booths';
-import { PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
 // Side of one booth / food-truck square, in map units. The export draws its own
@@ -27,14 +27,16 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId } = {}
   return booths.map((b) => (
     <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
+      {/* Selected is a navy FILL, per the system -- not a ring. A ring big
+          enough to read was 22px across against a ~16px booth pitch, so it
+          encircled the neighbour's number as often as its own booth. */}
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
-            rx={1.6} fill={color} fillOpacity={0.6} />
+            rx={1.6}
+            fill={b.id === selectedId ? NAVY : color}
+            fillOpacity={b.id === selectedId ? 1 : 0.6} />
       {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
-      {b.id === selectedId && (
-        <circle cx={b.x} cy={b.y} r={11 * k} fill="none" stroke="#23385B" strokeWidth={2.5 * k} />
-      )}
       {numbers && (
         <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill="#3b4a63"
               textAnchor="middle" stroke="#fff" strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
@@ -74,6 +76,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         ref={mapRef}
         className="ff-map"
         viewBox={viewBox}
+        tabIndex={-1}   /* focus target when a dialog closes */
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
