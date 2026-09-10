@@ -4,6 +4,7 @@ import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
+import { BOOTHS } from './data/booths';
 import Icon from './components/Icon';
 import './styles/map.css';
 
@@ -36,7 +37,7 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? (isDesktop ? PANEL_W.desktop : PANEL_W.tablet) + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, centerOn, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
@@ -64,6 +65,22 @@ export default function App() {
     setOpenId(null);
     setOpenBooth(null);
     setOpenArea(cluster);
+  }
+
+  /**
+   * Step to the next/previous booth, wrapping WITHIN the booth's own area.
+   * Stepping off the end of the art market on the car path returns you to its
+   * start -- it does not spill into the food trucks, which are a different
+   * errand. The area is read off the booth id ('spine-04' -> 'spine').
+   */
+  function stepBooth(dir) {
+    if (!openBooth) return;
+    const group = BOOTHS[openBooth.id.split('-')[0]];
+    if (!group) return;
+    const i = group.findIndex((b) => b.id === openBooth.id);
+    const next = group[(i + dir + group.length) % group.length];
+    setOpenBooth(next);
+    centerOn(next.x, next.y);
   }
 
   function handleBoothClick(booth) {
@@ -110,6 +127,7 @@ export default function App() {
           onPinClick={handlePinClick}
           onAreaClick={handleAreaClick}
           onBoothClick={handleBoothClick}
+          selectedBoothId={openBooth?.id}
         />
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
@@ -137,7 +155,7 @@ export default function App() {
         </div>
 
         <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
-          <DetailSheet docked={docked} openId={openId} openArea={openArea} openBooth={openBooth} onClose={closeAll} />
+          <DetailSheet docked={docked} openId={openId} openArea={openArea} openBooth={openBooth} onStepBooth={stepBooth} onClose={closeAll} />
         </div>
       </div>
     </div>

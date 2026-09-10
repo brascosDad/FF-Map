@@ -234,6 +234,63 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: no "undefined" rendered anywhere`, !bad);
   });
 
+  // ---- booth stepper: wraps inside its own area, never leaks ----
+  await safe(`${name}: booth stepper`, async () => {
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForTimeout(800);
+    await zoomIn(p); await zoomIn(p);           // squares + numbers
+    // click a booth square directly
+    let opened = false;
+    const n = await p.locator('svg.ff-map g.ff-booth').count();
+    for (let i = 0; i < n && !opened; i++) {
+      const bb = await p.locator('svg.ff-map g.ff-booth').nth(i).boundingBox().catch(() => null);
+      if (!bb) continue;
+      if (bb.x < 4 || bb.y < 4 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
+      await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+      await p.waitForTimeout(400);
+      opened = (await p.locator('.boothnav').count()) > 0;
+    }
+    check(`${name}: tapping a booth square opens the stepper`, opened);
+    if (!opened) return;
+
+    const readPos = async () => {
+      const t = await p.locator('.bnpos').textContent();
+      const m = t.match(/^(\d+) of (\d+) · (.+)$/);
+      return m ? { i: +m[1], total: +m[2], area: m[3] } : null;
+    };
+    const start = await readPos();
+    check(`${name}: stepper reports position within the area`, !!start,
+      start ? `${start.i} of ${start.total} in ${start.area}` : 'unparsed');
+    if (!start) return;
+
+    // walk the whole area forward; area must never change, and it must wrap
+    const areas = new Set([start.area]);
+    let sawWrap = false, prev = start.i;
+    for (let step = 0; step < start.total; step++) {
+      await p.locator('.bn').last().click();
+      await p.waitForTimeout(120);
+      const cur = await readPos();
+      if (!cur) break;
+      areas.add(cur.area);
+      if (cur.i === 1 && prev === cur.total) sawWrap = true;
+      prev = cur.i;
+    }
+    check(`${name}: stepping never leaves the area`, areas.size === 1, [...areas].join(' + '));
+    check(`${name}: stepping wraps at the end of the area`, sawWrap);
+
+    const back = await readPos();
+    await p.locator('.bn').first().click();
+    await p.waitForTimeout(150);
+    const afterBack = await readPos();
+    check(`${name}: back caret steps backwards`,
+      afterBack && afterBack.i === (back.i === 1 ? back.total : back.i - 1),
+      afterBack ? `${back.i} -> ${afterBack.i}` : 'unparsed');
+
+    const btn = await p.locator('.bn').first().boundingBox();
+    check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,
+      btn ? `${btn.width}x${btn.height}` : 'none');
+  });
+
   // ---- filters ----
   await safe(`${name}: filters`, async () => {
     await p.reload({ waitUntil: 'networkidle' });

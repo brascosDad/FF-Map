@@ -23,15 +23,18 @@ const NUMBER_PX = 9;
 // street names cannot drift apart.
 const STREET_LABEL = '#5C6570';
 
-function boxes(booths, color, { numbers = false, onTap, k = 1 } = {}) {
+function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId } = {}) {
   return booths.map((b) => (
-    <g key={b.id} className={onTap ? 'ff-tap' : undefined}
+    <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
             rx={1.6} fill={color} fillOpacity={0.6} />
       {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
+      {b.id === selectedId && (
+        <circle cx={b.x} cy={b.y} r={11 * k} fill="none" stroke="#23385B" strokeWidth={2.5 * k} />
+      )}
       {numbers && (
         <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill="#3b4a63"
               textAnchor="middle" stroke="#fff" strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
@@ -57,7 +60,7 @@ const CLUSTERS = [
   { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'Art Market', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, gps, unitsPerPx = 1, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, gps, unitsPerPx = 1, selectedBoothId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   const pinR = (PIN_PX / 2) * k;
@@ -102,7 +105,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
 
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color="#C97636" />
-          : boxes(BOOTHS.food, '#C97636', { numbers: showNumbers, onTap: onBoothClick, k })}
+          : boxes(BOOTHS.food, '#C97636', { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
         {detail && (
           <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill="#a86f36" textAnchor="middle" stroke="#fff" strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
         )}
@@ -110,7 +113,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         {CLUSTERS.map((cl) => (
           <g key={cl.id} className="ff-tap ff-area" data-area={cl.id} opacity={clusterDim} onClick={() => onAreaClick(cl)}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
-              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k })}
+              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
             <g filter="url(#ds)">
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />

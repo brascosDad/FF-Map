@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fall Fest — Design System</title>
+<!-- Renders from the real files. Not a copy: change a token and this page changes. -->
+<link rel="stylesheet" href="/src/styles/fonts.css" />
+<link rel="stylesheet" href="/src/styles/tokens.css" />
+<link rel="stylesheet" href="/src/styles/components.css" />
+<style>
+  body { margin: 0; background: var(--ground-100); color: var(--text-body); font: var(--weight-medium) var(--text-lg)/1.5 var(--font-ui); }
+  .wrap { max-width: 780px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-8); }
+  h1 { font: var(--weight-black) var(--text-3xl)/1.15 var(--font-display); color: var(--text-strong); margin: 0 0 var(--space-2); }
+  h2 { font: var(--weight-black) 20px/1.2 var(--font-ui); color: var(--text-strong); margin: var(--space-8) 0 var(--space-2); }
+  h3 { font: var(--weight-bold) var(--text-md)/1.3 var(--font-ui); color: var(--text-strong); margin: var(--space-5) 0 var(--space-2); }
+  p, li { font-size: var(--text-md); }
+  .lede { color: var(--text-muted); margin: 0 0 var(--space-6); }
+  .card { background: var(--ff-white); border: 1px solid var(--border-control); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-3) 0; }
+  .row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: var(--space-3); }
+  .sw b { display: block; height: 52px; border-radius: var(--radius-sm); border: 1px solid rgb(35 56 91 / 10%); }
+  .sw code { display: block; font-size: var(--text-xs); margin-top: 6px; color: var(--text-strong); }
+  .sw span { display: block; font-size: var(--text-xs); color: var(--text-muted); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  th, td { text-align: left; padding: var(--space-2) var(--space-2) var(--space-2) 0; border-bottom: 1px solid var(--sand-100); vertical-align: top; }
+  th { color: var(--text-muted); font-weight: var(--weight-bold); }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--sand-100); padding: 1px 5px; border-radius: 5px; }
+  .use { border-left: 3px solid var(--ff-teal); padding-left: var(--space-3); margin: var(--space-3) 0; }
+  .use b { color: var(--text-strong); }
+  .dont { border-left-color: var(--pin-firstaid); }
+  .stage { background: var(--ground-200); border-radius: var(--radius-md); padding: var(--space-4); position: relative; min-height: 90px; }
+  .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--space-3); text-align: center; }
+  .icons div { font-size: var(--text-xs); color: var(--text-muted); }
+  .icons i { display: flex; width: 40px; height: 40px; margin: 0 auto 6px; border-radius: 50%; align-items: center; justify-content: center; }
+  .icons svg { width: 22px; height: 22px; fill: #fff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Fall Fest Design System</h1>
+  <p class="lede">
+    Candler Park Fall Fest map, Oct 4–5 2026. This page is generated from
+    <code>src/styles/tokens.css</code> and <code>src/styles/components.css</code> —
+    the same files the app loads. If a swatch here is wrong, the token is wrong.
+  </p>
+
+  <h2>1 · Tokens</h2>
+  <p>Three tiers: <b>primitives</b> → <b>semantic</b> → <b>component</b>. Components reference
+     tiers 2 and 3 only. A raw hex inside a component is a bug.</p>
+
+  <h3>Brand</h3>
+  <div class="swatches" id="brand"></div>
+  <h3>Category pins</h3>
+  <p style="color:var(--text-muted);font-size:var(--text-sm)">Hue carries category and nothing else.</p>
+  <div class="swatches" id="pins"></div>
+  <h3>Neutrals</h3>
+  <div class="swatches" id="neutrals"></div>
+
+  <h3>Colour meaning</h3>
+  <div class="card">
+    <table>
+      <tr><th>Coral</th><td><b>You / now.</b> You-are-here, locate-on, current zoom. Never decoration.</td></tr>
+      <tr><th>Teal</th><td><b>Zones.</b> Area fills only.</td></tr>
+      <tr><th>Navy fill</th><td><b>Selected.</b> The only selected signal — never rely on opacity alone.</td></tr>
+      <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid.</td></tr>
+    </table>
+  </div>
+
+  <h3>Typography</h3>
+  <div class="card">
+    <p style="font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--text-strong);margin:0">Fall Fest</p>
+    <p style="color:var(--text-muted);font-size:var(--text-xs);margin:4px 0 var(--space-4)">Brice — brand lockup only. Everything else is Manrope.</p>
+    <table>
+      <tr><th>28</th><td style="font-size:28px;font-weight:800">Brand lockup</td></tr>
+      <tr><th>18</th><td style="font-size:18px;font-weight:800">Panel title</td></tr>
+      <tr><th>15</th><td style="font-size:15px">Body, chips</td></tr>
+      <tr><th>14</th><td style="font-size:14px">List rows</td></tr>
+      <tr><th>13</th><td style="font-size:13px">Street labels, secondary</td></tr>
+      <tr><th>12</th><td style="font-size:12px">Captions — the floor. Nothing smaller ships.</td></tr>
+    </table>
+    <div class="use dont"><b>Don't:</b> uppercase day headings. Sentence case.</div>
+  </div>
+
+  <h3>Space · radius · motion · sizing</h3>
+  <div class="card">
+    <table>
+      <tr><th>Space</th><td>4px base — 4 / 8 / 12 / 16 / 20 / 24 / 32</td></tr>
+      <tr><th>Radius</th><td>10 small · 14 medium · 20 large · pill</td></tr>
+      <tr><th>Shadow</th><td>Navy-tinted, never black</td></tr>
+      <tr><th>Motion</th><td>120ms press · 250ms panel · 420ms zoom (matches <code>STEP_COOLDOWN</code>). Honours <code>prefers-reduced-motion</code>.</td></tr>
+      <tr><th>Tap</th><td><code>--tap-min</code> 44px on everything tappable. The visual may be smaller; the hit area may not.</td></tr>
+    </table>
+  </div>
+
+  <h2>2 · Iconography</h2>
+  <p>Phosphor, regular weight, drawn white on a category-coloured disc. One glyph per
+     category, used identically on the map, in chips, and in panel badges.</p>
+  <div class="card"><div class="icons" id="icons"></div></div>
+  <div class="use"><b>Do:</b> reuse the category glyph everywhere that category appears.</div>
+  <div class="use dont"><b>Don't:</b> introduce a second glyph for the same category, or tint a glyph anything but white.</div>
+
+  <h2>3 · Components</h2>
+
+  <h3>FilterChip</h3>
+  <div class="card">
+    <div class="row">
+      <button class="ffc-chip">Restrooms</button>
+      <button class="ffc-chip" aria-pressed="true">First aid</button>
+      <button class="ffc-chip ffc-chip--muted">Water</button>
+    </div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>States</th><td>default · pressed · active · muted · focus</td></tr>
+      <tr><th>Tokens</th><td><code>--chip-bg</code> <code>--chip-fg</code> <code>--chip-border</code></td></tr>
+      <tr><th>A11y</th><td><code>aria-pressed</code> carries selection. Min height 44px.</td></tr>
+    </table>
+    <div class="use dont"><b>Don't:</b> signal "not selected" by fading text. The old <code>.chip.off</code> used 45% opacity and failed contrast — that is what <code>--muted</code> replaces.</div>
+  </div>
+
+  <h3>IconButton</h3>
+  <div class="card">
+    <div class="row">
+      <button class="ffc-iconbtn" aria-label="Locate">◎</button>
+      <button class="ffc-iconbtn ffc-iconbtn--on" aria-label="Locate on">◎</button>
+      <button class="ffc-iconbtn ffc-iconbtn--square" aria-label="Zoom in">+</button>
+      <button class="ffc-iconbtn ffc-iconbtn--ghost" aria-label="Close">✕</button>
+      <button class="ffc-iconbtn" aria-disabled="true" aria-label="At limit">−</button>
+    </div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>Variants</th><td>round 44 (locate) · square 40 (zoom) · ghost 44 (close / back)</td></tr>
+      <tr><th>Toggled</th><td>Coral fill, <b>navy</b> glyph. White on coral is 2.4:1 and fails.</td></tr>
+      <tr><th>At limit</th><td><code>aria-disabled</code>, dimmed, <b>still focusable</b> — a keyboard user can reach it and hear why.</td></tr>
+    </table>
+  </div>
+
+  <h3>ZoomControl</h3>
+  <div class="card">
+    <div class="ffc-zoom">
+      <button aria-label="Zoom in">+</button>
+      <button aria-label="Zoom out">−</button>
+      <button aria-label="Reset to overview">⌂</button>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
+      One card, hairline dividers. Reset-to-overview moves out of the topbar caret and into
+      this stack (map-trifold glyph) — it is a map control, so it belongs with the map controls.
+      No zoom-level readout: real maps don't use one, and the buttons already dim at each end.
+    </p>
+  </div>
+
+  <h3>Stepper</h3>
+  <div class="card">
+    <div class="ffc-step">
+      <button aria-label="Previous">‹</button>
+      <span class="ffc-step__pos">12 of 62 · In the Park</span>
+      <button aria-label="Next">›</button>
+    </div>
+    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
+      Booth pitch is ~9 map units, so tapping a specific booth is unreliable even zoomed in.
+      This is the primary way through a row. It wraps <b>inside one area</b> — running off the
+      end of the car-path market returns to its start rather than spilling into the food trucks.
+    </p>
+  </div>
+
+  <h3>Panel</h3>
+  <div class="card">
+    <table>
+      <tr><th>bottom</th><td>below 1024px — full width on phone, 560 max centred on tablet, grip. <code>role="dialog"</code>, <code>hidden</code> when closed so it leaves the tab order, Esc closes, focus returns to the pin.</td></tr>
+      <tr><th>right</th><td>1024px and up — floating, 20px inset, persistent list of all locations with the legend in its footer. Tapping a pin or row swaps to detail with a back button.</td></tr>
+      <tr><th>Anatomy</th><td>header (32px badge · title · subtitle · close/back) → scrolling body → optional footer</td></tr>
+    </table>
+    <div class="stage" style="margin-top:var(--space-3)">
+      <div class="ffc-panel" style="border:1px solid var(--border-control);border-radius:var(--radius-md)">
+        <div class="ffc-panel__grip"></div>
+        <div class="ffc-panel__head">
+          <span class="ffc-panel__badge" style="background:var(--pin-stage)"></span>
+          <div><h4 class="ffc-panel__title">Main Stage</h4><p class="ffc-panel__sub">Saturday · 10:30–11:30</p></div>
+        </div>
+        <div class="ffc-panel__body">
+          <div class="ffc-dayheading">Saturday</div>
+          <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">10:30 AM</span><span class="ffc-schedulerow__act">Opening set</span></div>
+          <div class="ffc-schedulerow ffc-schedulerow--open"><span class="ffc-schedulerow__time">11:30 AM</span><span class="ffc-schedulerow__act">Not yet announced</span></div>
+          <div class="ffc-listrow"><span class="ffc-listrow__bullet" style="--bullet:var(--pin-stage)"></span><span>Bring a chair — no seating provided.</span></div>
+        </div>
+        <div class="ffc-panel__foot">2025 list, kept as a structural placeholder.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Legend · scale · brand</h3>
+  <div class="card">
+    <div class="row" style="align-items:flex-start">
+      <div class="ffc-legend">
+        <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-food)"></span> Food</div>
+        <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--pin-stage)"></span> Stages</div>
+        <div class="ffc-legend__row"><span class="ffc-legend__dot" style="background:var(--cat-booth)"></span> Art market</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <span class="ffc-scale"><span class="ffc-scale__bar"></span> 100 m</span>
+        <span class="ffc-brand"><span class="ffc-brand__name">Fall Fest</span><span class="ffc-brand__dates">Oct 4–5, 2026</span></span>
+      </div>
+    </div>
+  </div>
+
+  <h2>4 · Accessibility floor</h2>
+  <div class="card">
+    <table>
+      <tr><th>Contrast</th><td>4.5:1 for text. <code>--text-muted</code> is 5.4:1 on white; the greys it replaces (#9aa0ac, #8b90a0, #8a8f7f) all failed.</td></tr>
+      <tr><th>Tap</th><td>44px minimum hit area, even where the visual is 28 or 40.</td></tr>
+      <tr><th>Type</th><td>12px floor. No 11px.</td></tr>
+      <tr><th>Selection</th><td>Never opacity alone — fill, or fill plus ring.</td></tr>
+      <tr><th>Focus</th><td>2px navy ring, 2px offset, on every interactive element.</td></tr>
+      <tr><th>Closed UI</th><td>Hidden, not just translated off-screen, so it leaves the tab order.</td></tr>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+  // Swatches and icons are read from the live stylesheet and the app's own icon
+  // set, so this page cannot drift from what ships.
+  const css = getComputedStyle(document.documentElement);
+  const grid = (id, entries) => {
+    document.getElementById(id).innerHTML = entries.map(([v, label]) => {
+      const val = css.getPropertyValue(v).trim();
+      return `<div class="sw"><b style="background:${val}"></b><code>${v}</code><span>${val} · ${label}</span></div>`;
+    }).join('');
+  };
+  grid('brand', [['--ff-navy','structure, text'],['--ff-cream','on navy'],['--ff-teal','zones'],['--ff-coral','you / now']]);
+  grid('pins', [['--pin-food','food'],['--pin-drinks','drinks'],['--pin-restroom','restrooms'],['--pin-water','water'],
+                ['--pin-info','info'],['--pin-stage','stages'],['--pin-kids','kids'],['--pin-firstaid','first aid'],
+                ['--cat-booth','art market'],['--cat-utility','utility']]);
+  grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
+                    ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
+
+  const { ICONS } = await import('/src/assets/icons.js');
+  const map = [['food','--pin-food'],['drinks','--pin-drinks'],['wc','--pin-restroom'],['water','--pin-water'],
+               ['info','--pin-info'],['stage','--pin-stage'],['kids','--pin-kids'],['firstaid','--pin-firstaid'],
+               ['art','--cat-booth'],['bikevalet','--cat-utility']];
+  document.getElementById('icons').innerHTML = map.map(([n, c]) =>
+    `<div><i style="background:var(${c})"><svg viewBox="0 0 256 256">${ICONS[n]}</svg></i>${n}</div>`).join('');
+</script>
+</body>
+</html>

@@ -1,21 +1,31 @@
 /* Fall Fest 2026 — design tokens
-   Source of truth: claude/color-tokens.md in the project. Keep these two in sync —
-   if the palette changes there, mirror the change here. */
+   ---------------------------------------------------------------------------
+   Three tiers. Components may only reference tiers 2 and 3; a raw hex in a
+   component is a bug.
+
+     1. PRIMITIVES  raw values, named for what they are
+     2. SEMANTIC    named for the job they do
+     3. COMPONENT   per-component knobs, defined in components.css
+
+   Source of truth for brand + pin hues: claude/color-tokens.md. Keep in sync.
+--------------------------------------------------------------------------- */
 :root {
-  /* Core brand */
+  /* ===== 1. PRIMITIVES ==================================================== */
+
+  /* Brand — unchanged */
   --ff-navy: #23385B;
   --ff-cream: #F5EFDA;
   --ff-teal: #56AC9B;
   --ff-coral: #E89370;
 
-  /* Extended */
+  /* Extended — unchanged */
   --ff-navy-deep: #1A2B45;
   --ff-navy-panel: #2F476E;
   --ff-cream-shade: #E7DFC5;
   --ff-teal-muted: #9BC1B8;
   --ff-coral-muted: #F0C1AC;
 
-  /* Category pins (POI wayfinding) */
+  /* Category pins (POI wayfinding) — unchanged */
   --pin-food: #C97636;
   --pin-drinks: #B78B34;
   --pin-restroom: #3D9E6E;
@@ -25,20 +35,108 @@
   --pin-kids: #C25B7E;
   --pin-firstaid: #C84B46;
 
-  /* Structural / neutral */
+  /* Structural / neutral — unchanged */
   --cat-booth: #47597A;
   --cat-utility: #6E7C93;
 
-  /* Semantic roles */
+  /* Neutrals — these replace the ad-hoc greys scattered through map.css */
+  --ff-white: #FFFFFF;
+  --sand-100: #F0EDE4;   /* dividers, pressed fills */
+  --sand-200: #E0DCCB;   /* control borders */
+  --sand-300: #D7D2C2;   /* chip borders, sheet grip */
+  --slate-500: #636B7B;  /* muted text — 5.4:1 on white */
+  --slate-700: #4A5262;  /* body text */
+  --ground-100: #ECEAE1;
+  --ground-200: #E4E1D7;
+  --ground-300: #D9D6CC;
+
+  /* ===== 2. SEMANTIC ====================================================== */
+
+  /* Surfaces */
   --surface-base: var(--ff-navy);
-  --surface-panel: var(--ff-navy-panel);
   --surface-land: var(--ff-cream);
+  --surface-chrome: rgb(255 255 255 / 95%);  /* floating controls over the map */
+  --surface-chrome-solid: var(--ff-white);
+  --surface-pressed: var(--sand-100);
+  --surface-selected: var(--ff-navy);
+  --border-control: var(--sand-200);
+  --border-subtle: var(--sand-300);
+
+  /* Text — all of these clear 4.5:1 on white */
+  --text-strong: var(--ff-navy);
+  --text-body: var(--slate-700);
+  --text-muted: var(--slate-500);
   --text-on-navy: var(--ff-cream);
   --text-on-cream: var(--ff-navy);
-  --pin-inactive: var(--ff-teal-muted);
-  --you-are-here: var(--ff-coral);
+
+  /* Meaning. Coral is "you / now" and nothing else. Teal is zones and nothing
+     else. A navy fill means selected. Pin hues mean category. */
+  --current: var(--ff-coral);
+  --you-are-here: var(--current);
+  --zone-fill: var(--ff-teal);
+  --focus-ring: var(--ff-navy);
+
+  --opacity-dimmed: 0.28;
+  --opacity-disabled: 0.35;
 
   /* Type */
-  --font-display: 'Brice', 'Manrope', system-ui, sans-serif; /* falls back until real Brice .otf files are dropped in — see src/assets/fonts/README.md */
+  --font-display: 'Brice', 'Manrope', system-ui, sans-serif; /* brand lockup only — see src/assets/fonts/README.md */
   --font-ui: 'Manrope', system-ui, sans-serif;
+  --text-3xl: 28px;  /* brand lockup */
+  --text-2xl: 18px;  /* panel title */
+  --text-lg: 15px;   /* body, chips */
+  --text-md: 14px;
+  --text-sm: 13px;   /* street labels, secondary */
+  --text-xs: 12px;   /* floor — nothing smaller ships */
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  /* Space — 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radius */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* Shadows — navy-tinted, never black */
+  --shadow-control: 0 2px 8px rgb(35 56 91 / 15%);
+  --shadow-panel: 0 8px 30px rgb(35 56 91 / 13%);
+  --shadow-sheet: 0 -6px 24px rgb(35 56 91 / 18%);
+
+  /* Motion. 420ms matches STEP_COOLDOWN in useMapView — the zoom transition
+     and the input lockout are the same duration on purpose. */
+  --motion-press: 120ms;
+  --motion-panel: 250ms;
+  --motion-zoom: 420ms;
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* Sizing */
+  --tap-min: 44px;        /* everything tappable; the visual may be smaller */
+  --pin-size: 28px;
+  --pin-size-selected: 34px;
+  --panel-width: 360px;
+  --sheet-max-height: 72%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-press: 0ms; --motion-panel: 0ms; --motion-zoom: 0ms; }
+}
+
+/* ===== Deprecated =========================================================
+   Kept as aliases so nothing breaks mid-migration. Remove in the cleanup step.
+   --surface-panel  navy panel; chrome is light now.
+   --pin-inactive   superseded by the chip/pin "muted" state.
+========================================================================== */
+:root {
+  --surface-panel: var(--ff-navy-panel);
+  --pin-inactive: var(--ff-teal-muted);
 }

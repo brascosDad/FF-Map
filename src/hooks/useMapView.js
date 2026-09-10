@@ -153,6 +153,17 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   }, [toSvg]);
 
   const stepLevel = useCallback((dir, cx, cy) => setLevel(levelRef.current + dir, cx, cy), [setLevel]);
+
+  /** Bring a map point to the middle of the USABLE viewport (panel excluded),
+   *  keeping the current zoom. Used when stepping through booths: the sheet is
+   *  the control, the map is the readout. */
+  const centerOn = useCallback((x, y) => {
+    const { px } = sizeRef.current;
+    setVb((prev) => {
+      const insetMap = px > 0 ? (insetRef.current * prev.w) / px : 0;
+      return clampPan({ ...prev, x: x - (prev.w - insetMap) / 2, y: y - prev.h / 2 }, px, insetRef.current);
+    });
+  }, []);
   const resetToOverview = useCallback(() => {
     const { px, py } = sizeRef.current;
     setVb(homeFor(px, py, insetRef.current, zoomRef.current));
@@ -285,5 +296,5 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, centerOn, resetToOverview };
 }

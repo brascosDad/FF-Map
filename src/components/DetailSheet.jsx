@@ -1,6 +1,6 @@
 import Icon from './Icon';
 import { PIN_COLOR, PINS, SLATE } from '../assets/pins';
-import { BOOTH_CAVEAT } from '../data/booths';
+import { BOOTH_CAVEAT, BOOTHS } from '../data/booths';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -135,8 +135,10 @@ function PanelHome() {
   );
 }
 
-function BoothDetail({ booth }) {
+function BoothDetail({ booth, onStep }) {
   const isFood = booth.area === 'Food Court';
+  const group = BOOTHS[booth.id.split('-')[0]] || [];
+  const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
     <>
       <div className="hd">
@@ -146,6 +148,17 @@ function BoothDetail({ booth }) {
         <h3>{booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}</h3>
       </div>
       <div className="sub">{booth.area}{booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}</div>
+
+      {/* The map is too dense to tap a specific booth reliably, so these are the
+          real way through a row. They wrap inside this area only -- running off
+          the end of the car-path market returns you to its start rather than
+          dumping you into the food trucks. */}
+      <div className="boothnav">
+        <button className="bn" onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+        <span className="bnpos">{pos} of {group.length} · {booth.area}</span>
+        <button className="bn" onClick={() => onStep(1)} aria-label="Next booth">›</button>
+      </div>
+
       {booth.vendor
         ? <div className="li"><span className="b" />Food truck — menu and hours to come.</div>
         : <div className="li"><span className="b" />Artist assignment arrives with the 2026 vendor list.</div>}
@@ -155,10 +168,10 @@ function BoothDetail({ booth }) {
   );
 }
 
-export default function DetailSheet({ openId, openArea, openBooth, onClose, docked = false }) {
+export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onClose, docked = false }) {
   const isOpen = !!(openId || openArea || openBooth);
   let body = null;
-  if (openBooth) body = <BoothDetail booth={openBooth} />;
+  if (openBooth) body = <BoothDetail booth={openBooth} onStep={onStepBooth} />;
   else if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
   else if (openId === 'food') body = <FoodCourt />;
   else if (openId) body = <GenericPoi id={openId} />;
