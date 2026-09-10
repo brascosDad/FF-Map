@@ -18,10 +18,14 @@ const CLUSTER_PX = 40;  // area markers are tappable too -- same floor
 const STREET_PX = 13;
 const NUMBER_PX = 9;
 
-// Street labels: dark, no halo, sitting in the street band. Deliberately not the
-// category slate -- these are ground, not content. Size is shared so the two
-// street names cannot drift apart.
-const STREET_LABEL = '#5C6570';
+// Ink drawn on the map itself, all from the --map-* token layer. Street labels
+// are dark, no halo, sitting in the street band -- deliberately not the category
+// slate, since these are ground, not content. Size is shared so the two street
+// names cannot drift apart.
+const STREET_LABEL = 'var(--map-label)';
+const MAP_NUMBER = 'var(--map-number)';
+const MAP_HALO = 'var(--map-halo)';
+const FOOD_LABEL = 'var(--map-food-label)';
 
 function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId } = {}) {
   return booths.map((b) => (
@@ -38,8 +42,8 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId } = {}
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
       {numbers && (
-        <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill="#3b4a63"
-              textAnchor="middle" stroke="#fff" strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
+        <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill={MAP_NUMBER}
+              textAnchor="middle" stroke={MAP_HALO} strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
       )}
     </g>
   ));
@@ -81,7 +85,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
       >
         <defs>
           <filter id="ds" x="-40%" y="-40%" width="180%" height="180%">
-            <feDropShadow dx={0} dy={2 * k} stdDeviation={2.2 * k} floodColor="#23385B" floodOpacity={0.3} />
+            <feDropShadow dx={0} dy={2 * k} stdDeviation={2.2 * k} floodColor={NAVY} floodOpacity={0.3} />
           </filter>
           {/* The two street markets are clipped to their own street band, taken
               from the export's stroke geometry: Candler Park Dr is centred on
@@ -107,10 +111,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         <text x={1015} y={795} fontSize={STREET_PX * k} fill={STREET_LABEL} textAnchor="start">McLendon Ave</text>
 
         {/* Food court: blob at overview, individual stalls once you step in */}
-        {showBlobs ? <Blobs paths={BLOBS.food} color="#C97636" />
-          : boxes(BOOTHS.food, '#C97636', { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
+        {showBlobs ? <Blobs paths={BLOBS.food} color={PIN_COLOR.food} />
+          : boxes(BOOTHS.food, PIN_COLOR.food, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
         {detail && (
-          <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill="#a86f36" textAnchor="middle" stroke="#fff" strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
+          <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill={FOOD_LABEL} textAnchor="middle" stroke={MAP_HALO} strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
         )}
 
         {CLUSTERS.map((cl) => (
@@ -126,10 +130,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
 
         {PINS.map((p, i) => {
           if (detail && p.c === 'food') return null;
-          const color = PIN_COLOR[p.c] || '#23385B';
+          const color = PIN_COLOR[p.c] || NAVY;
           const o = dim(p.c);
           return (
-            <g key={i} className="ff-tap ff-pin" opacity={o} onClick={() => onPinClick(p)}>
+            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}`} opacity={o} onClick={() => onPinClick(p)}>
               <g filter="url(#ds)">
                 <circle cx={p.x} cy={p.y} r={pinR} fill={color} />
                 <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />

@@ -37,28 +37,28 @@ export const PINS = [
   { x: 702.4, y: 730.1, c: 'bikevalet', d: 'bikevalet' },
 ];
 
-// Matches claude/color-tokens.md's Category pin palette exactly.
+// Colours are references into the token layer, not hex literals. tokens.css is
+// the single source of truth; this file used to carry a second copy of the same
+// nine values, which is exactly the kind of duplication that drifts.
+//
+// These resolve as CSS in both places they are used: as an SVG `fill` on the map
+// and as a `background` on the panel badges.
 export const PIN_COLOR = {
-  food: '#C97636',
-  drinks: '#B78B34',
-  stage: '#8F71B7',
-  kids: '#C25B7E',
-  wc: '#3D9E6E',
-  info: '#407EB5',
-  firstaid: '#C84B46',
-  water: '#3D8FA4',
-  // "Structural / neutral" row of color-tokens.md's palette: low-frequency
-  // services (bike valet, entrances, ADA, picnic/seating) share this one
-  // quiet neutral (--cat-utility) instead of each taking a vivid pin hue.
-  bikevalet: '#6E7C93',
+  food: 'var(--pin-food)',
+  drinks: 'var(--pin-drinks)',
+  stage: 'var(--pin-stage)',
+  kids: 'var(--pin-kids)',
+  wc: 'var(--pin-restroom)',
+  info: 'var(--pin-info)',
+  firstaid: 'var(--pin-firstaid)',
+  water: 'var(--pin-water)',
+  // Low-frequency services (bike valet, entrances, ADA, picnic/seating) share
+  // one quiet neutral rather than each taking a vivid pin hue.
+  bikevalet: 'var(--cat-utility)',
 };
 
-// NOTE: pin size now lives in MapCanvas as PIN_PX, a CSS-pixel constant scaled
-// by the current zoom, so a pin holds one physical size at every level. It is
-// a control, not a piece of ground -- and 40px is the touch-target floor.
-
-export const SLATE = '#47597A';
-export const NAVY = '#23385B';
-export const CREAM = '#F5EFDA';
-export const TEAL = '#56AC9B';
-export const CORAL = '#E89370';
+export const SLATE = 'var(--cat-booth)';
+export const NAVY = 'var(--ff-navy)';
+export const CREAM = 'var(--ff-cream)';
+export const TEAL = 'var(--ff-teal)';
+export const CORAL = 'var(--ff-coral)';

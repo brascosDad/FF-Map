@@ -30,7 +30,7 @@ function StageSchedule({ stageKey }) {
   if (!stage) return null;
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.stage }}><Icon name="stage" size={17} color="#fff" /></span><h3>{stage.name}</h3></div>
+      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.stage }}><Icon name="stage" size={17} color="var(--icon-on-color)" /></span><h3>{stage.name}</h3></div>
       <div className="sub">{stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule</div>
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
@@ -40,7 +40,7 @@ function StageSchedule({ stageKey }) {
               <span className="t">{slot.time}</span>
               <span className="a">
                 {slot.act || <em>Open — to be confirmed</em>}
-                {slot.note && <span style={{ display: 'block', fontSize: 11, color: '#9aa0ac' }}>{slot.note}</span>}
+                {slot.note && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{slot.note}</span>}
               </span>
             </div>
           ))}
@@ -54,7 +54,7 @@ function StageSchedule({ stageKey }) {
 function FoodCourt() {
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.food }}><Icon name="food" size={17} color="#fff" /></span><h3>Food Court</h3></div>
+      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.food }}><Icon name="food" size={17} color="var(--icon-on-color)" /></span><h3>Food Court</h3></div>
       <div className="sub">{vendorsData.vendors.length} vendors listed</div>
       {vendorsData.vendors.map((v) => (
         <div className="li" key={v.id}><span className="b" />{v.name}{v.note ? ` (${v.note})` : ''}</div>
@@ -67,7 +67,7 @@ function FoodCourt() {
 function ArtMarketArea({ area }) {
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: SLATE }}><Icon name="art" size={17} color="#fff" /></span><h3>{area.name}</h3></div>
+      <div className="hd"><span className="dot" style={{ background: SLATE }}><Icon name="art" size={17} color="var(--icon-on-color)" /></span><h3>{area.name}</h3></div>
       <div className="sub">{area.range}</div>
       <div className="li"><span className="b" />Individual booth assignments load here once the 2026 vendor list is confirmed.</div>
     </>
@@ -79,7 +79,7 @@ function GenericPoi({ id }) {
   if (!d) return null;
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR[d.cat] }}><Icon name={d.icon} size={17} color="#fff" /></span><h3>{d.title}</h3></div>
+      <div className="hd"><span className="dot" style={{ background: PIN_COLOR[d.cat] }}><Icon name={d.icon} size={17} color="var(--icon-on-color)" /></span><h3>{d.title}</h3></div>
       <div className="sub">{d.sub}</div>
       {d.lines.map((line, i) => <div className="li" key={i}><span className="b" />{line}</div>)}
     </>
@@ -109,7 +109,7 @@ function PanelHome() {
         {PANEL_AREAS.map((a) => (
           <div className="panel-row" key={a.key}>
             <span className="dot" style={{ background: a.color || PIN_COLOR[a.key] || SLATE }}>
-              <Icon name={a.key === 'art' ? 'art' : a.key} size={15} color="#fff" />
+              <Icon name={a.key === 'art' ? 'art' : a.key} size={15} color="var(--icon-on-color)" />
             </span>
             <span>
               <b>{a.title}</b>
@@ -124,7 +124,7 @@ function PanelHome() {
           counts[k] ? (
             <div className="panel-row compact" key={k}>
               <span className="dot sm" style={{ background: PIN_COLOR[k] }}>
-                <Icon name={k} size={12} color="#fff" />
+                <Icon name={k} size={12} color="var(--icon-on-color)" />
               </span>
               <span><b>{label}</b><em>{counts[k]} on the map</em></span>
             </div>
@@ -144,7 +144,7 @@ function BoothDetail({ booth, onStep }) {
     <>
       <div className="hd">
         <span className="dot" style={{ background: isFood ? PIN_COLOR.food : SLATE }}>
-          <Icon name={isFood ? 'food' : 'art'} size={17} color="#fff" />
+          <Icon name={isFood ? 'food' : 'art'} size={17} color="var(--icon-on-color)" />
         </span>
         <h3>{booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}</h3>
       </div>

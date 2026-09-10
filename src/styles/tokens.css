@@ -34,6 +34,7 @@
   --pin-stage: #8F71B7;
   --pin-kids: #C25B7E;
   --pin-firstaid: #C84B46;
+  --food-ink: #A86F36;    /* food orange darkened for text on ground */
 
   /* Structural / neutral — unchanged */
   --cat-booth: #47597A;
@@ -45,10 +46,25 @@
   --sand-200: #E0DCCB;   /* control borders */
   --sand-300: #D7D2C2;   /* chip borders, sheet grip */
   --slate-500: #636B7B;  /* muted text — 5.4:1 on white */
+  --slate-600: #5C6570;  /* street names on the map */
   --slate-700: #4A5262;  /* body text */
+  --slate-800: #3B4A63;  /* booth numbers */
   --ground-100: #ECEAE1;
   --ground-200: #E4E1D7;
   --ground-300: #D9D6CC;
+
+  /* Basemap greens/greys, straight off the Figma artboard. The bright lawn
+     green is the export's own value; the neighbourhood green is our recolour of
+     "candler park outline", which shipped bright and fought the pins. */
+  --green-lawn: #7CD763;
+  --green-neighbourhood: #ADD29E;
+  --grey-street: #E1E6EB;
+  --grey-structure: #E1E1E1;
+  --grey-hairline: #C7C7C7;
+  --blue-water: #CBE4FF;
+  --pink-court: #FFD7D9;
+  --pink-kids: #D1849E;
+  --paper-festival: #F7F7F7;
 
   /* ===== 2. SEMANTIC ====================================================== */
 
@@ -75,6 +91,29 @@
   --you-are-here: var(--current);
   --zone-fill: var(--ff-teal);
   --focus-ring: var(--ff-navy);
+
+  /* Basemap. Every fill in assets/basemapTrace.js points at one of these, so a
+     palette change is a token edit rather than a hunt through path data. */
+  --map-ground: var(--green-neighbourhood);   /* everything outside the park */
+  --map-park: var(--green-neighbourhood);     /* Candler Park's own footprint */
+  --map-lawn: var(--green-lawn);              /* the three mown lawns */
+  --map-festival: var(--paper-festival);      /* festival footprint */
+  --map-street: var(--grey-street);           /* roads and paved paths */
+  --map-structure: var(--grey-structure);     /* buildings */
+  --map-hairline: var(--grey-hairline);       /* court linework */
+  --map-court: var(--pink-court);
+  --map-water: var(--blue-water);
+  --map-kids: var(--pink-kids);               /* Kidlandia zone tint */
+
+  /* Ink drawn ON the map. Separate from the panel text roles: these sit on
+     green and cream rather than on white chrome. */
+  --map-label: var(--slate-600);              /* street names */
+  --map-number: var(--slate-800);             /* booth numbers */
+  --map-halo: var(--ff-white);                /* stroke behind map text */
+  --map-food-label: var(--food-ink);
+
+  /* Glyph sitting on a filled category dot or pin. */
+  --icon-on-color: var(--ff-white);
 
   --opacity-dimmed: 0.28;
   --opacity-disabled: 0.35;
