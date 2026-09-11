@@ -359,6 +359,12 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: forward caret returns`, fwd && fwd.i === start.i, fwd ? `${back?.i} -> ${fwd.i}` : 'unparsed');
 
     const btn = await p.locator('.ffc-step button').first().boundingBox();
+    const stepGap = await p.evaluate(() => {
+      const s = document.querySelector('.boothnav').getBoundingClientRect();
+      const h = document.querySelector('.sheet .hd').getBoundingClientRect();
+      return Math.round(h.top - s.bottom);
+    });
+    check(`${name}: stepper has air between it and the title`, stepGap >= 16, `${stepGap}px`);
     check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,
       btn ? `${btn.width}x${btn.height}` : 'none');
   });
@@ -510,6 +516,23 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     check(`${name}: car-path booths are rotated to the path`, (t || '').startsWith('rotate(36 '), t || '(none)');
     check(`${name}: street-market booths are not rotated`, mcl === null, mcl || 'no transform');
   });
+  await p.close();
+}
+
+// No blue flash on a booth tap. The highlight paints over the nearest clickable
+// ancestor, and a booth's is its whole area group -- so the default put a
+// screen-sized box on screen every time you tapped one.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const hl = await p.locator('svg.ff-map').evaluate((el) => ({
+    tap: getComputedStyle(el).webkitTapHighlightColor,
+    select: getComputedStyle(el).userSelect,
+  }));
+  check('mobile: no tap-highlight flash on the map',
+    /rgba\(0, 0, 0, 0\)|transparent/.test(hl.tap), hl.tap);
+  check('mobile: map text cannot be selected by a drag', hl.select === 'none', hl.select);
   await p.close();
 }
 

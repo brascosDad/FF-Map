@@ -23,9 +23,19 @@
 
 .mapstage { position: absolute; inset: 0; }
 .mapwrap { position: absolute; inset: 0; touch-action: none; overflow: hidden; }
-.ff-map { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; }
+.ff-map {
+  position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab;
+  /* Nothing on the map is text you would want to select, and a drag across the
+     booth numbers otherwise highlights them. */
+  user-select: none; -webkit-user-select: none;
+}
 .ff-map:active { cursor: grabbing; }
 .ff-tap { cursor: pointer; }
+
+/* No tap flash. A booth square's nearest clickable ancestor is its whole area
+   group -- every booth in the run plus the marker -- so the browser's default
+   highlight painted a screen-sized blue box on every booth tap. */
+.ff-app, .ff-app * { -webkit-tap-highlight-color: transparent; }
 
 /* Floating chrome. No scrim: the map runs underneath and each control carries
    its own chip, so a band across the park is unnecessary. */
@@ -158,5 +168,14 @@
 
 /* ===== Booth stepper ======================================================
    Position only — appearance is .ffc-step in components.css.
+
+   Two knobs, because this one is worth nudging by eye: --stepper-offset moves
+   the whole control up or down (negative is up), --stepper-gap is the air below
+   it before the title. It sat too low and too close to what followed, so it
+   reads as belonging to the booth name rather than sitting above it.
 ========================================================================== */
-.boothnav { margin: var(--space-3) 0 var(--space-1); }
+:root {
+  --stepper-offset: -4px;
+  --stepper-gap: var(--space-5);
+}
+.boothnav { margin: var(--stepper-offset) 0 var(--stepper-gap); }
