@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import Icon from './Icon';
-import { PIN_COLOR, PINS, SLATE } from '../assets/pins';
-import { BOOTH_CAVEAT } from '../data/booths';
+import { PIN_COLOR, SLATE } from '../assets/pins';
+import { BOOTH_CAVEAT, BOOTHS } from '../data/booths';
+import { DIRECTORY, LEGEND } from '../data/directory';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -12,7 +14,7 @@ const POI_COPY = {
   drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
     lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
   wc: { title: 'Restrooms', sub: 'Five-toilet banks + ADA units', icon: 'wc', cat: 'wc',
-    lines: ['Multiple five-toilet banks plus ADA-accessible toilets', 'Positioned near major zones — nearest one highlighted on the map'] },
+    lines: ['Multiple five-toilet banks plus ADA-accessible toilets', 'Selecting restrooms rings every one of them on the map'] },
   firstaid: { title: 'First Aid / EMS', sub: 'On-site medical support', icon: 'firstaid', cat: 'firstaid',
     lines: ['EMS staffed on-site for the duration of the festival', 'Dial 911 for emergencies'] },
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',
@@ -29,7 +31,7 @@ function StageSchedule({ stageKey }) {
   if (!stage) return null;
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.stage }}><Icon name="stage" size={17} color="#fff" /></span><h3>{stage.name}</h3></div>
+      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.stage }}><Icon name="stage" size={17} color="var(--icon-on-color)" /></span><h3>{stage.name}</h3></div>
       <div className="sub">{stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule</div>
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
@@ -39,7 +41,7 @@ function StageSchedule({ stageKey }) {
               <span className="t">{slot.time}</span>
               <span className="a">
                 {slot.act || <em>Open — to be confirmed</em>}
-                {slot.note && <span style={{ display: 'block', fontSize: 11, color: '#9aa0ac' }}>{slot.note}</span>}
+                {slot.note && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{slot.note}</span>}
               </span>
             </div>
           ))}
@@ -53,7 +55,7 @@ function StageSchedule({ stageKey }) {
 function FoodCourt() {
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.food }}><Icon name="food" size={17} color="#fff" /></span><h3>Food Court</h3></div>
+      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.food }}><Icon name="food" size={17} color="var(--icon-on-color)" /></span><h3>Food Court</h3></div>
       <div className="sub">{vendorsData.vendors.length} vendors listed</div>
       {vendorsData.vendors.map((v) => (
         <div className="li" key={v.id}><span className="b" />{v.name}{v.note ? ` (${v.note})` : ''}</div>
@@ -66,7 +68,7 @@ function FoodCourt() {
 function ArtMarketArea({ area }) {
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: SLATE }}><Icon name="art" size={17} color="#fff" /></span><h3>{area.name}</h3></div>
+      <div className="hd"><span className="dot" style={{ background: SLATE }}><Icon name="art" size={17} color="var(--icon-on-color)" /></span><h3>{area.name}</h3></div>
       <div className="sub">{area.range}</div>
       <div className="li"><span className="b" />Individual booth assignments load here once the 2026 vendor list is confirmed.</div>
     </>
@@ -78,7 +80,7 @@ function GenericPoi({ id }) {
   if (!d) return null;
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR[d.cat] }}><Icon name={d.icon} size={17} color="#fff" /></span><h3>{d.title}</h3></div>
+      <div className="hd"><span className="dot" style={{ background: PIN_COLOR[d.cat] }}><Icon name={d.icon} size={17} color="var(--icon-on-color)" /></span><h3>{d.title}</h3></div>
       <div className="sub">{d.sub}</div>
       {d.lines.map((line, i) => <div className="li" key={i}><span className="b" />{line}</div>)}
     </>
@@ -86,66 +88,88 @@ function GenericPoi({ id }) {
 }
 
 
-// Resting state of the docked side panel. On mobile the sheet simply stays
-// down when nothing is selected; on tablet/desktop the panel is always on
-// screen, so it needs something to say.
-const PANEL_AREAS = [
-  { key: 'stage', title: 'Two stages', sub: 'Main Stage + Acoustic Stage' },
-  { key: 'food', title: 'Food court', sub: '16 trucks along the car path' },
-  { key: 'art', title: 'Art market', sub: 'Three runs: in the park, McLendon, Candler Park Dr', color: SLATE },
-  { key: 'kids', title: 'Kidlandia', sub: 'Family activity zone' },
-];
+// Resting state of the docked side panel -- and, on desktop, the primary way
+// into everything on the map. A 40px circle in a park full of 40px circles is
+// not a browsing surface; this list is. Every row centres the map on what it
+// names and opens its detail.
+//
+// The bottom sheet does not show this. On a phone the map itself is the list:
+// there is no room for a directory that would cover the thing it describes.
 
-function PanelHome() {
-  const counts = PINS.reduce((a, p) => ({ ...a, [p.c]: (a[p.c] || 0) + 1 }), {});
+// 'art' is not a pin category -- the three market runs share the booth slate.
+const dotColor = (cat) => (cat === 'art' ? SLATE : PIN_COLOR[cat] || SLATE);
+
+function DirectoryRow({ row, onSelect }) {
+  return (
+    <button className="ffc-poirow" onClick={() => onSelect(row)}>
+      <span className="dot" style={{ background: dotColor(row.cat) }}>
+        <Icon name={row.cat === 'art' ? 'art' : row.cat} size={15} color="var(--icon-on-color)" />
+      </span>
+      <span className="ffc-poirow__text">
+        <b>{row.name}</b>
+        <em>{row.sub}</em>
+      </span>
+      <span className="ffc-poirow__go" aria-hidden="true">›</span>
+    </button>
+  );
+}
+
+function PanelDirectory({ onSelect }) {
   return (
     <>
-      <div className="hd">
-        <h3>Candler Park Fall Fest</h3>
-      </div>
-      <div className="sub" style={{ paddingLeft: 0 }}>October 4–5, 2026</div>
-      <div className="panel-list">
-        {PANEL_AREAS.map((a) => (
-          <div className="panel-row" key={a.key}>
-            <span className="dot" style={{ background: a.color || PIN_COLOR[a.key] || SLATE }}>
-              <Icon name={a.key === 'art' ? 'art' : a.key} size={15} color="#fff" />
-            </span>
-            <span>
-              <b>{a.title}</b>
-              <em>{a.sub}</em>
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="panel-list">
-        {[['wc', 'Restrooms'], ['water', 'Water'], ['drinks', 'Beer & drinks'],
-          ['firstaid', 'First aid'], ['info', 'Info'], ['bikevalet', 'Bike valet']].map(([k, label]) => (
-          counts[k] ? (
-            <div className="panel-row compact" key={k}>
-              <span className="dot sm" style={{ background: PIN_COLOR[k] }}>
-                <Icon name={k} size={12} color="#fff" />
-              </span>
-              <span><b>{label}</b><em>{counts[k]} on the map</em></span>
-            </div>
-          ) : null
-        ))}
-      </div>
-      <div className="foot">Tap anything on the map for details.</div>
+      {DIRECTORY.map((section) => (
+        <div className="dir-section" key={section.title}>
+          <h4 className="dir-title">{section.title}</h4>
+          {section.rows.map((row) => (
+            <DirectoryRow key={`${section.title}-${row.id}`} row={row} onSelect={onSelect} />
+          ))}
+        </div>
+      ))}
     </>
   );
 }
 
-function BoothDetail({ booth }) {
+// Colour is the only thing carrying category on the map now that the labels
+// came off, so the key lives in the panel footer rather than behind a control.
+function Legend() {
+  return (
+    <div className="ffc-legend ffc-legend--inline">
+      {LEGEND.map((l) => (
+        <span className="ffc-legend__row" key={l.cat}>
+          <span className="ffc-legend__dot" style={{ background: dotColor(l.cat) }} />
+          {l.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function BoothDetail({ booth, onStep }) {
   const isFood = booth.area === 'Food Court';
+  const group = BOOTHS[booth.id.split('-')[0]] || [];
+  const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
     <>
+      {/* Above the title, not below it. The stepper is where you ARE in the row;
+          the title is what you are looking at. The map is too dense to tap a
+          specific booth reliably, so this is the real way through a row -- and
+          it wraps inside this area only, so running off the end of the car-path
+          market returns you to its start rather than dumping you into the food
+          trucks. */}
+      <div className="boothnav ffc-step">
+        <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+        <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
+        <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
+      </div>
+
       <div className="hd">
         <span className="dot" style={{ background: isFood ? PIN_COLOR.food : SLATE }}>
-          <Icon name={isFood ? 'food' : 'art'} size={17} color="#fff" />
+          <Icon name={isFood ? 'food' : 'art'} size={17} color="var(--icon-on-color)" />
         </span>
         <h3>{booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}</h3>
       </div>
       <div className="sub">{booth.area}{booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}</div>
+
       {booth.vendor
         ? <div className="li"><span className="b" />Food truck — menu and hours to come.</div>
         : <div className="li"><span className="b" />Artist assignment arrives with the 2026 vendor list.</div>}
@@ -155,21 +179,88 @@ function BoothDetail({ booth }) {
   );
 }
 
-export default function DetailSheet({ openId, openArea, openBooth, onClose, docked = false }) {
+/**
+ * The colour of the thing you opened. Drives the list bullets, so a Kidlandia
+ * sheet's bullets are Kidlandia pink rather than a generic teal -- the badge at
+ * the top and the bullets below it are then obviously about the same place.
+ */
+function accentFor(openId, openArea, openBooth) {
+  if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : SLATE;
+  if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
+  if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
+  if (openArea) return SLATE;
+  return SLATE;
+}
+
+export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
+  const closeRef = useRef(null);
+  const wasOpen = useRef(false);
+
   let body = null;
-  if (openBooth) body = <BoothDetail booth={openBooth} />;
+  if (openBooth) body = <BoothDetail booth={openBooth} onStep={onStepBooth} />;
   else if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
   else if (openId === 'food') body = <FoodCourt />;
   else if (openId) body = <GenericPoi id={openId} />;
   else if (openArea) body = <ArtMarketArea area={openArea} />;
-  else if (docked) body = <PanelHome />;
+  else if (docked) body = <PanelDirectory onSelect={onSelect} />;
+
+  // Focus moves into the sheet when it opens and goes back to the map when it
+  // closes, so a keyboard user is never dropped on <body> with no landmark.
+  // Only the bottom variant does this: the docked panel is always present and
+  // stealing focus on every map tap would be hostile.
+  useEffect(() => {
+    if (docked) return;
+    // preventScroll: focusing a control inside a fixed sheet must not ask the
+    // browser to scroll it into view -- on iOS that drags the whole page down.
+    if (isOpen && !wasOpen.current) closeRef.current?.focus({ preventScroll: true });
+    if (!isOpen && wasOpen.current) onFocusReturn?.();
+    wasOpen.current = isOpen;
+  }, [isOpen, docked, onFocusReturn]);
+
+  useEffect(() => {
+    if (!isOpen || docked) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, docked, onClose]);
 
   return (
-    <div className={`sheet${isOpen ? ' open' : ''}${docked ? ' docked' : ''}`}>
-      <div className="grip" />
-      {isOpen && <button className="close" onClick={onClose}><Icon name="close" size={20} /></button>}
-      {body}
+    <div
+      className={`sheet ffc-panel${isOpen ? ' open' : ''}${docked ? ' docked ffc-panel--right' : ' ffc-panel--bottom'}`}
+      // The bottom variant is a dialog. The docked panel is not -- it is
+      // persistent page furniture, not something you dismiss.
+      role={docked ? undefined : 'dialog'}
+      aria-modal={docked ? undefined : 'false'}
+      aria-label={docked ? undefined : 'Location detail'}
+      data-open={isOpen ? 'true' : 'false'}
+    >
+      {!docked && <div className="grip" />}
+
+      {/* Docked, the panel keeps its own header and a back row instead of an X:
+          closing a detail here does not dismiss anything, it returns you to the
+          list. The bottom sheet still gets a close button -- it really does go
+          away. */}
+      {docked && !isOpen && (
+        <div className="panel-head">
+          <h3>Candler Park Fall Fest</h3>
+          <p>October 4–5, 2026</p>
+        </div>
+      )}
+      {docked && isOpen && (
+        <button className="panel-back" onClick={onClose}>
+          <span aria-hidden="true">‹</span> All locations
+        </button>
+      )}
+      {!docked && isOpen && (
+        <button className="close" ref={closeRef} onClick={onClose} aria-label="Close detail">
+          <Icon name="close" size={20} />
+        </button>
+      )}
+
+      <div className="panel-scroll" style={{ '--sheet-accent': accentFor(openId, openArea, openBooth) }}>{body}</div>
+
+      {docked && !isOpen && <div className="panel-foot"><Legend /></div>}
     </div>
   );
 }

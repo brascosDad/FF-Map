@@ -1,11 +1,19 @@
 @import './tokens.css';
+@import './components.css';
 @import './fonts.css';
 
 * { box-sizing: border-box; }
 
+/* The document must not scroll. Everything that scrolls does it inside a panel.
+   On iOS the app box is 100dvh while the document box is not, so the page ends
+   up a toolbar-height taller than the window -- and then anything that scrolls
+   an element into view (focusing the sheet's close button, say) slides the whole
+   screen down. Locking it here is what stops that. */
 html, body, #root {
   height: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
@@ -29,8 +37,8 @@ button {
 }
 
 /* Above the phone breakpoint the app stops pretending to be a phone and takes
-   the whole viewport, so the map has real room next to the docked panel.
-   Below it, the 480px cap stays: a phone-width column centred on any screen. */
+   the whole viewport -- on tablet so the map is full-bleed under a centred
+   sheet, on desktop so it has room beside the docked panel. */
 @media (min-width: 768px) {
   .ff-app { max-width: none; }
 }

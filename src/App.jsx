@@ -4,17 +4,24 @@ import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
-import Icon from './components/Icon';
-import DevSurround from './components/DevSurround';
+import { BOOTHS } from './data/booths';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
 // same content into a persistent side panel, which is what the desktop
 // wireframe's right panel is for.
-const PANEL_AT = '(min-width: 768px)';
-const DESKTOP_AT = '(min-width: 1180px)';
-const PANEL_W = { tablet: 300, desktop: 380 };
-const GAP = 16; // matches --ff-gap in map.css
+// One breakpoint, not two. Below it the detail arrives as a bottom sheet (full
+// width on a phone, 560 max and centred on a tablet); at and above it the panel
+// docks to the right. Tablet portrait is too narrow to give up 360px.
+const PANEL_AT = '(min-width: 1024px)';
+const PANEL_W = 360;  // --panel-width
+const GAP = 20;       // --ff-gap / --space-5
+// Phone screens get the map drawn ~10% larger at the overview. The festival
+// still fits, but only just -- about 10 map units (~6px) of margin either side.
+const MOBILE_OVERVIEW_ZOOM = 1.1;
+
+// The brand lockup links back to the festival site. Confirmed by Ernest 9/11.
+const FEST_URL = 'https://fallfest.candlerpark.org/';
 
 function useMedia(query) {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -30,17 +37,15 @@ function useMedia(query) {
 
 export default function App() {
   const docked = useMedia(PANEL_AT);
-  const isDesktop = useMedia(DESKTOP_AT);
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
-  const insetRight = docked ? (isDesktop ? PANEL_W.desktop : PANEL_W.tablet) + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, stepLevel, resetToOverview } =
-    useMapView({ insetRight });
+  const insetRight = docked ? PANEL_W + GAP * 2 : 0;
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, centerOn, focusOn, resetToOverview } =
+    useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
   const [openBooth, setOpenBooth] = useState(null);
-  const [gps, setGps] = useState(false);
 
   function closeAll() {
     setOpenId(null);
@@ -64,12 +69,56 @@ export default function App() {
     setOpenArea(cluster);
   }
 
+  /**
+   * Step to the next/previous booth, wrapping WITHIN the booth's own area.
+   * Stepping off the end of the art market on the car path returns you to its
+   * start -- it does not spill into the food trucks, which are a different
+   * errand. The area is read off the booth id ('spine-04' -> 'spine').
+   */
+  function stepBooth(dir) {
+    if (!openBooth) return;
+    const group = BOOTHS[openBooth.id.split('-')[0]];
+    if (!group) return;
+    const i = group.findIndex((b) => b.id === openBooth.id);
+    const next = group[(i + dir + group.length) % group.length];
+    setOpenBooth(next);
+    centerOn(next.x, next.y);
+  }
+
   function handleBoothClick(booth) {
     if (suppressClickRef.current) return;
     setFilter(null);
     setOpenId(null);
     setOpenArea(null);
     setOpenBooth(booth);
+  }
+
+  /**
+   * A row in the docked directory. Three shapes, because three things are being
+   * pointed at:
+   *   poi   one pin -- fly to it and open its detail
+   *   cat   several pins of one category (restrooms, beer) -- there is no single
+   *         point to fly to, so filter the map to them and open the shared
+   *         detail; the map stays where it is rather than picking a favourite
+   *   area  an art-market run -- fly to its marker and open the area
+   */
+  function handleDirectorySelect(row) {
+    setOpenBooth(null);
+    if (row.kind === 'area') {
+      setFilter(null);
+      setOpenId(null);
+      setOpenArea(row.area);
+      focusOn(row.at[0], row.at[1]);
+      return;
+    }
+    setOpenArea(null);
+    setOpenId(row.d);
+    if (row.kind === 'cat') {
+      setFilter(row.filter);
+    } else {
+      setFilter(null);
+      focusOn(row.at[0], row.at[1]);
+    }
   }
 
   function handleChipToggle(catId) {
@@ -100,43 +149,47 @@ export default function App() {
           wrapRef={wrapRef}
           viewBox={viewBox}
           filter={filter}
-          showBlobs={overview && !isDesktop}
+          showBlobs={overview && !docked}
+          unitsPerPx={unitsPerPx}
           showNumbers={detail}
           detail={detail}
-          gps={gps}
           onPinClick={handlePinClick}
           onAreaClick={handleAreaClick}
           onBoothClick={handleBoothClick}
+          selectedBoothId={openBooth?.id}
+          selectedPoiId={openId}
+          selectedAreaId={openArea?.id}
         />
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
           <div className="tbrow">
-            <button className="navbtn" title="Reset to overview" onClick={handleBack}>
-              <Icon name="caretright" size={15} className="ci" />
-            </button>
-            <div className="brandline"><b>Fall Fest</b> <span>· Oct 4–5, 2026</span></div>
+            {/* No pill: the title sits directly on the map, at twice the size
+                it was. It is the masthead, not a control. */}
+            <a className="ffc-brand" href={FEST_URL} target="_blank" rel="noreferrer">
+              <span className="ffc-brand__name">Fall Fest</span>
+              <span className="ffc-brand__dates">Oct 4–5, 2026</span>
+            </a>
           </div>
           <FilterChips active={filter} onToggle={handleChipToggle} />
         </div>
 
         <div onClick={(e) => e.stopPropagation()}>
-          <ZoomControls levelIdx={levelIdx} onStep={stepLevel} />
+          <ZoomControls levelIdx={levelIdx} onStep={stepLevel} onReset={handleBack} />
         </div>
 
-        <button
-          className={`float locate${gps ? ' on' : ''}`}
-          title="You are here"
-          onClick={(e) => { e.stopPropagation(); setGps((v) => !v); }}
-        >
-          <Icon name="locate" size={22} />
-        </button>
-
         </div>
-
-        {import.meta.env.DEV && <DevSurround />}
 
         <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
-          <DetailSheet docked={docked} openId={openId} openArea={openArea} openBooth={openBooth} onClose={closeAll} />
+          <DetailSheet
+            docked={docked}
+            openId={openId}
+            openArea={openArea}
+            openBooth={openBooth}
+            onStepBooth={stepBooth}
+            onSelect={handleDirectorySelect}
+            onClose={closeAll}
+            onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
+          />
         </div>
       </div>
     </div>

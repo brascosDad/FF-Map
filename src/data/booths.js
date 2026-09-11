@@ -12,6 +12,16 @@
 //     booth numbers, which is why they read "Booth 12 (map order)" in the UI.
 //
 // Regenerate with scripts/build-booths.py.
+//
+// TWO DELIBERATE DEPARTURES from the export, both in the food court. Stalls 2
+// and 3 sat past the north tip of the hand-drawn food blob, so they read as two
+// trucks parked outside their own area. They are nudged ~9 units down the row's
+// own axis to sit inside it:
+//     food-02  872.0, 244.3  ->  868.0, 252.1
+//     food-03  885.6, 250.4  ->  881.3, 258.9
+// Their spacing to their neighbours (14.3 and 14.6 units) still matches the rest
+// of the row. If build-booths.py is re-run, re-apply these two, or move the blob
+// in Figma instead and drop them.
 
 export const BOOTHS = {
   cpd: [
@@ -185,8 +195,8 @@ export const BOOTHS = {
   ],
   food: [
     { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3, vendor: "Sokome" },
-    { id: 'food-02', n: 2, area: 'Food Court', x: 872.0, y: 244.3, vendor: "Snowie Atlanta Creations" },
-    { id: 'food-03', n: 3, area: 'Food Court', x: 885.6, y: 250.4, vendor: "Sweet Auburn BBQ" },
+    { id: 'food-02', n: 2, area: 'Food Court', x: 868.0, y: 252.1, vendor: "Snowie Atlanta Creations" },
+    { id: 'food-03', n: 3, area: 'Food Court', x: 881.3, y: 258.9, vendor: "Sweet Auburn BBQ" },
     { id: 'food-04', n: 4, area: 'Food Court', x: 849.8, y: 259.1, vendor: "The Pickle Food Truck" },
     { id: 'food-05', n: 5, area: 'Food Court', x: 894.2, y: 260.3, vendor: "Makara's Mediterranean" },
     { id: 'food-06', n: 6, area: 'Food Court', x: 844.9, y: 272.6, vendor: "Hermanita by Tio Lucho's" },

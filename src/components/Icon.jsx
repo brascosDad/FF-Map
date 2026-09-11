@@ -20,7 +20,7 @@ export default function Icon({ name, size = 20, color = 'currentColor', classNam
 }
 
 /** Same icon, but positioned/sized to sit centered at (x, y) inside a parent <svg>. */
-export function IconAt({ name, x, y, size = 14, color = '#fff' }) {
+export function IconAt({ name, x, y, size = 14, color = 'var(--icon-on-color)' }) {
   const path = ICONS[name];
   if (!path) return null;
   return (
