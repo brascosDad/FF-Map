@@ -1,0 +1,86 @@
+# "Sync from Figma": pull the map frame from Figma, regenerate the blob data,
+# and open a pull request with the result. Vercel builds a preview for the PR,
+# so the whole loop (tweak in Figma -> run this -> check preview -> merge) works
+# from a phone.
+#
+# Run it: GitHub -> Actions -> Sync from Figma -> Run workflow. Pick the branch
+# the PR should go into (normally claude/fallfest-map-commit-0l2v4y).
+#
+# Needs: repo secret FIGMA_TOKEN (Figma personal access token, "File content:
+# Read"), and Settings -> Actions -> General -> Workflow permissions set to
+# "Read and write" with "Allow GitHub Actions to create and approve pull
+# requests" checked.
+#
+# Note: GitHub only shows a manual "Run workflow" button for workflows that are
+# on the default branch (main), so this file has to reach main before the
+# button appears.
+name: Sync from Figma
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: What changed in Figma (goes in the PR description)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-figma
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Pull the map frame from Figma
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: node scripts/pull-figma.mjs
+
+      - name: Regenerate blob data
+        run: python3 scripts/extract-blobs.py
+
+      - name: Did anything change?
+        id: diff
+        run: |
+          if git diff --quiet -- design/basemap.svg src/assets/basemapBlobs.js; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Figma matches what's already in the repo. Nothing to do." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- design/basemap.svg src/assets/basemapBlobs.js >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Make sure it still builds
+        if: steps.diff.outputs.changed == 'true'
+        run: npm ci && npm run build
+
+      - name: Open a pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: figma-sync/run-${{ github.run_number }}
+          base: ${{ github.ref_name }}
+          add-paths: |
+            design/basemap.svg
+            src/assets/basemapBlobs.js
+          commit-message: "Sync map from Figma (run ${{ github.run_number }})"
+          title: "Sync map from Figma${{ inputs.note != '' && format(': {0}', inputs.note) || '' }}"
+          body: |
+            Pulled `fall-fest-desktop-map-trace-090526` from Figma and regenerated the blob data.
+
+            ${{ inputs.note }}
+
+            Check the Vercel preview on this PR before merging.
+          delete-branch: true
