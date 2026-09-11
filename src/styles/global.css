@@ -4,9 +4,16 @@
 
 * { box-sizing: border-box; }
 
+/* The document must not scroll. Everything that scrolls does it inside a panel.
+   On iOS the app box is 100dvh while the document box is not, so the page ends
+   up a toolbar-height taller than the window -- and then anything that scrolls
+   an element into view (focusing the sheet's close button, say) slides the whole
+   screen down. Locking it here is what stops that. */
 html, body, #root {
   height: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {

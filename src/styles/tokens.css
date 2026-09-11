@@ -113,7 +113,8 @@
   /* Type */
   --font-display: 'Brice', 'Manrope', system-ui, sans-serif; /* brand lockup only — see src/assets/fonts/README.md */
   --font-ui: 'Manrope', system-ui, sans-serif;
-  --text-3xl: 28px;  /* brand lockup */
+  --text-brand: 56px; /* brand lockup — the masthead, sat on the map */
+  --text-3xl: 28px;
   --text-2xl: 18px;  /* panel title */
   --text-lg: 15px;   /* body, chips */
   --text-md: 14px;
@@ -142,6 +143,7 @@
   --shadow-control: 0 2px 8px rgb(35 56 91 / 15%);
   --shadow-panel: 0 8px 30px rgb(35 56 91 / 13%);
   --shadow-sheet: 0 -6px 24px rgb(35 56 91 / 18%);
+  --shadow-foot: 0 -8px 18px -6px rgb(35 56 91 / 22%);  /* pinned footer over a scroll */
 
   /* Motion. 420ms matches STEP_COOLDOWN in useMapView — the zoom transition
      and the input lockout are the same duration on purpose. */

@@ -72,6 +72,9 @@ from the booth positions. `scripts/extract-blobs.py` pulls them out of
 `design/basemap.svg` into `src/assets/basemapBlobs.js` — change the shape in
 Figma, re-export, re-run the script. Don't hand-edit the JS.
 
+- [ ] **Blobs are area, not outline** — no stroke, and each is its own marker's
+      hue at 34%: the food court is the food orange, the three markets the booth
+      slate.
 - [ ] **Candler Park Dr is one bar**, sitting inside the street. It's still
       clipped to the 28-unit street band, so it can't touch grass, but eyeball it.
 - [ ] **McLendon is one bar and runs across Mell Ave.** Deliberate: the market
@@ -82,9 +85,19 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
       spacing, not an entrance.
 - [ ] **Every blob contains every square.** Switch between 1/3 and 2/3 a few
       times and watch whether any square pops out beyond where the blob was.
-      **Two food stalls sit just past the tip of the food-court blob** — known,
-      and Ernest's call whether the blob grows or the stalls move.
+      Stalls 2 and 3 used to sit past the north tip of the food blob; they were
+      nudged ~9 units down the row (9/11) and every stall is now inside.
 - [ ] Food court blob hugs the trucks and doesn't reach the pool or the path.
+
+---
+
+## 2b. Booths
+
+- [ ] **Zoom to 3/3 on the car path.** The booth squares are turned 36° so they
+      sit square to the path, the way a booth faces the aisle — not square to
+      the screen. The numbers stay upright.
+- [ ] **The two street markets are NOT turned.** Candler Park Dr and McLendon
+      line straight streets, so their squares are already square to them.
 
 ---
 
@@ -102,6 +115,14 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
 - [ ] Tap the **16th food stall** → no vendor name (only 15 in last year's list).
       Should read "Stall 16", not blank or `undefined`.
 - [ ] Tap empty map → any open sheet closes.
+- [ ] **The sheet only ever moves up.** Tap a pin on a phone and watch the top of
+      the screen: the map must stay put while the sheet slides up over it.
+      *(Fixed 9/11 — the document could be a toolbar-height taller than the
+      window on iOS, so the sheet taking focus scrolled the whole page down.
+      Worth a real-device check: it does not reproduce in a desktop emulator.)*
+- [ ] **Sheet bullets match what you opened** — Kidlandia's are Kidlandia pink,
+      the food court's are food orange. Never one shared teal.
+- [ ] **The booth stepper sits above the title**, not below it.
 
 ### Tap edge cases
 
@@ -217,6 +238,18 @@ The point here is that nothing invented is presented as real.
 - [ ] A food-truck sheet makes clear the name is last year's list pinned to this
       year's stall.
 - [ ] No artist names appear anywhere — we have none, and none were invented.
+
+---
+
+## 7b. The masthead
+
+- [ ] **"Fall Fest" sits straight on the map**, no pill, at 56px, with the dates
+      a small caption beside it.
+- [ ] **It links out to the festival site.** ⚠️ The URL is unverified — this
+      session had no outbound access to check it. It's one constant, `FEST_URL`
+      at the top of `src/App.jsx`.
+- [ ] Legible where it overlaps the map: it carries a soft light halo rather than
+      a plate behind it.
 
 ---
 

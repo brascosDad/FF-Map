@@ -20,6 +20,11 @@ const GAP = 20;       // --ff-gap / --space-5
 // still fits, but only just -- about 10 map units (~6px) of margin either side.
 const MOBILE_OVERVIEW_ZOOM = 1.1;
 
+// The brand lockup links back to the festival site. UNVERIFIED: this session has
+// no outbound access to check the address, so confirm it before launch -- it is
+// the only place the URL appears.
+const FEST_URL = 'https://candlerparkfallfest.com';
+
 function useMedia(query) {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
   useEffect(() => {
@@ -160,10 +165,12 @@ export default function App() {
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
           <div className="tbrow">
-            <span className="ffc-brand">
+            {/* No pill: the title sits directly on the map, at twice the size
+                it was. It is the masthead, not a control. */}
+            <a className="ffc-brand" href={FEST_URL} target="_blank" rel="noreferrer">
               <span className="ffc-brand__name">Fall Fest</span>
               <span className="ffc-brand__dates">Oct 4–5, 2026</span>
-            </span>
+            </a>
           </div>
           <FilterChips active={filter} onToggle={handleChipToggle} />
         </div>
@@ -183,7 +190,7 @@ export default function App() {
             onStepBooth={stepBooth}
             onSelect={handleDirectorySelect}
             onClose={closeAll}
-            onFocusReturn={() => mapRef.current?.focus()}
+            onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
           />
         </div>
       </div>

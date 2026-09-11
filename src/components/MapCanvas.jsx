@@ -1,7 +1,7 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS } from '../data/booths';
-import { AREAS } from '../data/areas';
+import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
@@ -43,15 +43,20 @@ const MAP_NUMBER = 'var(--map-number)';
 const MAP_HALO = 'var(--map-halo)';
 const FOOD_LABEL = 'var(--map-food-label)';
 
-function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId } = {}) {
+function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0 } = {}) {
   return booths.map((b) => (
     <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
       {/* Selected is a navy FILL, per the system -- not a ring. A ring big
           enough to read was 22px across against a ~16px booth pitch, so it
           encircled the neighbour's number as often as its own booth. */}
+      {/* Rotated to the run's own axis (BOOTH_ANGLE) so a booth sits square to
+          the path it lines, the way it does on the ground. The hit area and the
+          number below stay screen-aligned -- a tilted tap target buys nothing,
+          and tilted numerals are just harder to read. */}
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
             rx={1.6}
+            transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
             fill={b.id === selectedId ? NAVY : color}
             fillOpacity={b.id === selectedId ? 1 : 0.6} />
       {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
@@ -66,13 +71,18 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId } = {}
 }
 
 // At the furthest-out level the individual squares are illegible, so each area
-// collapses to a single blob: filled soft, stroked firm. Organic shape, ordered
-// edge -- and tight enough to its own footprint that it never reads as spilling
-// into the area next door.
+// collapses to a single blob.
+//
+// Area, not outline: no stroke. The blob is the same hue as the area's own
+// marker -- food trucks take the food orange, the three markets take the booth
+// slate -- dropped in opacity so it reads as that category's ground rather than
+// as a separate object. A stroke made it a shape sitting ON the map instead.
+const BLOB_OPACITY = 0.34;
+
 function Blobs({ paths, color, clip }) {
   return paths.map((d, i) => (
     <path key={i} d={d} clipPath={clip ? `url(#${clip})` : undefined}
-          fill={color} fillOpacity={0.26} stroke={color} strokeOpacity={0.5} strokeWidth={2} />
+          fill={color} fillOpacity={BLOB_OPACITY} />
   ));
 }
 
@@ -139,7 +149,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
 
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color={PIN_COLOR.food} />
-          : boxes(BOOTHS.food, PIN_COLOR.food, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
+          : boxes(BOOTHS.food, PIN_COLOR.food, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.food })}
         {detail && (
           <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill={FOOD_LABEL} textAnchor="middle" stroke={MAP_HALO} strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
         )}
@@ -147,7 +157,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
         {AREAS.map((cl) => (
           <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={(e) => { e.stopPropagation(); onAreaClick(cl); }}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
-              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId })}
+              : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE[cl.id] })}
             <g className="ff-marker" filter="url(#ds)">
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />

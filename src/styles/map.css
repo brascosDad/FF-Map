@@ -85,7 +85,10 @@
 .evt .t { flex: 0 0 72px; color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
 .evt .a { color: var(--text-body); }
 .li { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2) var(--space-1); font-size: var(--text-md); color: var(--text-body); line-height: 1.45; }
-.li .b { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--zone-fill); margin-top: 7px; }
+/* Bullets take the colour of the thing you opened -- see accentFor() in
+   DetailSheet. Teal for everything read as a fourth brand colour rather than as
+   part of the place you tapped. */
+.li .b { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--sheet-accent, var(--cat-booth)); margin-top: 7px; }
 .sheet .foot { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--sand-100); }
 
 /* Tablet: still a sheet, but capped and centred rather than spanning a 1023px
@@ -115,7 +118,16 @@
 .ff-screen.docked .panel-head { padding: var(--space-4) var(--space-4) var(--space-3); border-bottom: 1px solid var(--sand-100); }
 .ff-screen.docked .panel-head h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--text-strong); }
 .ff-screen.docked .panel-head p { margin: 2px 0 0; font-size: var(--text-xs); color: var(--text-muted); }
-.ff-screen.docked .panel-foot { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--sand-100); }
+/* The key is pinned while the directory scrolls under it, so it needs to read
+   as a layer on top rather than as the last row of the list. Shadow casts
+   upward, against the scroll. */
+.ff-screen.docked .panel-foot {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-control);
+  box-shadow: var(--shadow-foot);
+  background: var(--panel-bg, var(--surface-chrome-solid));
+  position: relative; z-index: 1;
+}
 
 /* Back, not close. The docked panel is furniture -- there is nothing to
    dismiss, only a list to return to. */

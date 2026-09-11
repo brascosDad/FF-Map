@@ -154,7 +154,8 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: no grey header band`, scrim === 'none', scrim);
 
   // ---- overview semantics ----
-  const blobCount = await p.locator('svg.ff-map path[stroke-opacity="0.5"]').count();
+  // Blobs are fill-only now (no stroke), so identify them by their fill opacity.
+  const blobCount = await p.locator('svg.ff-map path[fill-opacity="0.34"]').count();
   check(`${name}: overview shows ${docked ? 'squares (docked)' : 'blobs'}`,
     docked ? blobCount === 0 : blobCount > 0, `${blobCount} blob paths`);
   const labels = await p.locator('svg.ff-map text').allTextContents();
@@ -464,6 +465,63 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
       check(`${name}: directory row flies in a level`, w1 < w0 * 0.8, `${Math.round(w0)} -> ${Math.round(w1)} units wide`);
     });
   }
+  await p.close();
+}
+
+// ---- the 9/11 design pass ----
+for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+
+  // Blobs are area, not outline, and carry their category's own hue.
+  await safe(`${name}: blobs have no stroke`, async () => {
+    const strokes = await p.locator('svg.ff-map path[fill-opacity="0.34"]')
+      .evaluateAll((els) => els.map((e) => getComputedStyle(e).stroke));
+    check(`${name}: blobs have no stroke`, strokes.every((v) => v === 'none'), strokes.join(',') || '(none drawn here)');
+  });
+
+  // The document itself must never scroll -- that is what dragged the whole
+  // screen down on a phone when the sheet took focus.
+  const scrollable = await p.evaluate(() => {
+    const e = document.scrollingElement;
+    return e.scrollHeight > e.clientHeight + 1 || document.body.scrollHeight > window.innerHeight + 1;
+  });
+  check(`${name}: the page itself cannot scroll`, !scrollable);
+
+  // Masthead: a link, no pill, and big.
+  const brand = await p.locator('.ffc-brand').evaluate((el) => ({
+    tag: el.tagName, href: el.getAttribute('href'),
+    size: parseFloat(getComputedStyle(el.querySelector('.ffc-brand__name')).fontSize),
+    bg: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth,
+  }));
+  check(`${name}: masthead links out`, brand.tag === 'A' && !!brand.href, brand.href || brand.tag);
+  check(`${name}: masthead is 56px, out of its pill`,
+    brand.size === 56 && brand.border === '0px' && /rgba\(0, 0, 0, 0\)/.test(brand.bg),
+    `${brand.size}px, border ${brand.border}, bg ${brand.bg}`);
+
+  // Booth squares sit square to the run they line, not to the screen.
+  await safe(`${name}: car-path booths are rotated to the path`, async () => {
+    await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600);
+    await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600);
+    const t = await p.locator('g.ff-area[data-area="spine"] rect[transform]').first().getAttribute('transform');
+    const mcl = await p.locator('g.ff-area[data-area="mcl"] rect').first().getAttribute('transform');
+    check(`${name}: car-path booths are rotated to the path`, (t || '').startsWith('rotate(36 '), t || '(none)');
+    check(`${name}: street-market booths are not rotated`, mcl === null, mcl || 'no transform');
+  });
+  await p.close();
+}
+
+// Sheet bullets take the colour of the thing you opened, not one shared teal.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('g.ffc-pin--kids').first().click();
+  await p.waitForTimeout(400);
+  const bullet = await p.locator('.li .b').first().evaluate((e) => getComputedStyle(e).backgroundColor);
+  check('mobile: sheet bullets match the pin you opened', bullet === 'rgb(194, 91, 126)', `${bullet} (want --pin-kids)`);
+  // The stepper belongs above the title: where you are, then what you are looking at.
   await p.close();
 }
 

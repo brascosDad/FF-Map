@@ -150,6 +150,18 @@ function BoothDetail({ booth, onStep }) {
   const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
     <>
+      {/* Above the title, not below it. The stepper is where you ARE in the row;
+          the title is what you are looking at. The map is too dense to tap a
+          specific booth reliably, so this is the real way through a row -- and
+          it wraps inside this area only, so running off the end of the car-path
+          market returns you to its start rather than dumping you into the food
+          trucks. */}
+      <div className="boothnav ffc-step">
+        <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+        <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
+        <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
+      </div>
+
       <div className="hd">
         <span className="dot" style={{ background: isFood ? PIN_COLOR.food : SLATE }}>
           <Icon name={isFood ? 'food' : 'art'} size={17} color="var(--icon-on-color)" />
@@ -158,16 +170,6 @@ function BoothDetail({ booth, onStep }) {
       </div>
       <div className="sub">{booth.area}{booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}</div>
 
-      {/* The map is too dense to tap a specific booth reliably, so these are the
-          real way through a row. They wrap inside this area only -- running off
-          the end of the car-path market returns you to its start rather than
-          dumping you into the food trucks. */}
-      <div className="boothnav ffc-step">
-        <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
-        <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
-        <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
-      </div>
-
       {booth.vendor
         ? <div className="li"><span className="b" />Food truck — menu and hours to come.</div>
         : <div className="li"><span className="b" />Artist assignment arrives with the 2026 vendor list.</div>}
@@ -175,6 +177,19 @@ function BoothDetail({ booth, onStep }) {
       <div className="foot">{BOOTH_CAVEAT}</div>
     </>
   );
+}
+
+/**
+ * The colour of the thing you opened. Drives the list bullets, so a Kidlandia
+ * sheet's bullets are Kidlandia pink rather than a generic teal -- the badge at
+ * the top and the bullets below it are then obviously about the same place.
+ */
+function accentFor(openId, openArea, openBooth) {
+  if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : SLATE;
+  if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
+  if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
+  if (openArea) return SLATE;
+  return SLATE;
 }
 
 export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onClose, docked = false, onFocusReturn }) {
@@ -196,7 +211,9 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
   // stealing focus on every map tap would be hostile.
   useEffect(() => {
     if (docked) return;
-    if (isOpen && !wasOpen.current) closeRef.current?.focus();
+    // preventScroll: focusing a control inside a fixed sheet must not ask the
+    // browser to scroll it into view -- on iOS that drags the whole page down.
+    if (isOpen && !wasOpen.current) closeRef.current?.focus({ preventScroll: true });
     if (!isOpen && wasOpen.current) onFocusReturn?.();
     wasOpen.current = isOpen;
   }, [isOpen, docked, onFocusReturn]);
@@ -241,7 +258,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
         </button>
       )}
 
-      <div className="panel-scroll">{body}</div>
+      <div className="panel-scroll" style={{ '--sheet-accent': accentFor(openId, openArea, openBooth) }}>{body}</div>
 
       {docked && !isOpen && <div className="panel-foot"><Legend /></div>}
     </div>

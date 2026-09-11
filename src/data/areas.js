@@ -17,3 +17,17 @@ export const AREAS = [
   { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
   { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
+
+/**
+ * How far each run's booth squares are rotated, in degrees, so they sit square
+ * to the path they line rather than square to the screen. A booth at the
+ * festival faces the aisle; a grid of screen-aligned rectangles along a diagonal
+ * path does not look like anything real.
+ *
+ * Measured, not guessed: each run splits into its two facing columns, and each
+ * column's own principal axis is fitted. The two columns agree to within a
+ * degree on the car path (35.8 and 36.4) and within seven on the shorter food
+ * row (24.2 and 17.5), which is where the 36 and 21 come from. The two street
+ * markets line straight streets, so their squares are already square to them.
+ */
+export const BOOTH_ANGLE = { cpd: 0, mcl: 0, spine: 36, food: 21 };

@@ -70,6 +70,7 @@
       <tr><th>Navy fill</th><td><b>Selected</b>, where the thing has no colour of its own to lose — a booth square.</td></tr>
       <tr><th>Navy ring</th><td><b>Selected</b>, where it does — a pin keeps its category hue and takes a cream-backed navy ring instead. Selecting a category (restrooms, beer) rings every pin in it.</td></tr>
       <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid.</td></tr>
+      <tr><th>The same hue, faded</th><td><b>That category's ground.</b> An area blob is its own marker's hue at 34% and <em>no stroke</em> — area, not outline. A sheet's list bullets are the hue of whatever you opened, so the badge at the top and the bullets below are obviously one place.</td></tr>
     </table>
   </div>
 
@@ -78,7 +79,8 @@
     <p style="font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--text-strong);margin:0">Fall Fest</p>
     <p style="color:var(--text-muted);font-size:var(--text-xs);margin:4px 0 var(--space-4)">Brice — brand lockup only. Everything else is Manrope.</p>
     <table>
-      <tr><th>28</th><td style="font-size:28px;font-weight:800">Brand lockup</td></tr>
+      <tr><th>56</th><td style="font-size:56px;font-weight:800;line-height:1">Masthead</td></tr>
+      <tr><th>28</th><td style="font-size:28px;font-weight:800">Display</td></tr>
       <tr><th>18</th><td style="font-size:18px;font-weight:800">Panel title</td></tr>
       <tr><th>15</th><td style="font-size:15px">Body, chips</td></tr>
       <tr><th>14</th><td style="font-size:14px">List rows</td></tr>
@@ -182,6 +184,7 @@
       <button aria-label="Next">›</button>
     </div>
     <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
+      Sits <b>above</b> the title: where you are in the row, then what you are looking at.
       Booth pitch is ~9 map units, so tapping a specific booth is unreliable even zoomed in.
       This is the primary way through a row. It wraps <b>inside one area</b> — running off the
       end of the car-path market returns to its start rather than spilling into the food trucks.
@@ -238,7 +241,8 @@
           dimension on it, so there is nothing to derive a distance from yet — a scale bar with a
           guessed number is worse than none. Needs one confirmed ground measurement.
         </p>
-        <span class="ffc-brand"><span class="ffc-brand__name">Fall Fest</span><span class="ffc-brand__dates">Oct 4–5, 2026</span></span>
+        <a class="ffc-brand" href="#"><span class="ffc-brand__name">Fall Fest</span><span class="ffc-brand__dates">Oct 4–5, 2026</span></a>
+        <p style="font-size:var(--text-xs);color:var(--text-muted);margin:0;max-width:260px">The masthead: 56px, no pill, sat straight on the map, linking back to the festival site. The dates stay a 12px caption beside it.</p>
       </div>
     </div>
   </div>
