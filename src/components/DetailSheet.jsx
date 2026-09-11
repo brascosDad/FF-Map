@@ -282,7 +282,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
       {docked && !isOpen && (
         <div className="panel-head">
           <h3>Candler Park Fall Fest</h3>
-          <p>October 4–5, 2026</p>
+          <p>October 3–4, 2026</p>
         </div>
       )}
       {docked && isOpen && (
