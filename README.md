@@ -80,6 +80,17 @@ design-system.html   the style guide, built from the real token/component files
 TESTING.md           the manual protocol
 ```
 
+## Updating the map from Figma
+
+Edit the frame `fall-fest-desktop-map-trace-090526` in Figma, then GitHub →
+Actions → **Sync from Figma** → Run workflow (pick this branch). It pulls the
+frame via the Figma API (`scripts/pull-figma.mjs`, secret `FIGMA_TOKEN`), re-runs
+`extract-blobs.py`, and opens a PR with a Vercel preview.
+
+`design/basemap.svg` is now a generated snapshot — don't export it by hand or
+edit it. Keep the `blob-*` layer names, keep `UI-elements` hidden, and don't
+duplicate or replace the frame (it's found by node id `5906:4939`).
+
 ## Checks
 
 ```bash
