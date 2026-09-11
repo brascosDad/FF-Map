@@ -230,6 +230,11 @@
 .ffc-brand { display: inline-flex; align-items: baseline; gap: var(--space-2); text-decoration: none; }
 .ffc-brand__name {
   font: var(--weight-black) var(--text-brand)/1 var(--font-display);
+  /* All caps, to match the festival site's own lockup. Done in CSS so the
+     accessible name stays "Fall Fest" rather than being shouted at a screen
+     reader. */
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--text-strong);
   text-shadow: 0 1px 0 var(--surface-chrome-solid), 0 0 12px var(--surface-chrome);
 }

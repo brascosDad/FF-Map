@@ -113,7 +113,7 @@
   /* Type */
   --font-display: 'Brice', 'Manrope', system-ui, sans-serif; /* brand lockup only — see src/assets/fonts/README.md */
   --font-ui: 'Manrope', system-ui, sans-serif;
-  --text-brand: 56px; /* brand lockup — the masthead, sat on the map */
+  --text-brand: 48px; /* brand lockup — the masthead, sat on the map */
   --text-3xl: 28px;
   --text-2xl: 18px;  /* panel title */
   --text-lg: 15px;   /* body, chips */

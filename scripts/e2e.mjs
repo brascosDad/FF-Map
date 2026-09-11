@@ -493,12 +493,13 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   const brand = await p.locator('.ffc-brand').evaluate((el) => ({
     tag: el.tagName, href: el.getAttribute('href'),
     size: parseFloat(getComputedStyle(el.querySelector('.ffc-brand__name')).fontSize),
+    caps: getComputedStyle(el.querySelector('.ffc-brand__name')).textTransform,
     bg: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth,
   }));
   check(`${name}: masthead links out`, brand.tag === 'A' && !!brand.href, brand.href || brand.tag);
-  check(`${name}: masthead is 56px, out of its pill`,
-    brand.size === 56 && brand.border === '0px' && /rgba\(0, 0, 0, 0\)/.test(brand.bg),
-    `${brand.size}px, border ${brand.border}, bg ${brand.bg}`);
+  check(`${name}: masthead is 48px, all caps, out of its pill`,
+    brand.size === 48 && brand.caps === 'uppercase' && brand.border === '0px' && brand.bg === 'rgba(0, 0, 0, 0)',
+    `${brand.size}px, ${brand.caps}, border ${brand.border}, bg ${brand.bg}`);
 
   // Booth squares sit square to the run they line, not to the screen.
   await safe(`${name}: car-path booths are rotated to the path`, async () => {

@@ -243,11 +243,12 @@ The point here is that nothing invented is presented as real.
 
 ## 7b. The masthead
 
-- [ ] **"Fall Fest" sits straight on the map**, no pill, at 56px, with the dates
-      a small caption beside it.
-- [ ] **It links out to the festival site.** ⚠️ The URL is unverified — this
-      session had no outbound access to check it. It's one constant, `FEST_URL`
-      at the top of `src/App.jsx`.
+- [ ] **"FALL FEST" sits straight on the map**, all caps to match the festival
+      site's own lockup, no pill, at 48px, with the dates a small caption beside
+      it. The caps are `text-transform`, so a screen reader still says "Fall
+      Fest" rather than spelling it out.
+- [ ] **It links out to https://fallfest.candlerpark.org/** — one constant,
+      `FEST_URL` at the top of `src/App.jsx`.
 - [ ] Legible where it overlaps the map: it carries a soft light halo rather than
       a plate behind it.
 

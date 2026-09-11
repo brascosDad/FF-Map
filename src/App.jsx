@@ -20,10 +20,8 @@ const GAP = 20;       // --ff-gap / --space-5
 // still fits, but only just -- about 10 map units (~6px) of margin either side.
 const MOBILE_OVERVIEW_ZOOM = 1.1;
 
-// The brand lockup links back to the festival site. UNVERIFIED: this session has
-// no outbound access to check the address, so confirm it before launch -- it is
-// the only place the URL appears.
-const FEST_URL = 'https://candlerparkfallfest.com';
+// The brand lockup links back to the festival site. Confirmed by Ernest 9/11.
+const FEST_URL = 'https://fallfest.candlerpark.org/';
 
 function useMedia(query) {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
