@@ -75,6 +75,14 @@
 }
 .sheet.open { transform: translateY(0); }
 
+/* Mid-swap: drop out of the way so the next sheet can rise in its place. The
+   content changes while this is off screen (see DetailSheet). Accelerating out,
+   the standard ease back in -- about 0.39s door to door. */
+.sheet.open[data-phase='out']:not(.docked) {
+  transform: translateY(100%);
+  transition: transform var(--motion-sheet-out) var(--ease-in);
+}
+
 /* Closed means GONE, not merely pushed off-screen. A translated sheet keeps its
    buttons in the tab order, so a keyboard user tabs into an invisible dialog.
    visibility flips after the slide finishes, so the animation still plays. */
@@ -106,6 +114,7 @@
 @media (min-width: 768px) and (max-width: 1023.98px) {
   .sheet { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }
   .sheet.open { transform: translate(-50%, 0); }
+  .sheet.open[data-phase='out']:not(.docked) { transform: translate(-50%, 100%); }
 }
 
 /* Docked (>=1024): map full-bleed, panel floating over it. */

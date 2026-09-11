@@ -224,7 +224,6 @@
 /* ===== Brand lockup ======================================================= */
 /* The masthead, not a control: no pill, no border, sitting straight on the map
    at --text-brand (double the old 28). A link back to the festival site.
-   The dates stay small beside it -- they are a caption, not part of the name.
    text-shadow rather than a plate behind it: the ground under the title is
    light green or cream, so a soft light halo is enough to hold the navy. */
 .ffc-brand { display: inline-flex; align-items: baseline; gap: var(--space-2); text-decoration: none; }
@@ -240,4 +239,3 @@
 }
 .ffc-brand:hover .ffc-brand__name { text-decoration: underline; text-underline-offset: 4px; }
 .ffc-brand:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; border-radius: var(--radius-sm); }
-.ffc-brand__dates { font-size: var(--text-xs); color: var(--text-body); text-shadow: 0 0 8px var(--surface-chrome-solid); }

@@ -519,6 +519,73 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.close();
 }
 
+// Stepping a row holds the map still. It recentres only when the next booth
+// would actually be out of sight -- and then the booth is never lost off screen.
+{
+  const p = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(620);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(620);
+  const n = await p.locator('g.ff-booth').count();
+  for (let i = 0; i < n; i++) {
+    const bb = await p.locator('g.ff-booth').nth(i).boundingBox();
+    if (!bb || bb.x < 80 || bb.y < 220 || bb.x > 700 || bb.y > 650) continue;
+    await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2); break;
+  }
+  await p.waitForTimeout(450);
+  const vbOf = () => p.locator('svg.ff-map').getAttribute('viewBox');
+  const selPos = () => p.evaluate(() => {
+    const r = [...document.querySelectorAll('g.ff-booth rect')].find((e) => (e.getAttribute('fill') || '').includes('navy'));
+    if (!r) return null;
+    const b = r.getBoundingClientRect();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  });
+  let held = 0, moved = 0, lost = 0;
+  for (let i = 0; i < 30; i++) {
+    const before = await vbOf();
+    await p.locator('.boothnav button').nth(1).click();
+    await p.waitForTimeout(300);
+    if (await vbOf() === before) held++; else moved++;
+    const s = await selPos();
+    if (!s || s.x < 0 || s.y < 0 || s.x > 1280 || s.y > 900) lost++;
+  }
+  check('desktop: stepping mostly holds the map still', held >= 24, `held ${held} of 30, moved ${moved}`);
+  check('desktop: but it does recentre when the row walks off', moved >= 1, `${moved} recentre(s)`);
+  check('desktop: the selected booth is never lost off screen', lost === 0, `${lost} step(s) off screen`);
+  await p.close();
+}
+
+// Swapping one sheet for another is a move, not a cut: it drops away, the
+// content changes off screen, and the new one rises. Budget 0.3-0.4s.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const at = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  const t0 = Date.now();
+  await p.mouse.click(...await at('g.ffc-pin--firstaid'));
+  const frames = [];
+  for (let i = 0; i < 20; i++) {
+    frames.push(await p.evaluate((t) => {
+      const el = document.querySelector('.sheet');
+      return { ms: Date.now() - t, y: Math.round(new DOMMatrix(getComputedStyle(el).transform).m42),
+               title: document.querySelector('.sheet .hd h3')?.textContent || '' };
+    }, t0));
+    await p.waitForTimeout(25);
+  }
+  const drop = Math.max(...frames.map((f) => f.y));
+  const settled = frames.find((f, i) => i > 3 && f.y === 0 && /First Aid/.test(f.title));
+  check('mobile: a sheet swap drops out of the way first', drop > 40, `${drop}px drop`);
+  check('mobile: the swap lands inside 0.4s', !!settled && settled.ms <= 450, settled ? `${settled.ms}ms` : 'never settled');
+  check('mobile: the swap ends on the new content',
+    /First Aid/.test(frames[frames.length - 1].title) && frames[frames.length - 1].y === 0,
+    `${frames[frames.length - 1].title} at y=${frames[frames.length - 1].y}`);
+  await p.close();
+}
+
 // No blue flash on a booth tap. The highlight paints over the nearest clickable
 // ancestor, and a booth's is its whole area group -- so the default put a
 // screen-sized box on screen every time you tapped one.

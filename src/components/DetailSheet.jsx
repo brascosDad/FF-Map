@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTH_CAVEAT, BOOTHS } from '../data/booths';
@@ -192,17 +192,54 @@ function accentFor(openId, openArea, openBooth) {
   return SLATE;
 }
 
+/** What the sheet is showing, as one comparable value. */
+const keyOf = (openId, openArea, openBooth) => openBooth?.id || openId || openArea?.id || null;
+
+// How long the sheet takes to drop out of the way before the new content
+// arrives. The way back up is --motion-panel, so a swap costs OUT + up.
+const SWAP_OUT_MS = 140;
+
 export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
   const wasOpen = useRef(false);
 
+  // Swapping one open sheet for another is a move, not a cut: the sheet drops
+  // away, the content changes while it is off screen, and the new one rises.
+  // Cutting the content under a stationary sheet read as a glitch -- there was
+  // no moment that said "that one went, this one came".
+  //
+  // So the sheet renders `shown`, which lags the props by the drop. Opening from
+  // closed and closing entirely are not swaps: those already animate, and
+  // holding the content back would just delay them.
+  const [shown, setShown] = useState({ openId, openArea, openBooth });
+  const [swapping, setSwapping] = useState(false);
+  const nextKey = keyOf(openId, openArea, openBooth);
+  const shownKey = keyOf(shown.openId, shown.openArea, shown.openBooth);
+
+  useEffect(() => {
+    if (nextKey === shownKey) return;
+    // The docked panel does not slide, and a sheet opening or closing is
+    // already an animation -- only a live swap gets the drop.
+    if (docked || !shownKey || !nextKey) {
+      setShown({ openId, openArea, openBooth });
+      setSwapping(false);
+      return;
+    }
+    setSwapping(true);
+    const t = setTimeout(() => {
+      setShown({ openId, openArea, openBooth });
+      setSwapping(false);
+    }, SWAP_OUT_MS);
+    return () => clearTimeout(t);
+  }, [nextKey, shownKey, docked, openId, openArea, openBooth]);
+
   let body = null;
-  if (openBooth) body = <BoothDetail booth={openBooth} onStep={onStepBooth} />;
-  else if (openId === 'stageMain' || openId === 'stageAcoustic') body = <StageSchedule stageKey={openId} />;
-  else if (openId === 'food') body = <FoodCourt />;
-  else if (openId) body = <GenericPoi id={openId} />;
-  else if (openArea) body = <ArtMarketArea area={openArea} />;
+  if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} onStep={onStepBooth} />;
+  else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} />;
+  else if (shown.openId === 'food') body = <FoodCourt />;
+  else if (shown.openId) body = <GenericPoi id={shown.openId} />;
+  else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} />;
   else if (docked) body = <PanelDirectory onSelect={onSelect} />;
 
   // Focus moves into the sheet when it opens and goes back to the map when it
@@ -234,6 +271,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
       aria-modal={docked ? undefined : 'false'}
       aria-label={docked ? undefined : 'Location detail'}
       data-open={isOpen ? 'true' : 'false'}
+      data-phase={swapping ? 'out' : undefined}
     >
       {!docked && <div className="grip" />}
 
@@ -258,7 +296,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
         </button>
       )}
 
-      <div className="panel-scroll" style={{ '--sheet-accent': accentFor(openId, openArea, openBooth) }}>{body}</div>
+      <div className="panel-scroll" style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>{body}</div>
 
       {docked && !isOpen && <div className="panel-foot"><Legend /></div>}
     </div>

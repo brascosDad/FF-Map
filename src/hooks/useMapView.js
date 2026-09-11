@@ -157,6 +157,8 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   /** Bring a map point to the middle of the USABLE viewport (panel excluded),
    *  keeping the current zoom. Used when stepping through booths: the sheet is
    *  the control, the map is the readout. */
+  /** Unconditional recentre. ensureVisible and focusOn are what callers want;
+   *  this stays exported as the primitive underneath them. */
   const centerOn = useCallback((x, y) => {
     const { px } = sizeRef.current;
     setVb((prev) => {
@@ -164,6 +166,35 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       return clampPan({ ...prev, x: x - (prev.w - insetMap) / 2, y: y - prev.h / 2 }, px, insetRef.current);
     });
   }, []);
+  /**
+   * Centre on a point ONLY if it is not already comfortably on screen.
+   *
+   * Stepping through a booth row used to recentre on every press, so the map
+   * lurched under you while you read a row you could already see. Now it holds
+   * still until the next booth would actually be out of sight -- then it moves
+   * once, and the row carries on scrolling past.
+   *
+   * Margins are in CSS pixels and describe what is COVERED, not just the edge:
+   * the top bar sits over the map, and on a phone so does the sheet. A booth
+   * hidden behind the sheet is not "in view".
+   *
+   * Returns true if it moved.
+   */
+  const ensureVisible = useCallback((x, y, { top = 24, right = 24, bottom = 24, left = 24 } = {}) => {
+    const { px, py } = sizeRef.current;
+    const vb = vbRef.current;
+    if (!px || !py) return false;
+    const u = vb.w / px;                                   // map units per CSS pixel
+    const insetMap = (insetRef.current * vb.w) / px;       // the docked panel
+    const x0 = vb.x + left * u;
+    const x1 = vb.x + vb.w - insetMap - right * u;
+    const y0 = vb.y + top * u;
+    const y1 = vb.y + vb.h - bottom * u;
+    if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return false;
+    centerOn(x, y);
+    return true;
+  }, [centerOn]);
+
   /** Fly to a map point for a directory row: zoom in to at least `minLevel`
    *  (never out), centre the point in the usable viewport, and ease there so
    *  the eye can follow where it went. Snaps instead when the user has asked
@@ -329,5 +360,5 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, centerOn, focusOn, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, centerOn, ensureVisible, focusOn, resetToOverview };
 }

@@ -149,6 +149,8 @@
      and the input lockout are the same duration on purpose. */
   --motion-press: 120ms;
   --motion-panel: 250ms;
+  --motion-sheet-out: 140ms;   /* the drop before a sheet swaps content */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);   /* leaving: accelerate away */
   --ease: cubic-bezier(0.2, 0, 0.2, 1);
 
   /* Sizing */
@@ -161,5 +163,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --motion-press: 0ms; --motion-panel: 0ms; }
+  :root { --motion-press: 0ms; --motion-panel: 0ms; --motion-sheet-out: 0ms; }
 }

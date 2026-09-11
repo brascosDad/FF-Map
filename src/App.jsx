@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMapView } from './hooks/useMapView';
 import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
@@ -40,12 +40,13 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, centerOn, focusOn, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, ensureVisible, focusOn, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
   const [openBooth, setOpenBooth] = useState(null);
+  const sheetRef = useRef(null);
 
   function closeAll() {
     setOpenId(null);
@@ -82,7 +83,21 @@ export default function App() {
     const i = group.findIndex((b) => b.id === openBooth.id);
     const next = group[(i + dir + group.length) % group.length];
     setOpenBooth(next);
-    centerOn(next.x, next.y);
+    // Hold the map still while the next booth is already on screen -- it just
+    // lights up. Only when the row walks off the edge (or behind the sheet)
+    // does the view move, and then it moves once.
+    ensureVisible(next.x, next.y, coveredEdges());
+  }
+
+  /**
+   * What is sitting on top of the map right now, in CSS pixels. The top bar
+   * always covers the top; on a phone the open sheet covers the bottom, and its
+   * height depends on the content, so measure it rather than guess.
+   */
+  function coveredEdges() {
+    const sheet = !docked && sheetRef.current?.querySelector('.sheet.open');
+    const sheetH = sheet ? sheet.getBoundingClientRect().height : 0;
+    return { top: docked ? 96 : 130, right: 24, bottom: Math.max(24, sheetH + 16), left: 24 };
   }
 
   function handleBoothClick(booth) {
@@ -163,11 +178,10 @@ export default function App() {
 
         <div className="topbar" onClick={(e) => e.stopPropagation()}>
           <div className="tbrow">
-            {/* No pill: the title sits directly on the map, at twice the size
-                it was. It is the masthead, not a control. */}
+            {/* No pill, no dates: the title sits directly on the map. The dates
+                are already in the panel header, and once is enough. */}
             <a className="ffc-brand" href={FEST_URL} target="_blank" rel="noreferrer">
               <span className="ffc-brand__name">Fall Fest</span>
-              <span className="ffc-brand__dates">Oct 4–5, 2026</span>
             </a>
           </div>
           <FilterChips active={filter} onToggle={handleChipToggle} />
@@ -179,7 +193,7 @@ export default function App() {
 
         </div>
 
-        <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
+        <div className="sheetwrap" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
           <DetailSheet
             docked={docked}
             openId={openId}

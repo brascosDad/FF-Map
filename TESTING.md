@@ -244,9 +244,12 @@ The point here is that nothing invented is presented as real.
 ## 7b. The masthead
 
 - [ ] **"FALL FEST" sits straight on the map**, all caps to match the festival
-      site's own lockup, no pill, at 48px, with the dates a small caption beside
-      it. The caps are `text-transform`, so a screen reader still says "Fall
-      Fest" rather than spelling it out.
+      site's own lockup, no pill, at 48px, and no dates beside it. The caps are
+      `text-transform`, so a screen reader still says "Fall Fest" rather than
+      spelling it out.
+- [ ] ? **The dates now appear only in the docked panel header**, which a phone
+      never shows — so on mobile the festival dates are not on screen anywhere.
+      Fine if the map is reached from a page that already says when it is.
 - [ ] **It links out to https://fallfest.candlerpark.org/** — one constant,
       `FEST_URL` at the top of `src/App.jsx`.
 - [ ] Legible where it overlaps the map: it carries a soft light halo rather than
