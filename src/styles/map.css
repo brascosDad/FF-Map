@@ -89,7 +89,17 @@
 .sheet:not(.docked) { visibility: hidden; transition: transform var(--motion-panel) var(--ease), visibility 0s var(--motion-panel); }
 .sheet.open:not(.docked) { visibility: visible; transition: transform var(--motion-panel) var(--ease), visibility 0s; }
 .ff-map:focus { outline: none; }
-.sheet .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; margin: var(--space-1) auto var(--space-3); }
+/* The grip is a real handle: drag it down to dismiss. The bar itself is 4px, so
+   the grab area around it is what actually has to be 44px tall.
+   touch-action: none so the gesture is ours, not the browser's scroll. */
+.sheet .griparea {
+  display: flex; align-items: center; justify-content: center;
+  height: var(--tap-min); margin-bottom: calc(var(--space-3) - var(--space-2));
+  touch-action: none; cursor: grab;
+}
+.sheet .griparea:active { cursor: grabbing; }
+.sheet .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; }
+.sheet .griparea:active .grip { background: var(--text-muted); }
 .sheet .hd { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 2px; }
 .sheet .hd .dot { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
 .sheet h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--text-strong); }
@@ -169,7 +179,7 @@
 .dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }
 .dir-title { margin: 0 0 var(--space-1); font: var(--weight-black) var(--text-xs)/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
 .ffc-poirow .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
-.ff-screen.docked .sheet .grip { display: none; }
+.ff-screen.docked .sheet .griparea { display: none; }
 .ff-screen.docked .topbar { padding: var(--ff-gap); }
 /* Clear the floating panel: gap + panel + gap. Without this the zoom stack sits
    underneath the panel and cannot be clicked at all. */

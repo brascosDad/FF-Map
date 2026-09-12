@@ -198,6 +198,14 @@ const keyOf = (openId, openArea, openBooth) => openBooth?.id || openId || openAr
 // How long the sheet takes to drop out of the way before the new content
 // arrives. The way back up is --motion-panel, so a swap costs OUT + up.
 const SWAP_OUT_MS = 140;
+// How long the slide down on close takes -- must match --motion-panel, since it
+// is what decides when the content can safely go.
+const CLOSE_MS = 250;
+// Drag the sheet down past this share of its own height and it closes; let go
+// short of it and it springs back. A flick beats the distance either way.
+const DISMISS_FRACTION = 0.3;
+const FLICK_VELOCITY = 0.5;   // px per ms
+const FLICK_MIN_PX = 40;      // ...and it has to actually travel
 
 export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
@@ -214,23 +222,30 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
   // holding the content back would just delay them.
   const [shown, setShown] = useState({ openId, openArea, openBooth });
   const [swapping, setSwapping] = useState(false);
+  const sheetEl = useRef(null);
+  const drag = useRef(null);
   const nextKey = keyOf(openId, openArea, openBooth);
   const shownKey = keyOf(shown.openId, shown.openArea, shown.openBooth);
 
   useEffect(() => {
     if (nextKey === shownKey) return;
-    // The docked panel does not slide, and a sheet opening or closing is
-    // already an animation -- only a live swap gets the drop.
-    if (docked || !shownKey || !nextKey) {
+    // The docked panel never slides, and opening from closed should be
+    // immediate -- there is nothing on screen to wait for.
+    if (docked || !shownKey) {
       setShown({ openId, openArea, openBooth });
       setSwapping(false);
       return;
     }
-    setSwapping(true);
+    // Closing: hold the content until the sheet has finished sliding down.
+    // Dropping it at once collapsed the sheet to nothing, and a zero-height
+    // sheet has no height to translate -- which is why closing read as the
+    // sheet vanishing rather than leaving.
+    const wait = nextKey ? SWAP_OUT_MS : CLOSE_MS;
+    if (nextKey) setSwapping(true);
     const t = setTimeout(() => {
       setShown({ openId, openArea, openBooth });
       setSwapping(false);
-    }, SWAP_OUT_MS);
+    }, wait);
     return () => clearTimeout(t);
   }, [nextKey, shownKey, docked, openId, openArea, openBooth]);
 
@@ -262,8 +277,52 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, docked, onClose]);
 
+  // Grabbing the grip pulls the sheet down. It looked like a handle and was not
+  // one, which is its own kind of broken: an affordance that lies. Pull it past
+  // a third of the sheet's height, or flick it, and the sheet goes; let go short
+  // of that and it springs back to where it was.
+  function onGripDown(e) {
+    if (docked) return;
+    const el = sheetEl.current;
+    if (!el) return;
+    // Capture on the grip itself, not the sheet: capturing on an ancestor
+    // retargets the move events to that ancestor, and they never reach this
+    // handler at all.
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    drag.current = { y0: e.clientY, y: e.clientY, t: performance.now(), h: el.getBoundingClientRect().height };
+    el.style.transition = 'none';
+  }
+
+  function onGripMove(e) {
+    const d = drag.current, el = sheetEl.current;
+    if (!d || !el) return;
+    d.dy = Math.max(0, e.clientY - d.y0);     // down only; the sheet is already at its top
+    d.v = (e.clientY - d.y) / Math.max(1, performance.now() - d.t);
+    d.y = e.clientY; d.t = performance.now();
+    el.style.transform = `translateY(${d.dy}px)`;
+  }
+
+  function onGripUp(e) {
+    const d = drag.current, el = sheetEl.current;
+    drag.current = null;
+    if (!d || !el) return;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    el.style.transition = '';
+    el.style.transform = '';
+    // A flick still has to travel: an abrupt 15px twitch is a fast pointer, not
+    // an intent to dismiss, and treating it as one made the sheet feel jumpy.
+    const dy = d.dy || 0;
+    if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) onClose();
+  }
+
+  const gripHandlers = docked ? {} : {
+    onPointerDown: onGripDown, onPointerMove: onGripMove,
+    onPointerUp: onGripUp, onPointerCancel: onGripUp,
+  };
+
   return (
     <div
+      ref={sheetEl}
       className={`sheet ffc-panel${isOpen ? ' open' : ''}${docked ? ' docked ffc-panel--right' : ' ffc-panel--bottom'}`}
       // The bottom variant is a dialog. The docked panel is not -- it is
       // persistent page furniture, not something you dismiss.
@@ -273,7 +332,9 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
       data-open={isOpen ? 'true' : 'false'}
       data-phase={swapping ? 'out' : undefined}
     >
-      {!docked && <div className="grip" />}
+      {!docked && (
+        <div className="griparea" {...gripHandlers} aria-hidden="true"><div className="grip" /></div>
+      )}
 
       {/* Docked, the panel keeps its own header and a back row instead of an X:
           closing a detail here does not dismiss anything, it returns you to the

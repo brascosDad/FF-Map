@@ -586,6 +586,59 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.close();
 }
 
+// Closing has to be a move too. The content used to unmount the instant the
+// sheet closed, collapsing it to nothing -- and a zero-height sheet has no
+// height to translate, so closing read as vanishing rather than leaving.
+// And the grip is a real handle now: drag it down and the sheet follows.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const at = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  const state = () => p.evaluate(() => {
+    const el = document.querySelector('.sheet');
+    return { y: Math.round(new DOMMatrix(getComputedStyle(el).transform).m42),
+             h: Math.round(el.getBoundingClientRect().height),
+             open: el.classList.contains('open') };
+  });
+
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  const openH = (await state()).h;
+  await p.mouse.click(30, 300);                       // tap the bare map to close
+  const frames = [];
+  for (let i = 0; i < 8; i++) { frames.push(await state()); await p.waitForTimeout(30); }
+  const slid = frames.filter((f) => f.y > 10 && f.h >= openH - 2);
+  check('mobile: closing slides the sheet down rather than vanishing',
+    slid.length >= 3, `${slid.length} frames mid-slide at full height (${openH}px)`);
+
+  // Drag the grip: the sheet follows the finger, and a real pull dismisses it.
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  const g = await p.locator('.griparea').boundingBox();
+  check('mobile: the grip is a 44px grab area', g.height >= 44, `${Math.round(g.height)}px`);
+  await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await p.mouse.down();
+  const follow = [];
+  for (const dy of [20, 80, 160, 230]) { await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2 + dy); follow.push((await state()).y); }
+  await p.mouse.up();
+  await p.waitForTimeout(500);
+  check('mobile: the sheet follows the grip', follow[0] > 0 && follow[3] > follow[0], follow.join(' -> '));
+  check('mobile: a real pull dismisses it', !(await state()).open);
+
+  // A small tug is not a dismissal.
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await p.mouse.down();
+  await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2 + 18);
+  await p.mouse.up();
+  await p.waitForTimeout(450);
+  const after = await state();
+  check('mobile: a small tug springs back', after.open && after.y === 0, `open=${after.open} y=${after.y}`);
+  await p.close();
+}
+
 // No blue flash on a booth tap. The highlight paints over the nearest clickable
 // ancestor, and a booth's is its whole area group -- so the default put a
 // screen-sized box on screen every time you tapped one.
