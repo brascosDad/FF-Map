@@ -508,8 +508,11 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     bg: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth,
   }));
   check(`${name}: masthead links out`, brand.tag === 'A' && !!brand.href, brand.href || brand.tag);
-  check(`${name}: masthead is 48px, all caps, out of its pill`,
-    brand.size === 48 && brand.caps === 'uppercase' && brand.border === '0px' && brand.bg === 'rgba(0, 0, 0, 0)',
+  // 48 by default, 36 on a phone -- at full size it took the top eighth of the
+  // screen and pushed the chips down onto the park.
+  const wantBrand = w <= 480 ? 36 : 48;
+  check(`${name}: masthead is ${wantBrand}px, all caps, out of its pill`,
+    brand.size === wantBrand && brand.caps === 'uppercase' && brand.border === '0px' && brand.bg === 'rgba(0, 0, 0, 0)',
     `${brand.size}px, ${brand.caps}, border ${brand.border}, bg ${brand.bg}`);
 
   // Booth squares sit square to the run they line, not to the screen.
@@ -643,6 +646,42 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.waitForTimeout(450);
   const after = await state();
   check('mobile: a small tug springs back', after.open && after.y === 0, `open=${after.open} y=${after.y}`);
+  await p.close();
+}
+
+// All three filters have to be on screen at once on a phone -- a chip you have
+// to discover by swiping is a chip you will not find.
+{
+  for (const [name, w, h] of [['iPhone 390', 390, 844], ['iPhone 430', 430, 932]]) {
+    const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(700);
+    const r = await p.evaluate(() => {
+      const c = document.querySelector('.chips');
+      const last = c.children[c.children.length - 1].getBoundingClientRect();
+      return { headroom: Math.round(window.innerWidth - last.right),
+               needsScroll: c.scrollWidth > c.clientWidth,
+               tapHeight: Math.round(c.children[0].getBoundingClientRect().height),
+               brand: Math.round(parseFloat(getComputedStyle(document.querySelector('.ffc-brand__name')).fontSize)) };
+    });
+    check(`${name}: all three chips fit without scrolling`, !r.needsScroll && r.headroom > 20, `${r.headroom}px to spare`);
+    check(`${name}: the tighter chip keeps its 44px target`, r.tapHeight >= 44, `${r.tapHeight}px`);
+    check(`${name}: masthead is 36px on a phone`, r.brand === 36, `${r.brand}px`);
+    await p.close();
+  }
+}
+
+// The icons a phone uses when the map is saved to a home screen.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  const icons = await p.evaluate(() => [...document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]')].map((l) => l.href));
+  let allOk = icons.length >= 3;
+  for (const href of icons) {
+    const res = await p.request.get(href);
+    if (!res.ok()) allOk = false;
+  }
+  check('every declared icon resolves', allOk, `${icons.length} icons: ${icons.map((h) => h.split('/').pop()).join(', ')}`);
   await p.close();
 }
 

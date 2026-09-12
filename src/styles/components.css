@@ -32,11 +32,13 @@
   --chip-bg: var(--surface-chrome);
   --chip-fg: var(--text-strong);
   --chip-border: var(--border-subtle);
+  --chip-pad-x: var(--space-4);
+  --chip-gap: var(--space-2);
 
   position: relative;
-  display: inline-flex; align-items: center; gap: var(--space-2);
+  display: inline-flex; align-items: center; gap: var(--chip-gap);
   min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--chip-pad-x);
   white-space: nowrap;   /* "First aid" wrapped to two lines without this */
   border: 1px solid var(--chip-border);
   border-radius: var(--radius-pill);
@@ -53,6 +55,16 @@
   --chip-border: var(--surface-selected);
 }
 .ffc-chip--muted { --chip-fg: var(--text-muted); --chip-border: var(--border-subtle); }
+
+/* Phone variant. All three filters have to be on screen at once -- a chip row
+   you have to discover by swiping is a chip you will not find -- and at the full
+   padding they came to 359px against 366px of usable width, which is no margin
+   at all once a device renders the label a shade wider. Only the horizontal
+   padding and the icon gap tighten: min-height stays --tap-min, so the touch
+   target is exactly the size it was. */
+@media (max-width: 480px) {
+  .ffc-chip { --chip-pad-x: var(--space-3); --chip-gap: var(--space-1); }
+}
 
 /* ===== IconButton =========================================================
    Three shapes. Round 44 (locate), square 40 (zoom), ghost 44 (close / back).

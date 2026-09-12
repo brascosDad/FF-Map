@@ -113,7 +113,7 @@
   /* Type */
   --font-display: 'Brice', 'Manrope', system-ui, sans-serif; /* brand lockup only — see src/assets/fonts/README.md */
   --font-ui: 'Manrope', system-ui, sans-serif;
-  --text-brand: 48px; /* brand lockup — the masthead, sat on the map */
+  --text-brand: 48px; /* brand lockup — the masthead, sat on the map (36 on a phone, below) */
   --text-3xl: 28px;
   --text-2xl: 18px;  /* panel title */
   --text-lg: 15px;   /* body, chips */
@@ -161,6 +161,12 @@
   --pin-size-overview: 34px;   /* one step down where the map is most crowded */
   --panel-width: 360px;
   --sheet-max-height: 72%;
+}
+
+/* The masthead is a quarter smaller on a phone. At 48 it took the top eighth of
+   the screen and pushed the chips down onto the park. */
+@media (max-width: 480px) {
+  :root { --text-brand: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
