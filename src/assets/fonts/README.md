@@ -1,15 +1,37 @@
 # Brice font files go here
 
-`Brice` is the proprietary display font used for the map's title lockup (per
-`typography-and-icons.md` in the project). I don't have the actual `.otf` files in this
-session — only the project's text docs, which reference a `fonts/` folder without the
-binaries in it.
+`Brice` (Atipo Foundry) is the display face for the map's title lockup — the
+same one the Fall Fest site and its favicon use.
 
-To finish the type system:
+## Current state
 
-1. Drop the Brice `.otf` weights you have (Black, Bold, SemiBold, Regular, Light,
-   ExtraLight) into this folder.
-2. Add matching `@font-face` declarations in `src/styles/fonts.css` (a starter file is
-   already there with Manrope wired up — copy the pattern for Brice).
-3. Until then, `--font-display` falls back to Manrope/system sans, so the app runs and
-   looks correct, just without the branded display face on the title.
+`--font-display` is declared as `'Brice', 'Manrope', system-ui`. **Brice's files
+are not in this repo**, so anyone without Brice installed locally — which is
+every visitor to the live site — sees the Manrope fallback. If the masthead
+looks like Brice on your own machine, that is your system copy, not the site's.
+
+## Dropping them in
+
+1. Copy the `.otf` (or `.woff2`, better) weights into this folder, named exactly:
+
+   | file | weight | used for |
+   |------|--------|----------|
+   | `Brice-Black.otf` | 900 | the masthead — the only weight the app needs today |
+   | `Brice-Bold.otf` | 700 | optional, if the lockup ever needs a lighter cut |
+   | `Brice-SemiBold.otf` | 600 | optional |
+
+   `.woff2` is a fraction of the size and every target browser supports it; if
+   you only have `.otf`, that works and I can convert them.
+
+2. Tell me, and I will:
+   - add the `@font-face` blocks to `src/styles/fonts.css` (the pattern is
+     stubbed there),
+   - regenerate the favicon from the real Brice — `scripts/build-icon.py` already
+     prefers these files over Manrope and handles `.otf` outlines,
+   - re-run the suite and check the masthead at every width.
+
+## Licence
+
+Confirmed with Ernest (2026-09-12): Brice is already in use on the Fall Fest
+site and its favicon, so web use is covered. Worth re-checking the licence
+allows self-hosting the file rather than only a foundry-hosted kit.

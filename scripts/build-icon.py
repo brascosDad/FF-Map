@@ -12,22 +12,54 @@ loads, @fontsource/manrope's 800 weight, rather than approximating the shapes.
 
 Rerun it if the masthead's face ever changes.
 """
+import os
 import re
 from fontTools.ttLib import TTFont
+from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
-SRC = 'node_modules/@fontsource/manrope/files/manrope-latin-800-normal.woff2'
+# The masthead's face, in preference order -- the icon is the masthead at 16px,
+# so it follows whatever --font-display resolves to. Brice is the brand face;
+# Manrope is what ships until Brice's files are licensed and dropped into
+# src/assets/fonts (see the README there). First one present wins.
+CANDIDATES = [
+    'src/assets/fonts/Brice-Black.otf',
+    'src/assets/fonts/Brice-Bold.otf',
+    'src/assets/fonts/Brice-SemiBold.otf',
+    'node_modules/@fontsource/manrope/files/manrope-latin-800-normal.woff2',
+]
 OUT = 'public/favicon.svg'
 BOX = 64        # icon viewBox
 CAP = 30.0      # cap height inside it
+
+SRC = next((p for p in CANDIDATES if os.path.exists(p)), None)
+if SRC is None:
+    raise SystemExit('No display font found. Looked for:\n  ' + '\n  '.join(CANDIDATES))
 
 f = TTFont(SRC)
 gs = f.getGlyphSet()
 g = f.getBestCmap()[ord('F')]
 adv = f['hmtx'][g][0]
-cap = f['OS/2'].sCapHeight
-bb = f['glyf'][g]
+cap = getattr(f['OS/2'], 'sCapHeight', None) or f['head'].unitsPerEm * 0.72
+
+# Glyph bounds: TrueType keeps them on the glyph, CFF (.otf) does not, so measure
+# the outline instead. Brice ships as .otf, so this branch is not hypothetical.
+if 'glyf' in f:
+    gl = f['glyf'][g]
+    x_min, x_max = gl.xMin, gl.xMax
+else:
+    bp = BoundsPen(gs)
+    gs[g].draw(bp)
+    x_min, x_max = bp.bounds[0], bp.bounds[2]
+
+
+class _BB:
+    pass
+
+
+bb = _BB()
+bb.xMin, bb.xMax = x_min, x_max
 
 s = CAP / cap
 ink_l, ink_r = bb.xMin * s, adv * s + bb.xMax * s
@@ -52,8 +84,8 @@ svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {box} {box}" role=
        The streets sit clear of the letters: one down the left edge, one along
        the bottom, and the diagonal at the angle the car path actually runs.
 
-       The FF is Manrope ExtraBold's own F, twice, taken from the font file the
-       app loads. See the module docstring for why it ships as geometry. -->
+       The FF is {face}'s own F, twice, taken from the font file the app
+       loads. See the module docstring for why it ships as geometry. -->
   <rect width="{box}" height="{box}" rx="13" fill="#ADD29E"/>
   <g fill="#E1E6EB" opacity="0.6">
     <rect x="-8" y="18" width="80" height="5.5" transform="rotate(-36 32 32)"/>
@@ -65,7 +97,9 @@ svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {box} {box}" role=
     <path d="{b}"/>
   </g>
 </svg>
-'''.format(box=BOX, a=paths[0], b=paths[1])
+'''.format(box=BOX, a=paths[0], b=paths[1], face=f['name'].getDebugName(4) or 'the display face')
 
 open(OUT, 'w').write(svg)
-print('wrote %s -- Manrope ExtraBold F x2, cap %.0f in a %d box' % (OUT, CAP, BOX))
+face = f['name'].getDebugName(4) or os.path.basename(SRC)
+print('wrote %s -- %s, F x2, cap %.0f in a %d box' % (OUT, face, CAP, BOX))
+print('  source: %s' % SRC)

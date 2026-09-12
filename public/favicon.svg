@@ -5,8 +5,8 @@
        The streets sit clear of the letters: one down the left edge, one along
        the bottom, and the diagonal at the angle the car path actually runs.
 
-       The FF is Manrope ExtraBold's own F, twice, taken from the font file the
-       app loads. See the module docstring for why it ships as geometry. -->
+       The FF is Manrope ExtraLight ExtraBold's own F, twice, taken from the font file the app
+       loads. See the module docstring for why it ships as geometry. -->
   <rect width="64" height="64" rx="13" fill="#ADD29E"/>
   <g fill="#E1E6EB" opacity="0.6">
     <rect x="-8" y="18" width="80" height="5.5" transform="rotate(-36 32 32)"/>
