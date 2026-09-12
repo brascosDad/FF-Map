@@ -15,7 +15,11 @@ import { BOOTHS } from './booths';
 export const AREAS = [
   { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
   { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
-  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 509.3], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
+  // The car-path marker sits 25 units north of where the export put it (509.3).
+  // At the booth-level zoom the original position covered booth 29's number and
+  // sat 9px inside it; 25 north clears every number in the row with 15px to
+  // spare, and the marker is still plainly in the middle of its own run.
+  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 484.3], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
 ];
 
 /**

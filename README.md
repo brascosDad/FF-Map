@@ -1,6 +1,6 @@
 # Fall Fest Map
 
-Interactive, phone-first "you are here" map for Candler Park Fall Fest (Oct 4–5, 2026).
+Interactive, phone-first "you are here" map for Candler Park Fall Fest (Oct 3–4, 2026).
 This is Tier 2 of the build plan (`buildplan.pdf` in the FF map project) — the real
 React + Vite foundation on the canonical Figma basemap, with a formal design system
 (`design-system.html`) behind it and real data where it exists. No GPS: live location

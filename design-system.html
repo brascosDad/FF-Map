@@ -40,7 +40,7 @@
 <div class="wrap">
   <h1>Fall Fest Design System</h1>
   <p class="lede">
-    Candler Park Fall Fest map, Oct 4–5 2026. This page is generated from
+    Candler Park Fall Fest map, Oct 3–4 2026. This page is generated from
     <code>src/styles/tokens.css</code> and <code>src/styles/components.css</code> —
     the same files the app loads. If a swatch here is wrong, the token is wrong.
   </p>
@@ -276,6 +276,15 @@
 </div>
 
 <script type="module">
+  // The same faces the app loads. Linking the stylesheets alone left this page
+  // rendering the type scale in system-ui, which is the one thing a type page
+  // must not do.
+  import '@fontsource/manrope/400.css';
+  import '@fontsource/manrope/500.css';
+  import '@fontsource/manrope/600.css';
+  import '@fontsource/manrope/700.css';
+  import '@fontsource/manrope/800.css';
+
   // Swatches and icons are read from the live stylesheet and the app's own icon
   // set, so this page cannot drift from what ships.
   const css = getComputedStyle(document.documentElement);

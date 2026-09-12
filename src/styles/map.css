@@ -21,6 +21,13 @@
   background: var(--ff-surround);
 }
 
+/* Landscape on a phone puts the notch and the home indicator over the map. The
+   map itself runs under them -- that is the point of viewport-fit=cover -- but
+   the controls must not, so the floating chrome is pushed clear of them. */
+.topbar { padding-left: max(var(--space-3), env(safe-area-inset-left)); padding-right: max(var(--space-3), env(safe-area-inset-right)); }
+.zoomctl { right: max(var(--space-3), env(safe-area-inset-right)); bottom: max(var(--space-4), env(safe-area-inset-bottom)); }
+.sheet:not(.docked) { padding-bottom: max(var(--space-5), env(safe-area-inset-bottom)); }
+
 .mapstage { position: absolute; inset: 0; }
 .mapwrap { position: absolute; inset: 0; touch-action: none; overflow: hidden; }
 .ff-map {
@@ -40,12 +47,17 @@
 /* Floating chrome. No scrim: the map runs underneath and each control carries
    its own chip, so a band across the park is unnecessary. */
 .topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding: var(--space-3); }
-/* The bar spans the full width but only its controls should catch taps. Without
-   this, the empty strip beside the chips swallowed taps on any pin underneath it
-   (e.g. Main Stage and Food Court on a landscape phone). Children opt back in;
-   the chip row still scrolls sideways because the swipe starts on a chip. */
-.topbar, .tbrow, .chips { pointer-events: none; }
-.tbrow > *, .chips > * { pointer-events: auto; }
+/* The bar spans the full width but only its controls should catch taps, or the
+   empty strip beside them swallows taps on the pins underneath (Main Stage and
+   Food Court, on a landscape phone).
+   The chip row is the exception: it is a scroller, and a scroller with
+   pointer-events: none cannot be swiped -- which is exactly how it locked up
+   with Water stranded off the right edge. So it keeps its events and gives up
+   the dead space instead: it is only ever as wide as the chips themselves, and
+   caps at the full width when there are enough of them to need scrolling. */
+.topbar, .tbrow { pointer-events: none; }
+.tbrow > * { pointer-events: auto; }
+.chips { pointer-events: auto; width: max-content; max-width: 100%; touch-action: pan-x; }
 .tbrow { display: flex; align-items: center; gap: var(--space-3); margin: 0 2px var(--space-3); }
 .chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .chips::-webkit-scrollbar { display: none; }
@@ -89,12 +101,28 @@
 .sheet:not(.docked) { visibility: hidden; transition: transform var(--motion-panel) var(--ease), visibility 0s var(--motion-panel); }
 .sheet.open:not(.docked) { visibility: visible; transition: transform var(--motion-panel) var(--ease), visibility 0s; }
 .ff-map:focus { outline: none; }
-.sheet .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; margin: var(--space-1) auto var(--space-3); }
+/* The sheet's own top row: grip in the middle, close on the right, one 44px
+   band. flex: none is load-bearing -- the sheet is a column flex container, so
+   without it this row was shrunk from 44px to the 4px of the bar inside it, and
+   the absolutely-placed close button then landed level with the title.
+
+   The grip is a real handle: drag it down to dismiss. touch-action: none so the
+   gesture is ours rather than the browser's scroll. */
+.sheet .sheettop { position: relative; flex: none; height: var(--tap-min); }
+.sheet .griparea {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: none; cursor: grab;
+}
+.sheet .griparea:active { cursor: grabbing; }
+.sheet .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; }
+.sheet .griparea:active .grip { background: var(--text-muted); }
 .sheet .hd { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 2px; }
 .sheet .hd .dot { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
 .sheet h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--text-strong); }
 .sheet .sub { font-size: var(--text-xs); color: var(--text-muted); margin: 2px 0 var(--space-3); padding-left: 44px; }
-.sheet .close { position: absolute; top: var(--space-3); right: var(--space-4); width: var(--tap-min); height: var(--tap-min); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 0; }
+.sheet .close { position: absolute; top: 0; right: var(--space-2); z-index: 1; width: var(--tap-min); height: var(--tap-min); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 0; }
+.sheet .close:active { color: var(--text-strong); }
 
 /* Day headings are sentence case, not uppercase-tracked. */
 .day { font-size: var(--text-md); font-weight: var(--weight-black); color: var(--text-strong); margin: var(--space-4) 0 var(--space-1); }
@@ -169,7 +197,7 @@
 .dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }
 .dir-title { margin: 0 0 var(--space-1); font: var(--weight-black) var(--text-xs)/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
 .ffc-poirow .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
-.ff-screen.docked .sheet .grip { display: none; }
+.ff-screen.docked .sheet .griparea { display: none; }
 .ff-screen.docked .topbar { padding: var(--ff-gap); }
 /* Clear the floating panel: gap + panel + gap. Without this the zoom stack sits
    underneath the panel and cannot be clicked at all. */
@@ -188,3 +216,8 @@
   --stepper-gap: var(--space-5);
 }
 .boothnav { margin: var(--stepper-offset) 0 var(--stepper-gap); }
+/* In the bottom sheet the stepper follows the sheet's own top row, so it needs
+   air above it rather than the pull-up the docked panel wants. */
+.sheet:not(.docked) .boothnav { margin-top: var(--space-3); }
+/* Clear the top row before any content starts. */
+.sheet:not(.docked) .panel-scroll { padding-top: var(--space-2); }

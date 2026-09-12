@@ -18,7 +18,10 @@ html, body, #root {
 
 body {
   font-family: var(--font-ui);
-  background: var(--surface-base);
+  /* The map's own ground colour, not navy. Anything the map does not cover --
+     an iOS safe-area strip in landscape, a moment before first paint -- should
+     look like more map, not like a letterbox. */
+  background: var(--map-ground);
   color: var(--text-on-navy);
   -webkit-font-smoothing: antialiased;
 }
@@ -33,7 +36,7 @@ button {
   height: 100dvh;
   position: relative;
   overflow: hidden;
-  background: var(--surface-base);
+  background: var(--map-ground);
 }
 
 /* Above the phone breakpoint the app stops pretending to be a phone and takes

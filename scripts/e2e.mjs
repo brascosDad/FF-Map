@@ -228,28 +228,30 @@ for (const [name, w, h] of SIZES) {
     !atBooths.some((t) => /Kidlandia|Main Stage|Acoustic|Food Court|Art Market/.test(t)), atBooths.join(' | '));
   check(`${name}: no booth numbers at Booths level`, !atBooths.some((t) => /^\d+$/.test(t)));
 
-  // ---- pins hold a constant screen size across zooms ----
-  await safe(`${name}: pin size constant across zoom`, async () => {
+  // ---- pin sizing ----
+  // Two different numbers, deliberately. The VISIBLE pin is 34px at the overview
+  // and 40 from the first zoom step on -- the overview is where the festival is
+  // squeezed into a phone, so the markers give up a little there. The thing a
+  // FINGER has to hit is 44px at every level regardless.
+  await safe(`${name}: pin sizing`, async () => {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
-    // measure a category pin specifically -- area markers are a separate class
-    const sizeAt = async () => {
-      const b = await p.locator('svg.ff-map g.ff-pin circle').first().boundingBox();
-      return b ? b.width : null;
-    };
-    const s0 = await sizeAt();
+    // the drawn circle lives inside the shadow group; the hit area is the
+    // transparent circle that is a direct child of the pin group
+    const drawn = async () => (await p.locator('svg.ff-map g.ff-pin g circle').first().boundingBox())?.width;
+    const hit = async () => (await p.locator('svg.ff-map g.ff-pin > circle').first().boundingBox())?.width;
+    const d0 = await drawn(), h0 = await hit();
     await zoomIn(p);
-    const s1 = await sizeAt();
+    const d1 = await drawn(), h1 = await hit();
     await zoomIn(p);
-    const s2 = await sizeAt();
-    const sizes = [s0, s1, s2].filter(Boolean);
-    const spread = Math.max(...sizes) - Math.min(...sizes);
-    check(`${name}: pin size constant across zoom`, spread <= 2,
-      sizes.map((v) => v.toFixed(0)).join(' / ') + 'px');
-    check(`${name}: pin meets the 40px touch target`, Math.min(...sizes) >= 39,
-      `${Math.min(...sizes).toFixed(0)}px`);
-    const area = await p.locator('svg.ff-map g.ff-area circle').first().boundingBox();
-    check(`${name}: area marker also meets 40px`, !!area && area.width >= 39,
+    const d2 = await drawn(), h2 = await hit();
+    check(`${name}: pins are smaller at the overview, full size once you zoom`,
+      Math.abs(d0 - 34) <= 1.5 && Math.abs(d1 - 40) <= 1.5 && Math.abs(d2 - 40) <= 1.5,
+      [d0, d1, d2].map((v) => v.toFixed(0)).join(' / ') + 'px');
+    check(`${name}: the touch target stays 44px at every level`,
+      [h0, h1, h2].every((v) => v >= 43.5), [h0, h1, h2].map((v) => v.toFixed(0)).join(' / ') + 'px');
+    const area = await p.locator('svg.ff-map g.ff-area > circle').first().boundingBox();
+    check(`${name}: area marker is a 44px target too`, !!area && area.width >= 43.5,
       area ? `${area.width.toFixed(0)}px` : 'none');
   });
 
@@ -449,6 +451,9 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   const title = async () => (await p.locator('.sheet .hd h3').allTextContents()).join('|');
   const centre = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
   const vb = () => p.locator('svg.ff-map').getAttribute('viewBox');
+  // Amenities only appear once you zoom in -- the overview carries destinations.
+  await p.locator('.zoomctl button').first().click();
+  await p.waitForTimeout(650);
   await safe(`${name}: second pin swaps the sheet`, async () => {
     await p.mouse.click(...await centre('g.ffc-pin--kids')); await p.waitForTimeout(400);
     await p.mouse.click(...await centre('g.ffc-pin--firstaid')); await p.waitForTimeout(400);
@@ -563,6 +568,8 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   const at = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  await p.locator('.zoomctl button').first().click();   // amenities appear here
+  await p.waitForTimeout(650);
   await p.mouse.click(...await at('g.ffc-pin--kids'));
   await p.waitForTimeout(600);
   const t0 = Date.now();
@@ -583,6 +590,59 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   check('mobile: the swap ends on the new content',
     /First Aid/.test(frames[frames.length - 1].title) && frames[frames.length - 1].y === 0,
     `${frames[frames.length - 1].title} at y=${frames[frames.length - 1].y}`);
+  await p.close();
+}
+
+// Closing has to be a move too. The content used to unmount the instant the
+// sheet closed, collapsing it to nothing -- and a zero-height sheet has no
+// height to translate, so closing read as vanishing rather than leaving.
+// And the grip is a real handle now: drag it down and the sheet follows.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const at = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  const state = () => p.evaluate(() => {
+    const el = document.querySelector('.sheet');
+    return { y: Math.round(new DOMMatrix(getComputedStyle(el).transform).m42),
+             h: Math.round(el.getBoundingClientRect().height),
+             open: el.classList.contains('open') };
+  });
+
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  const openH = (await state()).h;
+  await p.mouse.click(30, 300);                       // tap the bare map to close
+  const frames = [];
+  for (let i = 0; i < 8; i++) { frames.push(await state()); await p.waitForTimeout(30); }
+  const slid = frames.filter((f) => f.y > 10 && f.h >= openH - 2);
+  check('mobile: closing slides the sheet down rather than vanishing',
+    slid.length >= 3, `${slid.length} frames mid-slide at full height (${openH}px)`);
+
+  // Drag the grip: the sheet follows the finger, and a real pull dismisses it.
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  const g = await p.locator('.griparea').boundingBox();
+  check('mobile: the grip is a 44px grab area', g.height >= 44, `${Math.round(g.height)}px`);
+  await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await p.mouse.down();
+  const follow = [];
+  for (const dy of [20, 80, 160, 230]) { await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2 + dy); follow.push((await state()).y); }
+  await p.mouse.up();
+  await p.waitForTimeout(500);
+  check('mobile: the sheet follows the grip', follow[0] > 0 && follow[3] > follow[0], follow.join(' -> '));
+  check('mobile: a real pull dismisses it', !(await state()).open);
+
+  // A small tug is not a dismissal.
+  await p.mouse.click(...await at('g.ffc-pin--kids'));
+  await p.waitForTimeout(600);
+  await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+  await p.mouse.down();
+  await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2 + 18);
+  await p.mouse.up();
+  await p.waitForTimeout(450);
+  const after = await state();
+  check('mobile: a small tug springs back', after.open && after.y === 0, `open=${after.open} y=${after.y}`);
   await p.close();
 }
 
