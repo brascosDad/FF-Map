@@ -10,7 +10,7 @@
  * people on the same few cell towers. The map has to open for someone standing
  * at the gate with one bar, and keep working once they are inside.
  */
-import { readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, statSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
 

@@ -733,7 +733,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     const c = await caches.open(keys[0]);
     return { active: !!reg.active, cache: keys[0], entries: (await c.keys()).length };
   });
-  check('a service worker takes control', sw.active && /^fallfest-/.test(sw.cache), sw.cache);
+  check('a service worker takes control', sw.active && sw.cache.startsWith('fallfest-'), sw.cache);
   check('the whole map is precached', sw.entries >= 15, `${sw.entries} files`);
   await warm.close();
 
