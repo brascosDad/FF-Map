@@ -5,7 +5,11 @@ import { readFileSync } from 'node:fs';
 
 const svg = readFileSync('public/favicon.svg', 'utf8');
 const OUT = process.argv[2];   // optional: also drop a big one here for review
-const sizes = [[180, 'public/apple-touch-icon.png'], [32, 'public/favicon-32.png']];
+const sizes = [
+  [180, 'public/apple-touch-icon.png'],
+  [32, 'public/favicon-32.png'],
+  [512, 'public/icon-512.png'],   // the web manifest's install icon
+];
 if (OUT) sizes.push([512, OUT]);
 
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
