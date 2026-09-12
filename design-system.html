@@ -276,6 +276,15 @@
 </div>
 
 <script type="module">
+  // The same faces the app loads. Linking the stylesheets alone left this page
+  // rendering the type scale in system-ui, which is the one thing a type page
+  // must not do.
+  import '@fontsource/manrope/400.css';
+  import '@fontsource/manrope/500.css';
+  import '@fontsource/manrope/600.css';
+  import '@fontsource/manrope/700.css';
+  import '@fontsource/manrope/800.css';
+
   // Swatches and icons are read from the live stylesheet and the app's own icon
   // set, so this page cannot drift from what ships.
   const css = getComputedStyle(document.documentElement);
