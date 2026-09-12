@@ -31,7 +31,14 @@ CANDIDATES = [
 ]
 OUT = 'public/favicon.svg'
 BOX = 64        # icon viewBox
-CAP = 30.0      # cap height inside it
+INK_W = 46.0    # how wide the FF pair may be inside it (safe zone is 51.2)
+CAP_MAX = 30.0  # ...but never taller than this
+
+# Fit by WIDTH, not by cap height. Brice Black is a much wider face than Manrope,
+# so a cap height that suited one filled the icon edge to edge in the other --
+# and an app icon has to survive Android's maskable crop, which keeps only the
+# middle 80%. Deriving the scale from the pair's inked width keeps the mark the
+# same size on the page whatever face the masthead is using.
 
 SRC = next((p for p in CANDIDATES if os.path.exists(p)), None)
 if SRC is None:
@@ -61,10 +68,12 @@ class _BB:
 bb = _BB()
 bb.xMin, bb.xMax = x_min, x_max
 
-s = CAP / cap
+ink_units = adv + bb.xMax - bb.xMin          # inked width of the pair, in font units
+s = min(INK_W / ink_units, CAP_MAX / cap)   # whichever constraint binds first
+cap_px = cap * s
 ink_l, ink_r = bb.xMin * s, adv * s + bb.xMax * s
 x0 = (BOX - (ink_r - ink_l)) / 2 - ink_l    # centre on the INK, not on the advance
-y0 = (BOX + CAP) / 2                        # baseline, cap height centred in the box
+y0 = (BOX + cap_px) / 2                     # baseline, cap height centred in the box
 
 
 def tidy(d):
@@ -101,5 +110,5 @@ svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {box} {box}" role=
 
 open(OUT, 'w').write(svg)
 face = f['name'].getDebugName(4) or os.path.basename(SRC)
-print('wrote %s -- %s, F x2, cap %.0f in a %d box' % (OUT, face, CAP, BOX))
+print('wrote %s -- %s, F x2, %.1f wide x %.1f tall in a %d box' % (OUT, face, ink_r - ink_l, cap_px, BOX))
 print('  source: %s' % SRC)

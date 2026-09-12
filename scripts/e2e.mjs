@@ -715,6 +715,68 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.close();
 }
 
+// ---- the map has to work with no signal ----
+// Ten thousand people share a few cell towers at Candler Park in October. This
+// is the case the service worker exists for, and it is worth a real test: the
+// first version of it cached everything correctly and still served a blank
+// green screen, because "Vary: Origin" made every script and stylesheet miss.
+// Nothing in the console but "failed to fetch". Only opening it offline catches
+// that.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true, serviceWorkers: 'allow' });
+  const warm = await ctx.newPage();
+  await warm.goto(BASE, { waitUntil: 'networkidle' });
+  await warm.waitForTimeout(1000);
+  const sw = await warm.evaluate(async () => {
+    const reg = await navigator.serviceWorker.ready;
+    const keys = await caches.keys();
+    const c = await caches.open(keys[0]);
+    return { active: !!reg.active, cache: keys[0], entries: (await c.keys()).length };
+  });
+  check('a service worker takes control', sw.active && /^fallfest-/.test(sw.cache), sw.cache);
+  check('the whole map is precached', sw.entries >= 15, `${sw.entries} files`);
+  await warm.close();
+
+  // No signal, fresh tab -- someone opening the map at the gate.
+  await ctx.setOffline(true);
+  const p = await ctx.newPage();
+  const failed = [];
+  p.on('requestfailed', (r) => failed.push(r.url().replace(BASE, '')));
+  await p.goto(BASE, { waitUntil: 'load' }).catch(() => {});
+  await p.waitForTimeout(1800);
+  const off = await p.evaluate(() => ({
+    markers: document.querySelectorAll('svg.ff-map g.ff-pin, svg.ff-map g.ff-area').length,
+    basemap: document.querySelectorAll('svg.ff-map path').length,
+    chips: document.querySelectorAll('.ffc-chip').length,
+    // Both faces have to survive the network being gone: Brice for the
+    // masthead, Manrope for everything else.
+    // The faces the overview actually paints with. check() only reports what has
+    // been fetched, and a weight nothing on screen uses is never fetched -- so
+    // asking about a weight the overview does not paint proves nothing.
+    brice: document.fonts.check('900 36px Brice'),
+    manrope: document.fonts.check('400 15px Manrope') && document.fonts.check('700 14px Manrope'),
+  }));
+  check('offline: the map draws', off.markers >= 6 && off.basemap > 20, `${off.markers} markers, ${off.basemap} basemap paths`);
+  check('offline: the chrome draws', off.chips === 3, `${off.chips} chips`);
+  check('offline: the real fonts are there, not fallbacks', off.brice && off.manrope,
+    `Brice ${off.brice ? 'loaded' : 'MISSING'}, Manrope ${off.manrope ? 'loaded' : 'MISSING'}`);
+  check('offline: nothing failed to load', failed.length === 0, failed.join(' | '));
+
+  // and it is still usable, not just visible
+  const bb = await p.locator('g.ffc-pin--kids').first().boundingBox();
+  await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+  await p.waitForTimeout(600);
+  check('offline: tapping a pin still opens its detail',
+    (await p.locator('.sheet .hd h3').first().textContent()) === 'Kidlandia');
+  await p.locator('.sheet .close').click();
+  await p.waitForTimeout(500);
+  const before = await p.locator('svg.ff-map').getAttribute('viewBox');
+  await p.locator('.zoomctl button').first().click();
+  await p.waitForTimeout(700);
+  check('offline: zoom still works', (await p.locator('svg.ff-map').getAttribute('viewBox')) !== before);
+  await ctx.close();
+}
+
 check('no uncaught page errors', pageErrors.length === 0, pageErrors.join(' | '));
 
 await browser.close();

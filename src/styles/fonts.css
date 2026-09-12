@@ -1,13 +1,27 @@
 /* Manrope's font-face rules are imported directly in main.jsx via @fontsource
-   (self-hosted, so the app works fully offline — no CDN dependency at the festival
-   gate, where wifi/cell can be unreliable). Nothing needed here for Manrope.
+   (latin subsets only, self-hosted — the app has to work offline at the festival
+   gate, so nothing here may depend on a CDN).
 
-   Brice (display) — see src/assets/fonts/README.md. Add @font-face blocks here once
-   the real .otf files are dropped in, e.g.:
+   Brice is the display face, used for the masthead and nothing else. It is the
+   same face the Fall Fest site uses, so the map's title matches the site's.
 
-   @font-face {
-     font-family: 'Brice';
-     src: url('../assets/fonts/Brice-Black.otf') format('opentype');
-     font-weight: 900;
-   }
-*/
+   Only the Black weight ships. The repo carries six .otf weights, but the
+   masthead is the single place --font-display is used, and shipping five faces
+   nobody renders would be 180KB of dead weight in the offline cache. Add another
+   @font-face here if a second weight ever gets used.
+
+   Served as woff2 rather than the .otf: 21KB against 34KB for identical
+   outlines, and every browser this map targets has supported woff2 since 2016.
+   Regenerate with scripts/build-fonts.py if the .otf is ever replaced. */
+@font-face {
+  font-family: 'Brice';
+  src: url('../assets/fonts/Brice-Black.woff2') format('woff2');
+  /* Brice's Black is 900; --weight-black asks for 800. Declaring the range
+     means the browser matches this face for either and never reaches for a
+     synthetic bold. */
+  font-weight: 800 900;
+  font-style: normal;
+  /* swap, not block: the masthead appearing in Manrope for a moment beats a
+     title-shaped hole on a phone with one bar of signal. */
+  font-display: swap;
+}
