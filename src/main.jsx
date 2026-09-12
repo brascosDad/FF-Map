@@ -6,12 +6,14 @@ import { createRoot } from 'react-dom/client'
 // still needs. That is a lot to ask of a phone on festival wifi, and a lot to
 // hold in an offline cache.
 //
+// Four weights, not five: 600 is not in the token scale (--weight-medium is 500,
+// --weight-bold 700, --weight-black 800) and nothing asked for it.
+//
 // 800 is --weight-black: the masthead, panel titles, day headings. Without it
 // the browser synthesises a fake bold off 700, and every platform fakes it
 // differently -- which is why the title looked wrong on desktop but fine on iOS.
 import '@fontsource/manrope/latin-400.css'
 import '@fontsource/manrope/latin-500.css'
-import '@fontsource/manrope/latin-600.css'
 import '@fontsource/manrope/latin-700.css'
 import '@fontsource/manrope/latin-800.css'
 import './styles/global.css'

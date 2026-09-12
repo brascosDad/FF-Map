@@ -748,11 +748,18 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     markers: document.querySelectorAll('svg.ff-map g.ff-pin, svg.ff-map g.ff-area').length,
     basemap: document.querySelectorAll('svg.ff-map path').length,
     chips: document.querySelectorAll('.ffc-chip').length,
-    font: document.fonts.check('800 36px Manrope'),
+    // Both faces have to survive the network being gone: Brice for the
+    // masthead, Manrope for everything else.
+    // The faces the overview actually paints with. check() only reports what has
+    // been fetched, and a weight nothing on screen uses is never fetched -- so
+    // asking about a weight the overview does not paint proves nothing.
+    brice: document.fonts.check('900 36px Brice'),
+    manrope: document.fonts.check('400 15px Manrope') && document.fonts.check('700 14px Manrope'),
   }));
   check('offline: the map draws', off.markers >= 6 && off.basemap > 20, `${off.markers} markers, ${off.basemap} basemap paths`);
   check('offline: the chrome draws', off.chips === 3, `${off.chips} chips`);
-  check('offline: the real font is there, not a fallback', off.font);
+  check('offline: the real fonts are there, not fallbacks', off.brice && off.manrope,
+    `Brice ${off.brice ? 'loaded' : 'MISSING'}, Manrope ${off.manrope ? 'loaded' : 'MISSING'}`);
   check('offline: nothing failed to load', failed.length === 0, failed.join(' | '));
 
   // and it is still usable, not just visible

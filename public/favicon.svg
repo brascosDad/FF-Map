@@ -5,7 +5,7 @@
        The streets sit clear of the letters: one down the left edge, one along
        the bottom, and the diagonal at the angle the car path actually runs.
 
-       The FF is Manrope ExtraLight ExtraBold's own F, twice, taken from the font file the app
+       The FF is Brice Black's own F, twice, taken from the font file the app
        loads. See the module docstring for why it ships as geometry. -->
   <rect width="64" height="64" rx="13" fill="#ADD29E"/>
   <g fill="#E1E6EB" opacity="0.6">
@@ -14,7 +14,7 @@
     <rect x="-6" y="52" width="76" height="6"/>
   </g>
   <g fill="#23385B">
-    <path d="M11.79 47V17H30.12V22.67H17.46V29.17H27.62V34.83H17.46V47Z"/>
-    <path d="M33.88 47V17H52.21V22.67H39.54V29.17H49.71V34.83H39.54V47Z"/>
+    <path d="M9 43.62H19.89C19.32 41.19 18.96 37.21 18.96 33.96V33.76H22.77C24.33 33.76 26.06 33.79 27.19 33.92V30.84C26.06 30.94 24.33 30.97 22.77 30.97H18.96V29.34H24.6C28.25 29.34 30.01 29.64 30.9 30.54L29.51 20.38H9C9.53 22.81 9.9 26.92 9.9 30.17V33.83C9.9 37.08 9.53 41.19 9 43.62Z"/>
+    <path d="M33.1 43.62H43.98C43.42 41.19 43.05 37.21 43.05 33.96V33.76H46.87C48.43 33.76 50.15 33.79 51.28 33.92V30.84C50.15 30.94 48.43 30.97 46.87 30.97H43.05V29.34H48.69C52.34 29.34 54.1 29.64 55 30.54L53.61 20.38H33.1C33.63 22.81 33.99 26.92 33.99 30.17V33.83C33.99 37.08 33.63 41.19 33.1 43.62Z"/>
   </g>
 </svg>
