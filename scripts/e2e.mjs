@@ -228,28 +228,30 @@ for (const [name, w, h] of SIZES) {
     !atBooths.some((t) => /Kidlandia|Main Stage|Acoustic|Food Court|Art Market/.test(t)), atBooths.join(' | '));
   check(`${name}: no booth numbers at Booths level`, !atBooths.some((t) => /^\d+$/.test(t)));
 
-  // ---- pins hold a constant screen size across zooms ----
-  await safe(`${name}: pin size constant across zoom`, async () => {
+  // ---- pin sizing ----
+  // Two different numbers, deliberately. The VISIBLE pin is 34px at the overview
+  // and 40 from the first zoom step on -- the overview is where the festival is
+  // squeezed into a phone, so the markers give up a little there. The thing a
+  // FINGER has to hit is 44px at every level regardless.
+  await safe(`${name}: pin sizing`, async () => {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
-    // measure a category pin specifically -- area markers are a separate class
-    const sizeAt = async () => {
-      const b = await p.locator('svg.ff-map g.ff-pin circle').first().boundingBox();
-      return b ? b.width : null;
-    };
-    const s0 = await sizeAt();
+    // the drawn circle lives inside the shadow group; the hit area is the
+    // transparent circle that is a direct child of the pin group
+    const drawn = async () => (await p.locator('svg.ff-map g.ff-pin g circle').first().boundingBox())?.width;
+    const hit = async () => (await p.locator('svg.ff-map g.ff-pin > circle').first().boundingBox())?.width;
+    const d0 = await drawn(), h0 = await hit();
     await zoomIn(p);
-    const s1 = await sizeAt();
+    const d1 = await drawn(), h1 = await hit();
     await zoomIn(p);
-    const s2 = await sizeAt();
-    const sizes = [s0, s1, s2].filter(Boolean);
-    const spread = Math.max(...sizes) - Math.min(...sizes);
-    check(`${name}: pin size constant across zoom`, spread <= 2,
-      sizes.map((v) => v.toFixed(0)).join(' / ') + 'px');
-    check(`${name}: pin meets the 40px touch target`, Math.min(...sizes) >= 39,
-      `${Math.min(...sizes).toFixed(0)}px`);
-    const area = await p.locator('svg.ff-map g.ff-area circle').first().boundingBox();
-    check(`${name}: area marker also meets 40px`, !!area && area.width >= 39,
+    const d2 = await drawn(), h2 = await hit();
+    check(`${name}: pins are smaller at the overview, full size once you zoom`,
+      Math.abs(d0 - 34) <= 1.5 && Math.abs(d1 - 40) <= 1.5 && Math.abs(d2 - 40) <= 1.5,
+      [d0, d1, d2].map((v) => v.toFixed(0)).join(' / ') + 'px');
+    check(`${name}: the touch target stays 44px at every level`,
+      [h0, h1, h2].every((v) => v >= 43.5), [h0, h1, h2].map((v) => v.toFixed(0)).join(' / ') + 'px');
+    const area = await p.locator('svg.ff-map g.ff-area > circle').first().boundingBox();
+    check(`${name}: area marker is a 44px target too`, !!area && area.width >= 43.5,
       area ? `${area.width.toFixed(0)}px` : 'none');
   });
 
@@ -449,6 +451,9 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   const title = async () => (await p.locator('.sheet .hd h3').allTextContents()).join('|');
   const centre = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
   const vb = () => p.locator('svg.ff-map').getAttribute('viewBox');
+  // Amenities only appear once you zoom in -- the overview carries destinations.
+  await p.locator('.zoomctl button').first().click();
+  await p.waitForTimeout(650);
   await safe(`${name}: second pin swaps the sheet`, async () => {
     await p.mouse.click(...await centre('g.ffc-pin--kids')); await p.waitForTimeout(400);
     await p.mouse.click(...await centre('g.ffc-pin--firstaid')); await p.waitForTimeout(400);
@@ -563,6 +568,8 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   const at = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  await p.locator('.zoomctl button').first().click();   // amenities appear here
+  await p.waitForTimeout(650);
   await p.mouse.click(...await at('g.ffc-pin--kids'));
   await p.waitForTimeout(600);
   const t0 = Date.now();

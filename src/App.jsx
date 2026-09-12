@@ -164,6 +164,7 @@ export default function App() {
           wrapRef={wrapRef}
           viewBox={viewBox}
           filter={filter}
+          overview={overview}
           showBlobs={overview && !docked}
           unitsPerPx={unitsPerPx}
           showNumbers={detail}

@@ -158,6 +158,7 @@
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
      where 28 read as too small. The tap area is 44 either way. */
   --pin-size: 40px;
+  --pin-size-overview: 34px;   /* one step down where the map is most crowded */
   --panel-width: 360px;
   --sheet-max-height: 72%;
 }

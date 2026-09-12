@@ -8,6 +8,29 @@ import vendorsData from '../data/vendors.json';
 
 const STAGE_MAP = { stageMain: 'main-stage', stageAcoustic: 'acoustic-stage' };
 
+/**
+ * The head of a detail: category badge, title, and the line under it.
+ *
+ * One component, because five bodies were each assembling the same three
+ * elements by hand -- and a header that exists in five copies is a header that
+ * drifts. The close button is NOT part of this: it belongs to the sheet, not to
+ * what the sheet happens to be showing, and it lives in the sheet's own top row
+ * so it can never land on the title.
+ */
+function SheetHeader({ icon, color, title, sub }) {
+  return (
+    <>
+      <div className="hd">
+        <span className="dot" style={{ background: color }}>
+          <Icon name={icon} size={17} color="var(--icon-on-color)" />
+        </span>
+        <h3>{title}</h3>
+      </div>
+      {sub && <div className="sub">{sub}</div>}
+    </>
+  );
+}
+
 const POI_COPY = {
   kids: { title: 'Kidlandia', sub: 'Family activity zone', icon: 'kids', cat: 'kids',
     lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing', 'Trees for Tuition'] },
@@ -31,8 +54,8 @@ function StageSchedule({ stageKey }) {
   if (!stage) return null;
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.stage }}><Icon name="stage" size={17} color="var(--icon-on-color)" /></span><h3>{stage.name}</h3></div>
-      <div className="sub">{stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule</div>
+      <SheetHeader icon="stage" color={PIN_COLOR.stage} title={stage.name}
+                   sub={`${stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule`} />
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
           <div className="day">{day === 'saturday' ? 'Saturday' : 'Sunday'}</div>
@@ -55,8 +78,8 @@ function StageSchedule({ stageKey }) {
 function FoodCourt() {
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR.food }}><Icon name="food" size={17} color="var(--icon-on-color)" /></span><h3>Food Court</h3></div>
-      <div className="sub">{vendorsData.vendors.length} vendors listed</div>
+      <SheetHeader icon="food" color={PIN_COLOR.food} title="Food Court"
+                   sub={`${vendorsData.vendors.length} vendors listed`} />
       {vendorsData.vendors.map((v) => (
         <div className="li" key={v.id}><span className="b" />{v.name}{v.note ? ` (${v.note})` : ''}</div>
       ))}
@@ -68,8 +91,7 @@ function FoodCourt() {
 function ArtMarketArea({ area }) {
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: SLATE }}><Icon name="art" size={17} color="var(--icon-on-color)" /></span><h3>{area.name}</h3></div>
-      <div className="sub">{area.range}</div>
+      <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />
       <div className="li"><span className="b" />Individual booth assignments load here once the 2026 vendor list is confirmed.</div>
     </>
   );
@@ -80,8 +102,7 @@ function GenericPoi({ id }) {
   if (!d) return null;
   return (
     <>
-      <div className="hd"><span className="dot" style={{ background: PIN_COLOR[d.cat] }}><Icon name={d.icon} size={17} color="var(--icon-on-color)" /></span><h3>{d.title}</h3></div>
-      <div className="sub">{d.sub}</div>
+      <SheetHeader icon={d.icon} color={PIN_COLOR[d.cat]} title={d.title} sub={d.sub} />
       {d.lines.map((line, i) => <div className="li" key={i}><span className="b" />{line}</div>)}
     </>
   );
@@ -162,13 +183,11 @@ function BoothDetail({ booth, onStep }) {
         <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
       </div>
 
-      <div className="hd">
-        <span className="dot" style={{ background: isFood ? PIN_COLOR.food : SLATE }}>
-          <Icon name={isFood ? 'food' : 'art'} size={17} color="var(--icon-on-color)" />
-        </span>
-        <h3>{booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}</h3>
-      </div>
-      <div className="sub">{booth.area}{booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}</div>
+      <SheetHeader
+        icon={isFood ? 'food' : 'art'}
+        color={isFood ? PIN_COLOR.food : SLATE}
+        title={booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
+        sub={`${booth.area}${booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}`} />
 
       {booth.vendor
         ? <div className="li"><span className="b" />Food truck — menu and hours to come.</div>
@@ -229,9 +248,14 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
 
   useEffect(() => {
     if (nextKey === shownKey) return;
+    // Stepping from one booth to the next is navigating INSIDE what is already
+    // open, not opening something else, so the content changes in place. The
+    // sheet dropping and rising on every press of the caret made a walk down a
+    // row feel like fifteen separate openings.
+    const steppingTheSameRow = !!shown.openBooth && !!openBooth;
     // The docked panel never slides, and opening from closed should be
     // immediate -- there is nothing on screen to wait for.
-    if (docked || !shownKey) {
+    if (docked || !shownKey || steppingTheSameRow) {
       setShown({ openId, openArea, openBooth });
       setSwapping(false);
       return;
@@ -247,7 +271,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
       setSwapping(false);
     }, wait);
     return () => clearTimeout(t);
-  }, [nextKey, shownKey, docked, openId, openArea, openBooth]);
+  }, [nextKey, shownKey, docked, openId, openArea, openBooth, shown.openBooth]);
 
   let body = null;
   if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} onStep={onStepBooth} />;
@@ -332,8 +356,20 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
       data-open={isOpen ? 'true' : 'false'}
       data-phase={swapping ? 'out' : undefined}
     >
+      {/* One top row for the sheet's own controls: the grip centred, the close on
+          the right, both in the same 44px band. The close used to float over the
+          content on its own coordinates, which is how it ended up level with the
+          title and crowding the stepper -- the sheet's chrome and the sheet's
+          contents were laying themselves out independently. */}
       {!docked && (
-        <div className="griparea" {...gripHandlers} aria-hidden="true"><div className="grip" /></div>
+        <div className="sheettop">
+          <div className="griparea" {...gripHandlers} aria-hidden="true"><div className="grip" /></div>
+          {isOpen && (
+            <button className="close" ref={closeRef} onClick={onClose} aria-label="Close detail">
+              <Icon name="close" size={20} />
+            </button>
+          )}
+        </div>
       )}
 
       {/* Docked, the panel keeps its own header and a back row instead of an X:
@@ -351,12 +387,6 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
           <span aria-hidden="true">‹</span> All locations
         </button>
       )}
-      {!docked && isOpen && (
-        <button className="close" ref={closeRef} onClick={onClose} aria-label="Close detail">
-          <Icon name="close" size={20} />
-        </button>
-      )}
-
       <div className="panel-scroll" style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>{body}</div>
 
       {docked && !isOpen && <div className="panel-foot"><Legend /></div>}

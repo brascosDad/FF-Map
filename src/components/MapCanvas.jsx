@@ -26,9 +26,17 @@ function pinPx() {
     const n = parseFloat(cs.getPropertyValue(name));
     return Number.isFinite(n) ? n : fallback;
   };
-  sizes = { pin: px('--pin-size', 40) };
+  sizes = { pin: px('--pin-size', 40), overviewPin: px('--pin-size-overview', 34), tap: px('--tap-min', 44) };
   return sizes;
 }
+
+// What the furthest-out view shows. At that zoom the whole festival is squeezed
+// into a phone screen, and pins hold one physical size, so the only question is
+// how many of them there are. Measured on a 390px phone with all fifteen: seven
+// pairs collide, and EVERY collision involves an amenity -- the destinations
+// never touch each other. So the overview carries destinations, and the
+// amenities arrive when you zoom in or when you ask for them by chip.
+const OVERVIEW_CATS = new Set(['stage', 'food', 'kids']);
 
 const PIN_ICON_PX = 22;
 const STREET_PX = 13;
@@ -100,12 +108,19 @@ function SelectRing({ x, y, r, k }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
-  // Area markers are tappable too, so they take the same floor as a pin.
-  const pinR = (pinPx().pin / 2) * k;
+  // Slightly smaller at the overview so even the markers that do survive have
+  // air around them; full size from the first zoom step on.
+  const sz = pinPx();
+  const pinR = ((overview ? sz.overviewPin : sz.pin) / 2) * k;
+  const tapR = Math.max(pinR, (sz.tap / 2) * k);
+  // Area markers are tappable too, so they take the same size as a pin.
   const clusterR = pinR;
+  // A pin is on the overview if it is a destination, or if you asked for its
+  // category by chip -- tapping "Restrooms" at the overview must show restrooms.
+  const onOverview = (cat) => OVERVIEW_CATS.has(cat) || filter === cat;
   // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
   // that says how far "not what you asked for" fades, and it lives in one file.
   const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
@@ -158,6 +173,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
           <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={(e) => { e.stopPropagation(); onAreaClick(cl); }}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
               : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE[cl.id] })}
+            <circle cx={cl.mk[0]} cy={cl.mk[1]} r={tapR} fill="transparent" />
             <g className="ff-marker" filter="url(#ds)">
               <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
               <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />
@@ -168,11 +184,16 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, showBlobs,
 
         {PINS.map((p, i) => {
           if (detail && p.c === 'food') return null;
+          if (overview && !onOverview(p.c)) return null;
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.
           return (
             <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}${dim(p.c)}`} onClick={(e) => { e.stopPropagation(); onPinClick(p); }}>
+              {/* The visible pin shrinks at the overview; the thing your finger
+                  has to hit does not. This invisible circle holds the 44px
+                  floor whatever the marker is drawn at. */}
+              <circle cx={p.x} cy={p.y} r={tapR} fill="transparent" />
               <g filter="url(#ds)">
                 <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
                 <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />

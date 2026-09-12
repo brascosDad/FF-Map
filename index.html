@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: without it iOS insets the page away from the notch in
+         landscape and paints the strips either side with the body background, which
+         read as navy bands down the sides of the map. The chrome pads itself back
+         out of the unsafe areas in map.css. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Fall Fest Map</title>
   </head>
   <body>
