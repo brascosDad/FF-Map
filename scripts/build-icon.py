@@ -36,7 +36,7 @@ CANDIDATES = [
 ]
 OUT = ARG_OUT or 'public/favicon.svg'
 BOX = 64        # icon viewBox
-INK_W = 80.0    # how wide the FF pair is -- WIDER THAN THE ICON, on purpose
+INK_W = 72.0    # how wide the FF pair is -- WIDER THAN THE ICON, on purpose
 CAP_MAX = 44.0  # ...but never taller than this
 
 # Fit by WIDTH, not by cap height -- Brice Black is a much wider face than
@@ -46,9 +46,12 @@ CAP_MAX = 44.0  # ...but never taller than this
 #
 # And the width is deliberately larger than the icon. The FF bleeds off both
 # sides and is clipped by the tile, the way a map is a crop of somewhere bigger
-# rather than a diagram sitting on a card. Sized so the stems are cut but the
-# arms are whole: you still read FF instantly, it just refuses to sit politely
-# inside its box.
+# rather than a diagram sitting on a card.
+#
+# 72, not 80: at 80 the cut fell 8 units into each stem and left a thin remnant
+# at the left edge that read as a sliver rather than as a letter continuing past
+# the frame. 4 units a side keeps the crop honest and the letters whole enough
+# to carry it.
 
 SRC = next((p for p in CANDIDATES if os.path.exists(p)), None)
 if SRC is None:
