@@ -66,10 +66,17 @@
    the floor, and the floor is not a style choice. */
 @media (max-width: 480px) {
   .ffc-chip {
-    --chip-pad-x: var(--space-3);
+    /* 10px is deliberately off the 4px scale. Ernest tuned these on a real
+       phone at 320px wide, where 8 was tight around the icon and 12 cost a chip
+       its fit; the measurement won over the grid. */
+    --chip-pad-x: 10px;
     --chip-gap: var(--space-1);
     min-height: var(--chip-height-sm);
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
+    /* The icon is 16px and the vertical padding was 8, so the content floor was
+       34 and min-height never bound. 6px makes --chip-height-sm the number it
+       claims to be. */
+    padding-block: 6px;
   }
   .ffc-chip::after {
     content: '';

@@ -170,8 +170,8 @@
    visually while keeping a 44px target (see .ffc-chip in components.css). */
 @media (max-width: 480px) {
   :root {
-    --text-brand: 32px;
-    --chip-height-sm: 36px;
+    --text-brand: 28px;
+    --chip-height-sm: 30px;
   }
 }
 

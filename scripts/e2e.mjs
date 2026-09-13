@@ -518,7 +518,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   check(`${name}: masthead links out`, brand.tag === 'A' && !!brand.href, brand.href || brand.tag);
   // 48 by default, 36 on a phone -- at full size it took the top eighth of the
   // screen and pushed the chips down onto the park.
-  const wantBrand = w <= 480 ? 32 : 48;
+  const wantBrand = w <= 480 ? 28 : 48;
   check(`${name}: masthead is ${wantBrand}px, all caps, out of its pill`,
     brand.size === wantBrand && brand.caps === 'uppercase' && brand.border === '0px' && brand.bg === 'rgba(0, 0, 0, 0)',
     `${brand.size}px, ${brand.caps}, border ${brand.border}, bg ${brand.bg}`);
@@ -681,7 +681,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     check(`${name}: the pill is painted shorter than the floor`, r.paintedHeight < 44, `${r.paintedHeight}px painted`);
     check(`${name}: ...but a thumb still gets 44px`, r.tapHeight >= 44 && r.tapTop <= 0,
       `${r.tapHeight}px tap area, ${r.tapTop}px above the pill`);
-    check(`${name}: masthead is 32px on a phone`, r.brand === 32, `${r.brand}px`);
+    check(`${name}: masthead is 28px on a phone`, r.brand === 28, `${r.brand}px`);
     await p.close();
   }
 }
