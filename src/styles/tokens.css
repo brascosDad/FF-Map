@@ -165,8 +165,14 @@
 
 /* The masthead is a quarter smaller on a phone. At 48 it took the top eighth of
    the screen and pushed the chips down onto the park. */
+/* Phone sizing. Every pixel the top bar gives back is map, and the map is the
+   point -- but the touch floor is not negotiable, so the chip gets shorter
+   visually while keeping a 44px target (see .ffc-chip in components.css). */
 @media (max-width: 480px) {
-  :root { --text-brand: 36px; }
+  :root {
+    --text-brand: 32px;
+    --chip-height-sm: 36px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -192,8 +192,16 @@ for (const [name, w, h] of SIZES) {
 
   // ---- audit: touch targets and selection semantics ----
   await safe(`${name}: control sizes`, async () => {
+    // On a phone the pill is painted shorter than the floor and an ::after
+    // carries the target; everywhere else the box itself is the target. Measure
+    // whichever is bigger -- what matters is what a thumb can hit.
     const chip = await p.locator('.ffc-chip').first().boundingBox();
-    check(`${name}: chip meets the 44px touch target`, chip && chip.height >= 43, `${chip?.height?.toFixed(0)}px tall`);
+    const chipTap = await p.locator('.ffc-chip').first().evaluate((el) => {
+      const after = parseFloat(getComputedStyle(el, '::after').height);
+      return Math.max(el.getBoundingClientRect().height, Number.isFinite(after) ? after : 0);
+    });
+    check(`${name}: chip meets the 44px touch target`, chipTap >= 43,
+      `${chipTap.toFixed(0)}px target, ${chip?.height?.toFixed(0)}px painted`);
     const pressed = await p.locator('.ffc-chip').first().getAttribute('aria-pressed');
     check(`${name}: chip carries aria-pressed`, pressed !== null, String(pressed));
     const zb = await p.locator('.zoomctl button').first().boundingBox();
@@ -510,7 +518,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   check(`${name}: masthead links out`, brand.tag === 'A' && !!brand.href, brand.href || brand.tag);
   // 48 by default, 36 on a phone -- at full size it took the top eighth of the
   // screen and pushed the chips down onto the park.
-  const wantBrand = w <= 480 ? 36 : 48;
+  const wantBrand = w <= 480 ? 32 : 48;
   check(`${name}: masthead is ${wantBrand}px, all caps, out of its pill`,
     brand.size === wantBrand && brand.caps === 'uppercase' && brand.border === '0px' && brand.bg === 'rgba(0, 0, 0, 0)',
     `${brand.size}px, ${brand.caps}, border ${brand.border}, bg ${brand.bg}`);
@@ -661,12 +669,19 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
       const last = c.children[c.children.length - 1].getBoundingClientRect();
       return { headroom: Math.round(window.innerWidth - last.right),
                needsScroll: c.scrollWidth > c.clientWidth,
-               tapHeight: Math.round(c.children[0].getBoundingClientRect().height),
+               // The PAINTED pill is shorter than the floor on a phone; the tap
+               // area is an ::after that extends past it. Measure the target,
+               // not the paint -- they are deliberately different now.
+               paintedHeight: Math.round(c.children[0].getBoundingClientRect().height),
+               tapHeight: Math.round(parseFloat(getComputedStyle(c.children[0], '::after').height)),
+               tapTop: Math.round(parseFloat(getComputedStyle(c.children[0], '::after').top)),
                brand: Math.round(parseFloat(getComputedStyle(document.querySelector('.ffc-brand__name')).fontSize)) };
     });
     check(`${name}: all three chips fit without scrolling`, !r.needsScroll && r.headroom > 20, `${r.headroom}px to spare`);
-    check(`${name}: the tighter chip keeps its 44px target`, r.tapHeight >= 44, `${r.tapHeight}px`);
-    check(`${name}: masthead is 36px on a phone`, r.brand === 36, `${r.brand}px`);
+    check(`${name}: the pill is painted shorter than the floor`, r.paintedHeight < 44, `${r.paintedHeight}px painted`);
+    check(`${name}: ...but a thumb still gets 44px`, r.tapHeight >= 44 && r.tapTop <= 0,
+      `${r.tapHeight}px tap area, ${r.tapTop}px above the pill`);
+    check(`${name}: masthead is 32px on a phone`, r.brand === 32, `${r.brand}px`);
     await p.close();
   }
 }

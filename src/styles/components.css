@@ -57,13 +57,27 @@
 .ffc-chip--muted { --chip-fg: var(--text-muted); --chip-border: var(--border-subtle); }
 
 /* Phone variant. All three filters have to be on screen at once -- a chip row
-   you have to discover by swiping is a chip you will not find -- and at the full
-   padding they came to 359px against 366px of usable width, which is no margin
-   at all once a device renders the label a shade wider. Only the horizontal
-   padding and the icon gap tighten: min-height stays --tap-min, so the touch
-   target is exactly the size it was. */
+   you have to discover by swiping is a chip you will not find -- and every pixel
+   the bar gives back is map.
+   The painted pill shrinks; the TARGET does not. min-height drops to
+   --chip-height-sm, and ::after extends the hit area back out to --tap-min above
+   and below, so the chip reads smaller while a thumb still gets 44px. That is
+   the only honest way to have both: a 36px control with a 36px target would fail
+   the floor, and the floor is not a style choice. */
 @media (max-width: 480px) {
-  .ffc-chip { --chip-pad-x: var(--space-3); --chip-gap: var(--space-1); }
+  .ffc-chip {
+    --chip-pad-x: var(--space-3);
+    --chip-gap: var(--space-1);
+    min-height: var(--chip-height-sm);
+    font-size: var(--text-sm);
+  }
+  .ffc-chip::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: calc((var(--chip-height-sm) - var(--tap-min)) / 2);
+    height: var(--tap-min);
+  }
 }
 
 /* ===== IconButton =========================================================
