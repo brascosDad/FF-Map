@@ -199,6 +199,9 @@
 .ffc-poirow .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
 .ff-screen.docked .sheet .griparea { display: none; }
 .ff-screen.docked .topbar { padding: var(--ff-gap); }
+/* ...and the gap below the lockup matches that padding, so the logo sits in
+   consistent air rather than in whatever --space-3 happened to be. */
+.ff-screen.docked .tbrow { margin-bottom: var(--ff-gap); }
 /* Clear the floating panel: gap + panel + gap. Without this the zoom stack sits
    underneath the panel and cannot be clicked at all. */
 .ff-screen.docked .zoomctl { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }

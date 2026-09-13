@@ -700,6 +700,36 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.close();
 }
 
+// The lockup should sit in even air. It is set all caps, so the bottom quarter
+// of its line box is empty descender space -- that made the gap below the logo
+// half again the gap above it (19px against 13) while both margins read
+// --space-3 and looked correct in the CSS. Measured optically, from the caps.
+for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 768, hasTouch: w < 768 });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(900);
+  const g = await p.evaluate(async () => {
+    await document.fonts.ready;
+    const bar = document.querySelector('.topbar');
+    const brand = document.querySelector('.ffc-brand__name');
+    const chip = document.querySelector('.ffc-chip');
+    const cs = getComputedStyle(brand);
+    const cv = document.createElement('canvas').getContext('2d');
+    cv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = cv.measureText('FALL FEST');
+    const box = brand.getBoundingClientRect();
+    const L = parseFloat(cs.fontSize);
+    const baseline = (L - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+    return {
+      above: Math.round(box.top + baseline - m.actualBoundingBoxAscent - bar.getBoundingClientRect().top),
+      below: Math.round(chip.getBoundingClientRect().top - (box.top + baseline + m.actualBoundingBoxDescent)),
+    };
+  });
+  check(`${name}: the logo sits in even air`, Math.abs(g.above - g.below) <= 2,
+    `${g.above}px above the caps, ${g.below}px below`);
+  await p.close();
+}
+
 // No blue flash on a booth tap. The highlight paints over the nearest clickable
 // ancestor, and a booth's is its whole area group -- so the default put a
 // screen-sized box on screen every time you tapped one.

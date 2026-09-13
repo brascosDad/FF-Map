@@ -262,6 +262,13 @@
 .ffc-brand { display: inline-flex; align-items: baseline; gap: var(--space-2); text-decoration: none; }
 .ffc-brand__name {
   font: var(--weight-black) var(--text-brand)/1 var(--font-display);
+  /* Trim the descender space. The lockup is all caps, so the bottom quarter of
+     every line box is empty -- 7px at 28, 12px at 48 -- and it read as the gap
+     below the logo being half again the gap above it (19 against 13) even
+     though both margins were --space-3. -0.25em scales with --text-brand, so
+     the spacing stays honest at any size and the space scale keeps meaning what
+     it says. */
+  margin-bottom: -0.25em;
   /* All caps, to match the festival site's own lockup. Done in CSS so the
      accessible name stays "Fall Fest" rather than being shouted at a screen
      reader. */
