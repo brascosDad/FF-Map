@@ -213,5 +213,11 @@ export const BOOTHS = {
   ],
 };
 
-export const BOOTH_CAVEAT =
-  'Positions are from the official map. Food-truck names are last year\u2019s (2025) list pinned to this year\u2019s stalls. Art-market booths are numbered in map order, not by the committee\u2019s booth numbers.';
+// The three things a reader has to be told about this data used to live here as
+// one BOOTH_CAVEAT string, printed under every booth. It was the tallest thing
+// in the sheet and two thirds of it repeated the subtitle directly above it.
+// The clauses now sit where each one is actually true, in DetailSheet.jsx:
+//   positions are from the official map  -> the booth footer
+//   truck names are last year's (2025)   -> the food-stall bullet
+//   art booths are numbered in map order -> the art-booth subtitle
+// If you change one, it still has to be said somewhere. Do not just drop it.

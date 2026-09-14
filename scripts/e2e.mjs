@@ -537,8 +537,16 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
 
 // Stepping a row holds the map still. It recentres only when the next booth
 // would actually be out of sight -- and then the booth is never lost off screen.
-{
-  const p = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+//
+// Both sizes, and the phone is the one that matters. This used to be checked on
+// desktop only, where the directory takes WIDTH; it passed at 29 held of 30
+// while the phone, where the sheet takes HEIGHT, was moving the map on 5 presses
+// out of 12. A check that only runs on the roomy breakpoint is not a check.
+for (const [name, vp, box] of [
+  ['desktop', { width: 1280, height: 900 }, { x0: 80, y0: 220, x1: 700, y1: 650 }],
+  ['mobile', { width: 390, height: 844 }, { x0: 60, y0: 200, x1: 330, y1: 420 }],
+]) {
+  const p = await browser.newPage({ viewport: vp, isMobile: name === 'mobile', hasTouch: name === 'mobile' });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(620);
@@ -546,7 +554,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   const n = await p.locator('g.ff-booth').count();
   for (let i = 0; i < n; i++) {
     const bb = await p.locator('g.ff-booth').nth(i).boundingBox();
-    if (!bb || bb.x < 80 || bb.y < 220 || bb.x > 700 || bb.y > 650) continue;
+    if (!bb || bb.x < box.x0 || bb.y < box.y0 || bb.x > box.x1 || bb.y > box.y1) continue;
     await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2); break;
   }
   await p.waitForTimeout(450);
@@ -557,18 +565,47 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     const b = r.getBoundingClientRect();
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   });
+  const steps = name === 'mobile' ? 12 : 30;
   let held = 0, moved = 0, lost = 0;
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < steps; i++) {
     const before = await vbOf();
     await p.locator('.boothnav button').nth(1).click();
     await p.waitForTimeout(300);
     if (await vbOf() === before) held++; else moved++;
     const s = await selPos();
-    if (!s || s.x < 0 || s.y < 0 || s.x > 1280 || s.y > 900) lost++;
+    if (!s || s.x < 0 || s.y < 0 || s.x > vp.width || s.y > vp.height) lost++;
   }
-  check('desktop: stepping mostly holds the map still', held >= 24, `held ${held} of 30, moved ${moved}`);
-  check('desktop: but it does recentre when the row walks off', moved >= 1, `${moved} recentre(s)`);
-  check('desktop: the selected booth is never lost off screen', lost === 0, `${lost} step(s) off screen`);
+  check(`${name}: stepping mostly holds the map still`, held >= Math.ceil(steps * 0.8),
+    `held ${held} of ${steps}, moved ${moved}`);
+  check(`${name}: the selected booth is never lost off screen`, lost === 0, `${lost} step(s) off screen`);
+  // The other half of the contract, and the reason this is not just `held === steps`:
+  // walk a row far enough and it does leave the screen, and then the map must follow.
+  // Asserted on desktop, where 30 presses reliably walk a row off the edge.
+  if (name === 'desktop') check('desktop: but it does recentre when the row walks off', moved >= 1, `${moved} recentre(s)`);
+  await p.close();
+}
+
+// The open sheet does NOT count as covering the map for that hold: a booth
+// behind it is still on screen, and moving for it is the lurch the stepper
+// exists to avoid. So the phone has to keep most of its screen as live map.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(620);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(620);
+  const n = await p.locator('g.ff-booth').count();
+  for (let i = 0; i < n; i++) {
+    const bb = await p.locator('g.ff-booth').nth(i).boundingBox();
+    if (!bb || bb.x < 60 || bb.y < 200 || bb.x > 330 || bb.y > 420) continue;
+    await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2); break;
+  }
+  await p.waitForTimeout(450);
+  const h = await p.evaluate(() => Math.round(document.querySelector('.sheet.open').getBoundingClientRect().height));
+  check('mobile: a booth sheet leaves most of the phone as map', h <= 320, `sheet ${h}px of 844`);
+  const foot = await p.locator('.sheet .foot').textContent();
+  check('mobile: the booth footer says where the position came from',
+    /official map/.test(foot || ''), foot || '(none)');
   await p.close();
 }
 

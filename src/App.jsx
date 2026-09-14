@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMapView } from './hooks/useMapView';
 import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
@@ -46,7 +46,6 @@ export default function App() {
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
   const [openBooth, setOpenBooth] = useState(null);
-  const sheetRef = useRef(null);
 
   function closeAll() {
     setOpenId(null);
@@ -84,20 +83,30 @@ export default function App() {
     const next = group[(i + dir + group.length) % group.length];
     setOpenBooth(next);
     // Hold the map still while the next booth is already on screen -- it just
-    // lights up. Only when the row walks off the edge (or behind the sheet)
-    // does the view move, and then it moves once.
+    // lights up. Only when the row walks off the edge does the view move, and
+    // then it moves once.
     ensureVisible(next.x, next.y, coveredEdges());
   }
 
   /**
-   * What is sitting on top of the map right now, in CSS pixels. The top bar
-   * always covers the top; on a phone the open sheet covers the bottom, and its
-   * height depends on the content, so measure it rather than guess.
+   * How much room a booth needs around it to count as "in view", in CSS pixels.
+   *
+   * Deliberately NOT the sheet. Counting the open sheet as cover meant the
+   * visible band on a 844px phone was 327px, so a row stepping diagonally left
+   * it after two or three presses and the map lurched -- which is exactly the
+   * lurch the stepper is supposed to avoid. A booth under the sheet is still on
+   * screen: the sheet is a few hundred ms of drag away, and the selection ring
+   * is waiting there when you dismiss it.
+   *
+   * The top bar is the one exception, because it is fixed and you cannot get it
+   * out of the way. Measure it rather than guess -- it has three different
+   * heights across the breakpoints. The 24px on the other three sides is one
+   * pin radius, so the marker is whole rather than half off the edge.
    */
   function coveredEdges() {
-    const sheet = !docked && sheetRef.current?.querySelector('.sheet.open');
-    const sheetH = sheet ? sheet.getBoundingClientRect().height : 0;
-    return { top: docked ? 96 : 130, right: 24, bottom: Math.max(24, sheetH + 16), left: 24 };
+    const bar = wrapRef.current?.querySelector('.topbar');
+    const top = bar ? Math.round(bar.getBoundingClientRect().bottom) + 12 : 96;
+    return { top, right: 24, bottom: 24, left: 24 };
   }
 
   function handleBoothClick(booth) {
@@ -194,7 +203,7 @@ export default function App() {
 
         </div>
 
-        <div className="sheetwrap" ref={sheetRef} onClick={(e) => e.stopPropagation()}>
+        <div className="sheetwrap" onClick={(e) => e.stopPropagation()}>
           <DetailSheet
             docked={docked}
             openId={openId}

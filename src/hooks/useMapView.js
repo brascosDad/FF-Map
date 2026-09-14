@@ -174,9 +174,11 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
    * still until the next booth would actually be out of sight -- then it moves
    * once, and the row carries on scrolling past.
    *
-   * Margins are in CSS pixels and describe what is COVERED, not just the edge:
-   * the top bar sits over the map, and on a phone so does the sheet. A booth
-   * hidden behind the sheet is not "in view".
+   * Margins are in CSS pixels. They describe the band the point has to land in
+   * -- caller's choice what counts as cover. App.jsx counts the fixed top bar,
+   * which you cannot move, and nothing else: a booth under the open sheet is
+   * still on screen, and moving the map for it is the lurch this exists to
+   * prevent.
    *
    * Returns true if it moved.
    */

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { PIN_COLOR, SLATE } from '../assets/pins';
-import { BOOTH_CAVEAT, BOOTHS } from '../data/booths';
+import { BOOTHS } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
@@ -189,11 +189,16 @@ function BoothDetail({ booth, onStep }) {
         title={booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
         sub={`${booth.area}${booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}`} />
 
+      {/* One line, and it is the honest one. The old body ran a generic bullet,
+          a "photos go here" note that told a festival-goer nothing, and the
+          full three-clause caveat -- 79px of footer repeating what the subtitle
+          above it already said. On a phone that sheet stood 387px tall and ate
+          the map. Each booth type now says the single thing that is actually
+          uncertain about it; the shared provenance line stays in the footer. */}
       {booth.vendor
-        ? <div className="li"><span className="b" />Food truck — menu and hours to come.</div>
+        ? <div className="li"><span className="b" />Last year’s (2025) truck, pinned to this stall — the 2026 list is not out yet.</div>
         : <div className="li"><span className="b" />Artist assignment arrives with the 2026 vendor list.</div>}
-      <div className="li"><span className="b" />Photos go here once we have them.</div>
-      <div className="foot">{BOOTH_CAVEAT}</div>
+      <div className="foot">Position from the official map.</div>
     </>
   );
 }

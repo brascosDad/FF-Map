@@ -123,6 +123,10 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
 - [ ] **Sheet bullets match what you opened** — Kidlandia's are Kidlandia pink,
       the food court's are food orange. Never one shared teal.
 - [ ] **The booth stepper sits above the title**, not below it.
+- [ ] **Step through a row on a phone and watch the map.** Press next eight or
+      ten times: the map should sit still and the selection ring should just
+      walk along the row. It only recentres when the ring would leave the
+      screen entirely -- the sheet covering a booth does not count.
 
 ### Tap edge cases
 
