@@ -1,6 +1,6 @@
 {
   "confirmed": true,
-  "source": "\"Schedule is Complete!\" committee thread — Thomas Helland / TDawg Presents + Hallie Meushaw, confirmed as of 2026-08-31",
+  "source": "\"Schedule is Complete!\" committee thread — Thomas Helland / TDawg Presents + Hallie Meushaw, confirmed as of 2026-08-31; Saturday 10:30 opener (Atlanta Irish Dance) confirmed by the music chair 2026-09-14",
   "stages": [
     {
       "id": "main-stage",
@@ -9,10 +9,10 @@
       "category": "stage",
       "lineup": {
         "saturday": [
-          { "time": "10:30–11:30", "act": null, "note": "Opener not yet confirmed as filled — check with Thomas/Hallie before this goes live." },
+          { "time": "10:30–11:30", "act": "Atlanta Irish Dance" },
           { "time": "Noon–1:00", "act": "Peet Midnite & The Back Taxes" },
           { "time": "1:30–2:30", "act": "Run Katie Run" },
-          { "time": "3:00–4:00", "act": "Asydequest", "note": "Can't be publicly announced until after their Sept 25 Terminal West show — show a mystery-artist placeholder until then." },
+          { "time": "3:00–4:00", "act": "Mystery artist — revealed 9/26", "_reveal": "Asydequest — can't be announced until after their Sept 25 Terminal West show. On 9/26, move this name into \"act\" and drop this key. Nothing under \"_reveal\" is rendered." },
           { "time": "4:30–5:30", "act": "The Squirrelheads" },
           { "time": "6:00–7:00", "act": "Chickasaw Mudd Puppies" }
         ],
