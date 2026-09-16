@@ -26,6 +26,14 @@ npm run preview   # serve the production build locally
 - **Vendor / food-truck list** (`src/data/vendors.json`) — the 2026 list hasn't
   arrived yet, so this is last year's (2025) roster as a structural placeholder.
   Swap the `vendors` array once the real list comes in; the UI needs no other changes.
+- **Booth numbers** (`src/data/booths.js`) — the committee's official numbering,
+  from the 2025 site map the artist market chair confirmed for 2026: 1–61 in the
+  park (two rows, increasing north→south), 62–88 on McLendon (decreasing
+  west→east), 89–164 on Candler Park Dr (two columns, decreasing north→south),
+  K1–K8 in Kidlandia. The file is generated: `src/data/booth-numbering-2026.json`
+  says what each booth is called, `src/assets/basemapCoords.js` says where the
+  rows are, and `python3 scripts/build-booths.py` lays one onto the other and
+  refuses to write unless it totals 164 + 8. Don't hand-edit `booths.js`.
 - **Pin positions & basemap** (`src/assets/pins.js`, `src/assets/basemapTrace.js`,
   `src/assets/basemapCoords.js`) — real, extracted from the canonical Figma export
   `fall-fest-desktop-map-wireframe.svg`. The basemap is that file's
@@ -58,8 +66,9 @@ npm run preview   # serve the production build locally
 - **Squarespace integration.** If the answer comes back as "embed," point an Embed
   Block / code injection at the Vercel URL. If it comes back as "replace," that's a
   different path — worth a fresh look once the tier is known.
-- **Booth counts.** Candler Park Dr draws 74 squares against a stated 76, and the
-  in-park market 62 against 69. McLendon matches exactly at 27.
+- **Kidlandia booths K1–K8.** Placed by description only (a stack on the lawn
+  beside Kidlandia); the order within the stack is unconfirmed, and there is no
+  blob for them at the phone overview until a `blob-kid` layer exists in Figma.
 - **Scale bar.** Defined in the design system, not shipped: the artboard is a
   stylised trace with no surveyed dimension on it, so there's nothing honest to
   derive a distance from yet.
@@ -75,7 +84,7 @@ src/
   styles/        tokens.css (primitives -> semantic -> component), components.css,
                  map.css, fonts.css
 scripts/         e2e.mjs (157 assertions), shot.mjs (screenshots),
-                 extract-blobs.py
+                 extract-blobs.py, build-booths.py
 design-system.html   the style guide, built from the real token/component files
 TESTING.md           the manual protocol
 ```

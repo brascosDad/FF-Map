@@ -167,6 +167,7 @@ function Legend() {
 
 function BoothDetail({ booth, onStep }) {
   const isFood = booth.area === 'Food Court';
+  const isKid = booth.area === 'Kidlandia';
   const group = BOOTHS[booth.id.split('-')[0]] || [];
   const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
@@ -187,7 +188,7 @@ function BoothDetail({ booth, onStep }) {
         icon={isFood ? 'food' : 'art'}
         color={isFood ? PIN_COLOR.food : SLATE}
         title={booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
-        sub={`${booth.area}${booth.vendor ? ` · stall ${booth.n}` : ' · numbered in map order'}`} />
+        sub={`${booth.area}${booth.vendor ? ` · stall ${booth.n}` : isFood ? '' : ' · Art Market'}`} />
 
       {/* One line, and it is the honest one. The old body ran a generic bullet,
           a "photos go here" note that told a festival-goer nothing, and the
@@ -197,8 +198,10 @@ function BoothDetail({ booth, onStep }) {
           uncertain about it; the shared provenance line stays in the footer. */}
       {booth.vendor
         ? <div className="li"><span className="b" />Last year’s (2025) truck, pinned to this stall — the 2026 list is not out yet.</div>
-        : <div className="li"><span className="b" />Artist assignment arrives with the 2026 vendor list.</div>}
-      <div className="foot">Position from the official map.</div>
+        : isKid
+          ? <div className="li"><span className="b" />Kidlandia booth — where the K1–K8 stack sits is approximate until the 2026 Kidlandia layout is confirmed.</div>
+          : <div className="li"><span className="b" />Artist names arrive with the 2026 booth assignments.</div>}
+      <div className="foot">{isFood ? 'Position from the official map.' : 'Booth number and position from the official map.'}</div>
     </>
   );
 }

@@ -7,8 +7,10 @@
 // `mk` is where the area's marker sits, in map units -- it doubles as the point
 // the panel centres on. `shortName` is how the panel lists the run; `label` is
 // the only text the map itself still draws for it. `blobs`/`clip` are drawing concerns the panel ignores.
-// Counts in `range` are the committee's stated numbers, which run slightly
-// ahead of what the export actually draws (see data/booths.js).
+// Counts in `range` are the committee's stated numbers, and since the booth
+// numbering pass they are also what the map draws (see data/booths.js and
+// scripts/build-booths.py). K1-K8 count toward the in-park run but sit in
+// their own stack by Kidlandia, drawn by MapCanvas outside these areas.
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS } from './booths';
 
@@ -34,4 +36,4 @@ export const AREAS = [
  * row (24.2 and 17.5), which is where the 36 and 21 come from. The two street
  * markets line straight streets, so their squares are already square to them.
  */
-export const BOOTH_ANGLE = { cpd: 0, mcl: 0, spine: 36, food: 21 };
+export const BOOTH_ANGLE = { cpd: 0, mcl: 0, spine: 36, kid: 0, food: 21 };

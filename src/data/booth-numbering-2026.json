@@ -1,0 +1,119 @@
+{
+  "_source": "2025 Fall Fest MAP.pdf, sent by Courtney Weil (artist market chair) 2026-09-14. Courtney confirmed the 2026 artist market will use the SAME configuration as this 2025 map.",
+  "_extracted": "2026-09-16, read directly from the PDF. Segment counts below were each verified against their stated booth counts on the map.",
+  "_totals": {
+    "numbered_artist_booths": 164,
+    "kidlandia_booths": 8,
+    "note": "The PDF legend also carries a hand-edited label reading '167 Artist Market Booths', which does NOT reconcile with its own ranges (1-164 plus K1-K8 = 172). The ranges are internally consistent and are what this file encodes. Flag to Courtney if 167 matters."
+  },
+
+  "zones": [
+    {
+      "id": "park",
+      "label": "In the Park",
+      "range": "1-61",
+      "geometry": "Two parallel rows flanking the diagonal path that runs northeast (near the food court / SweetWater arch) down to the southwest. Booth width 13 ft.",
+      "rows": [
+        {
+          "id": "park-east",
+          "side": "southeast side of the path (toward the open treed lawn)",
+          "direction": "numbers INCREASE from north to south",
+          "segments": [
+            { "from": 1, "to": 28, "count": 28, "booth_width_ft": 13, "note": "starts at the north end, nearest the food court" },
+            { "gap_ft": 25 },
+            { "from": 29, "to": 32, "count": 4, "booth_width_ft": 13, "note": "resumes after the 25 ft gap, continues to the southwest end" }
+          ]
+        },
+        {
+          "id": "park-west",
+          "side": "northwest side of the path (toward Kidlandia and the courts)",
+          "direction": "numbers INCREASE from north to south",
+          "segments": [
+            { "from": 33, "to": 42, "count": 10, "booth_width_ft": 13, "note": "starts at the north end, directly opposite booth 1" },
+            { "from": 43, "to": 61, "count": 19, "booth_width_ft": 13, "note": "continues past the path bend to the southwest end" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mclendon",
+      "label": "McLendon Ave NE",
+      "range": "62-88",
+      "geometry": "Single horizontal run along the south edge, in two boxes. Booth width 15 ft.",
+      "rows": [
+        {
+          "id": "mclendon-west",
+          "direction": "numbers DECREASE from west to east",
+          "segments": [
+            { "from": 88, "to": 76, "count": 13, "booth_width_ft": 15, "note": "88 at the WEST end of this box, 76 at the EAST end" }
+          ]
+        },
+        {
+          "id": "mclendon-east",
+          "direction": "numbers DECREASE from west to east",
+          "segments": [
+            { "from": 75, "to": 62, "count": 14, "booth_width_ft": 15, "note": "75 at the WEST end of this box, 62 at the EAST end, nearest the Acoustic Stage" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "candler-park-drive",
+      "label": "Candler Park Dr NE",
+      "range": "89-164",
+      "geometry": "Two parallel vertical columns along the west edge. Booth width 12 ft. Interrupted twice by speed bumps and once by a barricade.",
+      "rows": [
+        {
+          "id": "cpd-street",
+          "side": "west / street side (outer)",
+          "direction": "numbers DECREASE from north to south",
+          "segments": [
+            { "from": 164, "to": 155, "count": 10, "booth_width_ft": 12, "note": "northernmost segment, starts just south of the top speed bump" },
+            { "break": "barricade" },
+            { "from": 114, "to": 107, "count": 8, "booth_width_ft": 12 },
+            { "break": "speed bump" },
+            { "from": 106, "to": 89, "count": 18, "booth_width_ft": 12, "note": "89 is the southernmost booth on the whole street, near the Packaged Beer BX1" }
+          ]
+        },
+        {
+          "id": "cpd-park",
+          "side": "east / park side (inner)",
+          "direction": "numbers DECREASE from north to south",
+          "segments": [
+            { "from": 154, "to": 129, "count": 26, "booth_width_ft": 12, "note": "northernmost segment, starts level with the top speed bump" },
+            { "break": "speed bump" },
+            { "from": 128, "to": 115, "count": 14, "booth_width_ft": 12 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kidlandia",
+      "label": "Kidlandia Booths",
+      "range": "K1-K8",
+      "geometry": "Separate cluster, NOT part of the 1-164 sequence. On the 2025 map these are the yellow booths in a short vertical stack in the center of the park, beside Pumpkin Smashing / the Park Realty tent.",
+      "rows": [
+        {
+          "id": "kidlandia-stack",
+          "direction": "unconfirmed — the PDF does not label K1 through K8 individually",
+          "segments": [
+            { "from": "K1", "to": "K8", "count": 8, "note": "VERIFY placement order against the 2026 Kidlandia layout before print." }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "verification": {
+    "park": "28 + 4 + 10 + 19 = 61 booths = range 1-61. OK",
+    "mclendon": "13 + 14 = 27 booths = range 62-88. OK",
+    "candler_park_drive": "10 + 8 + 18 + 26 + 14 = 76 booths = range 89-164. OK",
+    "total_numbered": "61 + 27 + 76 = 164. OK"
+  },
+
+  "open_questions": [
+    "The PDF legend's '167 Artist Market Booths' does not reconcile with its own ranges. Ranges win unless Courtney says otherwise.",
+    "K1-K8 individual positions are not labeled on the 2025 map.",
+    "Courtney was asked to flag any row that differs from this 2025 configuration when she sends the 2026 assignments (expected Friday 9/18)."
+  ]
+}
