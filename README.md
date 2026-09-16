@@ -23,9 +23,11 @@ npm run preview   # serve the production build locally
   Acoustic Stage lineup, pulled from the committee's "Schedule is Complete!" thread.
   Real data, ready to ship. Saturday's 3:00–4:00 Main Stage act stays a
   mystery-artist placeholder until the reveal on 9/26 (flagged in the JSON).
-- **Vendor / food-truck list** (`src/data/vendors.json`) — the 2026 list hasn't
-  arrived yet, so this is last year's (2025) roster as a structural placeholder.
-  Swap the `vendors` array once the real list comes in; the UI needs no other changes.
+- **Vendor / food-truck list** (`src/data/vendors.json`) — the 2026 list from
+  the food chair (final as of 9/13), descriptions in his own words. `location`
+  is null for all but Mr Softee until placements arrive later in the week; a
+  null location lists the vendor with no spot and pins nothing. The 16 food
+  stalls in `booths.js` are positions only — no truck is assigned to a stall.
 - **Booth numbers** (`src/data/booths.js`) — the committee's official numbering,
   from the 2025 site map the artist market chair confirmed for 2026: 1–61 in the
   park (two rows, increasing north→south), 62–88 on McLendon (decreasing

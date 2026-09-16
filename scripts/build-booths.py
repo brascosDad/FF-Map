@@ -37,8 +37,9 @@ the export's rows rather than the ticks being numbered one-for-one:
                     area. The stack's order (K1 north) is unconfirmed -- the
                     2025 map does not label them individually. See KID_STACK.
   Food court        the 16 stalls, verbatim from the export apart from the two
-                    documented nudges; last year's truck names are pinned to
-                    them in vendors.json order until 2026 placements arrive.
+                    documented nudges. No truck names: the 2026 placements
+                    are not assigned yet (vendors.json carries the list and
+                    the one committed spot), so a stall is a position only.
 
 The script refuses to write if the totals do not come out at 164 numbered
 booths plus 8 Kidlandia.
@@ -50,7 +51,6 @@ import statistics
 
 COORDS = 'src/assets/basemapCoords.js'
 NUMBERING = 'src/data/booth-numbering-2026.json'
-VENDORS = 'src/data/vendors.json'
 OUT = 'src/data/booths.js'
 
 # The app's own short labels for each run (areas.js shortName / the stepper).
@@ -210,13 +210,9 @@ def lay_kid(zone):
             for i, n in enumerate(numbers(seg))]
 
 
-def lay_food(food, vendors):
+def lay_food(food):
     pts = sorted((FOOD_NUDGE.get(p, p) for p in food), key=lambda p: (p[1], p[0]))
-    out = []
-    for i, (x, y) in enumerate(pts):
-        v = vendors[i]['name'] if i < len(vendors) else None
-        out.append((i + 1, x, y, v))
-    return out
+    return [(i + 1, x, y) for i, (x, y) in enumerate(pts)]
 
 
 def sort_key(n):
@@ -232,7 +228,6 @@ def main():
     coords = {k: read_coords(k, src) for k in ('CPD', 'MCL', 'SPN', 'FOOD')}
     num = json.load(open(NUMBERING))
     zones = {z['id']: z for z in num['zones']}
-    vendors = json.load(open(VENDORS))['vendors']
 
     laid = {
         'cpd': lay_cpd(zones['candler-park-drive'], coords['CPD']),
@@ -276,9 +271,8 @@ def main():
     w('//     counts. The K1-K8 stack is placed by description only; its order is')
     w('//     unconfirmed.')
     w('//   - Art-market booths have NO names. The 2026 artist list is due 9/18.')
-    w('//   - Food-truck NAMES are LAST YEAR\'S (2025) list from vendors.json, pinned')
-    w('//     to the stall positions arbitrarily. Which truck parks where is not')
-    w('//     known.')
+    w('//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;')
+    w('//     which truck parks at which stall is not assigned yet.')
     w('')
     w('export const BOOTHS = {')
     for key in ('cpd', 'mcl', 'spine', 'kid'):
@@ -290,9 +284,8 @@ def main():
             w("    { id: '%s', n: %s, area: '%s', x: %s, y: %s }," % (ident, nn, area, fmt(x), fmt(y)))
         w('  ],')
     w('  food: [')
-    for n, x, y, v in lay_food(coords['FOOD'], vendors):
-        tail = ', vendor: %s' % json.dumps(v) if v else ''
-        w("    { id: 'food-%02d', n: %d, area: 'Food Court', x: %s, y: %s%s }," % (n, n, fmt(x), fmt(y), tail))
+    for n, x, y in lay_food(coords['FOOD']):
+        w("    { id: 'food-%02d', n: %d, area: 'Food Court', x: %s, y: %s }," % (n, n, fmt(x), fmt(y)))
     w('  ],')
     w('};')
     w('')
@@ -301,7 +294,7 @@ def main():
     w('// in the sheet and two thirds of it repeated the subtitle directly above it.')
     w('// The clauses now sit where each one is actually true, in DetailSheet.jsx:')
     w('//   numbers and positions are from the official map -> the booth footer')
-    w('//   truck names are last year\'s (2025)              -> the food-stall bullet')
+    w('//   stalls have no truck assigned yet                -> the food-stall bullet')
     w('//   the K stack is placed by description             -> the Kidlandia bullet')
     w('// If you change one, it still has to be said somewhere. Do not just drop it.')
     open(OUT, 'w').write('\n'.join(lines) + '\n')

@@ -13,9 +13,8 @@
 //     counts. The K1-K8 stack is placed by description only; its order is
 //     unconfirmed.
 //   - Art-market booths have NO names. The 2026 artist list is due 9/18.
-//   - Food-truck NAMES are LAST YEAR'S (2025) list from vendors.json, pinned
-//     to the stall positions arbitrarily. Which truck parks where is not
-//     known.
+//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;
+//     which truck parks at which stall is not assigned yet.
 
 export const BOOTHS = {
   cpd: [
@@ -199,21 +198,21 @@ export const BOOTHS = {
     { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 645.0, y: 463.0 },
   ],
   food: [
-    { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3, vendor: "Sokome" },
-    { id: 'food-02', n: 2, area: 'Food Court', x: 868.0, y: 252.1, vendor: "Snowie Atlanta Creations" },
-    { id: 'food-03', n: 3, area: 'Food Court', x: 881.3, y: 258.9, vendor: "Sweet Auburn BBQ" },
-    { id: 'food-04', n: 4, area: 'Food Court', x: 849.8, y: 259.1, vendor: "The Pickle Food Truck" },
-    { id: 'food-05', n: 5, area: 'Food Court', x: 894.2, y: 260.3, vendor: "Makara's Mediterranean" },
-    { id: 'food-06', n: 6, area: 'Food Court', x: 844.9, y: 272.6, vendor: "Hermanita by Tio Lucho's" },
-    { id: 'food-07', n: 7, area: 'Food Court', x: 888.0, y: 272.6, vendor: "Coffyn Pyes" },
-    { id: 'food-08', n: 8, area: 'Food Court', x: 883.1, y: 284.9, vendor: "Smash Hit Burgers" },
-    { id: 'food-09', n: 9, area: 'Food Court', x: 840.0, y: 287.4, vendor: "Azucar Cuban Cuisine" },
-    { id: 'food-10', n: 10, area: 'Food Court', x: 879.4, y: 296.0, vendor: "Sweetacular Treats" },
-    { id: 'food-11', n: 11, area: 'Food Court', x: 833.8, y: 302.2, vendor: "Island Noodles" },
-    { id: 'food-12', n: 12, area: 'Food Court', x: 874.5, y: 308.4, vendor: "Jalapeno Corndog Concessions" },
-    { id: 'food-13', n: 13, area: 'Food Court', x: 828.9, y: 315.8, vendor: "Curated Coffee" },
-    { id: 'food-14', n: 14, area: 'Food Court', x: 823.9, y: 330.5, vendor: "Any Given Sundae" },
-    { id: 'food-15', n: 15, area: 'Food Court', x: 867.1, y: 330.5, vendor: "King of Pops" },
+    { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3 },
+    { id: 'food-02', n: 2, area: 'Food Court', x: 868.0, y: 252.1 },
+    { id: 'food-03', n: 3, area: 'Food Court', x: 881.3, y: 258.9 },
+    { id: 'food-04', n: 4, area: 'Food Court', x: 849.8, y: 259.1 },
+    { id: 'food-05', n: 5, area: 'Food Court', x: 894.2, y: 260.3 },
+    { id: 'food-06', n: 6, area: 'Food Court', x: 844.9, y: 272.6 },
+    { id: 'food-07', n: 7, area: 'Food Court', x: 888.0, y: 272.6 },
+    { id: 'food-08', n: 8, area: 'Food Court', x: 883.1, y: 284.9 },
+    { id: 'food-09', n: 9, area: 'Food Court', x: 840.0, y: 287.4 },
+    { id: 'food-10', n: 10, area: 'Food Court', x: 879.4, y: 296.0 },
+    { id: 'food-11', n: 11, area: 'Food Court', x: 833.8, y: 302.2 },
+    { id: 'food-12', n: 12, area: 'Food Court', x: 874.5, y: 308.4 },
+    { id: 'food-13', n: 13, area: 'Food Court', x: 828.9, y: 315.8 },
+    { id: 'food-14', n: 14, area: 'Food Court', x: 823.9, y: 330.5 },
+    { id: 'food-15', n: 15, area: 'Food Court', x: 867.1, y: 330.5 },
     { id: 'food-16', n: 16, area: 'Food Court', x: 862.1, y: 344.1 },
   ],
 };
@@ -223,6 +222,6 @@ export const BOOTHS = {
 // in the sheet and two thirds of it repeated the subtitle directly above it.
 // The clauses now sit where each one is actually true, in DetailSheet.jsx:
 //   numbers and positions are from the official map -> the booth footer
-//   truck names are last year's (2025)              -> the food-stall bullet
+//   stalls have no truck assigned yet                -> the food-stall bullet
 //   the K stack is placed by description             -> the Kidlandia bullet
 // If you change one, it still has to be said somewhere. Do not just drop it.

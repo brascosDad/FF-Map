@@ -312,10 +312,10 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: dragging from a pin pans without opening detail`, !opened);
   });
 
-  // ---- the 16th food stall has no vendor in last year's 15-name list ----
+  // ---- no stall carries a truck name and 14 of 15 vendors have no spot ----
   await safe(`${name}: stall with no vendor still reads sensibly`, async () => {
     const bad = await p.evaluate(() => {
-      // BOOTHS.food[15] has no vendor; make sure nothing renders "undefined"
+      // null locations and unassigned stalls must never print "undefined"
       return document.body.innerText.includes('undefined');
     });
     check(`${name}: no "undefined" rendered anywhere`, !bad);
