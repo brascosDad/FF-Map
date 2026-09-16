@@ -237,8 +237,11 @@ the bookmark; if we add another dev-only control it will hang off the same flag.
 The point here is that nothing invented is presented as real.
 
 - [ ] Food court sheet still carries its "2025 list, placeholder" note.
-- [ ] A booth sheet says booths are numbered **in map order**, not by the
-      committee's numbers.
+- [ ] An art booth sheet shows the committee's **official booth number**
+      (1–61 park, 62–88 McLendon, 89–164 Candler Park Dr, K1–K8 Kidlandia),
+      and its footer says the number and position come from the official map.
+- [ ] A K1–K8 sheet says the stack's position is approximate until the 2026
+      Kidlandia layout is confirmed.
 - [ ] A food-truck sheet makes clear the name is last year's list pinned to this
       year's stall.
 - [ ] No artist names appear anywhere — we have none, and none were invented.
@@ -274,5 +277,6 @@ The point here is that nothing invented is presented as real.
 - "Main Stage" and "Food Court" labels collide at Overview on narrow screens.
 - Zoom pill still says "Overview" on desktop even though that level now shows
   squares — the label and the behaviour have drifted apart.
-- Booth counts: Candler Park Dr draws 74 squares against a stated 76, and the
-  in-park market 62 against 69. McLendon matches exactly at 27.
+- K1–K8 are placed by description (a stack on the lawn beside Kidlandia), not
+  from the export, and their order is unconfirmed. No blob for them at the
+  phone overview until a `blob-kid` layer exists in Figma.

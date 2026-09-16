@@ -73,7 +73,7 @@ export default function App() {
    * Step to the next/previous booth, wrapping WITHIN the booth's own area.
    * Stepping off the end of the art market on the car path returns you to its
    * start -- it does not spill into the food trucks, which are a different
-   * errand. The area is read off the booth id ('spine-04' -> 'spine').
+   * errand. The area is read off the booth id ('spine-004' -> 'spine').
    */
   function stepBooth(dir) {
     if (!openBooth) return;

@@ -182,6 +182,17 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
+        {/* Kidlandia's eight booths, K1-K8. Not part of the 1-164 run and not
+            on any market row, so they draw on their own: squares from the
+            first zoom step, and nothing at the phone overview -- blobs are
+            drawn in Figma and there is no blob-kid layer yet. Placed by
+            description, not from the export: see scripts/build-booths.py. */}
+        {!showBlobs && (
+          <g className="ff-area" data-area="kid">
+            {boxes(BOOTHS.kid, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+          </g>
+        )}
+
         {PINS.map((p, i) => {
           if (detail && p.c === 'food') return null;
           if (overview && !onOverview(p.c)) return null;

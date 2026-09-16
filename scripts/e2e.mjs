@@ -360,8 +360,9 @@ for (const [name, w, h] of SIZES) {
       back && back.i === expected, back ? `${start.i} -> ${back.i} (expected ${expected})` : 'unparsed');
     check(`${name}: stepping stays in the same area`, back && back.area === start.area,
       back ? `${start.area} -> ${back.area}` : 'unparsed');
+    // 76 + 27 + 61 numbered art booths, 8 Kidlandia, 16 food stalls.
     check(`${name}: total matches the area, not all booths`,
-      [74, 27, 62, 16].includes(start.total), `${start.total} in ${start.area}`);
+      [76, 27, 61, 8, 16].includes(start.total), `${start.total} in ${start.area}`);
 
     await p.locator('.ffc-step button').last().click();    // forward again
     await p.waitForTimeout(150);
