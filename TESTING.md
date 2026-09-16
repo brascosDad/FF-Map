@@ -236,14 +236,16 @@ the bookmark; if we add another dev-only control it will hang off the same flag.
 
 The point here is that nothing invented is presented as real.
 
-- [ ] Food court sheet still carries its "2025 list, placeholder" note.
+- [ ] Food court sheet lists the 15 vendors for 2026 with the food chair's own
+      descriptions, and says placements are not assigned yet. Mr Softee is the
+      only one with a location line.
 - [ ] An art booth sheet shows the committee's **official booth number**
       (1–61 park, 62–88 McLendon, 89–164 Candler Park Dr, K1–K8 Kidlandia),
       and its footer says the number and position come from the official map.
 - [ ] A K1–K8 sheet says the stack's position is approximate until the 2026
       Kidlandia layout is confirmed.
-- [ ] A food-truck sheet makes clear the name is last year's list pinned to this
-      year's stall.
+- [ ] A food stall sheet reads "Stall N · Food Court" with no truck name, and
+      says the truck is not assigned yet.
 - [ ] No artist names appear anywhere — we have none, and none were invented.
 
 ---

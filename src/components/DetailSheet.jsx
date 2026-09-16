@@ -75,13 +75,24 @@ function StageSchedule({ stageKey }) {
   );
 }
 
+// The 2026 list, in the food chair's own words. `offering` is his description
+// verbatim -- that is what makes it defensible, so it is printed, not
+// paraphrased. `location` is null for every truck but one until his placements
+// arrive: a truck with no spot still lists, it just has no second line and
+// nothing on the map points at it.
 function FoodCourt() {
   return (
     <>
       <SheetHeader icon="food" color={PIN_COLOR.food} title="Food Court"
-                   sub={`${vendorsData.vendors.length} vendors listed`} />
+                   sub={`${vendorsData.vendors.length} food vendors · 2026`} />
       {vendorsData.vendors.map((v) => (
-        <div className="li" key={v.id}><span className="b" />{v.name}{v.note ? ` (${v.note})` : ''}</div>
+        <div className="li" key={v.id}>
+          <span className="b" />
+          <span>
+            {v.name}{v.offering ? ` — ${v.offering}` : ''}
+            {v.location && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{v.location}</span>}
+          </span>
+        </div>
       ))}
       <div className="foot">{vendorsData.note}</div>
     </>
@@ -187,8 +198,8 @@ function BoothDetail({ booth, onStep }) {
       <SheetHeader
         icon={isFood ? 'food' : 'art'}
         color={isFood ? PIN_COLOR.food : SLATE}
-        title={booth.vendor || `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
-        sub={`${booth.area}${booth.vendor ? ` · stall ${booth.n}` : isFood ? '' : ' · Art Market'}`} />
+        title={`${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
+        sub={`${booth.area}${isFood ? '' : ' · Art Market'}`} />
 
       {/* One line, and it is the honest one. The old body ran a generic bullet,
           a "photos go here" note that told a festival-goer nothing, and the
@@ -196,8 +207,8 @@ function BoothDetail({ booth, onStep }) {
           above it already said. On a phone that sheet stood 387px tall and ate
           the map. Each booth type now says the single thing that is actually
           uncertain about it; the shared provenance line stays in the footer. */}
-      {booth.vendor
-        ? <div className="li"><span className="b" />Last year’s (2025) truck, pinned to this stall — the 2026 list is not out yet.</div>
+      {isFood
+        ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
         : isKid
           ? <div className="li"><span className="b" />Kidlandia booth — where the K1–K8 stack sits is approximate until the 2026 Kidlandia layout is confirmed.</div>
           : <div className="li"><span className="b" />Artist names arrive with the 2026 booth assignments.</div>}
