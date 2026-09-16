@@ -21,8 +21,8 @@ npm run preview   # serve the production build locally
 
 - **Stage schedule** (`src/data/stages.json`) — the confirmed 2026 Main Stage +
   Acoustic Stage lineup, pulled from the committee's "Schedule is Complete!" thread.
-  Real data, ready to ship, except Saturday's 10:30–11:30 Main Stage opener (still
-  unconfirmed — flagged in the JSON).
+  Real data, ready to ship. Saturday's 3:00–4:00 Main Stage act stays a
+  mystery-artist placeholder until the reveal on 9/26 (flagged in the JSON).
 - **Vendor / food-truck list** (`src/data/vendors.json`) — the 2026 list from
   the food chair (final as of 9/13), descriptions in his own words. `location`
   is null for all but Mr Softee until placements arrive later in the week; a
