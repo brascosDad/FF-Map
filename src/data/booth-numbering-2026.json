@@ -1,13 +1,12 @@
 {
-  "source": "Courtney Weil, Google Sheet shared 2026-09-16, 'Re: Map updates'",
+  "source": "Courtney Weil, Google Sheet shared 2026-09-16, 'Re: Map updates'. Re-read against the live sheet 2026-09-17: 132-142 corrected (132 Sally Denham, 133-134 Michael Taylor, 137 Mother's Tongue, 140 Chawn Murrah; only 141-142 are sponsors). Booth 39 keeps name/business the right way round; the sheet has them swapped.",
+  "sheet_url": "https://docs.google.com/spreadsheets/d/1qdBmZKL7KRZ8wjPva060qHJ8kDxzLQpq0yqETixaBXQ/edit",
   "supersedes": "booth-numbering-2026.json (built from the 2025 official site map)",
   "change": "All artist market booths resized to 15 ft. Every number downstream of the park moved.",
   "highest_number": 142,
   "numbers_assigned": 139,
-  "named_artists": 147,
+  "named_artists": 149,
   "sponsor_or_open": [
-    134,
-    140,
     141,
     142
   ],
@@ -1133,8 +1132,8 @@
     {
       "booth": 132,
       "zone": "cpd-field",
-      "name": "Michael Taylor",
-      "business": "Michael Taylor Abstracts",
+      "name": "Sally Denham Design",
+      "business": "Sally Denham Design",
       "status": "assigned",
       "booth_2025": 146
     },
@@ -1149,32 +1148,32 @@
     {
       "booth": 134,
       "zone": "cpd-field",
-      "name": null,
-      "business": null,
-      "status": "sponsor_or_open",
+      "name": "Michael Taylor",
+      "business": "Michael Taylor Abstracts",
+      "status": "assigned",
       "booth_2025": 148
     },
     {
       "booth": 135,
       "zone": "cpd-west-b",
-      "name": "Sally Denham Design",
-      "business": "Sally Denham Design",
+      "name": "Patrick Jeannette",
+      "business": "Mycelium Ceramics Co.",
       "status": "assigned",
       "booth_2025": 155
     },
     {
       "booth": 136,
       "zone": "cpd-west-b",
-      "name": "Patrick Jeannette",
-      "business": "Mycelium Ceramics Co.",
+      "name": "Sterling Shepard",
+      "business": "Peak Prints 3D",
       "status": "assigned",
       "booth_2025": 156
     },
     {
       "booth": 137,
       "zone": "cpd-west-b",
-      "name": "Sterling Shepard",
-      "business": "Peak Prints 3D",
+      "name": "Steffi Beigh",
+      "business": "Mother's Tongue",
       "status": "assigned",
       "booth_2025": 157
     },
@@ -1197,10 +1196,10 @@
     {
       "booth": 140,
       "zone": "cpd-west-b",
-      "name": null,
-      "business": null,
-      "status": "sponsor_or_open",
-      "booth_2025": 159
+      "name": "Chawn Murrah",
+      "business": "Chawn Murrah Fine Art",
+      "status": "assigned",
+      "booth_2025": 160
     },
     {
       "booth": 141,
@@ -1208,7 +1207,7 @@
       "name": null,
       "business": null,
       "status": "sponsor_or_open",
-      "booth_2025": null
+      "booth_2025": 161
     },
     {
       "booth": 142,
@@ -1216,7 +1215,7 @@
       "name": null,
       "business": null,
       "status": "sponsor_or_open",
-      "booth_2025": null
+      "booth_2025": 162
     },
     {
       "booth": "K0",

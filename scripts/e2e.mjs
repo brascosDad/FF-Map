@@ -843,6 +843,28 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
 // is the case the service worker exists for, and it is worth a real test: the
 // first version of it cached everything correctly and still served a blank
 // green screen, because "Vary: Origin" made every script and stylesheet miss.
+// The printed sheet is a route of the same app: every booth on it, none of the
+// phone chrome, and it does not disturb the map route's own layout.
+{
+  const p = await browser.newPage({ viewport: { width: 1632, height: 1056 } });
+  await p.goto(`${BASE}/?print=1`, { waitUntil: 'networkidle' });
+  await p.waitForSelector('.print-page', { timeout: 5000 }).catch(() => {});
+  const pr = await p.evaluate(() => ({
+    page: !!document.querySelector('.print-page'),
+    numbers: document.querySelectorAll('.print-map rect + text').length,
+    chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
+    index: document.querySelectorAll('.print-index li').length,
+    overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
+  }));
+  check('print: the sheet renders at /?print=1', pr.page);
+  // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
+  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 10 + 16, `${pr.numbers} numbers`);
+  check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
+  check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);
+  check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);
+  await p.close();
+}
+
 // Nothing in the console but "failed to fetch". Only opening it offline catches
 // that.
 {

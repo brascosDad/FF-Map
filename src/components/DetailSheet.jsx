@@ -241,10 +241,14 @@ function BoothDetail({ booth, onStep }) {
       {isFood
         ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
         : booth.biz
-          ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{booth.name}</span>}</span></div>
+          ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
           : <div className="li"><span className="b" />Sponsor or open booth — no artist on the 2026 list.</div>}
-      {isKid && <div className="li"><span className="b" />Kidlandia booth — where the K0–K9 stack sits is approximate until the 2026 Kidlandia layout is confirmed.</div>}
-      <div className="foot">{isFood ? 'Position from the official map.' : 'Booth number and artist from the 2026 assignments; position from the official map.'}</div>
+      {/* One bullet, one footer line: the phone sheet has a 320px budget and a
+          second bullet or a wrapped footer blows it. The Kidlandia caveat is
+          the footer on a K booth, since the position is the uncertain thing. */}
+      <div className="foot">{isFood ? 'Position from the official map.'
+        : isKid ? 'Artist from the 2026 list; the K0–K9 stack\'s position is approximate until the Kidlandia layout is confirmed.'
+        : 'Artist from the 2026 list; position from the official map.'}</div>
     </>
   );
 }

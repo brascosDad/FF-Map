@@ -243,7 +243,7 @@ The point here is that nothing invented is presented as real.
       (1–54 park, 55–81 McLendon, 82–142 Candler Park Dr with no 112–114,
       K0–K9 Kidlandia) and the **business and artist** assigned to it, and its
       footer says where the number, artist and position come from.
-- [ ] Booths 134 and 140–142 read "Sponsor or open booth" — no artist invented.
+- [ ] Booths 141 and 142 read "Sponsor or open booth" — no artist invented.
 - [ ] Tap an art-market marker → the area sheet lists every booth in the run
       by number and artist. The park list ends with K0–K9 and then AWARE
       Wildlife with no number; McLendon's ends with Achieve with Steve at the
@@ -255,6 +255,18 @@ The point here is that nothing invented is presented as real.
 - [ ] Every artist name on a sheet is on the market chair's sheet — none were invented.
 
 ---
+
+## 7a. The printed sheet
+
+- [ ] Open `/?print=1`. One 11x17 landscape sheet: map left, masthead, legend,
+      booth-range key, food vendors and an alphabetical artist index right.
+      No chips, no zoom stack, no sheet.
+- [ ] Every booth square carries its number, and the three runs are labelled
+      with their ranges on the map itself.
+- [ ] `npm run print` writes `print/fall-fest-map-2026.pdf` and `.png`; the
+      PDF's text is selectable (real fonts, not outlines) and the masthead is
+      Brice.
+- [ ] The artist index ends inside the page — nothing is clipped at the foot.
 
 ## 7b. The masthead
 

@@ -1,0 +1,68 @@
+/* The printed sheet: 11x17 landscape, map on the left, everything you read on
+   the right. Loaded only by PrintSheet (the ?print=1 route), so nothing here
+   leaks into the phone map. Sizes are in inches and points because the page
+   is a physical object; the map itself is an SVG that scales to its box. */
+
+@page { size: 17in 11in; margin: 0; }
+
+.print-page {
+  --print-margin: 0.4in;
+  --print-gap: 0.3in;
+  --print-side: 5.7in;
+  width: 17in;
+  height: 11in;
+  padding: var(--print-margin);
+  display: grid;
+  grid-template-columns: 1fr var(--print-side);
+  gap: var(--print-gap);
+  background: #fff;
+  color: var(--text-body);
+  font-family: var(--font-ui);
+  overflow: hidden;
+}
+
+/* The map keeps its own aspect (760 x 810 units) and fills the page height. */
+.print-mapcol { position: relative; height: calc(11in - 2 * var(--print-margin)); }
+.print-map { display: block; height: 100%; width: auto; max-width: 100%; margin: 0 auto; border-radius: 0.08in; }
+.print-map text { font-family: var(--font-ui); }
+
+.print-side { display: flex; flex-direction: column; gap: 0.16in; min-width: 0; height: calc(11in - 2 * var(--print-margin)); overflow: hidden; }
+.print-side h2 { margin: 0 0 0.05in; font-size: 9.5pt; font-weight: 800; color: var(--text-strong); letter-spacing: 0.02em; text-transform: uppercase; }
+
+.print-head { border-bottom: 2px solid var(--ff-navy); padding-bottom: 0.1in; }
+.print-brand { font-family: var(--font-display); font-weight: 900; font-size: 44pt; line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
+.print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: 0.06in; }
+.print-kicker { font-size: 9.5pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.print-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.04in 0.12in; font-size: 8pt; }
+.print-legend__row { display: flex; align-items: center; gap: 0.06in; white-space: nowrap; }
+.print-legend__dot { width: 0.16in; height: 0.16in; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.print-legend__sq { width: 0.12in; height: 0.12in; border-radius: 1px; margin: 0 0.02in; flex: 0 0 auto; opacity: 0.8; }
+
+.print-key__rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0.02in 0.12in; font-size: 8.5pt; }
+.print-key__rows b { color: var(--text-strong); font-variant-numeric: tabular-nums; }
+
+.print-food ul { margin: 0; padding: 0; list-style: none; columns: 3; column-gap: 0.12in; font-size: 8pt; line-height: 1.35; }
+
+/* The index takes whatever height is left and flows into columns. ~150 rows at
+   6.5pt in four columns is about 38 rows a column, which fits under the food
+   list with room to spare on this sheet -- check the PNG after any copy change. */
+.print-index { flex: 1; min-height: 0; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: 4; column-gap: 0.1in; font-size: 6.4pt; line-height: 1.32; }
+.print-index li { display: flex; gap: 0.05in; break-inside: avoid; }
+.print-index__n { flex: 0 0 0.34in; text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+.print-index__who { flex: 1; min-width: 0; }
+
+.print-foot { font-size: 6.8pt; color: var(--text-muted); border-top: 1px solid var(--sand-100); padding-top: 0.06in; }
+
+/* On screen (proofing in a browser tab) show the sheet on a grey desk; the
+   document-level scroll lock in global.css is lifted so a laptop can scroll it. */
+@media screen {
+  html, body, #root { overflow: auto !important; height: auto !important; }
+  body { background: #d8d8d8; }
+  .print-page { margin: 0.4in auto; box-shadow: 0 2px 14px rgba(0, 0, 0, 0.25); }
+}
+@media print {
+  html, body { background: #fff; }
+  .print-page { margin: 0; box-shadow: none; }
+}
