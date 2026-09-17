@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { PIN_COLOR, SLATE } from '../assets/pins';
-import { BOOTHS } from '../data/booths';
+import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
@@ -99,11 +99,42 @@ function FoodCourt() {
   );
 }
 
-function ArtMarketArea({ area }) {
+// One row of the area's booth list: the number, then who is in it. Tapping it
+// opens that booth and flies the map to it -- on a phone the squares are too
+// dense to pick one by finger, so this list is how you find a specific artist.
+function BoothRow({ booth, onOpen }) {
+  return (
+    <button className="boothrow" onClick={() => onOpen(booth)}>
+      <span className="n">{booth.n}</span>
+      <span className="who">
+        {booth.biz
+          ? <>{booth.biz}{booth.name !== booth.biz && <em>{booth.name}</em>}</>
+          : <em>Sponsor or open booth</em>}
+      </span>
+    </button>
+  );
+}
+
+// The run's booths in number order, each one a row. Kidlandia's K stack counts
+// toward the in-park run (the range says so), so it lists at the end of that
+// one. The two artists the sheet names but gives no number sit last, under the
+// run they belong to: there is nowhere to draw them, but they are still here.
+function ArtMarketArea({ area, onOpenBooth }) {
+  const booths = area.id === 'spine' ? [...area.booths, ...BOOTHS.kid] : area.booths;
+  const unnumbered = UNNUMBERED.filter((u) => u.group === area.id);
   return (
     <>
       <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />
-      <div className="li"><span className="b" />Individual booth assignments load here once the 2026 vendor list is confirmed.</div>
+      <div className="boothlist">
+        {booths.map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
+        {unnumbered.map((u) => (
+          <div className="boothrow boothrow--static" key={u.name}>
+            <span className="n">—</span>
+            <span className="who">{u.biz}{u.name !== u.biz && <em>{u.name}</em>}<em>{u.where ? `At the ${u.where}` : 'No booth number on the sheet'}</em></span>
+          </div>
+        ))}
+      </div>
+      <div className="foot">Booth numbers and artists from the market chair's 2026 assignments.</div>
     </>
   );
 }
@@ -209,10 +240,11 @@ function BoothDetail({ booth, onStep }) {
           uncertain about it; the shared provenance line stays in the footer. */}
       {isFood
         ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
-        : isKid
-          ? <div className="li"><span className="b" />Kidlandia booth — where the K1–K8 stack sits is approximate until the 2026 Kidlandia layout is confirmed.</div>
-          : <div className="li"><span className="b" />Artist names arrive with the 2026 booth assignments.</div>}
-      <div className="foot">{isFood ? 'Position from the official map.' : 'Booth number and position from the official map.'}</div>
+        : booth.biz
+          ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{booth.name}</span>}</span></div>
+          : <div className="li"><span className="b" />Sponsor or open booth — no artist on the 2026 list.</div>}
+      {isKid && <div className="li"><span className="b" />Kidlandia booth — where the K0–K9 stack sits is approximate until the 2026 Kidlandia layout is confirmed.</div>}
+      <div className="foot">{isFood ? 'Position from the official map.' : 'Booth number and artist from the 2026 assignments; position from the official map.'}</div>
     </>
   );
 }
@@ -245,7 +277,7 @@ const DISMISS_FRACTION = 0.3;
 const FLICK_VELOCITY = 0.5;   // px per ms
 const FLICK_MIN_PX = 40;      // ...and it has to actually travel
 
-export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onClose, docked = false, onFocusReturn }) {
+export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onOpenBooth, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
   const wasOpen = useRef(false);
@@ -297,7 +329,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
   else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} />;
   else if (shown.openId === 'food') body = <FoodCourt />;
   else if (shown.openId) body = <GenericPoi id={shown.openId} />;
-  else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} />;
+  else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} onOpenBooth={onOpenBooth} />;
   else if (docked) body = <PanelDirectory onSelect={onSelect} />;
 
   // Focus moves into the sheet when it opens and goes back to the map when it

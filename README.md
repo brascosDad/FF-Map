@@ -28,14 +28,21 @@ npm run preview   # serve the production build locally
   is null for all but Mr Softee until placements arrive later in the week; a
   null location lists the vendor with no spot and pins nothing. The 16 food
   stalls in `booths.js` are positions only — no truck is assigned to a stall.
-- **Booth numbers** (`src/data/booths.js`) — the committee's official numbering,
-  from the 2025 site map the artist market chair confirmed for 2026: 1–61 in the
-  park (two rows, increasing north→south), 62–88 on McLendon (decreasing
-  west→east), 89–164 on Candler Park Dr (two columns, decreasing north→south),
-  K1–K8 in Kidlandia. The file is generated: `src/data/booth-numbering-2026.json`
-  says what each booth is called, `src/assets/basemapCoords.js` says where the
-  rows are, and `python3 scripts/build-booths.py` lays one onto the other and
-  refuses to write unless it totals 164 + 8. Don't hand-edit `booths.js`.
+- **Booth numbers and artists** (`src/data/booths.js`) — the artist market
+  chair's 2026 assignments (her sheet of 9/16), one artist and business per
+  booth. Every booth was resized to 15 ft, so the numbering is shorter than the
+  2025 map's: 1–54 in the park (two rows, increasing north→south), 55–81 on
+  McLendon (decreasing west→east), 82–142 on Candler Park Dr (two columns,
+  decreasing north→south; 112–114 are not on her sheet), K0–K9 in Kidlandia.
+  Four booths (134, 140–142) are sponsor or open, and two artists have no
+  number at all (AWARE Wildlife in the park, Achieve with Steve at the Acoustic
+  Stage). The file is generated: `src/data/booth-numbering-2026.json` is the
+  sheet, `src/assets/basemapCoords.js` says where the rows are, and
+  `python3 scripts/build-booths.py` lays one onto the other, using the 2025
+  map's row directions and breaks (which she confirmed are unchanged), and
+  refuses to write unless every numbered booth on the sheet lands exactly
+  once. Don't hand-edit `booths.js`. An area's sheet lists its booths by
+  number and artist; tapping one flies to it.
 - **Pin positions & basemap** (`src/assets/pins.js`, `src/assets/basemapTrace.js`,
   `src/assets/basemapCoords.js`) — real, extracted from the canonical Figma export
   `fall-fest-desktop-map-wireframe.svg`. The basemap is that file's
@@ -68,9 +75,11 @@ npm run preview   # serve the production build locally
 - **Squarespace integration.** If the answer comes back as "embed," point an Embed
   Block / code injection at the Vercel URL. If it comes back as "replace," that's a
   different path — worth a fresh look once the tier is known.
-- **Kidlandia booths K1–K8.** Placed by description only (a stack on the lawn
+- **Kidlandia booths K0–K9.** Placed by description only (a stack on the lawn
   beside Kidlandia); the order within the stack is unconfirmed, and there is no
   blob for them at the phone overview until a `blob-kid` layer exists in Figma.
+- **Booths 112–114.** Not on the market chair's sheet. The map leaves the speed
+  bump where they would fall and draws nothing; ask whether they exist.
 - **Scale bar.** Defined in the design system, not shipped: the artboard is a
   stylised trace with no surveyed dimension on it, so there's nothing honest to
   derive a distance from yet.
