@@ -109,7 +109,7 @@ function BoothRow({ booth, onOpen }) {
       <span className="who">
         {booth.biz
           ? <>{booth.biz}{booth.name !== booth.biz && <em>{booth.name}</em>}</>
-          : <em>Sponsor or open booth</em>}
+          : <em>Sponsor</em>}
       </span>
     </button>
   );
@@ -242,7 +242,7 @@ function BoothDetail({ booth, onStep }) {
         ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
         : booth.biz
           ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
-          : <div className="li"><span className="b" />Sponsor or open booth — no artist on the 2026 list.</div>}
+          : <div className="li"><span className="b" />Sponsor booth.</div>}
       {/* One bullet, one footer line: the phone sheet has a 320px budget and a
           second bullet or a wrapped footer blows it. The Kidlandia caveat is
           the footer on a K booth, since the position is the uncertain thing. */}
