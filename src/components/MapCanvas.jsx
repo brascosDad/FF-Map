@@ -182,7 +182,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
-        {/* Kidlandia's eight booths, K1-K8. Not part of the 1-164 run and not
+        {/* Kidlandia's ten booths, K0-K9. Not part of the 1-142 run and not
             on any market row, so they draw on their own: squares from the
             first zoom step, and nothing at the phone overview -- blobs are
             drawn in Figma and there is no blob-kid layer yet. Placed by

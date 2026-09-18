@@ -1,119 +1,1301 @@
 {
-  "_source": "2025 Fall Fest MAP.pdf, sent by Courtney Weil (artist market chair) 2026-09-14. Courtney confirmed the 2026 artist market will use the SAME configuration as this 2025 map.",
-  "_extracted": "2026-09-16, read directly from the PDF. Segment counts below were each verified against their stated booth counts on the map.",
-  "_totals": {
-    "numbered_artist_booths": 164,
-    "kidlandia_booths": 8,
-    "note": "The PDF legend also carries a hand-edited label reading '167 Artist Market Booths', which does NOT reconcile with its own ranges (1-164 plus K1-K8 = 172). The ranges are internally consistent and are what this file encodes. Flag to Courtney if 167 matters."
-  },
-
-  "zones": [
+  "source": "Courtney Weil, Google Sheet shared 2026-09-16, 'Re: Map updates'. Re-read against the live sheet 2026-09-17: 132-142 corrected (132 Sally Denham, 133-134 Michael Taylor, 137 Mother's Tongue, 140 Chawn Murrah; only 141-142 are sponsors). Booth 39 keeps name/business the right way round; the sheet has them swapped.",
+  "sheet_url": "https://docs.google.com/spreadsheets/d/1qdBmZKL7KRZ8wjPva060qHJ8kDxzLQpq0yqETixaBXQ/edit",
+  "supersedes": "booth-numbering-2026.json (built from the 2025 official site map)",
+  "change": "All artist market booths resized to 15 ft. Every number downstream of the park moved.",
+  "highest_number": 142,
+  "numbers_assigned": 139,
+  "named_artists": 149,
+  "sponsor_or_open": [
+    141,
+    142
+  ],
+  "numbers_not_present": [
+    112,
+    113,
+    114
+  ],
+  "artists_holding_two_booths": [
+    "Tarik Berbey",
+    "Michael Taylor"
+  ],
+  "gaps": [
     {
-      "id": "park",
-      "label": "In the Park",
-      "range": "1-61",
-      "geometry": "Two parallel rows flanking the diagonal path that runs northeast (near the food court / SweetWater arch) down to the southwest. Booth width 13 ft.",
-      "rows": [
-        {
-          "id": "park-east",
-          "side": "southeast side of the path (toward the open treed lawn)",
-          "direction": "numbers INCREASE from north to south",
-          "segments": [
-            { "from": 1, "to": 28, "count": 28, "booth_width_ft": 13, "note": "starts at the north end, nearest the food court" },
-            { "gap_ft": 25 },
-            { "from": 29, "to": 32, "count": 4, "booth_width_ft": 13, "note": "resumes after the 25 ft gap, continues to the southwest end" }
-          ]
-        },
-        {
-          "id": "park-west",
-          "side": "northwest side of the path (toward Kidlandia and the courts)",
-          "direction": "numbers INCREASE from north to south",
-          "segments": [
-            { "from": 33, "to": 42, "count": 10, "booth_width_ft": 13, "note": "starts at the north end, directly opposite booth 1" },
-            { "from": 43, "to": 61, "count": 19, "booth_width_ft": 13, "note": "continues past the path bend to the southwest end" }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "mclendon",
-      "label": "McLendon Ave NE",
-      "range": "62-88",
-      "geometry": "Single horizontal run along the south edge, in two boxes. Booth width 15 ft.",
-      "rows": [
-        {
-          "id": "mclendon-west",
-          "direction": "numbers DECREASE from west to east",
-          "segments": [
-            { "from": 88, "to": 76, "count": 13, "booth_width_ft": 15, "note": "88 at the WEST end of this box, 76 at the EAST end" }
-          ]
-        },
-        {
-          "id": "mclendon-east",
-          "direction": "numbers DECREASE from west to east",
-          "segments": [
-            { "from": 75, "to": 62, "count": 14, "booth_width_ft": 15, "note": "75 at the WEST end of this box, 62 at the EAST end, nearest the Acoustic Stage" }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "candler-park-drive",
-      "label": "Candler Park Dr NE",
-      "range": "89-164",
-      "geometry": "Two parallel vertical columns along the west edge. Booth width 12 ft. Interrupted twice by speed bumps and once by a barricade.",
-      "rows": [
-        {
-          "id": "cpd-street",
-          "side": "west / street side (outer)",
-          "direction": "numbers DECREASE from north to south",
-          "segments": [
-            { "from": 164, "to": 155, "count": 10, "booth_width_ft": 12, "note": "northernmost segment, starts just south of the top speed bump" },
-            { "break": "barricade" },
-            { "from": 114, "to": 107, "count": 8, "booth_width_ft": 12 },
-            { "break": "speed bump" },
-            { "from": 106, "to": 89, "count": 18, "booth_width_ft": 12, "note": "89 is the southernmost booth on the whole street, near the Packaged Beer BX1" }
-          ]
-        },
-        {
-          "id": "cpd-park",
-          "side": "east / park side (inner)",
-          "direction": "numbers DECREASE from north to south",
-          "segments": [
-            { "from": 154, "to": 129, "count": 26, "booth_width_ft": 12, "note": "northernmost segment, starts level with the top speed bump" },
-            { "break": "speed bump" },
-            { "from": 128, "to": 115, "count": 14, "booth_width_ft": 12 }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "kidlandia",
-      "label": "Kidlandia Booths",
-      "range": "K1-K8",
-      "geometry": "Separate cluster, NOT part of the 1-164 sequence. On the 2025 map these are the yellow booths in a short vertical stack in the center of the park, beside Pumpkin Smashing / the Park Realty tent.",
-      "rows": [
-        {
-          "id": "kidlandia-stack",
-          "direction": "unconfirmed — the PDF does not label K1 through K8 individually",
-          "segments": [
-            { "from": "K1", "to": "K8", "count": 8, "note": "VERIFY placement order against the 2026 Kidlandia layout before print." }
-          ]
-        }
-      ]
+      "after_booth": 24,
+      "before_booth": 25,
+      "zone": "east-park",
+      "note": "20 ft gap for bikes / emergency access"
     }
   ],
-
-  "verification": {
-    "park": "28 + 4 + 10 + 19 = 61 booths = range 1-61. OK",
-    "mclendon": "13 + 14 = 27 booths = range 62-88. OK",
-    "candler_park_drive": "10 + 8 + 18 + 26 + 14 = 76 booths = range 89-164. OK",
-    "total_numbered": "61 + 27 + 76 = 164. OK"
+  "zone_ranges": {
+    "east-park": {
+      "label": "Park - east side of the diagonal path",
+      "first": 1,
+      "last": 28,
+      "count": 28
+    },
+    "west-park": {
+      "label": "Park - west side, inside the park",
+      "first": 29,
+      "last": 54,
+      "count": 26
+    },
+    "mclendon-south": {
+      "label": "McLendon Ave - south side",
+      "first": 55,
+      "last": 81,
+      "count": 27
+    },
+    "cpd-west": {
+      "label": "Candler Park Dr - west side",
+      "first": 82,
+      "last": 100,
+      "count": 19
+    },
+    "cpd-west-lawn": {
+      "label": "Candler Park Dr - in front of the West Lawn",
+      "first": 101,
+      "last": 111,
+      "count": 11
+    },
+    "cpd-field": {
+      "label": "Candler Park Dr - park side, in front of the field",
+      "first": 115,
+      "last": 134,
+      "count": 20
+    },
+    "cpd-west-b": {
+      "label": "Candler Park Dr - west side (second run, per source sheet)",
+      "first": 135,
+      "last": 142,
+      "count": 8
+    },
+    "kidlandia": {
+      "label": "Kidlandia - on the field",
+      "first": "K0",
+      "last": "K9",
+      "count": 10
+    }
   },
-
-  "open_questions": [
-    "The PDF legend's '167 Artist Market Booths' does not reconcile with its own ranges. Ranges win unless Courtney says otherwise.",
-    "K1-K8 individual positions are not labeled on the 2025 map.",
-    "Courtney was asked to flag any row that differs from this 2025 configuration when she sends the 2026 assignments (expected Friday 9/18)."
+  "poster_endpoints": {
+    "park": "1-54",
+    "mclendon": "55-81",
+    "candler_park_dr": "82-142",
+    "kidlandia": "K0-K9"
+  },
+  "poster_endpoints_2025_DO_NOT_USE": {
+    "park": "1-61",
+    "mclendon": "62-88",
+    "candler_park_dr": "89-164"
+  },
+  "unnumbered": [
+    {
+      "zone": "west-park",
+      "booth": null,
+      "name": "Scott Lange",
+      "business": "AWARE Wildlife",
+      "note": "merged cell in source sheet - no number assigned"
+    },
+    {
+      "zone": "mclendon-south",
+      "booth": "Acoustic Stage booth",
+      "name": "Achieve with Steve",
+      "business": "Achieve with Steve",
+      "note": "listed as the Acoustic Stage booth, not numbered"
+    }
+  ],
+  "booths": [
+    {
+      "booth": 1,
+      "zone": "east-park",
+      "name": "Sergey Cherep",
+      "business": "Sergey Cherep Art",
+      "status": "assigned",
+      "booth_2025": 1
+    },
+    {
+      "booth": 2,
+      "zone": "east-park",
+      "name": "Wendy Collins",
+      "business": "Middle Grace Jewelry",
+      "status": "assigned",
+      "booth_2025": 2
+    },
+    {
+      "booth": 3,
+      "zone": "east-park",
+      "name": "Harsh Yadav",
+      "business": "Rao Global Solutions",
+      "status": "assigned",
+      "booth_2025": 3
+    },
+    {
+      "booth": 4,
+      "zone": "east-park",
+      "name": "Katherine Smith",
+      "business": "West and Laurel",
+      "status": "assigned",
+      "booth_2025": 4
+    },
+    {
+      "booth": 5,
+      "zone": "east-park",
+      "name": "Bryan Midgette",
+      "business": "Midge Man Vinyl Records",
+      "status": "assigned",
+      "booth_2025": 5
+    },
+    {
+      "booth": 6,
+      "zone": "east-park",
+      "name": "Minh Tran",
+      "business": "Vintage_watchamacallits",
+      "status": "assigned",
+      "booth_2025": 9
+    },
+    {
+      "booth": 7,
+      "zone": "east-park",
+      "name": "Charles Boniface",
+      "business": "Boniface Art",
+      "status": "assigned",
+      "booth_2025": 11
+    },
+    {
+      "booth": 8,
+      "zone": "east-park",
+      "name": "Bruce Kauffman",
+      "business": "Organic CBD Solutions",
+      "status": "assigned",
+      "booth_2025": 12
+    },
+    {
+      "booth": 9,
+      "zone": "east-park",
+      "name": "Jensen Harris",
+      "business": "After Hours Pottery",
+      "status": "assigned",
+      "booth_2025": 13
+    },
+    {
+      "booth": 10,
+      "zone": "east-park",
+      "name": "Heather Greenway",
+      "business": "Heather Greenway Jewelry",
+      "status": "assigned",
+      "booth_2025": 14
+    },
+    {
+      "booth": 11,
+      "zone": "east-park",
+      "name": "Madison O'Brien",
+      "business": "Madison O'Brien Art",
+      "status": "assigned",
+      "booth_2025": 15
+    },
+    {
+      "booth": 12,
+      "zone": "east-park",
+      "name": "Chamessidine Ly",
+      "business": "Mensa Musa Art",
+      "status": "assigned",
+      "booth_2025": 16
+    },
+    {
+      "booth": 13,
+      "zone": "east-park",
+      "name": "Amanda Miller",
+      "business": "Golden Girl Co.",
+      "status": "assigned",
+      "booth_2025": 17
+    },
+    {
+      "booth": 14,
+      "zone": "east-park",
+      "name": "Nelms Creekmur",
+      "business": "Nelms Creekmur",
+      "status": "assigned",
+      "booth_2025": 18
+    },
+    {
+      "booth": 15,
+      "zone": "east-park",
+      "name": "Laure Dayvault",
+      "business": "Go Jump in a Lake",
+      "status": "assigned",
+      "booth_2025": 19
+    },
+    {
+      "booth": 16,
+      "zone": "east-park",
+      "name": "Maxim Eremine",
+      "business": "Max Eremine Photography",
+      "status": "assigned",
+      "booth_2025": 20
+    },
+    {
+      "booth": 17,
+      "zone": "east-park",
+      "name": "Amie Clark",
+      "business": "Pink Scorpio Handmade",
+      "status": "assigned",
+      "booth_2025": 21
+    },
+    {
+      "booth": 18,
+      "zone": "east-park",
+      "name": "Nana Daly",
+      "business": "Whimsical Art by Nana Daly",
+      "status": "assigned",
+      "booth_2025": 22
+    },
+    {
+      "booth": 19,
+      "zone": "east-park",
+      "name": "Abbey Hull",
+      "business": "Abbey Hull Ceramics",
+      "status": "assigned",
+      "booth_2025": 23
+    },
+    {
+      "booth": 20,
+      "zone": "east-park",
+      "name": "Cate Bowman",
+      "business": "Coki Panda Projex",
+      "status": "assigned",
+      "booth_2025": 24
+    },
+    {
+      "booth": 21,
+      "zone": "east-park",
+      "name": "Nicholas Twiner",
+      "business": "Nick Twiner",
+      "status": "assigned",
+      "booth_2025": 25
+    },
+    {
+      "booth": 22,
+      "zone": "east-park",
+      "name": "Jacklyn Cruz",
+      "business": "Vintage Vannety",
+      "status": "assigned",
+      "booth_2025": 26
+    },
+    {
+      "booth": 23,
+      "zone": "east-park",
+      "name": "Megan Sundquist",
+      "business": "Hippie Comfort",
+      "status": "assigned",
+      "booth_2025": 27
+    },
+    {
+      "booth": 24,
+      "zone": "east-park",
+      "name": "Eman Srouji",
+      "business": "Eman Srouji Ceramics",
+      "status": "assigned",
+      "booth_2025": 28
+    },
+    {
+      "booth": 25,
+      "zone": "east-park",
+      "name": "Russell Dreyer",
+      "business": "Russell Dreyer",
+      "status": "assigned",
+      "booth_2025": 29
+    },
+    {
+      "booth": 26,
+      "zone": "east-park",
+      "name": "Jill Hamilton",
+      "business": "Maneater Apparel",
+      "status": "assigned",
+      "booth_2025": 30
+    },
+    {
+      "booth": 27,
+      "zone": "east-park",
+      "name": "Sarah Wilson",
+      "business": "Swillybug",
+      "status": "assigned",
+      "booth_2025": 31
+    },
+    {
+      "booth": 28,
+      "zone": "east-park",
+      "name": "Anna K",
+      "business": "Anna K Intown",
+      "status": "assigned",
+      "booth_2025": 32
+    },
+    {
+      "booth": 29,
+      "zone": "west-park",
+      "name": "Tyler Thompson",
+      "business": "Fresh Harvest",
+      "status": "assigned",
+      "booth_2025": 34
+    },
+    {
+      "booth": 30,
+      "zone": "west-park",
+      "name": "Jason Snape",
+      "business": "Snape's Ridiculorum",
+      "status": "assigned",
+      "booth_2025": 35
+    },
+    {
+      "booth": 31,
+      "zone": "west-park",
+      "name": "Kate Blasingame",
+      "business": "Katemcartist",
+      "status": "assigned",
+      "booth_2025": 36
+    },
+    {
+      "booth": 32,
+      "zone": "west-park",
+      "name": "Brinda Cockburn",
+      "business": "Brinda Cockburn Art",
+      "status": "assigned",
+      "booth_2025": 37
+    },
+    {
+      "booth": 33,
+      "zone": "west-park",
+      "name": "Peggy Heard",
+      "business": "Cactus Creations",
+      "status": "assigned",
+      "booth_2025": 38
+    },
+    {
+      "booth": 34,
+      "zone": "west-park",
+      "name": "Cassie Jo Myers",
+      "business": "Open Hand Goods",
+      "status": "assigned",
+      "booth_2025": 39
+    },
+    {
+      "booth": 35,
+      "zone": "west-park",
+      "name": "Courtney Weil",
+      "business": "Crafts & Love",
+      "status": "assigned",
+      "booth_2025": 40
+    },
+    {
+      "booth": 36,
+      "zone": "west-park",
+      "name": "Brittany Schwartzwald",
+      "business": "B Hart Art",
+      "status": "assigned",
+      "booth_2025": 41
+    },
+    {
+      "booth": 37,
+      "zone": "west-park",
+      "name": "Kerream Jones",
+      "business": "Kamarja Art",
+      "status": "assigned",
+      "booth_2025": 42
+    },
+    {
+      "booth": 38,
+      "zone": "west-park",
+      "name": "Charlotte Smith",
+      "business": "Charlotte Smith Studio",
+      "status": "assigned",
+      "booth_2025": 43
+    },
+    {
+      "booth": 39,
+      "zone": "west-park",
+      "name": "Mona Patel",
+      "business": "Mona Does Concrete",
+      "status": "assigned",
+      "booth_2025": 44
+    },
+    {
+      "booth": 40,
+      "zone": "west-park",
+      "name": "Alicia Martino",
+      "business": "Lemon Zesty",
+      "status": "assigned",
+      "booth_2025": 45
+    },
+    {
+      "booth": 41,
+      "zone": "west-park",
+      "name": "Lilit Pepeyan",
+      "business": "LitwLilit",
+      "status": "assigned",
+      "booth_2025": 46
+    },
+    {
+      "booth": 42,
+      "zone": "west-park",
+      "name": "Nick Mosley",
+      "business": "Buckhead Thread Co.",
+      "status": "assigned",
+      "booth_2025": 47
+    },
+    {
+      "booth": 43,
+      "zone": "west-park",
+      "name": "Dana Burmeister",
+      "business": "Rara Avis Objects",
+      "status": "assigned",
+      "booth_2025": 48
+    },
+    {
+      "booth": 44,
+      "zone": "west-park",
+      "name": "Angelyn Pass",
+      "business": "Foxfire Fine Art and Craft",
+      "status": "assigned",
+      "booth_2025": 49
+    },
+    {
+      "booth": 45,
+      "zone": "west-park",
+      "name": "Becka Cowan",
+      "business": "Bou Cou",
+      "status": "assigned",
+      "booth_2025": 51
+    },
+    {
+      "booth": 46,
+      "zone": "west-park",
+      "name": "Lindsey Nguyen",
+      "business": "W by Lindsey",
+      "status": "assigned",
+      "booth_2025": 52
+    },
+    {
+      "booth": 47,
+      "zone": "west-park",
+      "name": "Margaret Reynolds",
+      "business": "Margaret Reynolds Art",
+      "status": "assigned",
+      "booth_2025": 54
+    },
+    {
+      "booth": 48,
+      "zone": "west-park",
+      "name": "Cassie Carter",
+      "business": "Cheeky Maiden Soap",
+      "status": "assigned",
+      "booth_2025": 55
+    },
+    {
+      "booth": 49,
+      "zone": "west-park",
+      "name": "Ross Peterkin",
+      "business": "Rossi Jay Inc",
+      "status": "assigned",
+      "booth_2025": 56
+    },
+    {
+      "booth": 50,
+      "zone": "west-park",
+      "name": "Moira Brennen",
+      "business": "Hello Splendor",
+      "status": "assigned",
+      "booth_2025": 57
+    },
+    {
+      "booth": 51,
+      "zone": "west-park",
+      "name": "Conley Fendler",
+      "business": "WeldATL",
+      "status": "assigned",
+      "booth_2025": 58
+    },
+    {
+      "booth": 52,
+      "zone": "west-park",
+      "name": "Kailynn Blackwood",
+      "business": "KayyArkham",
+      "status": "assigned",
+      "booth_2025": 59
+    },
+    {
+      "booth": 53,
+      "zone": "west-park",
+      "name": "Shelby Ciraulo",
+      "business": "Sunglow Ceramics",
+      "status": "assigned",
+      "booth_2025": 60
+    },
+    {
+      "booth": 54,
+      "zone": "west-park",
+      "name": "Boutte Tree",
+      "business": "Boutte Tree",
+      "status": "assigned",
+      "booth_2025": 61
+    },
+    {
+      "booth": 55,
+      "zone": "mclendon-south",
+      "name": "Anna Freeman",
+      "business": "The Printables",
+      "status": "assigned",
+      "booth_2025": 62
+    },
+    {
+      "booth": 56,
+      "zone": "mclendon-south",
+      "name": "Kelly Cook",
+      "business": "Pink Jean Art Agency",
+      "status": "assigned",
+      "booth_2025": 63
+    },
+    {
+      "booth": 57,
+      "zone": "mclendon-south",
+      "name": "Ashley Flack",
+      "business": "Flack Injury Law",
+      "status": "assigned",
+      "booth_2025": 64
+    },
+    {
+      "booth": 58,
+      "zone": "mclendon-south",
+      "name": "Duo-Wei Yang",
+      "business": "Merry Artisan",
+      "status": "assigned",
+      "booth_2025": 65
+    },
+    {
+      "booth": 59,
+      "zone": "mclendon-south",
+      "name": "Neighborhood Church",
+      "business": "Neighborhood Church",
+      "status": "assigned",
+      "booth_2025": 66
+    },
+    {
+      "booth": 60,
+      "zone": "mclendon-south",
+      "name": "John Lundy",
+      "business": "John Lundy Sculpture",
+      "status": "assigned",
+      "booth_2025": 67
+    },
+    {
+      "booth": 61,
+      "zone": "mclendon-south",
+      "name": "Bilal Ahmed",
+      "business": "Iron Borne Blades",
+      "status": "assigned",
+      "booth_2025": 68
+    },
+    {
+      "booth": 62,
+      "zone": "mclendon-south",
+      "name": "Gail Cohn",
+      "business": "Cohn Creations",
+      "status": "assigned",
+      "booth_2025": 69
+    },
+    {
+      "booth": 63,
+      "zone": "mclendon-south",
+      "name": "Chanel Hicks",
+      "business": "Harmony and Heaven Co.",
+      "status": "assigned",
+      "booth_2025": 70
+    },
+    {
+      "booth": 64,
+      "zone": "mclendon-south",
+      "name": "AJ Jensen",
+      "business": "Toonheadz",
+      "status": "assigned",
+      "booth_2025": 71
+    },
+    {
+      "booth": 65,
+      "zone": "mclendon-south",
+      "name": "Gene Brighton",
+      "business": "Nanotrek9",
+      "status": "assigned",
+      "booth_2025": 72
+    },
+    {
+      "booth": 66,
+      "zone": "mclendon-south",
+      "name": "Mayela Mercedes",
+      "business": "Are.t Clay Jewelry",
+      "status": "assigned",
+      "booth_2025": 73
+    },
+    {
+      "booth": 67,
+      "zone": "mclendon-south",
+      "name": "Tarik Berbey",
+      "business": "The Tin Man and Friends",
+      "status": "assigned",
+      "booth_2025": 74
+    },
+    {
+      "booth": 68,
+      "zone": "mclendon-south",
+      "name": "Tarik Berbey",
+      "business": "The Tin Man and Friends",
+      "status": "assigned",
+      "booth_2025": 75
+    },
+    {
+      "booth": 69,
+      "zone": "mclendon-south",
+      "name": "Shera Walton",
+      "business": "Moonflower Candles, Pottery and Plants",
+      "status": "assigned",
+      "booth_2025": 76
+    },
+    {
+      "booth": 70,
+      "zone": "mclendon-south",
+      "name": "Greg",
+      "business": "Candler Park Market",
+      "status": "assigned",
+      "booth_2025": 77
+    },
+    {
+      "booth": 71,
+      "zone": "mclendon-south",
+      "name": "Lakrista Marshall",
+      "business": "Shop Kamawe",
+      "status": "assigned",
+      "booth_2025": 78
+    },
+    {
+      "booth": 72,
+      "zone": "mclendon-south",
+      "name": "Carlee Ingersoll",
+      "business": "Carlee Ingersoll Illustrations",
+      "status": "assigned",
+      "booth_2025": 79
+    },
+    {
+      "booth": 73,
+      "zone": "mclendon-south",
+      "name": "Obiageri Ohayagha",
+      "business": "Studio Ohaya",
+      "status": "assigned",
+      "booth_2025": 80
+    },
+    {
+      "booth": 74,
+      "zone": "mclendon-south",
+      "name": "Mary Rivera",
+      "business": "Mary Rivera Art",
+      "status": "assigned",
+      "booth_2025": 81
+    },
+    {
+      "booth": 75,
+      "zone": "mclendon-south",
+      "name": "Daniel Curran",
+      "business": "Daniel Curran Art",
+      "status": "assigned",
+      "booth_2025": 82
+    },
+    {
+      "booth": 76,
+      "zone": "mclendon-south",
+      "name": "Lillian Bolster",
+      "business": "Lillian Bolster",
+      "status": "assigned",
+      "booth_2025": 83
+    },
+    {
+      "booth": 77,
+      "zone": "mclendon-south",
+      "name": "Camille Kohler",
+      "business": "Cameoko Jewelry",
+      "status": "assigned",
+      "booth_2025": 84
+    },
+    {
+      "booth": 78,
+      "zone": "mclendon-south",
+      "name": "Jessica Lily",
+      "business": "Jessica Lily",
+      "status": "assigned",
+      "booth_2025": 85
+    },
+    {
+      "booth": 79,
+      "zone": "mclendon-south",
+      "name": "Stephanie Neff",
+      "business": "Stephanie Leigh Jewelry",
+      "status": "assigned",
+      "booth_2025": 86
+    },
+    {
+      "booth": 80,
+      "zone": "mclendon-south",
+      "name": "Nancy Xu",
+      "business": "Nancy Crochet Flowers",
+      "status": "assigned",
+      "booth_2025": 87
+    },
+    {
+      "booth": 81,
+      "zone": "mclendon-south",
+      "name": "Rachel Winkel",
+      "business": "Doc Green Grows",
+      "status": "assigned",
+      "booth_2025": 88
+    },
+    {
+      "booth": 82,
+      "zone": "cpd-west",
+      "name": "Manami Lingerfelt",
+      "business": "Manami Art",
+      "status": "assigned",
+      "booth_2025": 92
+    },
+    {
+      "booth": 83,
+      "zone": "cpd-west",
+      "name": "Danielle Giles",
+      "business": "Modern Savage Jewelry",
+      "status": "assigned",
+      "booth_2025": 93
+    },
+    {
+      "booth": 84,
+      "zone": "cpd-west",
+      "name": "Zoe Fanol",
+      "business": "Here and Now Crystal Gardens",
+      "status": "assigned",
+      "booth_2025": 94
+    },
+    {
+      "booth": 85,
+      "zone": "cpd-west",
+      "name": "Jalen Austin",
+      "business": "CralenArts",
+      "status": "assigned",
+      "booth_2025": 95
+    },
+    {
+      "booth": 86,
+      "zone": "cpd-west",
+      "name": "Jennifer Corbin",
+      "business": "Falling Feather Studio",
+      "status": "assigned",
+      "booth_2025": 96
+    },
+    {
+      "booth": 87,
+      "zone": "cpd-west",
+      "name": "Dan Vogel",
+      "business": "Dan Vogel Art",
+      "status": "assigned",
+      "booth_2025": 97
+    },
+    {
+      "booth": 88,
+      "zone": "cpd-west",
+      "name": "Charles Nicolosi",
+      "business": "Geek in Stitches",
+      "status": "assigned",
+      "booth_2025": 98
+    },
+    {
+      "booth": 89,
+      "zone": "cpd-west",
+      "name": "Matthew Schmidbauer",
+      "business": "notchish",
+      "status": "assigned",
+      "booth_2025": 99
+    },
+    {
+      "booth": 90,
+      "zone": "cpd-west",
+      "name": "Ellen Rogers",
+      "business": "Double Bloom Studios",
+      "status": "assigned",
+      "booth_2025": 100
+    },
+    {
+      "booth": 91,
+      "zone": "cpd-west",
+      "name": "Demone Phelps",
+      "business": "Demone Phelps",
+      "status": "assigned",
+      "booth_2025": 101
+    },
+    {
+      "booth": 92,
+      "zone": "cpd-west",
+      "name": "Akilah Thomas",
+      "business": "Gitts Bajan Pepper Sauce",
+      "status": "assigned",
+      "booth_2025": 102
+    },
+    {
+      "booth": 93,
+      "zone": "cpd-west",
+      "name": "Lauren Wade",
+      "business": "Desert Melon Clay",
+      "status": "assigned",
+      "booth_2025": 103
+    },
+    {
+      "booth": 94,
+      "zone": "cpd-west",
+      "name": "Sasha Stowers",
+      "business": "Noah's Corner",
+      "status": "assigned",
+      "booth_2025": 104
+    },
+    {
+      "booth": 95,
+      "zone": "cpd-west",
+      "name": "Freda Bibbs",
+      "business": "Creative Me Company",
+      "status": "assigned",
+      "booth_2025": 108
+    },
+    {
+      "booth": 96,
+      "zone": "cpd-west",
+      "name": "Grace Kollek",
+      "business": "Y2vintage",
+      "status": "assigned",
+      "booth_2025": 109
+    },
+    {
+      "booth": 97,
+      "zone": "cpd-west",
+      "name": "Edward Rowan",
+      "business": "Art by Edward Rowan",
+      "status": "assigned",
+      "booth_2025": 110
+    },
+    {
+      "booth": 98,
+      "zone": "cpd-west",
+      "name": "Angela Donovan",
+      "business": "Be Momo Shop",
+      "status": "assigned",
+      "booth_2025": 112
+    },
+    {
+      "booth": 99,
+      "zone": "cpd-west",
+      "name": "Miesha Palatucci",
+      "business": "Revel Pottery",
+      "status": "assigned",
+      "booth_2025": 113
+    },
+    {
+      "booth": 100,
+      "zone": "cpd-west",
+      "name": "Susannah Calo",
+      "business": "Calo Landscape",
+      "status": "assigned",
+      "booth_2025": 114
+    },
+    {
+      "booth": 101,
+      "zone": "cpd-west-lawn",
+      "name": "Hanen Van Rossem",
+      "business": "Fish Friend Art",
+      "status": "assigned",
+      "booth_2025": 115
+    },
+    {
+      "booth": 102,
+      "zone": "cpd-west-lawn",
+      "name": "Simone Cutler",
+      "business": "Clay by Deneé",
+      "status": "assigned",
+      "booth_2025": 116
+    },
+    {
+      "booth": 103,
+      "zone": "cpd-west-lawn",
+      "name": "Jeremy Rose",
+      "business": "Rising Waters Folkworks",
+      "status": "assigned",
+      "booth_2025": 117
+    },
+    {
+      "booth": 104,
+      "zone": "cpd-west-lawn",
+      "name": "Lexi Garofalo",
+      "business": "South Indigo Company",
+      "status": "assigned",
+      "booth_2025": 118
+    },
+    {
+      "booth": 105,
+      "zone": "cpd-west-lawn",
+      "name": "David Coston",
+      "business": "David Coston Art",
+      "status": "assigned",
+      "booth_2025": 119
+    },
+    {
+      "booth": 106,
+      "zone": "cpd-west-lawn",
+      "name": "Zoe Daniel",
+      "business": "Worm Wood and Honey Pottery",
+      "status": "assigned",
+      "booth_2025": 120
+    },
+    {
+      "booth": 107,
+      "zone": "cpd-west-lawn",
+      "name": "Jim Zhang",
+      "business": "Jim Zhang",
+      "status": "assigned",
+      "booth_2025": 121
+    },
+    {
+      "booth": 108,
+      "zone": "cpd-west-lawn",
+      "name": "Caroline Youngblood",
+      "business": "Young Blood Designs",
+      "status": "assigned",
+      "booth_2025": 122
+    },
+    {
+      "booth": 109,
+      "zone": "cpd-west-lawn",
+      "name": "Kirsten Koza",
+      "business": "Kirsten Koza Art",
+      "status": "assigned",
+      "booth_2025": 123
+    },
+    {
+      "booth": 110,
+      "zone": "cpd-west-lawn",
+      "name": "Clay Henderson",
+      "business": "Stitched Roots",
+      "status": "assigned",
+      "booth_2025": 124
+    },
+    {
+      "booth": 111,
+      "zone": "cpd-west-lawn",
+      "name": "Nadia Walker",
+      "business": "SLAM Plumbing and SLAM HVAC",
+      "status": "assigned",
+      "booth_2025": 125
+    },
+    {
+      "booth": 115,
+      "zone": "cpd-field",
+      "name": "Jae Montano",
+      "business": "Painting with Jae",
+      "status": "assigned",
+      "booth_2025": 129
+    },
+    {
+      "booth": 116,
+      "zone": "cpd-field",
+      "name": "Salameh Ghaderi",
+      "business": "Salameh Art studio",
+      "status": "assigned",
+      "booth_2025": 130
+    },
+    {
+      "booth": 117,
+      "zone": "cpd-field",
+      "name": "Janet Gonzales",
+      "business": "The Imperfect Quilter",
+      "status": "assigned",
+      "booth_2025": 131
+    },
+    {
+      "booth": 118,
+      "zone": "cpd-field",
+      "name": "Terah Kalk",
+      "business": "TT's Trinkets",
+      "status": "assigned",
+      "booth_2025": 132
+    },
+    {
+      "booth": 119,
+      "zone": "cpd-field",
+      "name": "Krystina Ainsworth",
+      "business": "Baen Bunnie",
+      "status": "assigned",
+      "booth_2025": 133
+    },
+    {
+      "booth": 120,
+      "zone": "cpd-field",
+      "name": "Nathaniel Trost",
+      "business": "Atlanta Studio Pottery",
+      "status": "assigned",
+      "booth_2025": 134
+    },
+    {
+      "booth": 121,
+      "zone": "cpd-field",
+      "name": "Rhonda Jolaoso",
+      "business": "Kemi's",
+      "status": "assigned",
+      "booth_2025": 135
+    },
+    {
+      "booth": 122,
+      "zone": "cpd-field",
+      "name": "Shelby Simmons",
+      "business": "SS Glasswork",
+      "status": "assigned",
+      "booth_2025": 136
+    },
+    {
+      "booth": 123,
+      "zone": "cpd-field",
+      "name": "Abigail West",
+      "business": "Abigail West",
+      "status": "assigned",
+      "booth_2025": 137
+    },
+    {
+      "booth": 124,
+      "zone": "cpd-field",
+      "name": "Diana Dinser",
+      "business": "Urbanterracotta",
+      "status": "assigned",
+      "booth_2025": 138
+    },
+    {
+      "booth": 125,
+      "zone": "cpd-field",
+      "name": "Haydar Martha Serezli",
+      "business": "Serez Design",
+      "status": "assigned",
+      "booth_2025": 139
+    },
+    {
+      "booth": 126,
+      "zone": "cpd-field",
+      "name": "Andrew Price",
+      "business": "Caprice Art",
+      "status": "assigned",
+      "booth_2025": 140
+    },
+    {
+      "booth": 127,
+      "zone": "cpd-field",
+      "name": "Callanwolde Clay Guild",
+      "business": "Callanwolde Clay Guild",
+      "status": "assigned",
+      "booth_2025": 141
+    },
+    {
+      "booth": 128,
+      "zone": "cpd-field",
+      "name": "Maria Khote",
+      "business": "Isabel Pottery",
+      "status": "assigned",
+      "booth_2025": 142
+    },
+    {
+      "booth": 129,
+      "zone": "cpd-field",
+      "name": "Olivia Rezutko",
+      "business": "Liv and Dye",
+      "status": "assigned",
+      "booth_2025": 143
+    },
+    {
+      "booth": 130,
+      "zone": "cpd-field",
+      "name": "Gabriela Baumgartner",
+      "business": "Stone-Good Jewelry",
+      "status": "assigned",
+      "booth_2025": 144
+    },
+    {
+      "booth": 131,
+      "zone": "cpd-field",
+      "name": "Hosnara Begum",
+      "business": "Jar Marsala",
+      "status": "assigned",
+      "booth_2025": 145
+    },
+    {
+      "booth": 132,
+      "zone": "cpd-field",
+      "name": "Sally Denham Design",
+      "business": "Sally Denham Design",
+      "status": "assigned",
+      "booth_2025": 146
+    },
+    {
+      "booth": 133,
+      "zone": "cpd-field",
+      "name": "Michael Taylor",
+      "business": "Michael Taylor Abstracts",
+      "status": "assigned",
+      "booth_2025": 147
+    },
+    {
+      "booth": 134,
+      "zone": "cpd-field",
+      "name": "Michael Taylor",
+      "business": "Michael Taylor Abstracts",
+      "status": "assigned",
+      "booth_2025": 148
+    },
+    {
+      "booth": 135,
+      "zone": "cpd-west-b",
+      "name": "Patrick Jeannette",
+      "business": "Mycelium Ceramics Co.",
+      "status": "assigned",
+      "booth_2025": 155
+    },
+    {
+      "booth": 136,
+      "zone": "cpd-west-b",
+      "name": "Sterling Shepard",
+      "business": "Peak Prints 3D",
+      "status": "assigned",
+      "booth_2025": 156
+    },
+    {
+      "booth": 137,
+      "zone": "cpd-west-b",
+      "name": "Steffi Beigh",
+      "business": "Mother's Tongue",
+      "status": "assigned",
+      "booth_2025": 157
+    },
+    {
+      "booth": 138,
+      "zone": "cpd-west-b",
+      "name": "Katie Hayes",
+      "business": "Healing Arts ATL",
+      "status": "assigned",
+      "booth_2025": 158
+    },
+    {
+      "booth": 139,
+      "zone": "cpd-west-b",
+      "name": "Rachael Furuta",
+      "business": "Art Rayz",
+      "status": "assigned",
+      "booth_2025": 159
+    },
+    {
+      "booth": 140,
+      "zone": "cpd-west-b",
+      "name": "Chawn Murrah",
+      "business": "Chawn Murrah Fine Art",
+      "status": "assigned",
+      "booth_2025": 160
+    },
+    {
+      "booth": 141,
+      "zone": "cpd-west-b",
+      "name": null,
+      "business": null,
+      "status": "sponsor_or_open",
+      "booth_2025": 161
+    },
+    {
+      "booth": 142,
+      "zone": "cpd-west-b",
+      "name": null,
+      "business": null,
+      "status": "sponsor_or_open",
+      "booth_2025": 162
+    },
+    {
+      "booth": "K0",
+      "zone": "kidlandia",
+      "name": "Liam Whalen",
+      "business": "Sand Art Cart",
+      "status": "assigned",
+      "booth_2025": "K0"
+    },
+    {
+      "booth": "K1",
+      "zone": "kidlandia",
+      "name": "Barbara Marston",
+      "business": "Dekalb Democrats",
+      "status": "assigned",
+      "booth_2025": "K1"
+    },
+    {
+      "booth": "K2",
+      "zone": "kidlandia",
+      "name": "Nicholas Carey",
+      "business": "Musicologie Atlanta",
+      "status": "assigned",
+      "booth_2025": "K2"
+    },
+    {
+      "booth": "K3",
+      "zone": "kidlandia",
+      "name": "Smita Gupta",
+      "business": "Smita Gupta",
+      "status": "assigned",
+      "booth_2025": "K3"
+    },
+    {
+      "booth": "K4",
+      "zone": "kidlandia",
+      "name": "Stephanie DeSantis",
+      "business": "Lake Claire Community Land Trust",
+      "status": "assigned",
+      "booth_2025": "K4"
+    },
+    {
+      "booth": "K5",
+      "zone": "kidlandia",
+      "name": "Addison Moore",
+      "business": "Mulberry Fields",
+      "status": "assigned",
+      "booth_2025": "K5"
+    },
+    {
+      "booth": "K6",
+      "zone": "kidlandia",
+      "name": "Bob James",
+      "business": "CCL GA ATL Chapter",
+      "status": "assigned",
+      "booth_2025": "K6"
+    },
+    {
+      "booth": "K7",
+      "zone": "kidlandia",
+      "name": "Erin Aube",
+      "business": "Midtown High",
+      "status": "assigned",
+      "booth_2025": "K7"
+    },
+    {
+      "booth": "K8",
+      "zone": "kidlandia",
+      "name": "Primavera Preschool and Aftercare",
+      "business": "Primavera",
+      "status": "assigned",
+      "booth_2025": "K8"
+    },
+    {
+      "booth": "K9",
+      "zone": "kidlandia",
+      "name": "Marsha Weinstein / Brooke Ussery",
+      "business": "Faces Unlimited by Marsha and Brooke",
+      "status": "assigned",
+      "booth_2025": "K9"
+    }
   ]
 }

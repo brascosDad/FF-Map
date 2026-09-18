@@ -118,6 +118,18 @@ export default function App() {
   }
 
   /**
+   * A row in an area's booth list. Opens that booth and flies to it at the
+   * booth zoom, so the number you just tapped is the one lit up on the map.
+   */
+  function handleBoothFromList(booth) {
+    setFilter(null);
+    setOpenId(null);
+    setOpenArea(null);
+    setOpenBooth(booth);
+    focusOn(booth.x, booth.y, 2);
+  }
+
+  /**
    * A row in the docked directory. Three shapes, because three things are being
    * pointed at:
    *   poi   one pin -- fly to it and open its detail
@@ -211,6 +223,7 @@ export default function App() {
             openBooth={openBooth}
             onStepBooth={stepBooth}
             onSelect={handleDirectorySelect}
+            onOpenBooth={handleBoothFromList}
             onClose={closeAll}
             onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
           />

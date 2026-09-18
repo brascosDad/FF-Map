@@ -7,21 +7,22 @@
 // `mk` is where the area's marker sits, in map units -- it doubles as the point
 // the panel centres on. `shortName` is how the panel lists the run; `label` is
 // the only text the map itself still draws for it. `blobs`/`clip` are drawing concerns the panel ignores.
-// Counts in `range` are the committee's stated numbers, and since the booth
-// numbering pass they are also what the map draws (see data/booths.js and
-// scripts/build-booths.py). K1-K8 count toward the in-park run but sit in
-// their own stack by Kidlandia, drawn by MapCanvas outside these areas.
+// Counts in `range` are the artist market chair's 2026 numbers, and they are
+// also what the map draws (see data/booths.js and scripts/build-booths.py).
+// Candler Park Dr is 58 booths, not 61: 112-114 are not on her sheet. K0-K9
+// count toward the in-park run but sit in their own stack by Kidlandia, drawn
+// by MapCanvas outside these areas.
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS } from './booths';
 
 export const AREAS = [
-  { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 89–164 · 76 booths' },
-  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 62–88 · 27 booths' },
+  { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market', range: 'Booths 82–142 · 58 booths' },
+  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [666.4, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market', range: 'Booths 55–81 · 27 booths' },
   // The car-path marker sits 25 units north of where the export put it (509.3).
   // At the booth-level zoom the original position covered booth 29's number and
   // sat 9px inside it; 25 north clears every number in the row with 15px to
   // spare, and the marker is still plainly in the middle of its own run.
-  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 484.3], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market', range: 'Booths 1–61 & K1–K8 · 69 booths' },
+  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 484.3], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market', range: 'Booths 1–54 & K0–K9 · 64 booths' },
 ];
 
 /**

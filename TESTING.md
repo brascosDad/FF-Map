@@ -239,16 +239,34 @@ The point here is that nothing invented is presented as real.
 - [ ] Food court sheet lists the 15 vendors for 2026 with the food chair's own
       descriptions, and says placements are not assigned yet. Mr Softee is the
       only one with a location line.
-- [ ] An art booth sheet shows the committee's **official booth number**
-      (1–61 park, 62–88 McLendon, 89–164 Candler Park Dr, K1–K8 Kidlandia),
-      and its footer says the number and position come from the official map.
-- [ ] A K1–K8 sheet says the stack's position is approximate until the 2026
+- [ ] An art booth sheet shows the market chair's **2026 booth number**
+      (1–54 park, 55–81 McLendon, 82–142 Candler Park Dr with no 112–114,
+      K0–K9 Kidlandia) and the **business and artist** assigned to it, and its
+      footer says where the number, artist and position come from.
+- [ ] Booths 141 and 142 read "Sponsor or open booth" — no artist invented.
+- [ ] Tap an art-market marker → the area sheet lists every booth in the run
+      by number and artist. The park list ends with K0–K9 and then AWARE
+      Wildlife with no number; McLendon's ends with Achieve with Steve at the
+      Acoustic Stage booth. Tapping a row opens that booth at the booth zoom.
+- [ ] A K0–K9 sheet says the stack's position is approximate until the 2026
       Kidlandia layout is confirmed.
 - [ ] A food stall sheet reads "Stall N · Food Court" with no truck name, and
       says the truck is not assigned yet.
-- [ ] No artist names appear anywhere — we have none, and none were invented.
+- [ ] Every artist name on a sheet is on the market chair's sheet — none were invented.
 
 ---
+
+## 7a. The printed sheet
+
+- [ ] Open `/?print=1`. One 11x17 landscape sheet: map left, masthead, legend,
+      booth-range key, food vendors and an alphabetical artist index right.
+      No chips, no zoom stack, no sheet.
+- [ ] Every booth square carries its number, and the three runs are labelled
+      with their ranges on the map itself.
+- [ ] `npm run print` writes `print/fall-fest-map-2026.pdf` and `.png`; the
+      PDF's text is selectable (real fonts, not outlines) and the masthead is
+      Brice.
+- [ ] The artist index ends inside the page — nothing is clipped at the foot.
 
 ## 7b. The masthead
 
@@ -279,6 +297,8 @@ The point here is that nothing invented is presented as real.
 - "Main Stage" and "Food Court" labels collide at Overview on narrow screens.
 - Zoom pill still says "Overview" on desktop even though that level now shows
   squares — the label and the behaviour have drifted apart.
-- K1–K8 are placed by description (a stack on the lawn beside Kidlandia), not
+- K0–K9 are placed by description (a stack on the lawn beside Kidlandia), not
   from the export, and their order is unconfirmed. No blob for them at the
   phone overview until a `blob-kid` layer exists in Figma.
+- 112–114 are not on the market chair's sheet and are not drawn; the speed
+  bump on Candler Park Dr sits where they would fall.

@@ -360,9 +360,9 @@ for (const [name, w, h] of SIZES) {
       back && back.i === expected, back ? `${start.i} -> ${back.i} (expected ${expected})` : 'unparsed');
     check(`${name}: stepping stays in the same area`, back && back.area === start.area,
       back ? `${start.area} -> ${back.area}` : 'unparsed');
-    // 76 + 27 + 61 numbered art booths, 8 Kidlandia, 16 food stalls.
+    // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
     check(`${name}: total matches the area, not all booths`,
-      [76, 27, 61, 8, 16].includes(start.total), `${start.total} in ${start.area}`);
+      [58, 27, 54, 10, 16].includes(start.total), `${start.total} in ${start.area}`);
 
     await p.locator('.ffc-step button').last().click();    // forward again
     await p.waitForTimeout(150);
@@ -378,6 +378,46 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: stepper has air between it and the title`, stepGap >= 16, `${stepGap}px`);
     check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,
       btn ? `${btn.width}x${btn.height}` : 'none');
+  });
+
+  // ---- the 2026 assignments: every art booth names its artist, and an area
+  // sheet lists its booths so an artist can be found by name ----
+  await safe(`${name}: artist assignments`, async () => {
+    // The stepper block above left an art or food booth open. Whatever it is,
+    // the sheet never promises names that are "coming".
+    const body = await p.locator('.sheet .panel-scroll').textContent();
+    check(`${name}: no booth still says artist names are coming`, !/arrive with the 2026/.test(body || ''));
+    // Open an area from its marker. Any run will do; the count is checked
+    // against whichever one it was.
+    await p.reload({ waitUntil: 'networkidle' });
+    await p.waitForTimeout(800);
+    await zoomIn(p);
+    let opened = false;
+    const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+    for (let i = 0; i < n && !opened; i++) {
+      const bb = await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).boundingBox().catch(() => null);
+      if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
+      await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+      await p.waitForTimeout(450);
+      opened = (await p.locator('.boothrow').count()) > 0;
+    }
+    check(`${name}: an area sheet lists its booths`, opened);
+    if (!opened) return;
+    const rows = await p.locator('button.boothrow').count();
+    // 58 on Candler Park Dr, 27 on McLendon, 54 + 10 Kidlandia in the park.
+    check(`${name}: the list is the whole run`, [58, 27, 64].includes(rows), `${rows} rows`);
+    const named = await p.locator('button.boothrow .who').allTextContents();
+    check(`${name}: every row names an artist or says it is open`,
+      named.every((t) => t.trim().length > 0 && !/undefined|null/.test(t)));
+    const first = await p.locator('button.boothrow').first();
+    const num = (await first.locator('.n').textContent()).trim();
+    await first.click();
+    await p.waitForTimeout(600);
+    const title = await p.locator('.sheet .hd h3').textContent();
+    check(`${name}: tapping a row opens that booth`, title === `Booth ${num}`, `${title} for row ${num}`);
+    const who = await p.locator('.sheet .li b').first().textContent().catch(() => null);
+    check(`${name}: the booth sheet names the business`, !!who && who.trim().length > 0, who || '(none)');
+    check(`${name}: the map is at the booth zoom`, (await p.locator('.boothnav').count()) > 0);
   });
 
   // ---- Esc closes, focus returns to the map ----
@@ -803,6 +843,28 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
 // is the case the service worker exists for, and it is worth a real test: the
 // first version of it cached everything correctly and still served a blank
 // green screen, because "Vary: Origin" made every script and stylesheet miss.
+// The printed sheet is a route of the same app: every booth on it, none of the
+// phone chrome, and it does not disturb the map route's own layout.
+{
+  const p = await browser.newPage({ viewport: { width: 1632, height: 1056 } });
+  await p.goto(`${BASE}/?print=1`, { waitUntil: 'networkidle' });
+  await p.waitForSelector('.print-page', { timeout: 5000 }).catch(() => {});
+  const pr = await p.evaluate(() => ({
+    page: !!document.querySelector('.print-page'),
+    numbers: document.querySelectorAll('.print-map rect + text').length,
+    chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
+    index: document.querySelectorAll('.print-index li').length,
+    overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
+  }));
+  check('print: the sheet renders at /?print=1', pr.page);
+  // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
+  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 10 + 16, `${pr.numbers} numbers`);
+  check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
+  check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);
+  check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);
+  await p.close();
+}
+
 // Nothing in the console but "failed to fetch". Only opening it offline catches
 // that.
 {
