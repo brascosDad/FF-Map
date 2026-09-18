@@ -943,6 +943,9 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   // unnumbered squares print with no number, so they are not counted here.
   check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);
   check('print: the two unnumbered artists have a square', pr.unnumbered === 2, `${pr.unnumbered} squares`);
+  // innerText carries the heading's CSS uppercase, hence the /i.
+  check('print: the public count is "over 130 artists", never a booth total',
+    /over 130 artists/i.test(pr.text) && !/\b1[3-6]\d booths\b/i.test(pr.text) && !pr.text.includes('164'));
   check('print: run endpoints come from the sheet', pr.text.includes('82–139') && pr.text.includes('K0–K10') && !pr.text.includes('142'), 'looked for 82–139 and K0–K10');
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);

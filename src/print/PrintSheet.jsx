@@ -132,7 +132,6 @@ function artistIndex() {
 
 export default function PrintSheet() {
   const index = artistIndex();
-  const counts = { park: BOOTHS.spine.length, kid: BOOTHS.kid.length, mcl: BOOTHS.mcl.length, cpd: BOOTHS.cpd.length };
   return (
     <div className="print-page">
       <div className="print-mapcol"><PrintMap /></div>
@@ -163,8 +162,10 @@ export default function PrintSheet() {
           </span>
         </section>
 
+        {/* "Over 130 artists" is the public number (decided 9/17) -- never a
+            booth count, which moves every time the chair edits her sheet. */}
         <section className="print-key">
-          <h2>Art market · {counts.park + counts.mcl + counts.cpd} booths</h2>
+          <h2>Art market · over 130 artists</h2>
           <div className="print-key__rows">
             <span><b>{span(BOOTHS.spine)}</b> in the park</span>
             <span><b>{span(BOOTHS.kid)}</b> Kidlandia, on the field</span>
