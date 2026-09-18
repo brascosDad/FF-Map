@@ -11,7 +11,7 @@
 // so it cannot disagree with the phone map about where anything is.
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
-import { AREAS, BOOTH_ANGLE } from '../data/areas';
+import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
 import { PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
@@ -76,14 +76,16 @@ function PrintMap() {
 
       {/* The three runs carry their ranges on the map itself, where the 2025
           sheet had them, so a reader with a booth number knows which street
-          to walk to before they find the key. */}
+          to walk to before they find the key. The ranges are read off the
+          data, so this sheet cannot print an endpoint the app does not draw. */}
       <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
-        <text x={411.5} y={290} textAnchor="middle" transform="rotate(-90 411.5 290)">Art Market 82–142</text>
-        <text x={640} y={812} textAnchor="middle">Art Market 55–81</text>
+        <text x={411.5} y={290} textAnchor="middle" transform="rotate(-90 411.5 290)">Art Market {span(BOOTHS.cpd)}</text>
+        <text x={640} y={812} textAnchor="middle">Art Market {span(BOOTHS.mcl)}</text>
         {/* In the west row's own break at the path bend (between 37 and 38),
             along the row's direction, so it touches no number. */}
-        <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market 1–54</text>
-        <text x={645} y={496} textAnchor="middle" fontSize={LABEL - 1.5}>K0–K9</text>
+        <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market {span(BOOTHS.spine)}</text>
+        {/* Below the K stack: eleven booths at 9 units end at y ~490. */}
+        <text x={645} y={505} textAnchor="middle" fontSize={LABEL - 1.5}>{span(BOOTHS.kid)}</text>
       </g>
 
       {PINS.map((p, i) => (
@@ -159,10 +161,10 @@ export default function PrintSheet() {
         <section className="print-key">
           <h2>Art market · {counts.park + counts.mcl + counts.cpd} booths</h2>
           <div className="print-key__rows">
-            <span><b>1–54</b> in the park</span>
-            <span><b>K0–K9</b> Kidlandia, on the field</span>
-            <span><b>55–81</b> McLendon Ave</span>
-            <span><b>82–142</b> Candler Park Dr</span>
+            <span><b>{span(BOOTHS.spine)}</b> in the park</span>
+            <span><b>{span(BOOTHS.kid)}</b> Kidlandia, on the field</span>
+            <span><b>{span(BOOTHS.mcl)}</b> McLendon Ave</span>
+            <span><b>{span(BOOTHS.cpd)}</b> Candler Park Dr</span>
           </div>
         </section>
 

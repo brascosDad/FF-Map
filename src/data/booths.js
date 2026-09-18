@@ -5,14 +5,14 @@
 //
 // HONEST ABOUT WHAT IS AND ISN'T REAL:
 //   - Art-market numbers and names are the artist market chair's 2026
-//     assignments: 1-54 in the park, 55-81 on McLendon, 82-142 on Candler
-//     Park Dr (112-114 are not on her sheet), K0-K9 in Kidlandia. Each
-//     group is in number order, so stepping follows the numbers -- which
-//     on Candler Park Dr means south to north.
+//     assignments, sheet read 2026-09-18: 1-54 in the park, 55-81 on McLendon,
+//     82-139 on Candler Park Dr, K0-K10 in Kidlandia. Each group is in number
+//     order, so stepping follows the numbers -- which on Candler Park Dr
+//     means south to north.
 //   - `name` is the artist, `biz` the business, straight from the sheet.
-//     Both are null on a sponsor or open booth.
+//     Both are null on a sponsor booth.
 //   - Positions are laid along the rows the export draws, at the official
-//     counts. The K0-K9 stack is placed by description only; its order is
+//     counts. The K0-K10 stack is placed by description only; its order is
 //     unconfirmed.
 //   - Food stalls carry NO truck names. The 2026 list is in vendors.json;
 //     which truck parks at which stall is not assigned yet.
@@ -38,45 +38,45 @@ export const BOOTHS = {
     { id: 'cpd-098', n: 98, area: 'Candler Park Dr', x: 403.1, y: 540.6, name: 'Angela Donovan', biz: 'Be Momo Shop' },
     { id: 'cpd-099', n: 99, area: 'Candler Park Dr', x: 403.1, y: 530.5, name: 'Miesha Palatucci', biz: 'Revel Pottery' },
     { id: 'cpd-100', n: 100, area: 'Candler Park Dr', x: 403.1, y: 520.4, name: 'Susannah Calo', biz: 'Calo Landscape' },
-    { id: 'cpd-101', n: 101, area: 'Candler Park Dr', x: 419.5, y: 700.2, name: 'Hanen Van Rossem', biz: 'Fish Friend Art' },
-    { id: 'cpd-102', n: 102, area: 'Candler Park Dr', x: 419.5, y: 690.1, name: 'Simone Cutler', biz: 'Clay by Deneé' },
-    { id: 'cpd-103', n: 103, area: 'Candler Park Dr', x: 419.5, y: 680.0, name: 'Jeremy Rose', biz: 'Rising Waters Folkworks' },
-    { id: 'cpd-104', n: 104, area: 'Candler Park Dr', x: 419.5, y: 669.9, name: 'Lexi Garofalo', biz: 'South Indigo Company' },
-    { id: 'cpd-105', n: 105, area: 'Candler Park Dr', x: 419.5, y: 659.8, name: 'David Coston', biz: 'David Coston Art' },
-    { id: 'cpd-106', n: 106, area: 'Candler Park Dr', x: 419.5, y: 649.6, name: 'Zoe Daniel', biz: 'Worm Wood and Honey Pottery' },
-    { id: 'cpd-107', n: 107, area: 'Candler Park Dr', x: 419.5, y: 639.5, name: 'Jim Zhang', biz: 'Jim Zhang' },
-    { id: 'cpd-108', n: 108, area: 'Candler Park Dr', x: 419.5, y: 629.4, name: 'Caroline Youngblood', biz: 'Young Blood Designs' },
-    { id: 'cpd-109', n: 109, area: 'Candler Park Dr', x: 419.5, y: 619.2, name: 'Kirsten Koza', biz: 'Kirsten Koza Art' },
-    { id: 'cpd-110', n: 110, area: 'Candler Park Dr', x: 419.5, y: 609.1, name: 'Clay Henderson', biz: 'Stitched Roots' },
-    { id: 'cpd-111', n: 111, area: 'Candler Park Dr', x: 419.5, y: 599.0, name: 'Nadia Walker', biz: 'SLAM Plumbing and SLAM HVAC' },
-    { id: 'cpd-115', n: 115, area: 'Candler Park Dr', x: 419.5, y: 571.0, name: 'Jae Montano', biz: 'Painting with Jae' },
-    { id: 'cpd-116', n: 116, area: 'Candler Park Dr', x: 419.5, y: 560.9, name: 'Salameh Ghaderi', biz: 'Salameh Art studio' },
-    { id: 'cpd-117', n: 117, area: 'Candler Park Dr', x: 419.5, y: 550.7, name: 'Janet Gonzales', biz: 'The Imperfect Quilter' },
-    { id: 'cpd-118', n: 118, area: 'Candler Park Dr', x: 419.5, y: 540.6, name: 'Terah Kalk', biz: 'TT\'s Trinkets' },
-    { id: 'cpd-119', n: 119, area: 'Candler Park Dr', x: 419.5, y: 530.5, name: 'Krystina Ainsworth', biz: 'Baen Bunnie' },
-    { id: 'cpd-120', n: 120, area: 'Candler Park Dr', x: 419.5, y: 520.4, name: 'Nathaniel Trost', biz: 'Atlanta Studio Pottery' },
-    { id: 'cpd-121', n: 121, area: 'Candler Park Dr', x: 419.5, y: 510.2, name: 'Rhonda Jolaoso', biz: 'Kemi\'s' },
-    { id: 'cpd-122', n: 122, area: 'Candler Park Dr', x: 419.5, y: 500.1, name: 'Shelby Simmons', biz: 'SS Glasswork' },
-    { id: 'cpd-123', n: 123, area: 'Candler Park Dr', x: 419.5, y: 490.0, name: 'Abigail West', biz: 'Abigail West' },
-    { id: 'cpd-124', n: 124, area: 'Candler Park Dr', x: 419.5, y: 479.9, name: 'Diana Dinser', biz: 'Urbanterracotta' },
-    { id: 'cpd-125', n: 125, area: 'Candler Park Dr', x: 419.5, y: 469.7, name: 'Haydar Martha Serezli', biz: 'Serez Design' },
-    { id: 'cpd-126', n: 126, area: 'Candler Park Dr', x: 419.5, y: 459.6, name: 'Andrew Price', biz: 'Caprice Art' },
-    { id: 'cpd-127', n: 127, area: 'Candler Park Dr', x: 419.5, y: 449.5, name: 'Callanwolde Clay Guild', biz: 'Callanwolde Clay Guild' },
-    { id: 'cpd-128', n: 128, area: 'Candler Park Dr', x: 419.5, y: 439.4, name: 'Maria Khote', biz: 'Isabel Pottery' },
-    { id: 'cpd-129', n: 129, area: 'Candler Park Dr', x: 419.5, y: 429.2, name: 'Olivia Rezutko', biz: 'Liv and Dye' },
-    { id: 'cpd-130', n: 130, area: 'Candler Park Dr', x: 419.5, y: 419.1, name: 'Gabriela Baumgartner', biz: 'Stone-Good Jewelry' },
-    { id: 'cpd-131', n: 131, area: 'Candler Park Dr', x: 419.5, y: 409.0, name: 'Hosnara Begum', biz: 'Jar Marsala' },
-    { id: 'cpd-132', n: 132, area: 'Candler Park Dr', x: 419.5, y: 398.9, name: 'Sally Denham Design', biz: 'Sally Denham Design' },
-    { id: 'cpd-133', n: 133, area: 'Candler Park Dr', x: 419.5, y: 388.7, name: 'Michael Taylor', biz: 'Michael Taylor Abstracts' },
-    { id: 'cpd-134', n: 134, area: 'Candler Park Dr', x: 419.5, y: 378.6, name: 'Michael Taylor', biz: 'Michael Taylor Abstracts' },
-    { id: 'cpd-135', n: 135, area: 'Candler Park Dr', x: 403.1, y: 449.5, name: 'Patrick Jeannette', biz: 'Mycelium Ceramics Co.' },
-    { id: 'cpd-136', n: 136, area: 'Candler Park Dr', x: 403.1, y: 439.4, name: 'Sterling Shepard', biz: 'Peak Prints 3D' },
-    { id: 'cpd-137', n: 137, area: 'Candler Park Dr', x: 403.1, y: 429.2, name: 'Steffi Beigh', biz: 'Mother\'s Tongue' },
-    { id: 'cpd-138', n: 138, area: 'Candler Park Dr', x: 403.1, y: 419.1, name: 'Katie Hayes', biz: 'Healing Arts ATL' },
-    { id: 'cpd-139', n: 139, area: 'Candler Park Dr', x: 403.1, y: 409.0, name: 'Rachael Furuta', biz: 'Art Rayz' },
-    { id: 'cpd-140', n: 140, area: 'Candler Park Dr', x: 403.1, y: 398.9, name: 'Chawn Murrah', biz: 'Chawn Murrah Fine Art' },
-    { id: 'cpd-141', n: 141, area: 'Candler Park Dr', x: 403.1, y: 388.7, name: null, biz: null },
-    { id: 'cpd-142', n: 142, area: 'Candler Park Dr', x: 403.1, y: 378.6, name: null, biz: null },
+    { id: 'cpd-101', n: 101, area: 'Candler Park Dr', x: 419.5, y: 682.4, name: 'Hanen Van Rossem', biz: 'Fish Friend Art' },
+    { id: 'cpd-102', n: 102, area: 'Candler Park Dr', x: 419.5, y: 672.2, name: 'Simone Cutler', biz: 'Clay by Deneé' },
+    { id: 'cpd-103', n: 103, area: 'Candler Park Dr', x: 419.5, y: 662.1, name: 'Jeremy Rose', biz: 'Rising Waters Folkworks' },
+    { id: 'cpd-104', n: 104, area: 'Candler Park Dr', x: 419.5, y: 652.0, name: 'Lexi Garofalo', biz: 'South Indigo Company' },
+    { id: 'cpd-105', n: 105, area: 'Candler Park Dr', x: 419.5, y: 641.9, name: 'David Coston', biz: 'David Coston Art' },
+    { id: 'cpd-106', n: 106, area: 'Candler Park Dr', x: 419.5, y: 631.7, name: 'Zoe Daniel', biz: 'Worm Wood and Honey Pottery' },
+    { id: 'cpd-107', n: 107, area: 'Candler Park Dr', x: 419.5, y: 621.6, name: 'Jim Zhang', biz: 'Jim Zhang' },
+    { id: 'cpd-108', n: 108, area: 'Candler Park Dr', x: 419.5, y: 611.5, name: 'Caroline Youngblood', biz: 'Young Blood Designs' },
+    { id: 'cpd-109', n: 109, area: 'Candler Park Dr', x: 419.5, y: 601.4, name: 'Kirsten Koza', biz: 'Kirsten Koza Art' },
+    { id: 'cpd-110', n: 110, area: 'Candler Park Dr', x: 419.5, y: 591.2, name: 'Clay Henderson', biz: 'Stitched Roots' },
+    { id: 'cpd-111', n: 111, area: 'Candler Park Dr', x: 419.5, y: 581.1, name: 'Nadia Walker', biz: 'SLAM Plumbing and SLAM HVAC' },
+    { id: 'cpd-112', n: 112, area: 'Candler Park Dr', x: 419.5, y: 571.0, name: 'Jae Montano', biz: 'Painting with Jae' },
+    { id: 'cpd-113', n: 113, area: 'Candler Park Dr', x: 419.5, y: 560.9, name: 'Salameh Ghaderi', biz: 'Salameh Art studio' },
+    { id: 'cpd-114', n: 114, area: 'Candler Park Dr', x: 419.5, y: 550.7, name: 'Janet Gonzales', biz: 'The Imperfect Quilter' },
+    { id: 'cpd-115', n: 115, area: 'Candler Park Dr', x: 419.5, y: 540.6, name: 'Terah Kalk', biz: 'TT\'s Trinkets' },
+    { id: 'cpd-116', n: 116, area: 'Candler Park Dr', x: 419.5, y: 530.5, name: 'Krystina Ainsworth', biz: 'Baen Bunnie' },
+    { id: 'cpd-117', n: 117, area: 'Candler Park Dr', x: 419.5, y: 520.4, name: 'Nathaniel Trost', biz: 'Atlanta Studio Pottery' },
+    { id: 'cpd-118', n: 118, area: 'Candler Park Dr', x: 419.5, y: 510.2, name: 'Rhonda Jolaoso', biz: 'Kemi\'s' },
+    { id: 'cpd-119', n: 119, area: 'Candler Park Dr', x: 419.5, y: 500.1, name: 'Shelby Simmons', biz: 'SS Glasswork' },
+    { id: 'cpd-120', n: 120, area: 'Candler Park Dr', x: 419.5, y: 490.0, name: 'Abigail West', biz: 'Abigail West' },
+    { id: 'cpd-121', n: 121, area: 'Candler Park Dr', x: 419.5, y: 479.9, name: 'Diana Dinser', biz: 'Urbanterracotta' },
+    { id: 'cpd-122', n: 122, area: 'Candler Park Dr', x: 419.5, y: 469.7, name: 'Haydar Martha Serezli', biz: 'Serez Design' },
+    { id: 'cpd-123', n: 123, area: 'Candler Park Dr', x: 419.5, y: 459.6, name: 'Andrew Price', biz: 'Caprice Art' },
+    { id: 'cpd-124', n: 124, area: 'Candler Park Dr', x: 419.5, y: 449.5, name: 'Callanwolde Clay Guild', biz: 'Callanwolde Clay Guild' },
+    { id: 'cpd-125', n: 125, area: 'Candler Park Dr', x: 419.5, y: 439.4, name: 'Maria Khote', biz: 'Isabel Pottery' },
+    { id: 'cpd-126', n: 126, area: 'Candler Park Dr', x: 419.5, y: 429.2, name: 'Olivia Rezutko', biz: 'Liv and Dye' },
+    { id: 'cpd-127', n: 127, area: 'Candler Park Dr', x: 419.5, y: 419.1, name: 'Gabriela Baumgartner', biz: 'Stone-Good Jewelry' },
+    { id: 'cpd-128', n: 128, area: 'Candler Park Dr', x: 419.5, y: 409.0, name: 'Hosnara Begum', biz: 'Jar Marsala' },
+    { id: 'cpd-129', n: 129, area: 'Candler Park Dr', x: 419.5, y: 398.9, name: 'Sally Denham Design', biz: 'Sally Denham Design' },
+    { id: 'cpd-130', n: 130, area: 'Candler Park Dr', x: 419.5, y: 388.7, name: 'Michael Taylor', biz: 'Michael Taylor Abstracts' },
+    { id: 'cpd-131', n: 131, area: 'Candler Park Dr', x: 419.5, y: 378.6, name: 'Michael Taylor', biz: 'Michael Taylor Abstracts' },
+    { id: 'cpd-132', n: 132, area: 'Candler Park Dr', x: 403.1, y: 449.5, name: 'Patrick Jeannette', biz: 'Mycelium Ceramics Co.' },
+    { id: 'cpd-133', n: 133, area: 'Candler Park Dr', x: 403.1, y: 439.4, name: 'Sterling Shepard', biz: 'Peak Prints 3D' },
+    { id: 'cpd-134', n: 134, area: 'Candler Park Dr', x: 403.1, y: 429.2, name: 'Steffi Beigh', biz: 'Mother\'s Tongue' },
+    { id: 'cpd-135', n: 135, area: 'Candler Park Dr', x: 403.1, y: 419.1, name: 'Katie Hayes', biz: 'Healing Arts ATL' },
+    { id: 'cpd-136', n: 136, area: 'Candler Park Dr', x: 403.1, y: 409.0, name: 'Rachael Furuta', biz: 'Art Rayz' },
+    { id: 'cpd-137', n: 137, area: 'Candler Park Dr', x: 403.1, y: 398.9, name: 'Chawn Murrah', biz: 'Chawn Murrah Fine Art' },
+    { id: 'cpd-138', n: 138, area: 'Candler Park Dr', x: 403.1, y: 388.7, name: null, biz: null },
+    { id: 'cpd-139', n: 139, area: 'Candler Park Dr', x: 403.1, y: 378.6, name: null, biz: null },
   ],
   mcl: [
     { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 875.8, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },
@@ -172,8 +172,9 @@ export const BOOTHS = {
     { id: 'kid-K5', n: 'K5', area: 'Kidlandia', x: 645.0, y: 445.0, name: 'Addison Moore', biz: 'Mulberry Fields' },
     { id: 'kid-K6', n: 'K6', area: 'Kidlandia', x: 645.0, y: 454.0, name: 'Bob James', biz: 'CCL GA ATL Chapter' },
     { id: 'kid-K7', n: 'K7', area: 'Kidlandia', x: 645.0, y: 463.0, name: 'Erin Aube', biz: 'Midtown High' },
-    { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 645.0, y: 472.0, name: 'Primavera Preschool and Aftercare', biz: 'Primavera' },
-    { id: 'kid-K9', n: 'K9', area: 'Kidlandia', x: 645.0, y: 481.0, name: 'Marsha Weinstein / Brooke Ussery', biz: 'Faces Unlimited by Marsha and Brooke' },
+    { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 645.0, y: 472.0, name: 'Clifton Sanctuary', biz: 'Clifton Sanctuary' },
+    { id: 'kid-K9', n: 'K9', area: 'Kidlandia', x: 645.0, y: 481.0, name: 'Primavera Preschool and Aftercare', biz: 'Primavera' },
+    { id: 'kid-K10', n: 'K10', area: 'Kidlandia', x: 645.0, y: 490.0, name: 'Marsha Weinstein / Brooke Ussery', biz: 'Faces Unlimited by Marsha and Brooke' },
   ],
   food: [
     { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3 },

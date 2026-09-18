@@ -1,30 +1,27 @@
 {
-  "source": "Courtney Weil, Google Sheet shared 2026-09-16, 'Re: Map updates'. Re-read against the live sheet 2026-09-17: 132-142 corrected (132 Sally Denham, 133-134 Michael Taylor, 137 Mother's Tongue, 140 Chawn Murrah; only 141-142 are sponsors). Booth 39 keeps name/business the right way round; the sheet has them swapped.",
+  "source": "Courtney Weil, Google Sheet 'FF map '26: for map updates'. Rebuilt from the live sheet by scripts/pull-sheet.py -- do not hand-edit; re-run it. Booth 39 keeps name/business the right way round (the sheet has them swapped).",
+  "read_date": "2026-09-18",
   "sheet_url": "https://docs.google.com/spreadsheets/d/1qdBmZKL7KRZ8wjPva060qHJ8kDxzLQpq0yqETixaBXQ/edit",
   "supersedes": "booth-numbering-2026.json (built from the 2025 official site map)",
   "change": "All artist market booths resized to 15 ft. Every number downstream of the park moved.",
-  "highest_number": 142,
+  "highest_number": 139,
   "numbers_assigned": 139,
-  "named_artists": 149,
+  "named_artists": 150,
   "sponsor_or_open": [
-    141,
-    142
+    138,
+    139
   ],
-  "numbers_not_present": [
-    112,
-    113,
-    114
-  ],
+  "numbers_not_present": [],
   "artists_holding_two_booths": [
-    "Tarik Berbey",
-    "Michael Taylor"
+    "Michael Taylor",
+    "Tarik Berbey"
   ],
   "gaps": [
     {
       "after_booth": 24,
       "before_booth": 25,
       "zone": "east-park",
-      "note": "20 ft gap for bikes / emergency access"
+      "note": "20 foot gap for bikes/emergencies"
     }
   ],
   "zone_ranges": {
@@ -60,28 +57,28 @@
     },
     "cpd-field": {
       "label": "Candler Park Dr - park side, in front of the field",
-      "first": 115,
-      "last": 134,
+      "first": 112,
+      "last": 131,
       "count": 20
     },
     "cpd-west-b": {
-      "label": "Candler Park Dr - west side (second run, per source sheet)",
-      "first": 135,
-      "last": 142,
+      "label": "Candler Park Dr - west side (second run, at the far end of the street)",
+      "first": 132,
+      "last": 139,
       "count": 8
     },
     "kidlandia": {
       "label": "Kidlandia - on the field",
       "first": "K0",
-      "last": "K9",
-      "count": 10
+      "last": "K10",
+      "count": 11
     }
   },
   "poster_endpoints": {
     "park": "1-54",
     "mclendon": "55-81",
-    "candler_park_dr": "82-142",
-    "kidlandia": "K0-K9"
+    "candler_park_dr": "82-139",
+    "kidlandia": "K0-K10"
   },
   "poster_endpoints_2025_DO_NOT_USE": {
     "park": "1-61",
@@ -94,7 +91,7 @@
       "booth": null,
       "name": "Scott Lange",
       "business": "AWARE Wildlife",
-      "note": "merged cell in source sheet - no number assigned"
+      "note": "no number on the sheet"
     },
     {
       "zone": "mclendon-south",
@@ -994,7 +991,7 @@
       "booth_2025": 125
     },
     {
-      "booth": 115,
+      "booth": 112,
       "zone": "cpd-field",
       "name": "Jae Montano",
       "business": "Painting with Jae",
@@ -1002,7 +999,7 @@
       "booth_2025": 129
     },
     {
-      "booth": 116,
+      "booth": 113,
       "zone": "cpd-field",
       "name": "Salameh Ghaderi",
       "business": "Salameh Art studio",
@@ -1010,7 +1007,7 @@
       "booth_2025": 130
     },
     {
-      "booth": 117,
+      "booth": 114,
       "zone": "cpd-field",
       "name": "Janet Gonzales",
       "business": "The Imperfect Quilter",
@@ -1018,7 +1015,7 @@
       "booth_2025": 131
     },
     {
-      "booth": 118,
+      "booth": 115,
       "zone": "cpd-field",
       "name": "Terah Kalk",
       "business": "TT's Trinkets",
@@ -1026,7 +1023,7 @@
       "booth_2025": 132
     },
     {
-      "booth": 119,
+      "booth": 116,
       "zone": "cpd-field",
       "name": "Krystina Ainsworth",
       "business": "Baen Bunnie",
@@ -1034,7 +1031,7 @@
       "booth_2025": 133
     },
     {
-      "booth": 120,
+      "booth": 117,
       "zone": "cpd-field",
       "name": "Nathaniel Trost",
       "business": "Atlanta Studio Pottery",
@@ -1042,7 +1039,7 @@
       "booth_2025": 134
     },
     {
-      "booth": 121,
+      "booth": 118,
       "zone": "cpd-field",
       "name": "Rhonda Jolaoso",
       "business": "Kemi's",
@@ -1050,7 +1047,7 @@
       "booth_2025": 135
     },
     {
-      "booth": 122,
+      "booth": 119,
       "zone": "cpd-field",
       "name": "Shelby Simmons",
       "business": "SS Glasswork",
@@ -1058,7 +1055,7 @@
       "booth_2025": 136
     },
     {
-      "booth": 123,
+      "booth": 120,
       "zone": "cpd-field",
       "name": "Abigail West",
       "business": "Abigail West",
@@ -1066,7 +1063,7 @@
       "booth_2025": 137
     },
     {
-      "booth": 124,
+      "booth": 121,
       "zone": "cpd-field",
       "name": "Diana Dinser",
       "business": "Urbanterracotta",
@@ -1074,7 +1071,7 @@
       "booth_2025": 138
     },
     {
-      "booth": 125,
+      "booth": 122,
       "zone": "cpd-field",
       "name": "Haydar Martha Serezli",
       "business": "Serez Design",
@@ -1082,7 +1079,7 @@
       "booth_2025": 139
     },
     {
-      "booth": 126,
+      "booth": 123,
       "zone": "cpd-field",
       "name": "Andrew Price",
       "business": "Caprice Art",
@@ -1090,7 +1087,7 @@
       "booth_2025": 140
     },
     {
-      "booth": 127,
+      "booth": 124,
       "zone": "cpd-field",
       "name": "Callanwolde Clay Guild",
       "business": "Callanwolde Clay Guild",
@@ -1098,7 +1095,7 @@
       "booth_2025": 141
     },
     {
-      "booth": 128,
+      "booth": 125,
       "zone": "cpd-field",
       "name": "Maria Khote",
       "business": "Isabel Pottery",
@@ -1106,7 +1103,7 @@
       "booth_2025": 142
     },
     {
-      "booth": 129,
+      "booth": 126,
       "zone": "cpd-field",
       "name": "Olivia Rezutko",
       "business": "Liv and Dye",
@@ -1114,7 +1111,7 @@
       "booth_2025": 143
     },
     {
-      "booth": 130,
+      "booth": 127,
       "zone": "cpd-field",
       "name": "Gabriela Baumgartner",
       "business": "Stone-Good Jewelry",
@@ -1122,7 +1119,7 @@
       "booth_2025": 144
     },
     {
-      "booth": 131,
+      "booth": 128,
       "zone": "cpd-field",
       "name": "Hosnara Begum",
       "business": "Jar Marsala",
@@ -1130,7 +1127,7 @@
       "booth_2025": 145
     },
     {
-      "booth": 132,
+      "booth": 129,
       "zone": "cpd-field",
       "name": "Sally Denham Design",
       "business": "Sally Denham Design",
@@ -1138,7 +1135,7 @@
       "booth_2025": 146
     },
     {
-      "booth": 133,
+      "booth": 130,
       "zone": "cpd-field",
       "name": "Michael Taylor",
       "business": "Michael Taylor Abstracts",
@@ -1146,7 +1143,7 @@
       "booth_2025": 147
     },
     {
-      "booth": 134,
+      "booth": 131,
       "zone": "cpd-field",
       "name": "Michael Taylor",
       "business": "Michael Taylor Abstracts",
@@ -1154,7 +1151,7 @@
       "booth_2025": 148
     },
     {
-      "booth": 135,
+      "booth": 132,
       "zone": "cpd-west-b",
       "name": "Patrick Jeannette",
       "business": "Mycelium Ceramics Co.",
@@ -1162,7 +1159,7 @@
       "booth_2025": 155
     },
     {
-      "booth": 136,
+      "booth": 133,
       "zone": "cpd-west-b",
       "name": "Sterling Shepard",
       "business": "Peak Prints 3D",
@@ -1170,7 +1167,7 @@
       "booth_2025": 156
     },
     {
-      "booth": 137,
+      "booth": 134,
       "zone": "cpd-west-b",
       "name": "Steffi Beigh",
       "business": "Mother's Tongue",
@@ -1178,7 +1175,7 @@
       "booth_2025": 157
     },
     {
-      "booth": 138,
+      "booth": 135,
       "zone": "cpd-west-b",
       "name": "Katie Hayes",
       "business": "Healing Arts ATL",
@@ -1186,7 +1183,7 @@
       "booth_2025": 158
     },
     {
-      "booth": 139,
+      "booth": 136,
       "zone": "cpd-west-b",
       "name": "Rachael Furuta",
       "business": "Art Rayz",
@@ -1194,7 +1191,7 @@
       "booth_2025": 159
     },
     {
-      "booth": 140,
+      "booth": 137,
       "zone": "cpd-west-b",
       "name": "Chawn Murrah",
       "business": "Chawn Murrah Fine Art",
@@ -1202,7 +1199,7 @@
       "booth_2025": 160
     },
     {
-      "booth": 141,
+      "booth": 138,
       "zone": "cpd-west-b",
       "name": null,
       "business": null,
@@ -1210,7 +1207,7 @@
       "booth_2025": 161
     },
     {
-      "booth": 142,
+      "booth": 139,
       "zone": "cpd-west-b",
       "name": null,
       "business": null,
@@ -1284,18 +1281,26 @@
     {
       "booth": "K8",
       "zone": "kidlandia",
-      "name": "Primavera Preschool and Aftercare",
-      "business": "Primavera",
+      "name": "Clifton Sanctuary",
+      "business": "Clifton Sanctuary",
       "status": "assigned",
       "booth_2025": "K8"
     },
     {
       "booth": "K9",
       "zone": "kidlandia",
+      "name": "Primavera Preschool and Aftercare",
+      "business": "Primavera",
+      "status": "assigned",
+      "booth_2025": "K9"
+    },
+    {
+      "booth": "K10",
+      "zone": "kidlandia",
       "name": "Marsha Weinstein / Brooke Ussery",
       "business": "Faces Unlimited by Marsha and Brooke",
       "status": "assigned",
-      "booth_2025": "K9"
+      "booth_2025": "K10"
     }
   ]
 }
