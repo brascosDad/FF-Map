@@ -501,6 +501,48 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- pinch ----
+// Testers reach for a pinch before the buttons (Amy, iPhone 16). The map has to
+// follow the fingers while they move and land on a stop when they lift -- not
+// step once, ignore the rest of the gesture, then step again.
+{
+  const p = await browser.newPage({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const width = async () => Number((await p.locator('svg.ff-map').getAttribute('viewBox')).split(' ')[2]);
+  const w0 = await width();
+  // Two pointers, spread from 60px apart to 200px in eight moves, then lift.
+  const trace = await p.evaluate(async () => {
+    const svg = document.querySelector('svg.ff-map');
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const ev = (type, id, x, y, target = svg) => target.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, isPrimary: id === 1 }));
+    const widths = [];
+    ev('pointerdown', 1, cx - 30, cy); ev('pointerdown', 2, cx + 30, cy);
+    for (let i = 1; i <= 8; i++) {
+      const s = 30 + i * 8.75;
+      ev('pointermove', 1, cx - s, cy, window); ev('pointermove', 2, cx + s, cy, window);
+      await new Promise((r) => requestAnimationFrame(r));
+      widths.push(Number(svg.getAttribute('viewBox').split(' ')[2]));
+    }
+    ev('pointerup', 1, cx - 100, cy, window); ev('pointerup', 2, cx + 100, cy, window);
+    return widths;
+  });
+  await p.waitForTimeout(500);
+  const w1 = await width();
+  const monotone = trace.every((v, i) => i === 0 || v <= trace[i - 1] + 0.01);
+  check('pinch: the map follows the fingers while they move', monotone && trace[trace.length - 1] < trace[0] * 0.8,
+    trace.map((v) => Math.round(v)).join(' > '));
+  // Spreading 60 -> 200px is x3.33; the closest stop is Detail (0.315). It
+  // must land exactly on a stop, with the zoom-out button now live.
+  check('pinch: it settles on a stop when the fingers lift', Math.abs(w1 - w0 * 0.315) < 1 || Math.abs(w1 - w0 * 0.565) < 1,
+    `${Math.round(w0)} -> ${Math.round(w1)} (stops at ${Math.round(w0 * 0.565)} and ${Math.round(w0 * 0.315)})`);
+  check('pinch: the buttons agree about where it landed',
+    (await p.locator('.zoomctl button').nth(1).getAttribute('aria-disabled')) === 'false');
+  check('pinch: numbers appear if it landed on Detail',
+    Math.abs(w1 - w0 * 0.315) >= 1 || (await p.locator('svg.ff-map text').allTextContents()).some((t) => /^\d+$/.test(t)));
+  await p.close();
+}
+
 // ---- chrome must not swallow taps ----
 // The topbar spans the full width. Its empty strip used to sit invisibly over
 // any pin beneath it (Main Stage and Food Court on a landscape phone). A pin may
