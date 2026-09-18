@@ -57,7 +57,7 @@ export const DIRECTORY = [
   },
   {
     title: 'Family',
-    rows: [poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing')],
+    rows: [poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing with Trees for Tuition')],
   },
   {
     title: 'Amenities',

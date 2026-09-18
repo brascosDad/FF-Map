@@ -33,7 +33,8 @@ function SheetHeader({ icon, color, title, sub }) {
 
 const POI_COPY = {
   kids: { title: 'Kidlandia', sub: 'Family activity zone', icon: 'kids', cat: 'kids',
-    lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing', 'Trees for Tuition'] },
+    // Pumpkin smashing and Trees for Tuition are one stop, not two (9/17).
+    lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing with Trees for Tuition'] },
   // The beer stand is its own pin: the main one, on the field, and the
   // landmark people navigate by. The other stations share the generic entry.
   beer: { title: 'Beer Stand', sub: 'The main beer stand, on the field', icon: 'drinks', cat: 'drinks',
