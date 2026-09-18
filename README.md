@@ -29,21 +29,24 @@ npm run preview   # serve the production build locally
   null location lists the vendor with no spot and pins nothing. The 16 food
   stalls in `booths.js` are positions only — no truck is assigned to a stall.
 - **Booth numbers and artists** (`src/data/booths.js`) — the artist market
-  chair's 2026 assignments (her sheet of 9/16), one artist and business per
-  booth. Every booth was resized to 15 ft, so the numbering is shorter than the
-  2025 map's: 1–54 in the park (two rows, increasing north→south), 55–81 on
-  McLendon (decreasing west→east), 82–142 on Candler Park Dr (two columns,
-  decreasing north→south; 112–114 are not on her sheet), K0–K9 in Kidlandia.
-  Two booths (141–142) are sponsors, and two artists have no number at all
-  (AWARE Wildlife in the park, Achieve with Steve at the Acoustic Stage). The
-  file is generated: `src/data/booth-numbering-2026.json` is the sheet (its
-  `sheet_url` is the live Google Sheet; re-read it before print, it was still
-  moving on 9/17), `src/assets/basemapCoords.js` says where the rows are, and
-  `python3 scripts/build-booths.py` lays one onto the other, using the 2025
-  map's row directions and breaks (which she confirmed are unchanged), and
-  refuses to write unless every numbered booth on the sheet lands exactly
-  once. Don't hand-edit `booths.js`. An area's sheet lists its booths by
-  number and artist; tapping one flies to it.
+  chair's 2026 assignments, one artist and business per booth. Every booth was
+  resized to 15 ft, so the numbering is shorter than the 2025 map's: 1–54 in
+  the park (two rows, increasing north→south), 55–81 on McLendon (decreasing
+  west→east), 82 up on Candler Park Dr (two columns, decreasing north→south),
+  K0 up in Kidlandia. The top numbers move when she edits the sheet — read
+  them off `poster_endpoints` in the JSON, never from memory (139 and K10 as
+  of the 9/18 read; the last two on Candler Park Dr are sponsors). Two artists
+  have a spot and no number (AWARE Wildlife on the grass in the park, Achieve
+  with Steve beside the Acoustic Stage); they get a square with no number,
+  placed by description. Two steps, both scripted, neither hand-edited:
+  `python3 scripts/pull-sheet.py` rebuilds `src/data/booth-numbering-2026.json`
+  from her live Google Sheet (or a downloaded CSV) and records the read date;
+  `python3 scripts/build-booths.py` lays that onto the rows in
+  `src/assets/basemapCoords.js`, using the 2025 map's row directions and
+  breaks (which she confirmed are unchanged), and refuses to write unless
+  every numbered booth on the sheet lands exactly once. Don't hand-edit
+  `booths.js` or the JSON. An area's sheet lists its booths by number and
+  artist; tapping one flies to it.
 - **Pin positions & basemap** (`src/assets/pins.js`, `src/assets/basemapTrace.js`,
   `src/assets/basemapCoords.js`) — real, extracted from the canonical Figma export
   `fall-fest-desktop-map-wireframe.svg`. The basemap is that file's
@@ -51,7 +54,11 @@ npm run preview   # serve the production build locally
   from its "festival elements (z=2)" group, so the coordinate space is the export's
   own **1440×900** canvas (it was 340×460 while the map came from the mobile
   prototype). The Bike Valet pin is no longer a cross-referenced guess — it is the
-  export's own circle, recolored from its placeholder red to the utility neutral.
+  export's own circle, drawn as the Phosphor bicycle on the utility neutral. Two
+  pins are not in the export and are placed by description: the merch booth at
+  the park entrance, and the beer stand (the export's main-lawn beverage marker,
+  promoted and nudged clear of the art-market marker). Each pin says whether it
+  shows on the phone's opening view (`overview: true`).
   What is *not* yet settled is the illustrated art that will sit under these
   coordinates; the pin/zoom system doesn't care what the art looks like, only that
   it stays on this viewBox.
