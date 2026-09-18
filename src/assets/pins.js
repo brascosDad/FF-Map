@@ -11,7 +11,7 @@
 // whole festival is squeezed into a phone screen and pins hold one physical
 // size, so only a few fit without their 44px targets overlapping. The
 // destinations do, plus the two landmarks beta testers reached for first
-// (bike valet and the beer stand, Alex 9/17).
+// (bike valet and the beer stand, Alex 9/17) and the merch booth at the gate.
 // Everything else arrives at the first zoom step or when its chip is tapped.
 // Before adding one, check the spacing: scripts/e2e.mjs asserts that no two
 // overview targets overlap on a 375px phone.
@@ -33,6 +33,12 @@ export const PINS = [
   { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks' },
   { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks' },
   { x: 897.3, y: 747.3, c: 'drinks', d: 'drinks' },
+
+  // Merch, at the park entrance -- the same spot every year (Jess, 9/17). The
+  // entrance is where the car path meets McLendon (x ~598-622); the pin sits
+  // just west of it on the corner lawn, clear of the info booth's target.
+  // Not in the export; placed by description.
+  { x: 578.0, y: 755.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips)
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
@@ -67,6 +73,7 @@ export const PIN_COLOR = {
   info: 'var(--pin-info)',
   firstaid: 'var(--pin-firstaid)',
   water: 'var(--pin-water)',
+  merch: 'var(--pin-merch)',
   // Low-frequency services (bike valet, entrances, ADA, picnic/seating) share
   // one quiet neutral rather than each taking a vivid pin hue.
   bikevalet: 'var(--cat-utility)',

@@ -62,6 +62,7 @@ export const DIRECTORY = [
   {
     title: 'Amenities',
     rows: [
+      poi('merch', 'Merch Booth', 'Fall Fest goods, at the park entrance'),
       cat('wc', 'wc', 'Restrooms'),
       poi('firstaid', 'First Aid', 'EMS on site'),
       poi('info', 'Info booth', 'Programs, lost & found'),
@@ -81,6 +82,7 @@ export const LEGEND = [
   { cat: 'water', label: 'Water' },
   { cat: 'firstaid', label: 'First aid' },
   { cat: 'info', label: 'Info' },
+  { cat: 'merch', label: 'Merch' },
   { cat: 'art', label: 'Art booth' },
   { cat: 'bikevalet', label: 'Services' },
 ];

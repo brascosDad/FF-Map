@@ -27,6 +27,12 @@
   --pin-stage: #8F71B7;
   --pin-kids: #C25B7E;
   --pin-firstaid: #C84B46;
+  /* Merch is its own destination (the festival's own booth, at the park
+     entrance), so it takes its own hue rather than the services neutral.
+     Magenta sits in the widest open gap on the wheel: 40 degrees from the
+     stage lavender on one side and the kids rose on the other. 5.4:1 under
+     the white glyph. */
+  --pin-merch: #9E3F94;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
 
   /* Structural / neutral — unchanged */

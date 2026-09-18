@@ -116,7 +116,7 @@ for (const [name, w, h] of SIZES) {
       return true;
     })());
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 10,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 11,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
@@ -465,20 +465,20 @@ for (const [name, w, h] of SIZES) {
 }
 
 // ---- the phone's opening state (beta round 1, 9/17) ----
-// Bike valet and the beer stand are landmarks and were reached for first. Both
-// show at open, on the smallest phone we care about, and no two overview
-// targets overlap -- 44px is the floor and circles may touch but not cross
-// (decided).
+// Bike valet and the beer stand are landmarks and were reached for first; the
+// merch booth is the festival's own. All three show at open, on the smallest
+// phone we care about, and no two overview targets overlap -- 44px is the
+// floor and circles may touch but not cross (decided).
 for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   const cats = await p.locator('svg.ff-map g.ff-pin').evaluateAll((els) => els.map((e) => [...e.classList].find((c) => c.startsWith('ffc-pin--'))?.slice(9)));
-  check(`${name}: bike valet and the beer stand are on the opening view`,
-    cats.includes('bikevalet') && cats.includes('drinks'), cats.join(','));
+  check(`${name}: bike valet, beer and merch are on the opening view`,
+    cats.includes('bikevalet') && cats.includes('merch') && cats.includes('drinks'), cats.join(','));
   check(`${name}: still only a handful of pins at open`, cats.length <= 8, `${cats.length} pins`);
   const titles = [];
-  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--drinks']) {
+  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--merch', 'g.ffc-pin--drinks']) {
     const b = await p.locator(sel).first().boundingBox();
     await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     await p.waitForTimeout(450);
@@ -486,7 +486,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     await p.locator('.sheet .close').click();
     await p.waitForTimeout(350);
   }
-  check(`${name}: the two open their own sheets`, /Bike Valet/.test(titles[0]) && /Beer Stand/.test(titles[1]), titles.join(' | '));
+  check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
   const overlap = await p.evaluate(() => {
     const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area > circle')]
       .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
