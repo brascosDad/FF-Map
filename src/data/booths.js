@@ -13,7 +13,7 @@
 //     Both are null on a sponsor booth.
 //   - Positions are laid along the rows the export draws, at the official
 //     counts. The K0-K10 stack is placed by description only; its order is
-//     unconfirmed.
+//     unconfirmed. So are the two unnumbered squares (UNNUMBERED).
 //   - Food stalls carry NO truck names. The 2026 list is in vendors.json;
 //     which truck parks at which stall is not assigned yet.
 
@@ -196,11 +196,13 @@ export const BOOTHS = {
   ],
 };
 
-// On the sheet but with no booth number, so nowhere to draw them. The area
-// sheet lists them under the run they belong to.
+// On the sheet with a spot but no booth number. Drawn as a square with no
+// number (n is null), placed by the chair's description -- see UNNUMBERED_AT
+// in scripts/build-booths.py. `group` is the run whose sheet lists them;
+// `area` and `where` are what the booth sheet says.
 export const UNNUMBERED = [
-  { group: 'spine', name: 'Scott Lange', biz: 'AWARE Wildlife', where: null },
-  { group: 'mcl', name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'Acoustic Stage booth' },
+  { id: 'unnumbered-aware-wildlife', n: null, group: 'spine', area: 'In the Park', x: 606.0, y: 632.0, name: 'Scott Lange', biz: 'AWARE Wildlife', where: 'on the grass by the west row' },
+  { id: 'unnumbered-achieve-with-steve', n: null, group: 'mcl', area: 'McLendon Ave', x: 897.0, y: 797.7, name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'beside the Acoustic Stage' },
 ];
 
 // The three things a reader has to be told about this data used to live here as

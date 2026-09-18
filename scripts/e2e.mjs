@@ -404,8 +404,9 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: an area sheet lists its booths`, opened);
     if (!opened) return;
     const rows = await p.locator('button.boothrow').count();
-    // 58 on Candler Park Dr, 27 on McLendon, 54 + 11 Kidlandia in the park.
-    check(`${name}: the list is the whole run`, [58, 27, 65].includes(rows), `${rows} rows`);
+    // 58 on Candler Park Dr; 27 on McLendon + Achieve with Steve; 54 + 11
+    // Kidlandia + AWARE Wildlife in the park. The unnumbered pair are rows too.
+    check(`${name}: the list is the whole run`, [58, 28, 66].includes(rows), `${rows} rows`);
     const named = await p.locator('button.boothrow .who').allTextContents();
     check(`${name}: every row names an artist or says it is open`,
       named.every((t) => t.trim().length > 0 && !/undefined|null/.test(t)));
@@ -933,12 +934,15 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     numbers: document.querySelectorAll('.print-map rect + text').length,
     chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
     index: document.querySelectorAll('.print-index li').length,
+    unnumbered: document.querySelectorAll('.print-booth--unnumbered').length,
     text: document.querySelector('.print-side').innerText,
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
-  // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls.
+  // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls. The two
+  // unnumbered squares print with no number, so they are not counted here.
   check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);
+  check('print: the two unnumbered artists have a square', pr.unnumbered === 2, `${pr.unnumbered} squares`);
   check('print: run endpoints come from the sheet', pr.text.includes('82–139') && pr.text.includes('K0–K10') && !pr.text.includes('142'), 'looked for 82–139 and K0–K10');
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);

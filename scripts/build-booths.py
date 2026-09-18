@@ -58,6 +58,11 @@ being numbered one-for-one:
                     vertical stack on the lawn just east of the Kidlandia
                     area. The stack's order (K0 north) is unconfirmed -- the
                     sheet does not place them. See KID_STACK.
+  Unnumbered        two artists have a spot and no number: AWARE Wildlife on
+                    the grass by the park's west row, Achieve with Steve
+                    beside the Acoustic Stage. They get a square each, with
+                    no number, at UNNUMBERED_AT -- placed by the chair's
+                    description, so check them against the grounds on setup.
   Food court        the 16 stalls, verbatim from the export apart from the two
                     documented nudges. No truck names: the 2026 placements
                     are not assigned yet (vendors.json carries the list and
@@ -152,6 +157,18 @@ CPD_GAP = {'speed bump': CPD_BUMP, 'barricade': CPD_BARRICADE}
 # the 2026 Kidlandia layout before print. Eleven booths at this pitch run
 # y 400-490; the Kidlandia zone reaches y ~530.
 KID_STACK = {'x': 645.0, 'y0': 400.0, 'pitch': 9.0}
+
+# ---- Artists with a spot but no number --------------------------------------
+# Keyed by business, as the sheet names them. Positions are by the chair's
+# description (9/17): AWARE Wildlife "on the grass" -- the lawn just off the
+# south end of the park's west row, clear of the restroom pin; Achieve with
+# Steve "beside the Acoustic Stage" -- one McLendon pitch east of booth 55,
+# short of the stage pin. `group` is the run whose sheet lists them. Check
+# both against the grounds at setup (10/2).
+UNNUMBERED_AT = {
+    'AWARE Wildlife': {'group': 'spine', 'x': 606.0, 'y': 632.0, 'where': 'on the grass by the west row'},
+    'Achieve with Steve': {'group': 'mcl', 'x': 897.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
+}
 
 # ---- Food court -------------------------------------------------------------
 # Two stalls sat past the north tip of the hand-drawn food blob, so they read
@@ -328,6 +345,8 @@ def main():
     assert total == num['numbers_assigned'], (total, num['numbers_assigned'])
     assert max(n for n in placed if isinstance(n, int)) == num['highest_number']
     assert all(n not in placed for n in num.get('numbers_not_present', []))
+    assert {u['business'] for u in num['unnumbered']} == set(UNNUMBERED_AT), \
+        'UNNUMBERED_AT does not match the sheet\'s unnumbered artists'
     assert sorted(n for n in placed if sheet[n]['status'] != 'assigned') == num['sponsor_or_open']
     for zid, zr in num['zone_ranges'].items():
         got = sorted((n for n in placed if sheet[n]['zone'] == zid), key=sort_key)
@@ -358,7 +377,7 @@ def main():
     w('//   - Positions are laid along the rows the export draws, at the official')
     w('//     counts. The %s-%s stack is placed by description only; its order is' % (
         zr['kidlandia']['first'], zr['kidlandia']['last']))
-    w('//     unconfirmed.')
+    w('//     unconfirmed. So are the two unnumbered squares (UNNUMBERED).')
     w('//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;')
     w('//     which truck parks at which stall is not assigned yet.')
     w('')
@@ -379,13 +398,18 @@ def main():
     w('  ],')
     w('};')
     w('')
-    w('// On the sheet but with no booth number, so nowhere to draw them. The area')
-    w('// sheet lists them under the run they belong to.')
+    w('// On the sheet with a spot but no booth number. Drawn as a square with no')
+    w('// number (n is null), placed by the chair\'s description -- see UNNUMBERED_AT')
+    w('// in scripts/build-booths.py. `group` is the run whose sheet lists them;')
+    w('// `area` and `where` are what the booth sheet says.')
     w('export const UNNUMBERED = [')
     for u in num['unnumbered']:
-        w("  { group: '%s', name: %s, biz: %s, where: %s },"
-          % (GROUP[u['zone']], js_str(u['name']), js_str(u['business']),
-             js_str(u['booth'] if isinstance(u['booth'], str) else None)))
+        at = UNNUMBERED_AT[u['business']]
+        assert GROUP[u['zone']] == at['group'], (u['business'], u['zone'], at['group'])
+        ident = 'unnumbered-' + re.sub(r'[^a-z0-9]+', '-', u['business'].lower()).strip('-')
+        w("  { id: '%s', n: null, group: '%s', area: '%s', x: %s, y: %s, name: %s, biz: %s, where: %s },"
+          % (ident, at['group'], AREA[at['group']], fmt(at['x']), fmt(at['y']),
+             js_str(u['name']), js_str(u['business']), js_str(at['where'])))
     w('];')
     w('')
     w('// The three things a reader has to be told about this data used to live here as')

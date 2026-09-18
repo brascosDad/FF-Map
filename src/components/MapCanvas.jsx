@@ -1,6 +1,6 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
-import { BOOTHS } from '../data/booths';
+import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
@@ -182,14 +182,21 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
-        {/* Kidlandia's ten booths, K0-K9. Not part of the 1-142 run and not
+        {/* Kidlandia's booths, K0-K10. Not part of the numbered run and not
             on any market row, so they draw on their own: squares from the
             first zoom step, and nothing at the phone overview -- blobs are
             drawn in Figma and there is no blob-kid layer yet. Placed by
-            description, not from the export: see scripts/build-booths.py. */}
+            description, not from the export: see scripts/build-booths.py.
+            The two unnumbered artists (a spot, no number) draw the same way:
+            a square with no number to print. */}
         {!showBlobs && (
           <g className="ff-area" data-area="kid">
             {boxes(BOOTHS.kid, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+          </g>
+        )}
+        {!showBlobs && (
+          <g className="ff-area" data-area="unnumbered">
+            {boxes(UNNUMBERED, SLATE, { onTap: onBoothClick, k, selectedId: selectedBoothId })}
           </g>
         )}
 

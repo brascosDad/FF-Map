@@ -39,14 +39,18 @@ const STREET = 11;
 const NUMBER_FILL = 'var(--map-number)';
 const HALO = 'var(--map-halo)';
 
+// A booth with no number (the two unnumbered artists) gets the square and no
+// text element at all -- not an empty one.
 function Squares({ booths, color, angle = 0 }) {
   return booths.map((b) => (
-    <g key={b.id}>
+    <g key={b.id} className={b.n == null ? 'print-booth print-booth--unnumbered' : 'print-booth'}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK} rx={1.4}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
             fill={color} fillOpacity={0.75} />
-      <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
-            textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
+      {b.n != null && (
+        <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
+              textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
+      )}
     </g>
   ));
 }
@@ -73,6 +77,7 @@ function PrintMap() {
       <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]} />)}
       <Squares booths={BOOTHS.kid} color={SLATE} angle={BOOTH_ANGLE.kid} />
+      <Squares booths={UNNUMBERED} color={SLATE} />
 
       {/* The three runs carry their ranges on the map itself, where the 2025
           sheet had them, so a reader with a booth number knows which street
@@ -121,7 +126,7 @@ function artistIndex() {
   for (const key of ['spine', 'mcl', 'cpd', 'kid']) {
     for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n) });
   }
-  for (const u of UNNUMBERED) rows.push({ label: u.where ? `${u.biz} (at the ${u.where})` : `${u.biz} (no number)`, n: '—' });
+  for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
   return rows.sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
 }
 

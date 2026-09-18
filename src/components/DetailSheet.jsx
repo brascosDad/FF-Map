@@ -3,6 +3,7 @@ import Icon from './Icon';
 import { PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
+import { span } from '../data/areas';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -112,7 +113,7 @@ function FoodCourt() {
 function BoothRow({ booth, onOpen }) {
   return (
     <button className="boothrow" onClick={() => onOpen(booth)}>
-      <span className="n">{booth.n}</span>
+      <span className="n">{booth.n ?? '—'}</span>
       <span className="who">
         {booth.biz
           ? <>{booth.biz}{booth.name !== booth.biz && <em>{booth.name}</em>}</>
@@ -125,7 +126,8 @@ function BoothRow({ booth, onOpen }) {
 // The run's booths in number order, each one a row. Kidlandia's K stack counts
 // toward the in-park run (the range says so), so it lists at the end of that
 // one. The two artists the sheet names but gives no number sit last, under the
-// run they belong to: there is nowhere to draw them, but they are still here.
+// run they belong to, with a dash for a number; they have a square on the map
+// like any other booth, so tapping the row flies to it.
 function ArtMarketArea({ area, onOpenBooth }) {
   const booths = area.id === 'spine' ? [...area.booths, ...BOOTHS.kid] : area.booths;
   const unnumbered = UNNUMBERED.filter((u) => u.group === area.id);
@@ -133,13 +135,7 @@ function ArtMarketArea({ area, onOpenBooth }) {
     <>
       <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />
       <div className="boothlist">
-        {booths.map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
-        {unnumbered.map((u) => (
-          <div className="boothrow boothrow--static" key={u.name}>
-            <span className="n">—</span>
-            <span className="who">{u.biz}{u.name !== u.biz && <em>{u.name}</em>}<em>{u.where ? `At the ${u.where}` : 'No booth number on the sheet'}</em></span>
-          </div>
-        ))}
+        {[...booths, ...unnumbered].map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
       </div>
       <div className="foot">Booth numbers and artists from the market chair's 2026 assignments.</div>
     </>
@@ -217,6 +213,9 @@ function Legend() {
 function BoothDetail({ booth, onStep }) {
   const isFood = booth.area === 'Food Court';
   const isKid = booth.area === 'Kidlandia';
+  // A spot with no number is not in any row, so there is nothing to step
+  // through: the sheet is titled by the business instead of "Booth —".
+  const unnumbered = booth.n == null;
   const group = BOOTHS[booth.id.split('-')[0]] || [];
   const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
@@ -227,17 +226,19 @@ function BoothDetail({ booth, onStep }) {
           it wraps inside this area only, so running off the end of the car-path
           market returns you to its start rather than dumping you into the food
           trucks. */}
-      <div className="boothnav ffc-step">
-        <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
-        <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
-        <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
-      </div>
+      {!unnumbered && (
+        <div className="boothnav ffc-step">
+          <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+          <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
+          <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
+        </div>
+      )}
 
       <SheetHeader
         icon={isFood ? 'food' : 'art'}
         color={isFood ? PIN_COLOR.food : SLATE}
-        title={`${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
-        sub={`${booth.area}${isFood ? '' : ' · Art Market'}`} />
+        title={unnumbered ? booth.biz : `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
+        sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}`} />
 
       {/* One line, and it is the honest one. The old body ran a generic bullet,
           a "photos go here" note that told a festival-goer nothing, and the
@@ -252,9 +253,11 @@ function BoothDetail({ booth, onStep }) {
           : <div className="li"><span className="b" />Sponsor booth.</div>}
       {/* One bullet, one footer line: the phone sheet has a 320px budget and a
           second bullet or a wrapped footer blows it. The Kidlandia caveat is
-          the footer on a K booth, since the position is the uncertain thing. */}
+          the footer on a K booth, since the position is the uncertain thing;
+          the unnumbered pair say where the chair put them. */}
       <div className="foot">{isFood ? 'Position from the official map.'
-        : isKid ? 'Artist from the 2026 list; the K0–K9 stack\'s position is approximate until the Kidlandia layout is confirmed.'
+        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} stack's position is approximate until the Kidlandia layout is confirmed.`
+        : unnumbered ? `On the 2026 list with a spot but no number: ${booth.where}. Position approximate.`
         : 'Artist from the 2026 list; position from the official map.'}</div>
     </>
   );
