@@ -464,6 +464,43 @@ for (const [name, w, h] of SIZES) {
   await p.close();
 }
 
+// ---- the phone's opening state (beta round 1, 9/17) ----
+// Bike valet and the beer stand are landmarks and were reached for first. Both
+// show at open, on the smallest phone we care about, and no two overview
+// targets overlap -- 44px is the floor and circles may touch but not cross
+// (decided).
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const cats = await p.locator('svg.ff-map g.ff-pin').evaluateAll((els) => els.map((e) => [...e.classList].find((c) => c.startsWith('ffc-pin--'))?.slice(9)));
+  check(`${name}: bike valet and the beer stand are on the opening view`,
+    cats.includes('bikevalet') && cats.includes('drinks'), cats.join(','));
+  check(`${name}: still only a handful of pins at open`, cats.length <= 8, `${cats.length} pins`);
+  const titles = [];
+  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--drinks']) {
+    const b = await p.locator(sel).first().boundingBox();
+    await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await p.waitForTimeout(450);
+    titles.push(await p.locator('.sheet .hd h3').first().textContent());
+    await p.locator('.sheet .close').click();
+    await p.waitForTimeout(350);
+  }
+  check(`${name}: the two open their own sheets`, /Bike Valet/.test(titles[0]) && /Beer Stand/.test(titles[1]), titles.join(' | '));
+  const overlap = await p.evaluate(() => {
+    const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area > circle')]
+      .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
+    const out = [];
+    for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
+      const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
+      if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n.replace(/ff-tap |ffc-pin /g, '')} x ${cs[j].n.replace(/ff-tap |ffc-pin /g, '')} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+    }
+    return out;
+  });
+  check(`${name}: no two overview touch targets overlap`, overlap.length === 0, overlap.join(' | '));
+  await p.close();
+}
+
 // ---- chrome must not swallow taps ----
 // The topbar spans the full width. Its empty strip used to sit invisibly over
 // any pin beneath it (Main Stage and Food Court on a landscape phone). A pin may

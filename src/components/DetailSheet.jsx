@@ -34,6 +34,10 @@ function SheetHeader({ icon, color, title, sub }) {
 const POI_COPY = {
   kids: { title: 'Kidlandia', sub: 'Family activity zone', icon: 'kids', cat: 'kids',
     lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing', 'Trees for Tuition'] },
+  // The beer stand is its own pin: the main one, on the field, and the
+  // landmark people navigate by. The other stations share the generic entry.
+  beer: { title: 'Beer Stand', sub: 'The main beer stand, on the field', icon: 'drinks', cat: 'drinks',
+    lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy', 'Three more drink stations are pinned around the grounds — zoom in to see them'] },
   drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
     lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
   wc: { title: 'Restrooms', sub: 'Five-toilet banks + ADA units', icon: 'wc', cat: 'wc',

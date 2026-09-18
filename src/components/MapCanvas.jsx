@@ -32,11 +32,11 @@ function pinPx() {
 
 // What the furthest-out view shows. At that zoom the whole festival is squeezed
 // into a phone screen, and pins hold one physical size, so the only question is
-// how many of them there are. Measured on a 390px phone with all fifteen: seven
+// how many of them there are. Measured on a 390px phone with all of them: seven
 // pairs collide, and EVERY collision involves an amenity -- the destinations
-// never touch each other. So the overview carries destinations, and the
-// amenities arrive when you zoom in or when you ask for them by chip.
-const OVERVIEW_CATS = new Set(['stage', 'food', 'kids']);
+// never touch each other. So the overview carries the pins flagged
+// `overview: true` in assets/pins.js (destinations plus the landmarks testers
+// asked for), and the rest arrive when you zoom in or ask for them by chip.
 
 const PIN_ICON_PX = 22;
 const STREET_PX = 13;
@@ -120,7 +120,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
   const clusterR = pinR;
   // A pin is on the overview if it is a destination, or if you asked for its
   // category by chip -- tapping "Restrooms" at the overview must show restrooms.
-  const onOverview = (cat) => OVERVIEW_CATS.has(cat) || filter === cat;
+  const onOverview = (p) => p.overview || filter === p.c;
   // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
   // that says how far "not what you asked for" fades, and it lives in one file.
   const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
@@ -195,7 +195,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
 
         {PINS.map((p, i) => {
           if (detail && p.c === 'food') return null;
-          if (overview && !onOverview(p.c)) return null;
+          if (overview && !onOverview(p)) return null;
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.
