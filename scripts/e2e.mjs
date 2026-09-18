@@ -872,13 +872,17 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   const warm = await ctx.newPage();
   await warm.goto(BASE, { waitUntil: 'networkidle' });
   await warm.waitForTimeout(1000);
+  // `ready` never resolves if sw.js is missing or served as HTML (a plain
+  // `vite build` empties dist and drops it; `npm run build` writes it), so the
+  // wait is bounded: a missing worker is a failure to report, not a hang.
   const sw = await warm.evaluate(async () => {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(() => r(null), 8000))]);
+    if (!reg) return { active: false, cache: '(no service worker registered in 8s -- was sw.js built?)', entries: 0 };
     const keys = await caches.keys();
     const c = await caches.open(keys[0]);
     return { active: !!reg.active, cache: keys[0], entries: (await c.keys()).length };
   });
-  check('a service worker takes control', sw.active && sw.cache.startsWith('fallfest-'), sw.cache);
+  check('a service worker takes control', sw.active && String(sw.cache).startsWith('fallfest-'), sw.cache);
   check('the whole map is precached', sw.entries >= 15, `${sw.entries} files`);
   await warm.close();
 
