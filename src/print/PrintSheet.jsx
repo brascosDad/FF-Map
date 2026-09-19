@@ -16,6 +16,7 @@ import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import vendorsData from '../data/vendors.json';
+import { FESTIVAL } from '../data/festival';
 // The phone map ships Manrope's Latin subset only. One vendor name needs
 // Vietnamese glyphs, and on paper a fallback face in the middle of the list
 // shows; the subset is unicode-range scoped, so it only fetches for that name,
@@ -142,7 +143,7 @@ export default function PrintSheet() {
       <aside className="print-side">
         <header className="print-head">
           <div className="print-brand">Fall Fest</div>
-          <div className="print-sub">Candler Park · October 3–4, 2026</div>
+          <div className="print-sub">Candler Park · {FESTIVAL.dates}</div>
           <div className="print-kicker">Site map</div>
         </header>
 

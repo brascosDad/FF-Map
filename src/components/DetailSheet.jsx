@@ -4,6 +4,7 @@ import { PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
 import { span } from '../data/areas';
+import { FESTIVAL } from '../data/festival';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -450,8 +451,8 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
           away. */}
       {docked && !isOpen && (
         <div className="panel-head">
-          <h3>Candler Park Fall Fest</h3>
-          <p>October 3–4, 2026</p>
+          <h3>{FESTIVAL.name}</h3>
+          <p>{FESTIVAL.dates}</p>
         </div>
       )}
       {docked && isOpen && (
