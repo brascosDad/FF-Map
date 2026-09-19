@@ -1003,6 +1003,7 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     infoGlyph: !!document.querySelector('.print-pin--info svg'),
     infoRects: document.querySelectorAll('.print-pin--info rect').length,
     text: document.querySelector('.print-side').innerText,
+    mapText: document.querySelector('.print-map').textContent,
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
@@ -1015,7 +1016,7 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   // innerText carries the heading's CSS uppercase, hence the /i.
   check('print: the public count is "over 130 artists", never a booth total',
     /over 130 artists/i.test(pr.text) && !/\b1[3-6]\d booths\b/i.test(pr.text) && !pr.text.includes('164'));
-  check('print: run endpoints come from the sheet', pr.text.includes('82–139') && pr.text.includes('K0–K10') && !pr.text.includes('142'), 'looked for 82–139 and K0–K10');
+  check('print: run endpoints on the map come from the sheet', pr.mapText.includes('82–139') && pr.mapText.includes('K0–K10') && !pr.mapText.includes('142') && !pr.text.includes('142'), 'looked for 82–139 and K0–K10');
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);
   check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);

@@ -47,9 +47,6 @@
 .print-legend__dot { width: 0.16in; height: 0.16in; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .print-legend__sq { width: 0.12in; height: 0.12in; border-radius: 1px; margin: 0 var(--space-1); flex: 0 0 auto; opacity: 0.8; }
 
-.print-key__rows { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1) var(--space-3); font-size: 8.5pt; }
-.print-key__rows b { color: var(--text-strong); font-variant-numeric: tabular-nums; }
-
 .print-food ul { margin: 0; padding: 0; list-style: none; columns: 3; column-gap: var(--space-3); font-size: 8pt; line-height: 1.35; }
 
 /* The index takes whatever height is left and flows into columns. It is the
@@ -58,6 +55,7 @@
    until Ernest picks what gives (options in PR #8). Check the PNG after any
    copy change. */
 .print-index { flex: 1; min-height: 0; }
+.print-index__sub { margin: 0 0 var(--print-heading-gap); font-size: 8pt; font-weight: 700; color: var(--text-muted); }
 .print-index ul { margin: 0; padding: 0; list-style: none; columns: 4; column-gap: var(--space-3); font-size: 6.4pt; line-height: 1.32; }
 .print-index li { display: flex; gap: var(--space-1); break-inside: avoid; }
 .print-index__n { flex: 0 0 0.34in; text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }

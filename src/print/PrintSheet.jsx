@@ -219,25 +219,18 @@ export default function PrintSheet() {
           </span>
         </section>
 
-        {/* "Over 130 artists" is the public number (decided 9/17) -- never a
-            booth count, which moves every time the chair edits her sheet. */}
-        <section className="print-key">
-          <h2>Art market · over 130 artists</h2>
-          <div className="print-key__rows">
-            <span><b>{span(BOOTHS.spine)}</b> in the park</span>
-            <span><b>{span(BOOTHS.kid)}</b> Kidlandia, on the field</span>
-            <span><b>{span(BOOTHS.mcl)}</b> McLendon Ave</span>
-            <span><b>{span(BOOTHS.cpd)}</b> Candler Park Dr</span>
-          </div>
-        </section>
-
         <section className="print-food">
           <h2>Food court · {vendorsData.vendors.length} vendors</h2>
           <ul>{vendorsData.vendors.map((v) => <li key={v.id}>{v.name}</li>)}</ul>
         </section>
 
+        {/* The runs' number ranges are labelled on the map itself, so this is
+            the alphabetical list only. "Over 130 artists" is the public
+            number (decided 9/17) -- never a booth count, which moves every
+            time the chair edits her sheet. */}
         <section className="print-index">
-          <h2>Find an artist</h2>
+          <h2>Art Market</h2>
+          <p className="print-index__sub">Over 130 artists</p>
           <ul>
             {index.map((r, i) => (
               <li key={i}><span className="print-index__n">{r.n}</span><span className="print-index__who">{r.label}</span></li>
