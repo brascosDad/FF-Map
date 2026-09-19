@@ -11,7 +11,8 @@
 // whole festival is squeezed into a phone screen and pins hold one physical
 // size, so only a few fit without their 44px targets overlapping. The
 // destinations do, plus the two landmarks beta testers reached for first
-// (bike valet and the beer stand, Alex 9/17) and the merch booth at the gate.
+// (bike valet and the beer stand, Alex 9/17), and the merch tent and info
+// booth at the gate.
 // Everything else arrives at the first zoom step or when its chip is tapped.
 // Before adding one, check the spacing: scripts/e2e.mjs asserts that no two
 // overview targets overlap on a 375px phone.
@@ -36,16 +37,20 @@ export const PINS = [
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
-  // McLendon -- 20 units above the street band (y ~776), well short of
+  // McLendon -- 16 units above the street band (y ~776), well short of
   // halfway to where the park's booth rows start (y ~650). The same spot
   // every year (Jess, 9/17). Not in the export. The bike valet moved 10 units
-  // east so this overview target clears its own (86 units; the floor is 81 on
+  // east so this overview target clears its own (88 units; the floor is 81 on
   // a 375px phone).
-  { x: 630.0, y: 756.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
+  { x: 630.0, y: 760.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
-  // Restrooms (category key is `wc`, matching icons.js and the filter chips)
+  // Restrooms (category key is `wc`, matching icons.js and the filter chips).
+  // The southern bank is the export's (601.6, 665.1) moved 20 units west and
+  // 7 north, out of the info booth's target now that the info booth is on
+  // the overview stacked above merch. Restroom placement for 2026 is still
+  // being confirmed with Jess regardless.
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
-  { x: 601.6, y: 665.1, c: 'wc', d: 'wc' },
+  { x: 582.0, y: 658.0, c: 'wc', d: 'wc' },
 
   { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
 
@@ -57,12 +62,12 @@ export const PINS = [
   { x: 584.0, y: 709.0, c: 'water', d: 'water' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
-  // the entrance path, the two pins stacked so their 44px targets touch at the
-  // first zoom step (46 units apart; the floor is 45.8 on a 375px phone) and
-  // do not overlap (Ernest, 9/19, per Jess's 2026 site plan). Was the
-  // export's (644.3, 733.3). The water pin to the west clears it by the same
-  // 46 units.
-  { x: 630.0, y: 710.0, c: 'info', d: 'info' },
+  // the entrance path, and on the phone's opening view with it (Ernest,
+  // 9/19, per Jess's 2026 site plan). At the overview two 44px targets need
+  // 81 units on a 375px phone, so the pins stack 82 apart, touching; 4 units
+  // west of merch's x keeps the info target off booth 28's hit area. Was the
+  // export's (644.3, 733.3).
+  { x: 626.0, y: 678.0, c: 'info', d: 'info', overview: true },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the
