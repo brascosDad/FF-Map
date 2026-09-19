@@ -35,12 +35,13 @@ export const PINS = [
   { x: 897.3, y: 747.3, c: 'drinks', d: 'drinks' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
-  // the entrance path where it meets McLendon (the path mouth is x ~598-622;
-  // the street band starts at y ~776). The same spot every year (Jess, 9/17).
-  // Not in the export. As close to the corner as its 44px overview target can
-  // get without crossing the bike valet's (82.7 units, the floor is 81 on a
-  // 375px phone) or the McLendon booth row's hit areas.
-  { x: 630.0, y: 770.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
+  // the entrance path (the path mouth is x ~598-622), a little north of
+  // McLendon -- 20 units above the street band (y ~776), well short of
+  // halfway to where the park's booth rows start (y ~650). The same spot
+  // every year (Jess, 9/17). Not in the export. The bike valet moved 10 units
+  // east so this overview target clears its own (86 units; the floor is 81 on
+  // a 375px phone).
+  { x: 630.0, y: 756.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips)
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
@@ -59,13 +60,15 @@ export const PINS = [
   // the entrance path, the two pins stacked so their 44px targets touch at the
   // first zoom step (46 units apart; the floor is 45.8 on a 375px phone) and
   // do not overlap (Ernest, 9/19, per Jess's 2026 site plan). Was the
-  // export's (644.3, 733.3).
-  { x: 630.0, y: 724.0, c: 'info', d: 'info' },
+  // export's (644.3, 733.3). The water pin to the west clears it by the same
+  // 46 units.
+  { x: 630.0, y: 710.0, c: 'info', d: 'info' },
 
-  // Drawn as a placeholder red circle in the export; here it is the Phosphor
-  // bicycle on the utility neutral. The position itself is real, so it is no
-  // longer the approximation the previous coordinate was.
-  { x: 702.4, y: 730.1, c: 'bikevalet', d: 'bikevalet', overview: true },
+  // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
+  // is the Phosphor bicycle on the utility neutral, 10 units east of the
+  // export's spot so its overview target clears the merch tent's on the
+  // corner (the McLendon marker moved east with it).
+  { x: 712.4, y: 730.1, c: 'bikevalet', d: 'bikevalet', overview: true },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is

@@ -20,11 +20,12 @@ export const span = (booths) => `${booths[0].n}–${booths[booths.length - 1].n}
 export const AREAS = [
   { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market',
     range: `Booths ${span(BOOTHS.cpd)} · ${BOOTHS.cpd.length} booths` },
-  // The McLendon marker sits in the middle of the run's east box (the export
-  // put it at 666.4, just past the park entrance). At the phone overview the
-  // bike valet pin is now on screen, and at 666 the two 44px targets overlapped
-  // by 10 units; at 762 they clear by 5, on the smallest phone we test.
-  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [762.0, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
+  // The McLendon marker sits in the run's east box (the export put it at
+  // 666.4, just past the park entrance). At the phone overview the bike valet
+  // pin is on screen too, and the two 44px targets have to clear on the
+  // smallest phone we test: at 775 they clear by 4 units with the bike valet
+  // at 712.4 (it moved east to make room for the merch tent on the corner).
+  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [775.0, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
     range: `Booths ${span(BOOTHS.mcl)} · ${BOOTHS.mcl.length} booths` },
   // The car-path marker sits 25 units north of where the export put it (509.3).
   // At the booth-level zoom the original position covered booth 29's number and
