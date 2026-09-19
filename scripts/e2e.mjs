@@ -116,7 +116,7 @@ for (const [name, w, h] of SIZES) {
       return true;
     })());
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 11,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 12,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));

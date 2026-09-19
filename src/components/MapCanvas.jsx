@@ -9,6 +9,9 @@ import { IconAt } from './Icon';
 // ticks at 7.2-8.9 depending on the row; one size across all of them keeps the
 // rows reading as a single system.
 const TICK = 8;
+// Frame weight of a hollow (unnumbered) square, in map units: a fifth of the
+// square, so it still reads as a frame at the ~8px the first zoom step draws.
+const HOLLOW_STROKE = 1.6;
 
 // Screen-constant sizes, in CSS pixels. These are multiplied by unitsPerPx at
 // render so a pin is the same physical size at every zoom -- it is a control,
@@ -53,7 +56,9 @@ const MAP_NUMBER = 'var(--map-number)';
 const MAP_HALO = 'var(--map-halo)';
 const FOOD_LABEL = 'var(--map-food-label)';
 
-function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0 } = {}) {
+// `hollow` draws the square as an outline -- cream inside, the run's colour as
+// a frame -- for a spot that is a booth but not one of the numbered run.
+function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false } = {}) {
   return booths.map((b) => (
     <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
@@ -67,8 +72,10 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
             rx={1.6}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
-            fill={b.id === selectedId ? NAVY : color}
-            fillOpacity={b.id === selectedId ? 1 : 0.6} />
+            fill={b.id === selectedId ? NAVY : hollow ? CREAM : color}
+            fillOpacity={b.id === selectedId || hollow ? 1 : 0.6}
+            stroke={hollow && b.id !== selectedId ? color : undefined}
+            strokeWidth={hollow ? HOLLOW_STROKE : undefined} />
       {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
@@ -193,7 +200,8 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
             blobs are drawn in Figma and there is no blob-kid layer yet. The
             column's position is by description, not from the export: see
             scripts/build-booths.py. The two unnumbered artists (a spot, no
-            number) draw the same way: a square with no number to print. */}
+            number) draw HOLLOW -- cream inside a slate frame -- so they cannot
+            be mistaken for a numbered booth whose number is too small to read. */}
         {!showBlobs && (
           <g className="ff-area" data-area="kid">
             {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
@@ -201,7 +209,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
         )}
         {!showBlobs && (
           <g className="ff-area" data-area="unnumbered">
-            {boxes(UNNUMBERED, SLATE, { onTap: onBoothClick, k, selectedId: selectedBoothId })}
+            {boxes(UNNUMBERED, SLATE, { onTap: onBoothClick, k, selectedId: selectedBoothId, hollow: true })}
           </g>
         )}
 

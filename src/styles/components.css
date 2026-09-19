@@ -247,6 +247,8 @@
 .ffc-legend { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--surface-chrome); border: 1px solid var(--border-control); border-radius: var(--radius-md); box-shadow: var(--shadow-control); }
 .ffc-legend__row { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-body); }
 .ffc-legend__dot { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 50%; }
+/* A hollow swatch: cream inside a slate frame, keying the unnumbered squares. */
+.ffc-legend__dot--hollow { background: var(--ff-cream); box-shadow: inset 0 0 0 2px var(--cat-booth); }
 /* Inline variant: the key as panel furniture rather than a floating card. Two
    columns, no chrome of its own -- the panel already provides it. */
 .ffc-legend--inline { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1) var(--space-3); padding: 0; background: none; border: 0; box-shadow: none; }

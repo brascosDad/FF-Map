@@ -206,6 +206,11 @@ function Legend() {
           {l.label}
         </span>
       ))}
+      {/* The two artists with a spot but no number draw hollow on the map. */}
+      <span className="ffc-legend__row">
+        <span className="ffc-legend__dot ffc-legend__dot--hollow" />
+        Artist, no number
+      </span>
     </div>
   );
 }

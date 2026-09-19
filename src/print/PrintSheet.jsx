@@ -12,7 +12,7 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
-import { PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import vendorsData from '../data/vendors.json';
@@ -39,14 +39,16 @@ const STREET = 11;
 const NUMBER_FILL = 'var(--map-number)';
 const HALO = 'var(--map-halo)';
 
-// A booth with no number (the two unnumbered artists) gets the square and no
-// text element at all -- not an empty one.
-function Squares({ booths, color, angle = 0 }) {
+// A booth with no number (the two unnumbered artists) is drawn hollow -- cream
+// inside a slate frame, as on the phone map -- and gets no text element at
+// all, not an empty one.
+function Squares({ booths, color, angle = 0, hollow = false }) {
   return booths.map((b) => (
     <g key={b.id} className={b.n == null ? 'print-booth print-booth--unnumbered' : 'print-booth'}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK} rx={1.4}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
-            fill={color} fillOpacity={0.75} />
+            fill={hollow ? CREAM : color} fillOpacity={hollow ? 1 : 0.75}
+            stroke={hollow ? color : undefined} strokeWidth={hollow ? 1.4 : undefined} />
       {b.n != null && (
         <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
               textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
@@ -77,7 +79,7 @@ function PrintMap() {
       <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]} />)}
       <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
-      <Squares booths={UNNUMBERED} color={SLATE} />
+      <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
       {/* The three runs carry their ranges on the map itself, where the 2025
           sheet had them, so a reader with a booth number knows which street
@@ -160,6 +162,9 @@ export default function PrintSheet() {
           </span>
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.kids }} />Kidlandia booth
+          </span>
+          <span className="print-legend__row">
+            <span className="print-legend__sq print-legend__sq--hollow" />Artist with a spot, no number
           </span>
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
