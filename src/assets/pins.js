@@ -46,11 +46,18 @@ export const PINS = [
 
   { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
 
-  // Water refill stations -- the export marks two
+  // Water refill stations -- the export marks two. The southern one is the
+  // export's (588.1, 708.3) moved 22 units east-south-east: the info booth now
+  // sits where it was, and two 44px targets cannot share the spot. Water
+  // placement is still being confirmed with Jess for 2026 anyway.
   { x: 668.2, y: 318.7, c: 'water', d: 'water' },
-  { x: 588.1, y: 708.3, c: 'water', d: 'water' },
+  { x: 610.0, y: 717.0, c: 'water', d: 'water' },
 
-  { x: 644.3, y: 733.3, c: 'info', d: 'info' },
+  // Info booth: at the park entrance by McLendon, just north of the merch
+  // tent (Ernest, 9/19). Was the export's (644.3, 733.3), east of the entrance.
+  // 55 units north and 12 west of merch is as close as the two 44px targets
+  // can sit at the first zoom step without overlapping.
+  { x: 566.0, y: 700.0, c: 'info', d: 'info' },
 
   // Drawn as a placeholder red circle in the export; here it is the Phosphor
   // bicycle on the utility neutral. The position itself is real, so it is no

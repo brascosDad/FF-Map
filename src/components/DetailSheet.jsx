@@ -51,9 +51,9 @@ const POI_COPY = {
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',
     lines: ['Free water stations — bring a bottle to refill'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
-    lines: ['Programs and general festival information', 'Ask here about lost & found'] },
+    lines: ['At the park entrance off McLendon Ave, just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
-    lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, by the info booth'] },
+    lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };
 
 function StageSchedule({ stageKey }) {
