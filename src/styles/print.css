@@ -58,12 +58,13 @@
    content, so one long label widened its column and the legend fell off the
    lines the lists below it sit on. */
 .print-legend { display: grid; grid-template-columns: repeat(var(--print-cols), minmax(0, 1fr)); gap: var(--space-1) var(--print-gutter); font-size: 8pt; }
-/* Every legend item is a fixed swatch box then its label: the box is
-   --space-4 wide whatever sits in it (a --space-4 dot or a --space-3 square,
-   both flush left), so every label starts at the same x. */
-.print-legend__row { display: grid; grid-template-columns: var(--space-4) 1fr; gap: var(--space-2); align-items: center; white-space: nowrap; }
-.print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: start; }
-.print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: start; opacity: 0.8; }
+/* Every legend item is the shared lead box then its label. The swatch --
+   a --space-4 dot or a --space-3 square -- is centred in the box, so every
+   swatch's centre is on one vertical line and every label starts at the same
+   x, the same x the artist list's names start at. */
+.print-legend__row { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); align-items: center; white-space: nowrap; }
+.print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: center; }
+.print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: center; opacity: 0.8; }
 
 /* The artist list takes whatever height is left and flows into the side
    column's four columns, at 8pt like everything else on the sheet. Each row
