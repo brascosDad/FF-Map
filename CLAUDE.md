@@ -120,6 +120,8 @@ Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel previ
   screen — a pin flagged `overview: true` in `pins.js` has to clear every other one.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
+- **The print sheet's type floor is 8pt** for everything in the side column and every label on the
+  map. The one exception is booth numbers (~5.5pt), which the row pitch dictates.
 - **Pins hold one on-screen size at every zoom, through a pinch and through the settle.** Only the
   map scales. The overview no longer draws pins a step smaller (the 34px `--pin-size-overview`
   token is gone): that step popped every pin to a new size the moment the fingers lifted
@@ -174,15 +176,28 @@ Figma workflow), and PR #8 (booth + beta fixes):
   plan, info stacked directly north of merch; AWARE Wildlife and Achieve with Steve draw as
   hollow squares. The info booth has always drawn as a pin in `--pin-info`; e2e now asserts it on
   phone, desktop and paper.
+- 9/19 final round (each its own commit): `src/data/festival.js` is the one source for the
+  festival's name, dates, site and locked map URL; the print sheet carries a **vector QR code**
+  (1.5" box on the east lawn under the north arrow, verified by decoding a 300 dpi raster of the
+  PDF down to 60 dpi) with the "Scan for the music schedule…" callout; the kicker, the hollow
+  legend row and the footer are gone; margins are 0.4" on all four sides with the map flush
+  left; side-column spacing is `--space-*` tokens only (`--space-8` between sections,
+  `--space-2` heading to content); map labels sit at the 8pt floor; the phone header shows the
+  dates beside the wordmark.
+- **Open on the print sheet: the artist index is still 6.4pt.** At 8pt its 150 rows need 7.3" of
+  the 5.2" the side column has left. Ernest is choosing what gives (options in PR #8: drop the
+  Food Court list from the side column and tighten the line height and section gap, or keep it
+  and accept a smaller index). Booth numbers on the map stay ~5.5pt on purpose: the rows are
+  pitched too tightly for 8pt.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
-- **Merch and the info booth** are now from Jess's 2026 site plan (the CPNO Merch Tent): east side
-  of the entrance path where it meets McLendon, info stacked directly north of merch (Ernest,
-  9/19). Their 44px targets touch at the first zoom step and merch's clears the bike valet's at
-  the overview by under 2 units, so neither can move closer to the corner without moving the
-  bike valet.
+- **Merch and the info booth** are from Jess's 2026 site plan (the CPNO Merch Tent): east side of
+  the entrance path, merch 20 units north of the McLendon kerb, info stacked directly north of it
+  (Ernest, 9/19). Their 44px targets touch at the first zoom step. To keep merch's overview
+  target clear, the **bike valet** pin sits 10 units east of the export's spot and the McLendon
+  art-market marker moved east with it.
 - The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
   target clears the info booth's. Falls under the water-station question below.
 - The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
