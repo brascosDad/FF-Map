@@ -14,6 +14,12 @@
      that is not a token is the page margin above: it is paper, not layout. */
   --print-section-gap: var(--space-8);   /* between the side column's sections */
   --print-heading-gap: var(--space-2);   /* heading to its content: tighter */
+  /* One grid for the whole side column: this many equal columns with this
+     gutter. The legend is a CSS grid on it; the food list and the artist list
+     are CSS multi-column with the same count and gap, which lays out on the
+     same column lines. Content in every section lines up down the sheet. */
+  --print-cols: 4;
+  --print-gutter: var(--space-3);
   width: 17in;
   height: 11in;
   padding: var(--print-margin);
@@ -42,12 +48,12 @@
 .print-brand { font-family: var(--font-display); font-weight: 900; font-size: 44pt; line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
 .print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: var(--space-2); }
 
-.print-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-1) var(--space-3); font-size: 8pt; }
+.print-legend { display: grid; grid-template-columns: repeat(var(--print-cols), 1fr); gap: var(--space-1) var(--print-gutter); font-size: 8pt; }
 .print-legend__row { display: flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
 .print-legend__dot { width: 0.16in; height: 0.16in; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .print-legend__sq { width: 0.12in; height: 0.12in; border-radius: 1px; margin: 0 var(--space-1); flex: 0 0 auto; opacity: 0.8; }
 
-.print-food ul { margin: 0; padding: 0; list-style: none; columns: 3; column-gap: var(--space-3); font-size: 8pt; line-height: 1.35; }
+.print-food ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
 
 /* The index takes whatever height is left and flows into columns. It is the
    one thing on the side column still below the 8pt floor: at 8pt its 150 rows
@@ -56,7 +62,7 @@
    copy change. */
 .print-index { flex: 1; min-height: 0; }
 .print-index__sub { margin: 0 0 var(--print-heading-gap); font-size: 8pt; font-weight: 700; color: var(--text-muted); }
-.print-index ul { margin: 0; padding: 0; list-style: none; columns: 4; column-gap: var(--space-3); font-size: 6.4pt; line-height: 1.32; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 6.4pt; line-height: 1.32; }
 .print-index li { display: flex; gap: var(--space-1); break-inside: avoid; }
 .print-index__n { flex: 0 0 0.34in; text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 .print-index__who { flex: 1; min-width: 0; }
