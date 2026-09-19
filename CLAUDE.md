@@ -124,6 +124,11 @@ Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel previ
   map scales. The overview no longer draws pins a step smaller (the 34px `--pin-size-overview`
   token is gone): that step popped every pin to a new size the moment the fingers lifted
   (Ernest, iPhone, 9/19). e2e drives a real two-finger touch and measures a pin every frame.
+- **Kidlandia booths are one vertical column inside the Kidlandia shape, lowest number at the
+  south end**, in `--pin-kids` (Ernest 9/19, per Jess's 2026 site plan and the 2025 map). The
+  count is the sheet's.
+- **A spot with no booth number draws hollow**: `--ff-cream` inside a `--cat-booth` frame, on the
+  map and on paper, keyed in both legends. Still a booth; plainly not one of the numbered run.
 - **The printed handout is single-sided, map-dominant, no stage schedule** (decided 9/17, Erin
   agreed 9/17). The QR code is a prominent feature with its own callout pointing at the schedule,
   food menus, and artist list.
@@ -163,11 +168,21 @@ Figma workflow), and PR #8 (booth + beta fixes):
   unnumbered squares with their own sheets; Achieve with Steve is named under the Acoustic Stage.
 - Print/poster copy says "over 130 artists"; every run endpoint on the print sheet is read from
   the data.
+- 9/19 review round (each its own commit): pins hold one on-screen size through a pinch and its
+  settle; Kidlandia booths are one column inside the area, south to north, in the Kidlandia
+  colour; the info booth sits at the park entrance just north of merch (the southern water
+  station pin moved 22 units east onto the path mouth to make room); AWARE Wildlife and Achieve
+  with Steve draw as hollow squares.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
-- **Merch** at the park entrance = just west of where the car path meets McLendon. Confirm (Jess).
+- **Merch** at the park entrance = just west of where the car path meets McLendon; the **info
+  booth** is 55 units north of it. Confirm both (Jess).
+- The **southern water station** pin was nudged 22 units east-south-east, onto the mouth of the car
+  path, so the info booth's target could clear it. Falls under the water-station question below.
+- The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
+  Verify at setup.
 - **AWARE Wildlife** square: on the grass off the south end of the park's west row. **Achieve with
   Steve** square: one McLendon pitch east of booth 55. Both approximate.
 
@@ -177,7 +192,8 @@ is Cowork's and Ernest's to fix.
 
 **Waiting on people (don't guess):**
 - Park west row split (29–37 north / 38–54 south of the path bend) — unverified, asking Courtney.
-- Kidlandia K0–K9 order/position — placed by description only.
+- Kidlandia booth count — the sheet says K0–K10 (11) as of 9/18; Ernest is asking Courtney whether
+  it is 10 or 11. The column is built from the sheet, so no code change either way.
 - Hours for Kidlandia bounce houses, bike valet, artist market (Amy asked for them on the map).
 - Restrooms on Candler Park Dr (end of booths) and on the field; more water stations; Callaway
   Blue water and some sponsor locations moved in the 2026 site plan — confirming with Jess / Andy.
