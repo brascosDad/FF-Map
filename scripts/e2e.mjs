@@ -237,10 +237,9 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: no booth numbers at Booths level`, !atBooths.some((t) => /^\d+$/.test(t)));
 
   // ---- pin sizing ----
-  // Two different numbers, deliberately. The VISIBLE pin is 34px at the overview
-  // and 40 from the first zoom step on -- the overview is where the festival is
-  // squeezed into a phone, so the markers give up a little there. The thing a
-  // FINGER has to hit is 44px at every level regardless.
+  // One visible size, 40px, at every level (the overview used to draw 34, and
+  // that step showed as a pop at the end of every pinch that crossed it). The
+  // thing a FINGER has to hit is 44px at every level regardless.
   await safe(`${name}: pin sizing`, async () => {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
@@ -253,8 +252,8 @@ for (const [name, w, h] of SIZES) {
     const d1 = await drawn(), h1 = await hit();
     await zoomIn(p);
     const d2 = await drawn(), h2 = await hit();
-    check(`${name}: pins are smaller at the overview, full size once you zoom`,
-      Math.abs(d0 - 34) <= 1.5 && Math.abs(d1 - 40) <= 1.5 && Math.abs(d2 - 40) <= 1.5,
+    check(`${name}: pins are one size at every level`,
+      [d0, d1, d2].every((v) => Math.abs(v - 40) <= 1.5),
       [d0, d1, d2].map((v) => v.toFixed(0)).join(' / ') + 'px');
     check(`${name}: the touch target stays 44px at every level`,
       [h0, h1, h2].every((v) => v >= 43.5), [h0, h1, h2].map((v) => v.toFixed(0)).join(' / ') + 'px');
@@ -541,6 +540,48 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     (await p.locator('.zoomctl button').nth(1).getAttribute('aria-disabled')) === 'false');
   check('pinch: numbers appear if it landed on Detail',
     Math.abs(w1 - w0 * 0.315) >= 1 || (await p.locator('svg.ff-map text').allTextContents()).some((t) => /^\d+$/.test(t)));
+
+  // Only the map scales. A pin, its glyph and a street label hold one on-screen
+  // size for the whole gesture and through the settle (Ernest, iPhone 9/19:
+  // pins shrank under the fingers and popped back on release). Real two-finger
+  // touch input through the DevTools protocol, measured every move -- the
+  // synthetic pointer events above cannot reproduce a browser's touch path.
+  await p.locator('.zoomctl button[aria-label="Reset to overview"]').click();
+  await p.waitForTimeout(400);
+  const cdp = await p.context().newCDPSession(p);
+  const sizes = () => p.evaluate(() => {
+    const pin = document.querySelector('svg.ff-map g.ffc-pin--kids g circle');
+    const glyph = document.querySelector('svg.ff-map g.ffc-pin--kids g svg');
+    const label = document.querySelector('svg.ff-map text');
+    return { pin: pin.getBoundingClientRect().width, glyph: glyph.getBoundingClientRect().width, label: label.getBoundingClientRect().height };
+  });
+  const cx = 196, cy = 500;
+  const two = (s) => [{ x: cx - s, y: cy, id: 1 }, { x: cx + s, y: cy, id: 2 }];
+  const run = async (spreads) => {
+    const frames = [await sizes()];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: two(spreads[0]) });
+    for (const s of spreads.slice(1)) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: two(s) });
+      await p.waitForTimeout(40);
+      frames.push(await sizes());
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    for (let i = 0; i < 6; i++) { await p.waitForTimeout(50); frames.push(await sizes()); }
+    return frames;
+  };
+  const steady = (frames, key) => Math.max(...frames.map((f) => f[key])) - Math.min(...frames.map((f) => f[key])) <= 0.5;
+  const report = (frames, key) => `${key} ${Math.min(...frames.map((f) => f[key])).toFixed(1)}–${Math.max(...frames.map((f) => f[key])).toFixed(1)}px`;
+  const inward = await run([30, 40, 50, 60, 70, 80, 90, 100, 110, 120]);
+  check('pinch in: pin, glyph and label hold their on-screen size, gesture and settle',
+    steady(inward, 'pin') && steady(inward, 'glyph') && steady(inward, 'label'),
+    ['pin', 'glyph', 'label'].map((k) => report(inward, k)).join(', '));
+  const outward = await run([120, 110, 100, 90, 80, 70, 60, 50, 40, 30]);
+  check('pinch out: pin, glyph and label hold their on-screen size, gesture and settle',
+    steady(outward, 'pin') && steady(outward, 'glyph') && steady(outward, 'label'),
+    ['pin', 'glyph', 'label'].map((k) => report(outward, k)).join(', '));
+  const wEnd = await width();
+  check('pinch out: it landed back on a stop', [1, 0.565, 0.315].some((r) => Math.abs(wEnd - w0 * r) < 1),
+    `${Math.round(wEnd)} (stops at ${[1, 0.565, 0.315].map((r) => Math.round(w0 * r)).join(' / ')})`);
   await p.close();
 }
 

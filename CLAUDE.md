@@ -120,6 +120,10 @@ Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel previ
   screen — a pin flagged `overview: true` in `pins.js` has to clear every other one.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
+- **Pins hold one on-screen size at every zoom, through a pinch and through the settle.** Only the
+  map scales. The overview no longer draws pins a step smaller (the 34px `--pin-size-overview`
+  token is gone): that step popped every pin to a new size the moment the fingers lifted
+  (Ernest, iPhone, 9/19). e2e drives a real two-finger touch and measures a pin every frame.
 - **The printed handout is single-sided, map-dominant, no stage schedule** (decided 9/17, Erin
   agreed 9/17). The QR code is a prominent feature with its own callout pointing at the schedule,
   food menus, and artist list.

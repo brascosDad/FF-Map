@@ -12,7 +12,9 @@ const TICK = 8;
 
 // Screen-constant sizes, in CSS pixels. These are multiplied by unitsPerPx at
 // render so a pin is the same physical size at every zoom -- it is a control,
-// not a piece of ground.
+// not a piece of ground. That includes mid-pinch: unitsPerPx tracks the live
+// viewBox, so while the map scales under the fingers the pins do not, and the
+// same size holds at every stop, so nothing pops when the gesture settles.
 //
 // The pin diameter is read from --pin-size rather than repeated here: it is a
 // token, and a second copy of the number is how the two drift apart. Read once
@@ -26,7 +28,7 @@ function pinPx() {
     const n = parseFloat(cs.getPropertyValue(name));
     return Number.isFinite(n) ? n : fallback;
   };
-  sizes = { pin: px('--pin-size', 40), overviewPin: px('--pin-size-overview', 34), tap: px('--tap-min', 44) };
+  sizes = { pin: px('--pin-size', 40), tap: px('--tap-min', 44) };
   return sizes;
 }
 
@@ -111,10 +113,11 @@ function SelectRing({ x, y, r, k }) {
 export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
-  // Slightly smaller at the overview so even the markers that do survive have
-  // air around them; full size from the first zoom step on.
+  // One size at every level. The overview used to draw pins a step smaller,
+  // which read fine on a static screen and wrong under a pinch: the moment the
+  // fingers lifted across the overview boundary every pin changed size.
   const sz = pinPx();
-  const pinR = ((overview ? sz.overviewPin : sz.pin) / 2) * k;
+  const pinR = (sz.pin / 2) * k;
   const tapR = Math.max(pinR, (sz.tap / 2) * k);
   // Area markers are tappable too, so they take the same size as a pin.
   const clusterR = pinR;
