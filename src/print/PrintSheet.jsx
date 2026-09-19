@@ -51,11 +51,14 @@ const HALO = 'var(--map-halo)';
 // The QR code: about 1.5in square on the sheet, in map units. The map draws at
 // 810 units to 10.2in, so an inch is ~79.4 units. `QR_BOX` is the white quiet-
 // zone box; the code inside leaves the standard four modules of quiet zone on
-// every side. It sits on the empty park green east of the festival, directly
-// under the north arrow, where it covers no pin, booth, path or label.
+// every side. It sits on the empty park green east of the festival, at the
+// map's vertical centre, 12 units in from the map's right edge, where it
+// covers no pin, booth, path or label (Callan Circle's road band starts at
+// x ~1119, the festival's east edge at this height is x ~915).
 const QR_BOX = 119;                                  // ~1.5in
 const QR_QUIET = 4;                                  // modules, per the spec
-const QR_AT = { x: VIEW.x + VIEW.w - 6 - QR_BOX, y: VIEW.y + 65 };
+const QR_EDGE = 12;                                  // clearance from the map's right edge
+const QR_AT = { x: VIEW.x + VIEW.w - QR_EDGE - QR_BOX, y: VIEW.y + VIEW.h / 2 - QR_BOX / 2 };
 const QR_CAPTION = ['Scan for the music', 'schedule, food trucks', 'and every artist —', 'always up to date.'];
 
 /**
