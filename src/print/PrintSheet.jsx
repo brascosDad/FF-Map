@@ -207,9 +207,6 @@ export default function PrintSheet() {
             <span className="print-legend__sq" style={{ background: PIN_COLOR.kids }} />Kidlandia booth
           </span>
           <span className="print-legend__row">
-            <span className="print-legend__sq print-legend__sq--hollow" />Artist with a spot, no number
-          </span>
-          <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
         </section>

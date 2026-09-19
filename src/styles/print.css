@@ -37,8 +37,6 @@
 .print-legend__row { display: flex; align-items: center; gap: 0.06in; white-space: nowrap; }
 .print-legend__dot { width: 0.16in; height: 0.16in; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .print-legend__sq { width: 0.12in; height: 0.12in; border-radius: 1px; margin: 0 0.02in; flex: 0 0 auto; opacity: 0.8; }
-/* The unnumbered pair: cream inside a slate frame, as drawn on the map. */
-.print-legend__sq--hollow { background: var(--ff-cream); box-shadow: inset 0 0 0 1.5px var(--cat-booth); opacity: 1; }
 
 .print-key__rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0.02in 0.12in; font-size: 8.5pt; }
 .print-key__rows b { color: var(--text-strong); font-variant-numeric: tabular-nums; }
