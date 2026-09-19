@@ -464,21 +464,22 @@ for (const [name, w, h] of SIZES) {
   await p.close();
 }
 
-// ---- the phone's opening state (beta round 1, 9/17; info booth 9/19) ----
+// ---- the phone's opening state (beta round 1, 9/17) ----
 // Bike valet and the beer stand are landmarks and were reached for first; the
-// merch tent and the info booth are the festival's own, at the gate. All four
-// show at open, on the smallest phone we care about, and no two overview
-// targets overlap -- 44px is the floor and circles may touch but not cross.
+// merch tent is the festival's own, at the gate. All three show at open, on
+// the smallest phone we care about, and no two overview targets overlap --
+// 44px is the floor and circles may touch but not cross. The info booth sits
+// 48 units above merch and arrives at the first zoom step (see pins.js).
 for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   const cats = await p.locator('svg.ff-map g.ff-pin').evaluateAll((els) => els.map((e) => [...e.classList].find((c) => c.startsWith('ffc-pin--'))?.slice(9)));
-  check(`${name}: bike valet, beer, merch and info are on the opening view`,
-    cats.includes('bikevalet') && cats.includes('merch') && cats.includes('drinks') && cats.includes('info'), cats.join(','));
+  check(`${name}: bike valet, beer and merch are on the opening view`,
+    cats.includes('bikevalet') && cats.includes('merch') && cats.includes('drinks'), cats.join(','));
   check(`${name}: still only a handful of pins at open`, cats.length <= 8, `${cats.length} pins`);
   const titles = [];
-  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--merch', 'g.ffc-pin--drinks', 'g.ffc-pin--info']) {
+  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--merch', 'g.ffc-pin--drinks']) {
     const b = await p.locator(sel).first().boundingBox();
     await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     await p.waitForTimeout(450);
@@ -486,7 +487,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     await p.locator('.sheet .close').click();
     await p.waitForTimeout(350);
   }
-  check(`${name}: the four open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]) && /Info/.test(titles[3]), titles.join(' | '));
+  check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
   const overlap = await p.evaluate(() => {
     const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area > circle')]
       .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
@@ -501,10 +502,12 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
-// ---- the info booth is a pin, everywhere ----
+// ---- the info booth is a pin, everywhere, just above merch ----
 // Phone, desktop and paper: a circle filled with --pin-info carrying the info
-// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19).
-for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1440, 900, true]]) {
+// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19). And
+// on the desktop overview it sits directly above merch with an 8-16px gap;
+// at the phone's first zoom step the two do not overlap.
+for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1440, 900, false]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h } });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
@@ -521,6 +524,13 @@ for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1
   check(`${name}: the info booth draws as a pin in --pin-info`,
     info.present && info.fill === 'rgb(64, 126, 181)' && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
     info.present ? `${info.fill}, glyph ${info.glyph}, ${info.rects} rects, ${info.size}px` : 'no info pin drawn');
+  const stack = await p.evaluate(() => {
+    const at = (c) => { const r = document.querySelector(`svg.ff-map g.ffc-pin--${c} > g circle`).getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2 }; };
+    const i = at('info'), m = at('merch');
+    return { dx: Math.abs(i.x - m.x), gap: (m.y - i.y) - i.r - m.r };
+  });
+  check(`${name}: the info pin sits directly above merch${w >= 1024 ? ', 8-16px clear' : ', not overlapping'}`,
+    stack.dx <= 1 && (w >= 1024 ? stack.gap >= 8 && stack.gap <= 16 : stack.gap >= 0), `${stack.gap.toFixed(1)}px gap, ${stack.dx.toFixed(1)}px off centre`);
   await p.close();
 }
 

@@ -7,15 +7,17 @@
 // looked up in assets/icons.js, so it has to stay one of the keys already in
 // this file. `d` is the DetailSheet entry the pin opens.
 //
-// `overview: true` keeps a pin on the phone's opening view. At that zoom the
-// whole festival is squeezed into a phone screen and pins hold one physical
-// size, so only a few fit without their 44px targets overlapping. The
-// destinations do, plus the two landmarks beta testers reached for first
-// (bike valet and the beer stand, Alex 9/17), and the merch tent and info
-// booth at the gate.
-// Everything else arrives at the first zoom step or when its chip is tapped.
-// Before adding one, check the spacing: scripts/e2e.mjs asserts that no two
-// overview targets overlap on a 375px phone.
+// `overview: true` keeps a pin on the opening view at every breakpoint. At
+// that zoom the whole festival is squeezed into a phone screen and pins hold
+// one physical size, so only a few fit without their 44px targets
+// overlapping. The destinations do, plus the two landmarks beta testers
+// reached for first (bike valet and the beer stand, Alex 9/17), and the merch
+// tent at the gate. `overview: 'docked'` keeps a pin on the opening view only
+// where the panel is docked (desktop), whose overview draws the map at half
+// the phone's scale and has room the phone does not. Everything else arrives
+// at the first zoom step or when its chip is tapped. Before adding one, check
+// the spacing: scripts/e2e.mjs asserts that no two overview targets overlap
+// on a 375px phone.
 export const PINS = [
   // Markers that carry a standing label on the map
   { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true },
@@ -37,18 +39,18 @@ export const PINS = [
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
-  // McLendon -- 16 units above the street band (y ~776), well short of
+  // McLendon -- 26 units above the street band (y ~776), well short of
   // halfway to where the park's booth rows start (y ~650). The same spot
   // every year (Jess, 9/17). Not in the export. The bike valet moved 10 units
-  // east so this overview target clears its own (88 units; the floor is 81 on
+  // east so this overview target clears its own (85 units; the floor is 81 on
   // a 375px phone).
-  { x: 630.0, y: 760.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
+  { x: 630.0, y: 750.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips).
   // The southern bank is the export's (601.6, 665.1) moved 20 units west and
-  // 7 north, out of the info booth's target now that the info booth is on
-  // the overview stacked above merch. Restroom placement for 2026 is still
-  // being confirmed with Jess regardless.
+  // 7 north, clear of the info booth's target and of booth 54's hit area
+  // (the export spot overlapped it by a hair). Restroom placement for 2026
+  // is still being confirmed with Jess regardless.
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
   { x: 582.0, y: 658.0, c: 'wc', d: 'wc' },
 
@@ -62,12 +64,14 @@ export const PINS = [
   { x: 584.0, y: 709.0, c: 'water', d: 'water' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
-  // the entrance path, and on the phone's opening view with it (Ernest,
-  // 9/19, per Jess's 2026 site plan). At the overview two 44px targets need
-  // 81 units on a 375px phone, so the pins stack 82 apart, touching; 4 units
-  // west of merch's x keeps the info target off booth 28's hit area. Was the
-  // export's (644.3, 733.3).
-  { x: 626.0, y: 678.0, c: 'info', d: 'info', overview: true },
+  // the entrance path (Ernest, 9/19, per Jess's 2026 site plan). 48 units
+  // above merch: on the desktop opening view that is a 13px gap between the
+  // two 40px pins, and at the phone's first zoom step the 44px targets clear
+  // by 2 units. On the PHONE's opening view two targets would need 81 units,
+  // which on desktop is a 60px gap -- the two asks cannot share one
+  // coordinate -- so there it arrives at the first zoom step (Ernest, 9/19).
+  // Was the export's (644.3, 733.3).
+  { x: 630.0, y: 702.0, c: 'info', d: 'info', overview: 'docked' },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the

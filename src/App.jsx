@@ -187,6 +187,7 @@ export default function App() {
           viewBox={viewBox}
           filter={filter}
           overview={overview}
+          docked={docked}
           showBlobs={overview && !docked}
           unitsPerPx={unitsPerPx}
           showNumbers={detail}

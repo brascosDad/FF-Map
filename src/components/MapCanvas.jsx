@@ -117,7 +117,7 @@ function SelectRing({ x, y, r, k }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   // One size at every level. The overview used to draw pins a step smaller,
@@ -128,9 +128,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
   const tapR = Math.max(pinR, (sz.tap / 2) * k);
   // Area markers are tappable too, so they take the same size as a pin.
   const clusterR = pinR;
-  // A pin is on the overview if it is a destination, or if you asked for its
-  // category by chip -- tapping "Restrooms" at the overview must show restrooms.
-  const onOverview = (p) => p.overview || filter === p.c;
+  // A pin is on the overview if pins.js flags it (everywhere, or only where
+  // the panel is docked), or if you asked for its category by chip -- tapping
+  // "Restrooms" at the overview must show restrooms.
+  const onOverview = (p) => p.overview === true || (p.overview === 'docked' && docked) || filter === p.c;
   // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
   // that says how far "not what you asked for" fades, and it lives in one file.
   const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
