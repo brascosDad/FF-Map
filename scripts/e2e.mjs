@@ -501,6 +501,29 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- the info booth is a pin, everywhere ----
+// Phone, desktop and paper: a circle filled with --pin-info carrying the info
+// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19).
+for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1440, 900, true]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  if (zoomFirst) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); }
+  const info = await p.evaluate(() => {
+    const g = document.querySelector('svg.ff-map g.ffc-pin--info');
+    if (!g) return { present: false };
+    // :scope > g -- the drawn circle sits in the shadowed inner group; the
+    // outer transparent circle is the 44px tap target, not the pin.
+    const circle = g.querySelector(':scope > g circle'), glyph = g.querySelector(':scope > g svg');
+    return { present: true, fill: circle && getComputedStyle(circle).fill, glyph: !!glyph, rects: g.querySelectorAll('rect').length,
+             size: circle ? Math.round(circle.getBoundingClientRect().width) : 0 };
+  });
+  check(`${name}: the info booth draws as a pin in --pin-info`,
+    info.present && info.fill === 'rgb(64, 126, 181)' && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
+    info.present ? `${info.fill}, glyph ${info.glyph}, ${info.rects} rects, ${info.size}px` : 'no info pin drawn');
+  await p.close();
+}
+
 // ---- pinch ----
 // Testers reach for a pinch before the buttons (Amy, iPhone 16). The map has to
 // follow the fingers while they move and land on a stop when they lift -- not
@@ -976,10 +999,15 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
     index: document.querySelectorAll('.print-index li').length,
     unnumbered: document.querySelectorAll('.print-booth--unnumbered').length,
+    infoPin: (() => { const c = document.querySelector('.print-pin--info circle'); return c ? getComputedStyle(c).fill : 'none'; })(),
+    infoGlyph: !!document.querySelector('.print-pin--info svg'),
+    infoRects: document.querySelectorAll('.print-pin--info rect').length,
     text: document.querySelector('.print-side').innerText,
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
+  check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === 'rgb(64, 126, 181)' && pr.infoGlyph && pr.infoRects === 0,
+    `${pr.infoPin}, glyph ${pr.infoGlyph}, ${pr.infoRects} rects`);
   // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls. The two
   // unnumbered squares print with no number, so they are not counted here.
   check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);

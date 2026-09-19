@@ -97,7 +97,7 @@ function PrintMap() {
       </g>
 
       {PINS.map((p, i) => (
-        <g key={i}>
+        <g key={i} className={`print-pin print-pin--${p.c}`}>
           <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
           <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
           {LABEL_AT[p.d] && LABEL_TEXT[p.d] && (

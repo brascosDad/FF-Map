@@ -34,11 +34,13 @@ export const PINS = [
   { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks' },
   { x: 897.3, y: 747.3, c: 'drinks', d: 'drinks' },
 
-  // Merch, at the park entrance -- the same spot every year (Jess, 9/17). The
-  // entrance is where the car path meets McLendon (x ~598-622); the pin sits
-  // just west of it on the corner lawn, clear of the info booth's target.
-  // Not in the export; placed by description.
-  { x: 578.0, y: 755.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
+  // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
+  // the entrance path where it meets McLendon (the path mouth is x ~598-622;
+  // the street band starts at y ~776). The same spot every year (Jess, 9/17).
+  // Not in the export. As close to the corner as its 44px overview target can
+  // get without crossing the bike valet's (82.7 units, the floor is 81 on a
+  // 375px phone) or the McLendon booth row's hit areas.
+  { x: 630.0, y: 770.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips)
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
@@ -47,17 +49,18 @@ export const PINS = [
   { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
 
   // Water refill stations -- the export marks two. The southern one is the
-  // export's (588.1, 708.3) moved 22 units east-south-east: the info booth now
-  // sits where it was, and two 44px targets cannot share the spot. Water
-  // placement is still being confirmed with Jess for 2026 anyway.
+  // export's (588.1, 708.3) nudged 4 units west and 1 south so its target
+  // clears the info booth's, now stacked above merch on the far side of the
+  // path. Water placement is still being confirmed with Jess for 2026 anyway.
   { x: 668.2, y: 318.7, c: 'water', d: 'water' },
-  { x: 610.0, y: 717.0, c: 'water', d: 'water' },
+  { x: 584.0, y: 709.0, c: 'water', d: 'water' },
 
-  // Info booth: at the park entrance by McLendon, just north of the merch
-  // tent (Ernest, 9/19). Was the export's (644.3, 733.3), east of the entrance.
-  // 55 units north and 12 west of merch is as close as the two 44px targets
-  // can sit at the first zoom step without overlapping.
-  { x: 566.0, y: 700.0, c: 'info', d: 'info' },
+  // Info booth: directly north of the merch tent, on the same (east) side of
+  // the entrance path, the two pins stacked so their 44px targets touch at the
+  // first zoom step (46 units apart; the floor is 45.8 on a 375px phone) and
+  // do not overlap (Ernest, 9/19, per Jess's 2026 site plan). Was the
+  // export's (644.3, 733.3).
+  { x: 630.0, y: 724.0, c: 'info', d: 'info' },
 
   // Drawn as a placeholder red circle in the export; here it is the Phosphor
   // bicycle on the utility neutral. The position itself is real, so it is no

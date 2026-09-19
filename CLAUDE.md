@@ -170,17 +170,21 @@ Figma workflow), and PR #8 (booth + beta fixes):
   the data.
 - 9/19 review round (each its own commit): pins hold one on-screen size through a pinch and its
   settle; Kidlandia booths are one column inside the area, south to north, in the Kidlandia
-  colour; the info booth sits at the park entrance just north of merch (the southern water
-  station pin moved 22 units east onto the path mouth to make room); AWARE Wildlife and Achieve
-  with Steve draw as hollow squares.
+  colour; merch and the info booth sit on the east side of the entrance path per Jess's 2026 site
+  plan, info stacked directly north of merch; AWARE Wildlife and Achieve with Steve draw as
+  hollow squares. The info booth has always drawn as a pin in `--pin-info`; e2e now asserts it on
+  phone, desktop and paper.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
-- **Merch** at the park entrance = just west of where the car path meets McLendon; the **info
-  booth** is 55 units north of it. Confirm both (Jess).
-- The **southern water station** pin was nudged 22 units east-south-east, onto the mouth of the car
-  path, so the info booth's target could clear it. Falls under the water-station question below.
+- **Merch and the info booth** are now from Jess's 2026 site plan (the CPNO Merch Tent): east side
+  of the entrance path where it meets McLendon, info stacked directly north of merch (Ernest,
+  9/19). Their 44px targets touch at the first zoom step and merch's clears the bike valet's at
+  the overview by under 2 units, so neither can move closer to the corner without moving the
+  bike valet.
+- The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
+  target clears the info booth's. Falls under the water-station question below.
 - The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
   Verify at setup.
 - **AWARE Wildlife** square: on the grass off the south end of the park's west row. **Achieve with

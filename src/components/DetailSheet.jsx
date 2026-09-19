@@ -43,7 +43,7 @@ const POI_COPY = {
   drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
     lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
   merch: { title: 'Merch Booth', sub: 'Fall Fest merchandise', icon: 'merch', cat: 'merch',
-    lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave — the same spot every year'] },
+    lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
   wc: { title: 'Restrooms', sub: 'Five-toilet banks + ADA units', icon: 'wc', cat: 'wc',
     lines: ['Multiple five-toilet banks plus ADA-accessible toilets', 'Selecting restrooms rings every one of them on the map'] },
   firstaid: { title: 'First Aid / EMS', sub: 'On-site medical support', icon: 'firstaid', cat: 'firstaid',
@@ -51,7 +51,7 @@ const POI_COPY = {
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',
     lines: ['Free water stations — bring a bottle to refill'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
-    lines: ['At the park entrance off McLendon Ave, just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
+    lines: ['At the park entrance off McLendon Ave, on the east side of the path just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
     lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };
