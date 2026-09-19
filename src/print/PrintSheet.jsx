@@ -209,7 +209,7 @@ export default function PrintSheet() {
             </span>
           ))}
           <span className="print-legend__row">
-            <span className="print-legend__sq" style={{ background: SLATE }} />Art market booth, numbered
+            <span className="print-legend__sq" style={{ background: SLATE }} />Art market booth
           </span>
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.kids }} />Kidlandia booth

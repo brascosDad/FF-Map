@@ -48,7 +48,10 @@
 .print-brand { font-family: var(--font-display); font-weight: 900; font-size: 44pt; line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
 .print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: var(--space-2); }
 
-.print-legend { display: grid; grid-template-columns: repeat(var(--print-cols), 1fr); gap: var(--space-1) var(--print-gutter); font-size: 8pt; }
+/* minmax(0, 1fr), not 1fr: a bare 1fr column will not shrink below its
+   content, so one long label widened its column and the legend fell off the
+   lines the lists below it sit on. */
+.print-legend { display: grid; grid-template-columns: repeat(var(--print-cols), minmax(0, 1fr)); gap: var(--space-1) var(--print-gutter); font-size: 8pt; }
 /* Every legend item is a fixed swatch box then its label: the box is
    --space-4 wide whatever sits in it (a --space-4 dot or a --space-3 square,
    both flush left), so every label starts at the same x. */
