@@ -17,6 +17,9 @@ import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import vendorsData from '../data/vendors.json';
 import { FESTIVAL } from '../data/festival';
+// The QR generator's core only: it returns the module matrix and we draw it
+// as vector rects, so the code prints as crisp as the booth squares.
+import QRCode from 'qrcode/lib/core/qrcode';
 // The phone map ships Manrope's Latin subset only. One vendor name needs
 // Vietnamese glyphs, and on paper a fallback face in the middle of the list
 // shows; the subset is unicode-range scoped, so it only fetches for that name,
@@ -39,6 +42,44 @@ const STREET = 11;
 
 const NUMBER_FILL = 'var(--map-number)';
 const HALO = 'var(--map-halo)';
+
+// The QR code: about 1.5in square on the sheet, in map units. The map draws at
+// 810 units to 10.2in, so an inch is ~79.4 units. `QR_BOX` is the white quiet-
+// zone box; the code inside leaves the standard four modules of quiet zone on
+// every side. It sits on the empty park green east of the festival, directly
+// under the north arrow, where it covers no pin, booth, path or label.
+const QR_BOX = 119;                                  // ~1.5in
+const QR_QUIET = 4;                                  // modules, per the spec
+const QR_AT = { x: VIEW.x + VIEW.w - 6 - QR_BOX, y: VIEW.y + 65 };
+const QR_CAPTION = ['Scan for the music', 'schedule, food trucks', 'and every artist —', 'always up to date.'];
+
+/**
+ * The map's own URL as a scannable, vector QR code with a caption.
+ *
+ * Error correction M: the URL is short (version 3, 29 modules), so each module
+ * is ~1mm at this size, and M survives the smudges a poster collects. The
+ * modules are one path so the PDF carries one object, not 500.
+ */
+function MapQr() {
+  const qr = QRCode.create(FESTIVAL.mapUrl, { errorCorrectionLevel: 'M' });
+  const n = qr.modules.size;
+  const cell = QR_BOX / (n + QR_QUIET * 2);
+  const x0 = QR_AT.x + QR_QUIET * cell, y0 = QR_AT.y + QR_QUIET * cell;
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    if (qr.modules.get(r, c)) d += `M${(x0 + c * cell).toFixed(2)} ${(y0 + r * cell).toFixed(2)}h${cell.toFixed(2)}v${cell.toFixed(2)}h-${cell.toFixed(2)}z`;
+  }
+  return (
+    <g className="print-qr" data-url={FESTIVAL.mapUrl}>
+      <rect x={QR_AT.x} y={QR_AT.y} width={QR_BOX} height={QR_BOX} rx={3} fill="var(--ff-white)" />
+      <path d={d} fill="var(--ff-navy)" shapeRendering="crispEdges" />
+      <text x={QR_AT.x + QR_BOX / 2} y={QR_AT.y + QR_BOX + LABEL * 1.6} fontSize={LABEL} fontWeight={800}
+            fill="var(--text-strong)" textAnchor="middle" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
+        {QR_CAPTION.map((line, i) => <tspan key={i} x={QR_AT.x + QR_BOX / 2} dy={i ? LABEL * 1.25 : 0}>{line}</tspan>)}
+      </text>
+    </g>
+  );
+}
 
 // A booth with no number (the two unnumbered artists) is drawn hollow -- cream
 // inside a slate frame, as on the phone map -- and gets no text element at
@@ -115,6 +156,8 @@ function PrintMap() {
         <path d="M0 -14 L7 8 L0 3 L-7 8 Z" />
         <text y={20} fontSize={9} fontWeight={800} textAnchor="middle">N</text>
       </g>
+
+      <MapQr />
     </svg>
   );
 }
