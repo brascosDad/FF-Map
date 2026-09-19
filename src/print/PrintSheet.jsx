@@ -15,16 +15,10 @@ import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
 import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
-import vendorsData from '../data/vendors.json';
 import { FESTIVAL } from '../data/festival';
 // The QR generator's core only: it returns the module matrix and we draw it
 // as vector rects, so the code prints as crisp as the booth squares.
 import QRCode from 'qrcode/lib/core/qrcode';
-// The phone map ships Manrope's Latin subset only. One vendor name needs
-// Vietnamese glyphs, and on paper a fallback face in the middle of the list
-// shows; the subset is unicode-range scoped, so it only fetches for that name,
-// and only on this route.
-import '@fontsource/manrope/vietnamese-400.css';
 import '../styles/print.css';
 
 // The festival footprint with breathing room, in map units -- the same box
@@ -217,11 +211,6 @@ export default function PrintSheet() {
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
-        </section>
-
-        <section className="print-food">
-          <h2>Food court · {vendorsData.vendors.length} vendors</h2>
-          <ul>{vendorsData.vendors.map((v) => <li key={v.id}>{v.name}</li>)}</ul>
         </section>
 
         {/* The runs' number ranges are labelled on the map itself, so this is

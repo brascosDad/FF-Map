@@ -39,8 +39,8 @@
 .print-map { display: block; height: 100%; width: auto; margin: 0; border-radius: 0.08in; }
 .print-map text { font-family: var(--font-ui); }
 
-/* One gap between sections (header, legend, art market, food court, index);
-   a smaller one between a heading and what it heads. */
+/* One gap between sections (header, legend, art market); a smaller one
+   between a heading and what it heads. */
 .print-side { display: flex; flex-direction: column; gap: var(--print-section-gap); min-width: 0; height: calc(11in - 2 * var(--print-margin)); overflow: hidden; }
 .print-side h2 { margin: 0 0 var(--print-heading-gap); font-size: 9.5pt; font-weight: 800; color: var(--text-strong); letter-spacing: 0.02em; text-transform: uppercase; }
 
@@ -58,8 +58,6 @@
 .print-legend__row { display: grid; grid-template-columns: var(--space-4) 1fr; gap: var(--space-2); align-items: center; white-space: nowrap; }
 .print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: start; }
 .print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: start; opacity: 0.8; }
-
-.print-food ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
 
 /* The index takes whatever height is left and flows into columns. It is the
    one thing on the side column still below the 8pt floor: at 8pt its 150 rows
