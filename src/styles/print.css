@@ -49,9 +49,12 @@
 .print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: var(--space-2); }
 
 .print-legend { display: grid; grid-template-columns: repeat(var(--print-cols), 1fr); gap: var(--space-1) var(--print-gutter); font-size: 8pt; }
-.print-legend__row { display: flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
-.print-legend__dot { width: 0.16in; height: 0.16in; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
-.print-legend__sq { width: 0.12in; height: 0.12in; border-radius: 1px; margin: 0 var(--space-1); flex: 0 0 auto; opacity: 0.8; }
+/* Every legend item is a fixed swatch box then its label: the box is
+   --space-4 wide whatever sits in it (a --space-4 dot or a --space-3 square,
+   both flush left), so every label starts at the same x. */
+.print-legend__row { display: grid; grid-template-columns: var(--space-4) 1fr; gap: var(--space-2); align-items: center; white-space: nowrap; }
+.print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: start; }
+.print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: start; opacity: 0.8; }
 
 .print-food ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
 
