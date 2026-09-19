@@ -58,7 +58,9 @@
 .topbar, .tbrow { pointer-events: none; }
 .tbrow > * { pointer-events: auto; }
 .chips { pointer-events: auto; width: max-content; max-width: 100%; touch-action: pan-x; }
-.tbrow { display: flex; align-items: center; gap: var(--space-3); margin: 0 2px var(--space-3); }
+/* Baseline, not centre: the wordmark and the dates are different sizes, and
+   two sizes only read as one line when they share a baseline. */
+.tbrow { display: flex; align-items: baseline; gap: var(--space-3); margin: 0 2px var(--space-3); }
 .chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .chips::-webkit-scrollbar { display: none; }
 
