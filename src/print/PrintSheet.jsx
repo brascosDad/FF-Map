@@ -237,10 +237,6 @@ export default function PrintSheet() {
           </ul>
         </section>
 
-        <footer className="print-foot">
-          Booth numbers and artists from the artist market chair's 2026 assignments; positions from the official site plan.
-          The phone map at fallfest.candlerpark.org stays current after this sheet prints.
-        </footer>
       </aside>
     </div>
   );
