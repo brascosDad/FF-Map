@@ -179,8 +179,8 @@ export const BOOTHS = {
   ],
   food: [
     { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3 },
-    { id: 'food-02', n: 2, area: 'Food Court', x: 868.0, y: 252.1 },
-    { id: 'food-03', n: 3, area: 'Food Court', x: 881.3, y: 258.9 },
+    { id: 'food-02', n: 2, area: 'Food Court', x: 868.7, y: 249.6 },
+    { id: 'food-03', n: 3, area: 'Food Court', x: 881.5, y: 255.0 },
     { id: 'food-04', n: 4, area: 'Food Court', x: 849.8, y: 259.1 },
     { id: 'food-05', n: 5, area: 'Food Court', x: 894.2, y: 260.3 },
     { id: 'food-06', n: 6, area: 'Food Court', x: 844.9, y: 272.6 },

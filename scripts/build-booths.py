@@ -176,10 +176,13 @@ UNNUMBERED_AT = {
 }
 
 # ---- Food court -------------------------------------------------------------
-# Two stalls sat past the north tip of the hand-drawn food blob, so they read
-# as trucks parked outside their own area. Nudged ~9 units down the row's own
-# axis to sit inside it; spacing to their neighbours still matches the row.
-FOOD_NUDGE = {(872.0, 244.3): (868.0, 252.1), (885.6, 250.4): (881.3, 258.9)}
+# The top row of the east column -- stalls 1, 2, 3 and 5 -- is one straight
+# line (Ernest, 9/19). The export drew 2 and 3 a few units above it and an
+# earlier nudge pushed them below it; they now sit ON the line through 1 and
+# 5, evenly spaced. Their squares poke a unit or two past the hand-drawn food
+# blob's top edge, as 1 and 5 already did at its corners; whether the blob
+# grows to cover them is a Figma decision, not one for this script.
+FOOD_NUDGE = {(872.0, 244.3): (868.7, 249.6), (885.6, 250.4): (881.5, 255.0)}
 
 
 def read_coords(name, src):
