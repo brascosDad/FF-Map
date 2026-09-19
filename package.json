@@ -10,9 +10,10 @@
     "preview": "vite preview",
     "sync": "git pull --ff-only && npm install",
     "start": "git pull --ff-only && npm install && vite",
-    "test:e2e": "npm run build && (vite preview --port 4310 & sleep 4 && node scripts/e2e.mjs; kill %1)",
+    "test:e2e": "npm run build && node scripts/test.mjs",
     "shots": "vite build && (vite preview --port 4310 & sleep 4 && node scripts/shot.mjs; kill %1)",
     "print": "vite build && node scripts/build-sw.mjs && node scripts/print.mjs",
+    "test:visual": "node scripts/visual.mjs",
     "pr-shots": "node scripts/pr-shots.mjs"
   },
   "dependencies": {
@@ -26,7 +27,9 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "oxlint": "^1.79.0",
+    "pixelmatch": "^7.2.0",
     "playwright": "^1.56.0",
+    "pngjs": "^7.0.0",
     "qrcode": "^1.5.4",
     "vite": "^8.2.2"
   }

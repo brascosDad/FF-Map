@@ -9,10 +9,9 @@
  * LOOKS right -- that stays a human job, and the cases marked "?" in TESTING.md
  * are design decisions, not assertions.
  */
-import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { BASE, launch } from './lib/browser.mjs';
 
-const BASE = process.env.E2E_BASE || 'http://localhost:4310';
 const OUT = '.e2e-out';
 mkdirSync(OUT, { recursive: true });
 
@@ -81,7 +80,7 @@ async function drag(p, dx, dy) {
 const zoomIn = async (p) => { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); };
 const zoomOut = async (p) => { await p.locator('.zoomctl button').nth(1).click(); await p.waitForTimeout(600); };
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await launch();
 const pageErrors = [];
 
 for (const [name, w, h] of SIZES) {
