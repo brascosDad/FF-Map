@@ -1,19 +1,20 @@
 /* The printed sheet: 11x17 landscape, map on the left, everything you read on
    the right. Loaded only by PrintSheet (the ?print=1 route), so nothing here
-   leaks into the phone map. Sizes are in inches and points because the page
-   is a physical object; the map itself is an SVG that scales to its box. */
+   leaks into the phone map. The page and its margins are in inches because
+   the sheet is a physical object; the map itself is an SVG that scales to its
+   box. One outer margin, the same on all four sides: the map sits flush
+   against the left one and the side column takes whatever width is left. */
 
 @page { size: 17in 11in; margin: 0; }
 
 .print-page {
   --print-margin: 0.4in;
   --print-gap: 0.3in;
-  --print-side: 5.7in;
   width: 17in;
   height: 11in;
   padding: var(--print-margin);
   display: grid;
-  grid-template-columns: 1fr var(--print-side);
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--print-gap);
   background: #fff;
   color: var(--text-body);
@@ -21,9 +22,11 @@
   overflow: hidden;
 }
 
-/* The map keeps its own aspect (760 x 810 units) and fills the page height. */
+/* The map keeps its own aspect (760 x 810 units), fills the page height, and
+   sits flush left -- centring it in its column put 0.3in of dead space inside
+   the left margin and made the two margins unequal. */
 .print-mapcol { position: relative; height: calc(11in - 2 * var(--print-margin)); }
-.print-map { display: block; height: 100%; width: auto; max-width: 100%; margin: 0 auto; border-radius: 0.08in; }
+.print-map { display: block; height: 100%; width: auto; margin: 0; border-radius: 0.08in; }
 .print-map text { font-family: var(--font-ui); }
 
 .print-side { display: flex; flex-direction: column; gap: 0.16in; min-width: 0; height: calc(11in - 2 * var(--print-margin)); overflow: hidden; }
