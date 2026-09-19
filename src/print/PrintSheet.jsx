@@ -76,7 +76,7 @@ function PrintMap() {
 
       <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]} />)}
-      <Squares booths={BOOTHS.kid} color={SLATE} angle={BOOTH_ANGLE.kid} />
+      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
       <Squares booths={UNNUMBERED} color={SLATE} />
 
       {/* The three runs carry their ranges on the map itself, where the 2025
@@ -89,8 +89,9 @@ function PrintMap() {
         {/* In the west row's own break at the path bend (between 37 and 38),
             along the row's direction, so it touches no number. */}
         <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market {span(BOOTHS.spine)}</text>
-        {/* Below the K stack: eleven booths at 9 units end at y ~490. */}
-        <text x={645} y={505} textAnchor="middle" fontSize={LABEL - 1.5}>{span(BOOTHS.kid)}</text>
+        {/* Just below the south end of the Kidlandia column, wherever the
+            sheet's count puts it. */}
+        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle" fontSize={LABEL - 1.5}>{span(BOOTHS.kid)}</text>
       </g>
 
       {PINS.map((p, i) => (
@@ -156,6 +157,9 @@ export default function PrintSheet() {
           ))}
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: SLATE }} />Art market booth, numbered
+          </span>
+          <span className="print-legend__row">
+            <span className="print-legend__sq" style={{ background: PIN_COLOR.kids }} />Kidlandia booth
           </span>
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall

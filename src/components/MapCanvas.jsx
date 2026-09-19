@@ -185,16 +185,18 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
-        {/* Kidlandia's booths, K0-K10. Not part of the numbered run and not
-            on any market row, so they draw on their own: squares from the
-            first zoom step, and nothing at the phone overview -- blobs are
-            drawn in Figma and there is no blob-kid layer yet. Placed by
-            description, not from the export: see scripts/build-booths.py.
-            The two unnumbered artists (a spot, no number) draw the same way:
-            a square with no number to print. */}
+        {/* Kidlandia's booths, one column inside the Kidlandia area, lowest
+            number at the south end. Not part of the numbered run and not on
+            any market row, so they draw on their own, in the Kidlandia
+            category's own colour rather than the art-market slate: squares
+            from the first zoom step, and nothing at the phone overview --
+            blobs are drawn in Figma and there is no blob-kid layer yet. The
+            column's position is by description, not from the export: see
+            scripts/build-booths.py. The two unnumbered artists (a spot, no
+            number) draw the same way: a square with no number to print. */}
         {!showBlobs && (
           <g className="ff-area" data-area="kid">
-            {boxes(BOOTHS.kid, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+            {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
           </g>
         )}
         {!showBlobs && (

@@ -234,9 +234,11 @@ function BoothDetail({ booth, onStep }) {
         </div>
       )}
 
+      {/* A Kidlandia booth wears the Kidlandia colour, like its square on the
+          map; every other art booth wears the market slate. */}
       <SheetHeader
-        icon={isFood ? 'food' : 'art'}
-        color={isFood ? PIN_COLOR.food : SLATE}
+        icon={isFood ? 'food' : isKid ? 'kids' : 'art'}
+        color={isFood ? PIN_COLOR.food : isKid ? PIN_COLOR.kids : SLATE}
         title={unnumbered ? booth.biz : `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
         sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}`} />
 
@@ -256,7 +258,7 @@ function BoothDetail({ booth, onStep }) {
           the footer on a K booth, since the position is the uncertain thing;
           the unnumbered pair say where the chair put them. */}
       <div className="foot">{isFood ? 'Position from the official map.'
-        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} stack's position is approximate until the Kidlandia layout is confirmed.`
+        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} column runs south to north inside Kidlandia, position approximate until the layout is confirmed.`
         : unnumbered ? `On the 2026 list with a spot but no number: ${booth.where}. Position approximate.`
         : 'Artist from the 2026 list; position from the official map.'}</div>
     </>
@@ -269,7 +271,7 @@ function BoothDetail({ booth, onStep }) {
  * the top and the bullets below it are then obviously about the same place.
  */
 function accentFor(openId, openArea, openBooth) {
-  if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : SLATE;
+  if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : openBooth.area === 'Kidlandia' ? PIN_COLOR.kids : SLATE;
   if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
   if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
   if (openArea) return SLATE;

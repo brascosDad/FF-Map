@@ -12,8 +12,9 @@
 //   - `name` is the artist, `biz` the business, straight from the sheet.
 //     Both are null on a sponsor booth.
 //   - Positions are laid along the rows the export draws, at the official
-//     counts. The K0-K10 stack is placed by description only; its order is
-//     unconfirmed. So are the two unnumbered squares (UNNUMBERED).
+//     counts. The K0-K10 column is one vertical run inside the Kidlandia
+//     area, lowest number at the south end; its exact spot is unverified.
+//     So are the two unnumbered squares (UNNUMBERED).
 //   - Food stalls carry NO truck names. The 2026 list is in vendors.json;
 //     which truck parks at which stall is not assigned yet.
 
@@ -164,17 +165,17 @@ export const BOOTHS = {
     { id: 'spine-054', n: 54, area: 'In the Park', x: 623.1, y: 645.3, name: 'Boutte Tree', biz: 'Boutte Tree' },
   ],
   kid: [
-    { id: 'kid-K0', n: 'K0', area: 'Kidlandia', x: 645.0, y: 400.0, name: 'Liam Whalen', biz: 'Sand Art Cart' },
-    { id: 'kid-K1', n: 'K1', area: 'Kidlandia', x: 645.0, y: 409.0, name: 'Barbara Marston', biz: 'Dekalb Democrats' },
-    { id: 'kid-K2', n: 'K2', area: 'Kidlandia', x: 645.0, y: 418.0, name: 'Nicholas Carey', biz: 'Musicologie Atlanta' },
-    { id: 'kid-K3', n: 'K3', area: 'Kidlandia', x: 645.0, y: 427.0, name: 'Smita Gupta', biz: 'Smita Gupta' },
-    { id: 'kid-K4', n: 'K4', area: 'Kidlandia', x: 645.0, y: 436.0, name: 'Stephanie DeSantis', biz: 'Lake Claire Community Land Trust' },
-    { id: 'kid-K5', n: 'K5', area: 'Kidlandia', x: 645.0, y: 445.0, name: 'Addison Moore', biz: 'Mulberry Fields' },
-    { id: 'kid-K6', n: 'K6', area: 'Kidlandia', x: 645.0, y: 454.0, name: 'Bob James', biz: 'CCL GA ATL Chapter' },
-    { id: 'kid-K7', n: 'K7', area: 'Kidlandia', x: 645.0, y: 463.0, name: 'Erin Aube', biz: 'Midtown High' },
-    { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 645.0, y: 472.0, name: 'Clifton Sanctuary', biz: 'Clifton Sanctuary' },
-    { id: 'kid-K9', n: 'K9', area: 'Kidlandia', x: 645.0, y: 481.0, name: 'Primavera Preschool and Aftercare', biz: 'Primavera' },
-    { id: 'kid-K10', n: 'K10', area: 'Kidlandia', x: 645.0, y: 490.0, name: 'Marsha Weinstein / Brooke Ussery', biz: 'Faces Unlimited by Marsha and Brooke' },
+    { id: 'kid-K0', n: 'K0', area: 'Kidlandia', x: 592.0, y: 472.0, name: 'Liam Whalen', biz: 'Sand Art Cart' },
+    { id: 'kid-K1', n: 'K1', area: 'Kidlandia', x: 592.0, y: 463.0, name: 'Barbara Marston', biz: 'Dekalb Democrats' },
+    { id: 'kid-K2', n: 'K2', area: 'Kidlandia', x: 592.0, y: 454.0, name: 'Nicholas Carey', biz: 'Musicologie Atlanta' },
+    { id: 'kid-K3', n: 'K3', area: 'Kidlandia', x: 592.0, y: 445.0, name: 'Smita Gupta', biz: 'Smita Gupta' },
+    { id: 'kid-K4', n: 'K4', area: 'Kidlandia', x: 592.0, y: 436.0, name: 'Stephanie DeSantis', biz: 'Lake Claire Community Land Trust' },
+    { id: 'kid-K5', n: 'K5', area: 'Kidlandia', x: 592.0, y: 427.0, name: 'Addison Moore', biz: 'Mulberry Fields' },
+    { id: 'kid-K6', n: 'K6', area: 'Kidlandia', x: 592.0, y: 418.0, name: 'Bob James', biz: 'CCL GA ATL Chapter' },
+    { id: 'kid-K7', n: 'K7', area: 'Kidlandia', x: 592.0, y: 409.0, name: 'Erin Aube', biz: 'Midtown High' },
+    { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 592.0, y: 400.0, name: 'Clifton Sanctuary', biz: 'Clifton Sanctuary' },
+    { id: 'kid-K9', n: 'K9', area: 'Kidlandia', x: 592.0, y: 391.0, name: 'Primavera Preschool and Aftercare', biz: 'Primavera' },
+    { id: 'kid-K10', n: 'K10', area: 'Kidlandia', x: 592.0, y: 382.0, name: 'Marsha Weinstein / Brooke Ussery', biz: 'Faces Unlimited by Marsha and Brooke' },
   ],
   food: [
     { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3 },

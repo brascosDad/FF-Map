@@ -83,11 +83,11 @@ npm run preview   # serve the production build locally
 - **Squarespace integration.** If the answer comes back as "embed," point an Embed
   Block / code injection at the Vercel URL. If it comes back as "replace," that's a
   different path — worth a fresh look once the tier is known.
-- **Kidlandia booths K0–K9.** Placed by description only (a stack on the lawn
-  beside Kidlandia); the order within the stack is unconfirmed, and there is no
-  blob for them at the phone overview until a `blob-kid` layer exists in Figma.
-- **Booths 112–114.** Not on the market chair's sheet. The map leaves the speed
-  bump where they would fall and draws nothing; ask whether they exist.
+- **Kidlandia booths.** One vertical column inside the Kidlandia area, lowest
+  number at the south end (per the 2026 site plan), in the Kidlandia colour.
+  The count is the sheet's (10 vs 11 is being confirmed with the chair); the
+  column's exact spot is by description, and there is no blob for them at the
+  phone overview until a `blob-kid` layer exists in Figma.
 - **Scale bar.** Defined in the design system, not shipped: the artboard is a
   stylised trace with no surveyed dimension on it, so there's nothing honest to
   derive a distance from yet.

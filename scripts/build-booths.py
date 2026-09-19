@@ -54,10 +54,12 @@ being numbered one-for-one:
                     "West Lawn" (south). The chair confirmed 9/17 that 112-114
                     are real booths, so there is no gap on the park side.
                     See lay_cpd().
-  Kidlandia         K0-Kn are not on the export at all. Placed as a short
-                    vertical stack on the lawn just east of the Kidlandia
-                    area. The stack's order (K0 north) is unconfirmed -- the
-                    sheet does not place them. See KID_STACK.
+  Kidlandia         K0-Kn are not on the export at all. One vertical column
+                    INSIDE the Kidlandia area (the basemap's kidlandia-area
+                    shape), numbered south to north: K0 at the south end, the
+                    highest at the north, as the 2026 site plan and the 2025
+                    map have it (Ernest, 9/19). How many there are comes from
+                    the sheet. See KID_STACK.
   Unnumbered        two artists have a spot and no number: AWARE Wildlife on
                     the grass by the park's west row, Achieve with Steve
                     beside the Acoustic Stage. They get a square each, with
@@ -148,15 +150,18 @@ CPD_BUMP = 17.9 + CPD_PITCH
 CPD_BARRICADE = 7 * CPD_PITCH
 CPD_GAP = {'speed bump': CPD_BUMP, 'barricade': CPD_BARRICADE}
 
-# ---- Kidlandia stack --------------------------------------------------------
-# On the 2025 map the K booths are "a short vertical stack in the centre of
-# the park, beside Pumpkin Smashing". The Kidlandia area on our basemap runs
-# to about x 629 at this latitude; the stack sits two booth widths east of
-# that edge, on the open lawn, level with the Kidlandia pin. Nothing in the
-# export marks these, so this is placement by description -- verify against
-# the 2026 Kidlandia layout before print. Eleven booths at this pitch run
-# y 400-490; the Kidlandia zone reaches y ~530.
-KID_STACK = {'x': 645.0, 'y0': 400.0, 'pitch': 9.0}
+# ---- Kidlandia column -------------------------------------------------------
+# One vertical column inside the Kidlandia area, along its east side: the
+# basemap's kidlandia-area shape spans x ~470-627, y ~297-538, and its east
+# edge at these latitudes is x ~610-615, so a column at x 592 sits inside it
+# with a booth's width to spare, clear of the Kidlandia pin (550.9, 422.3) at
+# every zoom and of the court to the south. `y_south` is the centre of the
+# LOWEST number; the column grows northward from there at `pitch`, so K0 is at
+# the south end and the highest number at the north, as the 2026 site plan and
+# the 2025 map have it. Eleven booths run y 472 up to 382; ten would stop at
+# 391 -- the count is the sheet's, not this table's. Nothing in the export
+# marks these, so verify the column against the grounds at setup.
+KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
 
 # ---- Artists with a spot but no number --------------------------------------
 # Keyed by business, as the sheet names them. Positions are by the chair's
@@ -288,7 +293,8 @@ def lay_cpd(cpd, LAYOUT):
 
 def lay_kid(LAYOUT):
     seg = numbered(LAYOUT['kidlandia-stack'])[0]
-    return [(n, KID_STACK['x'], KID_STACK['y0'] + i * KID_STACK['pitch'])
+    # Numbers go up as the column goes north (y decreases).
+    return [(n, KID_STACK['x'], KID_STACK['y_south'] - i * KID_STACK['pitch'])
             for i, n in enumerate(numbers(seg))]
 
 
@@ -375,9 +381,10 @@ def main():
     w('//   - `name` is the artist, `biz` the business, straight from the sheet.')
     w('//     Both are null on a sponsor booth.')
     w('//   - Positions are laid along the rows the export draws, at the official')
-    w('//     counts. The %s-%s stack is placed by description only; its order is' % (
+    w('//     counts. The %s-%s column is one vertical run inside the Kidlandia' % (
         zr['kidlandia']['first'], zr['kidlandia']['last']))
-    w('//     unconfirmed. So are the two unnumbered squares (UNNUMBERED).')
+    w('//     area, lowest number at the south end; its exact spot is unverified.')
+    w('//     So are the two unnumbered squares (UNNUMBERED).')
     w('//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;')
     w('//     which truck parks at which stall is not assigned yet.')
     w('')
