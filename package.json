@@ -13,7 +13,7 @@
     "test:e2e": "npm run build && node scripts/test.mjs",
     "shots": "vite build && (vite preview --port 4310 & sleep 4 && node scripts/shot.mjs; kill %1)",
     "print": "vite build && node scripts/build-sw.mjs && node scripts/print.mjs",
-    "test:visual": "node scripts/visual.mjs",
+    "test:visual": "npm run build && node scripts/test.mjs --visual-only",
     "pr-shots": "node scripts/pr-shots.mjs"
   },
   "dependencies": {

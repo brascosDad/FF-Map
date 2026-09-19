@@ -10,11 +10,19 @@
 // pixels differ; the actual render and a diff image land in .e2e-out/visual/
 // so the failure can be looked at.
 //
-// A visual change FAILS until someone updates the baseline on purpose:
-//   1. look at .e2e-out/visual/<case>-diff.png and decide the change is right
-//   2. node scripts/visual.mjs --update
-//   3. commit tests/visual/*.png with the change, and say in the PR which
-//      baselines changed and why
+// The baselines are the CI runner's renders. Text rasterises differently on
+// every OS and Chromium build (a laptop's phone-open differed from the
+// runner's by 0.4% of pixels, the print sheet by 3.8% -- more than a moved
+// pin), so one machine has to own them, and the one that gates the PR is it.
+// So: on CI (the CI env var, set by GitHub Actions) a mismatch fails the
+// suite; elsewhere it is reported but does not fail, because a local diff
+// cannot tell a real change from a different font engine. A visual change
+// therefore FAILS the PR until someone updates the baseline on purpose:
+//   1. look at the diff image (locally, or CI's e2e-out artifact) and decide
+//      the change is the one you meant
+//   2. put the "update-visual-baselines" label on the PR: the Action
+//      re-renders on the runner and commits tests/visual/*.png to the branch
+//   3. say in the PR which baselines changed and why
 // See tests/visual/README.md.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -25,6 +33,7 @@ import { BASE, launch } from './lib/browser.mjs';
 const BASELINES = 'tests/visual';
 const OUT = '.e2e-out/visual';
 const UPDATE = process.argv.includes('--update');
+const CI = Boolean(process.env.CI);
 // Share of pixels allowed to differ before a case fails. Anti-aliasing on a
 // different GPU or OS moves edge pixels; a moved pin or a changed label moves
 // far more than this.
@@ -50,6 +59,7 @@ const CASES = [
 
 mkdirSync(OUT, { recursive: true });
 mkdirSync(BASELINES, { recursive: true });
+if (UPDATE && !CI) console.log('  note: baselines are the CI runner\'s renders; ones written here will not match it. Use the update-visual-baselines label on the PR instead.');
 const browser = await launch();
 let failed = 0, updated = 0;
 for (const { name, path, ctx, act, fullPage } of CASES) {
@@ -83,7 +93,7 @@ for (const { name, path, ctx, act, fullPage } of CASES) {
     failed++;
     writeFileSync(join(OUT, `${name}-actual.png`), shot);
     writeFileSync(join(OUT, `${name}-diff.png`), PNG.sync.write(diff));
-    console.log(`  FAIL  ${name}: ${bad} pixels differ (${(share * 100).toFixed(3)}%) -- see ${OUT}/${name}-diff.png`);
+    console.log(`  ${CI ? 'FAIL' : 'diff'}  ${name}: ${bad} pixels differ (${(share * 100).toFixed(3)}%) -- see ${OUT}/${name}-diff.png`);
   } else {
     console.log(`  pass  ${name}${bad ? `  (${bad} pixels within tolerance)` : ''}`);
   }
@@ -91,7 +101,8 @@ for (const { name, path, ctx, act, fullPage } of CASES) {
 await browser.close();
 
 if (updated) console.log(`\n${updated} baseline(s) written to ${BASELINES}/ -- commit them, and say in the PR what changed and why.`);
-if (failed) {
-  console.log(`\n${failed} visual case(s) changed. If the change is intended: node scripts/visual.mjs --update, commit tests/visual/, explain in the PR.`);
+if (failed && CI) {
+  console.log(`\n${failed} visual case(s) changed. If the change is intended, label the PR update-visual-baselines and say what changed and why.`);
   process.exit(1);
 }
+if (failed) console.log(`\n${failed} case(s) differ from the CI baselines. This machine renders text differently from the runner, so that is advisory here; CI has the verdict.`);

@@ -1,5 +1,6 @@
 // `npm run test:e2e`: serve the built app, run the behaviour suite, then the
-// visual comparisons, and exit non-zero if either failed.
+// visual comparisons, and exit non-zero if either failed. `--visual-only`
+// skips the behaviour suite (`npm run test:visual`); other flags pass through.
 //
 // This replaces a shell one-liner that backgrounded `vite preview` and killed
 // it afterwards -- whose exit status was the kill's, so a green run reported
@@ -36,8 +37,10 @@ const run = (script) => new Promise((resolve) => {
     .on('exit', (code) => resolve(code ?? 1));
 });
 let status = 0;
-console.log('\n=== e2e ===');
-status |= await run('scripts/e2e.mjs');
+if (!process.argv.includes('--visual-only')) {
+  console.log('\n=== e2e ===');
+  status |= await run('scripts/e2e.mjs');
+}
 console.log('\n=== visual ===');
 status |= await run('scripts/visual.mjs');
 server.close();

@@ -4,7 +4,9 @@
 #
 # A visual case that differs from its baseline fails here. That is the point:
 # a change to what people see is accepted by updating tests/visual/ on purpose
-# (see tests/visual/README.md), not by a green build that never looked.
+# (the update-visual-baselines label, see tests/visual/README.md), not by a
+# green build that never looked. Only this runner's verdict counts: the
+# baselines are its renders, and other machines rasterise text differently.
 name: CI
 
 on:
@@ -32,3 +34,4 @@ jobs:
           name: e2e-out
           path: .e2e-out/
           if-no-files-found: ignore
+          include-hidden-files: true

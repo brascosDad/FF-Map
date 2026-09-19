@@ -46,12 +46,14 @@ runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, 
 "Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
 push. Don't hand-edit that table; the Action rewrites it on each push.
 
-**4. Visual changes are gated by baselines.** `npm run test:e2e` diffs three renders — the phone at
-open, the phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A
-change to any of them fails the suite (and CI) until the baseline is updated on purpose:
-`node scripts/visual.mjs --update`, commit the PNGs in the same PR, and say in the PR which
-baselines changed and why. `tests/visual/README.md` has the steps. Never update a baseline
-without looking at `.e2e-out/visual/<case>-diff.png` first.
+**4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
+phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
+any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
+label on the PR, the Action re-renders on the runner and commits the PNGs to the branch, and
+the PR description says which baselines changed and why. The baselines are the **CI runner's**
+renders — other machines rasterise text differently, so `npm run test:visual` locally shows the
+diffs but CI has the verdict. `tests/visual/README.md` has the steps. Never update a baseline
+without looking at the diff image first.
 
 ## Data — where the truth actually lives
 
@@ -112,7 +114,7 @@ on the map and refuses to write if anything on the sheet is unplaced.
 npm run dev        # local
 npm run lint       # oxlint
 npm run test:e2e   # required green before any PR: builds, runs the behaviour suite, then the visual diffs
-npm run test:visual -- --update   # accept the current renders as the visual baselines (see tests/visual/README.md)
+npm run test:visual   # just the visual diffs, advisory off CI; to accept a change, label the PR update-visual-baselines
 npm run pr-shots   # before/after screenshots (main vs branch) into docs/pr-shots/, prints the PR table
 npm run print      # writes the 11x17 print PDF + 300dpi PNG
 npm run sync       # git pull --ff-only && npm install
@@ -213,8 +215,8 @@ Figma workflow), and PR #8 (booth + beta fixes):
   Figma call whether the blob grows); the print sheet's **Food Court list is gone** and the
   **artist list is 8pt** (line-height 1.35, 0.3" spare), every row on a shared `--print-lead`
   box that also centres the legend swatches, so every label and every name starts on one x;
-  **PR screenshots** and **visual baselines** are standing rules 3 and 4 above, with the two
-  Actions (`PR screenshots`, `CI`) that enforce them. Booth numbers on the map stay ~5.5pt on
+  **PR screenshots** and **visual baselines** are standing rules 3 and 4 above, with the three
+  Actions (`PR screenshots`, `CI`, `Update visual baselines`) that enforce them. Booth numbers on the map stay ~5.5pt on
   purpose: the rows are pitched too tightly for 8pt.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**

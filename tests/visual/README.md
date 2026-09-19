@@ -1,7 +1,7 @@
 # Visual baselines
 
-Three approved renders that `npm run test:e2e` compares the build against, pixel by pixel
-(`scripts/visual.mjs`):
+Three approved renders that CI compares the build against, pixel by pixel (`scripts/visual.mjs`,
+run by `npm run test:e2e` and `npm run test:visual`):
 
 | file | what |
 |---|---|
@@ -9,22 +9,35 @@ Three approved renders that `npm run test:e2e` compares the build against, pixel
 | `sheet-open.png` | the phone with the Kidlandia bottom sheet open |
 | `print.png` | the print sheet, `/?print=1`, full page |
 
-Any change to what these show **fails the suite** until the baseline is updated on purpose.
-That is the point: nothing people see changes by accident.
+Any change to what these show **fails CI** until the baseline is updated on purpose. That is the
+point: nothing people see changes by accident.
+
+## Whose renders these are
+
+The CI runner's (GitHub Actions, `ubuntu-latest`, Playwright's Chromium). Every OS and Chromium
+build rasterises text a little differently — a laptop's phone-open differed from the runner's by
+0.4% of pixels, the print sheet by 3.8%, which is more than a moved pin — so one machine has to
+own the baselines, and the machine that judges the PR is it. Run locally, the comparison still
+shows you what differs (`diff` lines, with the images in `.e2e-out/visual/`) but does not fail:
+a local diff cannot tell a real change from a different font engine. **CI has the verdict.**
 
 ## Updating a baseline
 
-1. Run `npm run test:e2e`. A failing case writes `.e2e-out/visual/<case>-actual.png` and
-   `<case>-diff.png` (the changed pixels, in red). Look at the diff and decide the change is
-   the one you meant to make.
-2. `node scripts/visual.mjs --update` (with the built app being served, or just run
-   `npm run test:e2e -- --update`, which builds and serves first). It rewrites all three PNGs
-   from what renders now.
-3. Commit the changed PNGs **in the same PR as the change**, and say in the PR description
-   which baselines changed and why.
+1. Look at the diff. Locally, `npm run test:visual` writes `.e2e-out/visual/<case>-actual.png`
+   and `<case>-diff.png` (changed pixels in red). On a failed CI run, the same files are in
+   the run's `e2e-out` artifact. Decide the change is the one you meant to make.
+2. Put the **`update-visual-baselines`** label on the PR. The "Update visual baselines"
+   Action re-renders all three on the runner, commits `tests/visual/*.png` to the branch, and
+   takes the label off. (Or: Actions tab → "Update visual baselines" → Run workflow, on the
+   branch.)
+3. Say in the PR description which baselines changed and why.
 
 Never update a baseline to make a red build green without looking at the diff first.
 
-The renders are deterministic on one machine: fixed viewports, device scale 1, motion
-reduced, bundled fonts. Across machines, anti-aliasing can move edge pixels, so up to 0.1%
-of pixels may differ before a case fails; a moved pin or a changed label moves far more.
+`node scripts/visual.mjs --update` still works, but off the runner it writes *your* machine's
+renders, which CI will then reject; it is there for the Action.
+
+The runner's renders are deterministic: fixed viewports, device scale 1, motion reduced, bundled
+fonts. A 0.1% pixel tolerance absorbs sub-pixel drift; a moved pin or a changed label moves far
+more. If GitHub's runner image changes its font stack one day, all three will fail at once with
+small diffs — that is the signal to re-render, not a bug in the map.
