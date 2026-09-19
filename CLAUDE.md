@@ -216,7 +216,9 @@ Figma workflow), and PR #8 (booth + beta fixes):
   **artist list is 8pt** (line-height 1.35, 0.3" spare), every row on a shared `--print-lead`
   box that also centres the legend swatches, so every label and every name starts on one x;
   **PR screenshots** and **visual baselines** are standing rules 3 and 4 above, with the three
-  Actions (`PR screenshots`, `CI`, `Update visual baselines`) that enforce them. Booth numbers on the map stay ~5.5pt on
+  Actions (`PR screenshots`, `CI`, `Update visual baselines`) that enforce them. The first
+  baselines were rendered by that Action on 9/19; this container's renders differed from the
+  runner's by 0.4–3.8% of pixels, which is why the runner owns them. Booth numbers on the map stay ~5.5pt on
   purpose: the rows are pitched too tightly for 8pt.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
