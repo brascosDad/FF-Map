@@ -20,6 +20,12 @@
      same column lines. Content in every section lines up down the sheet. */
   --print-cols: 4;
   --print-gutter: var(--space-3);
+  /* Inside a column, every row is a fixed lead box then its text: the box
+     holds a centred swatch in the legend and a right-aligned booth number in
+     the artist list, so every label and every name starts on the same x.
+     --space-6 takes the widest number ("K10", "139") at 8pt bold with room. */
+  --print-lead: var(--space-6);
+  --print-lead-gap: var(--space-2);
   width: 17in;
   height: 11in;
   padding: var(--print-margin);
@@ -59,17 +65,17 @@
 .print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: start; }
 .print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: start; opacity: 0.8; }
 
-/* The index takes whatever height is left and flows into columns. It is the
-   one thing on the side column still below the 8pt floor: at 8pt its 150 rows
-   need 7.3in of the 5.2in the column has left, so the size is held at 6.4pt
-   until Ernest picks what gives (options in PR #8). Check the PNG after any
-   copy change. */
+/* The artist list takes whatever height is left and flows into the side
+   column's four columns, at 8pt like everything else on the sheet. Each row
+   is the shared lead box (booth number, right-aligned) then the name, so the
+   names start on the legend's label line. Check the PNG after any copy
+   change: the list fills most of what the column has. */
 .print-index { flex: 1; min-height: 0; }
 .print-index__sub { margin: 0 0 var(--print-heading-gap); font-size: 8pt; font-weight: 700; color: var(--text-muted); }
-.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 6.4pt; line-height: 1.32; }
-.print-index li { display: flex; gap: var(--space-1); break-inside: avoid; }
-.print-index__n { flex: 0 0 0.34in; text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
-.print-index__who { flex: 1; min-width: 0; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
+.print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
+.print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+.print-index__who { min-width: 0; }
 
 
 /* On screen (proofing in a browser tab) show the sheet on a grey desk; the
