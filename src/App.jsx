@@ -206,6 +206,10 @@ export default function App() {
             <a className="ffc-brand" href={FESTIVAL.siteUrl} target="_blank" rel="noreferrer">
               <span className="ffc-brand__name">Fall Fest</span>
             </a>
+            {/* The dates, small, beside the wordmark -- on the same row so the
+                chips do not move down. The docked panel already carries them,
+                so this hides at the desktop breakpoint (see .ffc-brand__date). */}
+            <span className="ffc-brand__date">{FESTIVAL.dates}</span>
           </div>
           <FilterChips active={filter} onToggle={handleChipToggle} />
         </div>

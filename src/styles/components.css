@@ -281,4 +281,19 @@
   text-shadow: 0 1px 0 var(--surface-chrome-solid), 0 0 12px var(--surface-chrome);
 }
 .ffc-brand:hover .ffc-brand__name { text-decoration: underline; text-underline-offset: 4px; }
-.ffc-brand:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; border-radius: var(--radius-sm); }
+.ffc-brand:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; border-radius: var(--radius-sm); }/* The dates beside the wordmark on a phone: --text-xs, bold, the same navy
+   and halo, sitting on the wordmark's baseline. Taps pass through it to the
+   map (the bar's empty space must not swallow pins). Hidden from the desktop
+   breakpoint up, where the docked panel's header already carries the dates. */
+.ffc-brand__date {
+  font: var(--weight-bold) var(--text-xs)/1 var(--font-ui);
+  color: var(--text-strong);
+  text-shadow: 0 1px 0 var(--surface-chrome-solid), 0 0 12px var(--surface-chrome);
+  align-self: flex-end;
+  margin-bottom: var(--space-1);
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media (min-width: 1024px) { .ffc-brand__date { display: none; } }
+
+
