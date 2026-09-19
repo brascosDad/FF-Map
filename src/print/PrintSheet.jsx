@@ -34,10 +34,15 @@ const VIEW = { x: 340, y: 65, w: 760, h: 810 };
 
 // Print sizes, all in map units. At the sheet's scale one unit is ~0.9pt.
 const TICK = 8;          // booth square, same as the screen
-const NUMBER = 6;        // booth number: ~5.5pt, the row pitch is 8-13 units
+// The map draws 810 units to 10.2in, so 8pt -- the sheet's type floor -- is
+// 8.8 units. Every label on the map clears it. Booth numbers are the one
+// exception: the rows are pitched 8-13 units apart, so a number at the floor
+// would overrun its neighbours; they stay at 6 (about 5.5pt), the largest
+// size the geometry allows.
+const NUMBER = 6;        // booth number
 const PIN_R = 10;        // a pin is a symbol here, not a 44px tap target
 const PIN_ICON = 13;
-const LABEL = 8.5;       // named-place labels
+const LABEL = 8.9;       // named-place labels and run ranges: 8pt
 const STREET = 11;
 
 const NUMBER_FILL = 'var(--map-number)';
@@ -132,10 +137,10 @@ function PrintMap() {
         <text x={640} y={812} textAnchor="middle">Art Market {span(BOOTHS.mcl)}</text>
         {/* In the west row's own break at the path bend (between 37 and 38),
             along the row's direction, so it touches no number. */}
-        <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market {span(BOOTHS.spine)}</text>
+        <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market {span(BOOTHS.spine)}</text>
         {/* Just below the south end of the Kidlandia column, wherever the
             sheet's count puts it. */}
-        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle" fontSize={LABEL - 1.5}>{span(BOOTHS.kid)}</text>
+        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
       </g>
 
       {PINS.map((p, i) => (

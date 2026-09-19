@@ -52,8 +52,11 @@
 
 .print-food ul { margin: 0; padding: 0; list-style: none; columns: 3; column-gap: var(--space-3); font-size: 8pt; line-height: 1.35; }
 
-/* The index takes whatever height is left and flows into columns -- check
-   the PNG after any copy change. */
+/* The index takes whatever height is left and flows into columns. It is the
+   one thing on the side column still below the 8pt floor: at 8pt its 150 rows
+   need 7.3in of the 5.2in the column has left, so the size is held at 6.4pt
+   until Ernest picks what gives (options in PR #8). Check the PNG after any
+   copy change. */
 .print-index { flex: 1; min-height: 0; }
 .print-index ul { margin: 0; padding: 0; list-style: none; columns: 4; column-gap: var(--space-3); font-size: 6.4pt; line-height: 1.32; }
 .print-index li { display: flex; gap: var(--space-1); break-inside: avoid; }
