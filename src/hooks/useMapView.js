@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Discrete, stepped zoom — not continuous. This is the direction the design
-// decision landed on: the overview you land on is the fixed, most-zoomed-out
-// floor, and zooming in snaps between a fixed number of levels. Edit LEVELS
-// (viewBox widths) to try 3 vs. 4 vs. 5 stops; everything else adapts.
+// Discrete, stepped zoom. This is the direction the design decision landed
+// on: the overview you land on is the fixed, most-zoomed-out floor, and
+// zooming in snaps between a fixed number of levels. The one continuous
+// motion is a pinch in progress -- the map follows the fingers, then settles
+// on the nearest stop when they lift. Edit LEVEL_RATIOS to try 3 vs. 4 vs. 5
+// stops; everything else adapts.
 //
 // All figures below are in the canonical export's 1440x900 map space (see
 // assets/basemapTrace.js). They are the old 340x460 stops scaled by ~1.94 and
@@ -77,6 +79,14 @@ function homeFor(px, py, insetRight = 0, zoom = 1) {
 }
 
 const STEP_COOLDOWN = 420;
+// How long a directory fly-to takes, and how long a released pinch takes to
+// settle onto its stop. The settle is short: the fingers did the travelling.
+const FLY_MS = 320;
+const SNAP_MS = 180;
+// A pinch may run this far past the outermost and innermost stops before it
+// stops following the fingers -- a little give, so the ends feel like ends
+// rather than walls, and the snap brings it back.
+const PINCH_OVERSHOOT = 1.15;
 
 /**
  * Hold the viewport over REGION.
@@ -197,11 +207,30 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     return true;
   }, [centerOn]);
 
+  /** Ease the viewBox from where it is to `to` over `dur` ms. Snaps instead
+   *  when the user has asked for reduced motion. One animator for every move
+   *  that is not the user's own finger: the directory fly-to and the pinch
+   *  settling onto a stop. */
+  const flyRef = useRef(0);
+  const animateTo = useCallback((to, dur) => {
+    const from = vbRef.current;
+    cancelAnimationFrame(flyRef.current);
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof requestAnimationFrame === 'undefined') { setVb(to); return; }
+    const t0 = performance.now();
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => {
+      const t = Math.min(1, (now - t0) / dur), e = ease(t);
+      setVb({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e,
+              w: from.w + (to.w - from.w) * e, h: from.h + (to.h - from.h) * e });
+      if (t < 1) flyRef.current = requestAnimationFrame(step);
+    };
+    flyRef.current = requestAnimationFrame(step);
+  }, []);
+
   /** Fly to a map point for a directory row: zoom in to at least `minLevel`
    *  (never out), centre the point in the usable viewport, and ease there so
-   *  the eye can follow where it went. Snaps instead when the user has asked
-   *  for reduced motion. */
-  const flyRef = useRef(0);
+   *  the eye can follow where it went. */
   const focusOn = useCallback((x, y, minLevel = 1) => {
     const idx = Math.min(Math.max(levelRef.current, minLevel), LEVEL_RATIOS.length - 1);
     const { px, py } = sizeRef.current;
@@ -211,19 +240,33 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const insetMap = px > 0 ? (insetRef.current * nw) / px : 0;
     const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - nh / 2, w: nw, h: nh }, px, insetRef.current);
     setLevelIdx(idx);
-    cancelAnimationFrame(flyRef.current);
-    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduce || typeof requestAnimationFrame === 'undefined') { setVb(to); return; }
-    const DUR = 320, t0 = performance.now();
-    const ease = (t) => 1 - Math.pow(1 - t, 3);
-    const step = (now) => {
-      const t = Math.min(1, (now - t0) / DUR), e = ease(t);
-      setVb({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e,
-              w: from.w + (to.w - from.w) * e, h: from.h + (to.h - from.h) * e });
-      if (t < 1) flyRef.current = requestAnimationFrame(step);
-    };
-    flyRef.current = requestAnimationFrame(step);
-  }, []);
+    animateTo(to, FLY_MS);
+  }, [animateTo]);
+
+  /**
+   * Land a free-scaled viewBox (mid-pinch) on the nearest of the three stops.
+   *
+   * The stops are what the map means -- blobs, squares, numbers -- so a pinch
+   * must end on one. Nearest is judged in log space (a zoom is a ratio), and
+   * the point that was under the fingers' midpoint stays under it, so the
+   * snap reads as the map settling rather than jumping somewhere else.
+   */
+  const snapToLevel = useCallback((cx, cy) => {
+    const { px, py } = sizeRef.current;
+    const cur = vbRef.current;
+    const base = fitOverview(px, py, insetRef.current, zoomRef.current);
+    let idx = 0, best = Infinity;
+    LEVEL_RATIOS.forEach((r, i) => {
+      const d = Math.abs(Math.log(cur.w) - Math.log(base * r));
+      if (d < best) { best = d; idx = i; }
+    });
+    const nw = base * LEVEL_RATIOS[idx];
+    const p = toSvg(cx, cy);
+    const af = nw / cur.w;
+    const to = clampPan({ x: p.x - (p.x - cur.x) * af, y: p.y - (p.y - cur.y) * af, w: nw, h: (nw * py) / px }, px, insetRef.current);
+    setLevelIdx(idx);
+    animateTo(to, SNAP_MS);
+  }, [toSvg, animateTo]);
   const resetToOverview = useCallback(() => {
     const { px, py } = sizeRef.current;
     setVb(homeFor(px, py, insetRef.current, zoomRef.current));
@@ -268,7 +311,14 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     if (levelRef.current === 0) setVb(homeFor(px, py, insetRight, overviewZoom));
   }, [insetRight, overviewZoom]);
 
-  // Pan (single pointer) + pinch step-zoom (two pointers) + wheel step-zoom + dblclick step-in.
+  // Pan (single pointer) + pinch zoom (two pointers) + wheel step-zoom + dblclick step-in.
+  //
+  // The pinch is continuous while the fingers are down and snaps to a stop
+  // when they lift. It used to step a level every 28px of spread, on a 420ms
+  // cooldown, which is what testers meant by "awkward": the map did nothing,
+  // then jumped, then ignored them. Now it scales under the fingers like every
+  // other map does, and the three-stop design survives because the release
+  // always lands on one of them (snapToLevel).
   useEffect(() => {
     const wrap = wrapRef.current;
     const map = mapRef.current;
@@ -276,9 +326,11 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
 
     const pointers = new Map();
     let dragMoved = false;
-    let pinchStartDist = 0;
+    // The pinch's starting geometry: finger spread, midpoint, the viewBox, and
+    // the map point under the midpoint. Everything mid-gesture is computed
+    // from these, not incrementally, so the gesture cannot drift.
+    let pinch = null;
     let lastWheelStep = 0;
-    let lastPinchStep = 0;
 
     function onMove(e) {
       if (!pointers.has(e.pointerId)) return;
@@ -294,23 +346,46 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         const pts = [...pointers.values()];
         const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         const mx = (pts[0].x + pts[1].x) / 2, my = (pts[0].y + pts[1].y) / 2;
-        if (!pinchStartDist) pinchStartDist = d;
-        dragMoved = true;
-        const now = Date.now();
-        if (now - lastPinchStep > STEP_COOLDOWN) {
-          const delta = d - pinchStartDist;
-          if (delta > 28) { stepLevel(1, mx, my); pinchStartDist = d; lastPinchStep = now; }
-          else if (delta < -28) { stepLevel(-1, mx, my); pinchStartDist = d; lastPinchStep = now; }
+        if (!pinch) {
+          cancelAnimationFrame(flyRef.current);
+          pinch = { d, vb: { ...vbRef.current }, at: toSvg(mx, my) };
         }
+        dragMoved = true;
+        if (d < 1) return;
+        const { px, py } = sizeRef.current;
+        const base = fitOverview(px, py, insetRef.current, zoomRef.current);
+        // Spread the fingers and the map grows: the viewBox shrinks by the
+        // same ratio, held between the two end stops with a little give.
+        const wMax = base * LEVEL_RATIOS[0] * PINCH_OVERSHOOT;
+        const wMin = (base * LEVEL_RATIOS[LEVEL_RATIOS.length - 1]) / PINCH_OVERSHOOT;
+        const nw = Math.min(wMax, Math.max(wMin, pinch.vb.w * (pinch.d / d)));
+        const nh = (nw * py) / px;
+        // Keep the map point that was under the fingers under the fingers.
+        const scale = r.width / nw;
+        const next = { x: pinch.at.x - (mx - r.left) / scale, y: pinch.at.y - (my - r.top) / scale, w: nw, h: nh };
+        setVb(clampPan(next, px, insetRef.current));
       }
     }
     function onUp(e) {
       pointers.delete(e.pointerId);
-      if (pointers.size < 2) pinchStartDist = 0;
+      if (pinch && pointers.size < 2) {
+        // The fingers came off (or one did): settle on the nearest stop around
+        // the point that was under them. The remaining finger, if any, drops
+        // out of the gesture too -- a pan after a pinch starts fresh, rather
+        // than fighting the settle -- and its lift must not read as a tap.
+        pinch = null;
+        const pts = [...pointers.values()];
+        const c = pts.length ? pts[0] : { x: e.clientX, y: e.clientY };
+        pointers.clear();
+        snapToLevel(c.x, c.y);
+        suppressClickRef.current = true;
+        setTimeout(() => { suppressClickRef.current = false; }, STEP_COOLDOWN);
+      }
       if (pointers.size === 0) {
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
-        if (dragMoved) {
+        window.removeEventListener('pointercancel', onUp);
+        if (dragMoved && !suppressClickRef.current) {
           suppressClickRef.current = true;
           setTimeout(() => { suppressClickRef.current = false; }, 60);
         }
@@ -322,6 +397,10 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       window.addEventListener('pointermove', onMove);
       window.addEventListener('pointerup', onUp);
+      // iOS cancels the pointer (rather than lifting it) when the gesture
+      // becomes a system one; without this the map thinks a finger is still
+      // down and the next touch reads as a pinch.
+      window.addEventListener('pointercancel', onUp);
     }
     function onWheel(e) {
       e.preventDefault();
@@ -341,17 +420,26 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       else stepLevel(1, e.clientX, e.clientY);
     }
 
+    // Safari's own page zoom on a two-finger gesture. touch-action: none on the
+    // wrap already declines it; this is the belt to that suspender.
+    const swallow = (e) => e.preventDefault();
+
     wrap.addEventListener('wheel', onWheel, { passive: false });
+    wrap.addEventListener('gesturestart', swallow);
+    wrap.addEventListener('gesturechange', swallow);
     map.addEventListener('dblclick', onDblClick);
     map.addEventListener('pointerdown', onDown);
     return () => {
       wrap.removeEventListener('wheel', onWheel);
+      wrap.removeEventListener('gesturestart', swallow);
+      wrap.removeEventListener('gesturechange', swallow);
       map.removeEventListener('dblclick', onDblClick);
       map.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
     };
-  }, [setLevel, stepLevel]);
+  }, [setLevel, stepLevel, snapToLevel, toSvg]);
 
   const viewBoxStr = `${vb.x} ${vb.y} ${vb.w} ${vb.h}`;
   // Map units per CSS pixel. Anything that should hold a constant SCREEN size

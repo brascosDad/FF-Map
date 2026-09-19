@@ -1,6 +1,6 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
-import { BOOTHS } from '../data/booths';
+import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
@@ -9,10 +9,15 @@ import { IconAt } from './Icon';
 // ticks at 7.2-8.9 depending on the row; one size across all of them keeps the
 // rows reading as a single system.
 const TICK = 8;
+// Frame weight of a hollow (unnumbered) square, in map units: a fifth of the
+// square, so it still reads as a frame at the ~8px the first zoom step draws.
+const HOLLOW_STROKE = 1.6;
 
 // Screen-constant sizes, in CSS pixels. These are multiplied by unitsPerPx at
 // render so a pin is the same physical size at every zoom -- it is a control,
-// not a piece of ground.
+// not a piece of ground. That includes mid-pinch: unitsPerPx tracks the live
+// viewBox, so while the map scales under the fingers the pins do not, and the
+// same size holds at every stop, so nothing pops when the gesture settles.
 //
 // The pin diameter is read from --pin-size rather than repeated here: it is a
 // token, and a second copy of the number is how the two drift apart. Read once
@@ -26,17 +31,17 @@ function pinPx() {
     const n = parseFloat(cs.getPropertyValue(name));
     return Number.isFinite(n) ? n : fallback;
   };
-  sizes = { pin: px('--pin-size', 40), overviewPin: px('--pin-size-overview', 34), tap: px('--tap-min', 44) };
+  sizes = { pin: px('--pin-size', 40), tap: px('--tap-min', 44) };
   return sizes;
 }
 
 // What the furthest-out view shows. At that zoom the whole festival is squeezed
 // into a phone screen, and pins hold one physical size, so the only question is
-// how many of them there are. Measured on a 390px phone with all fifteen: seven
+// how many of them there are. Measured on a 390px phone with all of them: seven
 // pairs collide, and EVERY collision involves an amenity -- the destinations
-// never touch each other. So the overview carries destinations, and the
-// amenities arrive when you zoom in or when you ask for them by chip.
-const OVERVIEW_CATS = new Set(['stage', 'food', 'kids']);
+// never touch each other. So the overview carries the pins flagged
+// `overview: true` in assets/pins.js (destinations plus the landmarks testers
+// asked for), and the rest arrive when you zoom in or ask for them by chip.
 
 const PIN_ICON_PX = 22;
 const STREET_PX = 13;
@@ -51,7 +56,9 @@ const MAP_NUMBER = 'var(--map-number)';
 const MAP_HALO = 'var(--map-halo)';
 const FOOD_LABEL = 'var(--map-food-label)';
 
-function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0 } = {}) {
+// `hollow` draws the square as an outline -- cream inside, the run's colour as
+// a frame -- for a spot that is a booth but not one of the numbered run.
+function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false } = {}) {
   return booths.map((b) => (
     <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
@@ -65,8 +72,10 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK}
             rx={1.6}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
-            fill={b.id === selectedId ? NAVY : color}
-            fillOpacity={b.id === selectedId ? 1 : 0.6} />
+            fill={b.id === selectedId ? NAVY : hollow ? CREAM : color}
+            fillOpacity={b.id === selectedId || hollow ? 1 : 0.6}
+            stroke={hollow && b.id !== selectedId ? color : undefined}
+            strokeWidth={hollow ? HOLLOW_STROKE : undefined} />
       {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
@@ -111,16 +120,17 @@ function SelectRing({ x, y, r, k }) {
 export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
-  // Slightly smaller at the overview so even the markers that do survive have
-  // air around them; full size from the first zoom step on.
+  // One size at every level. The overview used to draw pins a step smaller,
+  // which read fine on a static screen and wrong under a pinch: the moment the
+  // fingers lifted across the overview boundary every pin changed size.
   const sz = pinPx();
-  const pinR = ((overview ? sz.overviewPin : sz.pin) / 2) * k;
+  const pinR = (sz.pin / 2) * k;
   const tapR = Math.max(pinR, (sz.tap / 2) * k);
   // Area markers are tappable too, so they take the same size as a pin.
   const clusterR = pinR;
   // A pin is on the overview if it is a destination, or if you asked for its
   // category by chip -- tapping "Restrooms" at the overview must show restrooms.
-  const onOverview = (cat) => OVERVIEW_CATS.has(cat) || filter === cat;
+  const onOverview = (p) => p.overview || filter === p.c;
   // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
   // that says how far "not what you asked for" fades, and it lives in one file.
   const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
@@ -182,20 +192,30 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
-        {/* Kidlandia's ten booths, K0-K9. Not part of the 1-142 run and not
-            on any market row, so they draw on their own: squares from the
-            first zoom step, and nothing at the phone overview -- blobs are
-            drawn in Figma and there is no blob-kid layer yet. Placed by
-            description, not from the export: see scripts/build-booths.py. */}
+        {/* Kidlandia's booths, one column inside the Kidlandia area, lowest
+            number at the south end. Not part of the numbered run and not on
+            any market row, so they draw on their own, in the Kidlandia
+            category's own colour rather than the art-market slate: squares
+            from the first zoom step, and nothing at the phone overview --
+            blobs are drawn in Figma and there is no blob-kid layer yet. The
+            column's position is by description, not from the export: see
+            scripts/build-booths.py. The two unnumbered artists (a spot, no
+            number) draw HOLLOW -- cream inside a slate frame -- so they cannot
+            be mistaken for a numbered booth whose number is too small to read. */}
         {!showBlobs && (
           <g className="ff-area" data-area="kid">
-            {boxes(BOOTHS.kid, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+            {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+          </g>
+        )}
+        {!showBlobs && (
+          <g className="ff-area" data-area="unnumbered">
+            {boxes(UNNUMBERED, SLATE, { onTap: onBoothClick, k, selectedId: selectedBoothId, hollow: true })}
           </g>
         )}
 
         {PINS.map((p, i) => {
           if (detail && p.c === 'food') return null;
-          if (overview && !onOverview(p.c)) return null;
+          if (overview && !onOverview(p)) return null;
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.

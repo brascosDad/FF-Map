@@ -11,8 +11,8 @@
 // so it cannot disagree with the phone map about where anything is.
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
-import { AREAS, BOOTH_ANGLE } from '../data/areas';
-import { PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
+import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import vendorsData from '../data/vendors.json';
@@ -39,14 +39,20 @@ const STREET = 11;
 const NUMBER_FILL = 'var(--map-number)';
 const HALO = 'var(--map-halo)';
 
-function Squares({ booths, color, angle = 0 }) {
+// A booth with no number (the two unnumbered artists) is drawn hollow -- cream
+// inside a slate frame, as on the phone map -- and gets no text element at
+// all, not an empty one.
+function Squares({ booths, color, angle = 0, hollow = false }) {
   return booths.map((b) => (
-    <g key={b.id}>
+    <g key={b.id} className={b.n == null ? 'print-booth print-booth--unnumbered' : 'print-booth'}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK} rx={1.4}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
-            fill={color} fillOpacity={0.75} />
-      <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
-            textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
+            fill={hollow ? CREAM : color} fillOpacity={hollow ? 1 : 0.75}
+            stroke={hollow ? color : undefined} strokeWidth={hollow ? 1.4 : undefined} />
+      {b.n != null && (
+        <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
+              textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
+      )}
     </g>
   ));
 }
@@ -72,22 +78,26 @@ function PrintMap() {
 
       <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]} />)}
-      <Squares booths={BOOTHS.kid} color={SLATE} angle={BOOTH_ANGLE.kid} />
+      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
+      <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
       {/* The three runs carry their ranges on the map itself, where the 2025
           sheet had them, so a reader with a booth number knows which street
-          to walk to before they find the key. */}
+          to walk to before they find the key. The ranges are read off the
+          data, so this sheet cannot print an endpoint the app does not draw. */}
       <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
-        <text x={411.5} y={290} textAnchor="middle" transform="rotate(-90 411.5 290)">Art Market 82–142</text>
-        <text x={640} y={812} textAnchor="middle">Art Market 55–81</text>
+        <text x={411.5} y={290} textAnchor="middle" transform="rotate(-90 411.5 290)">Art Market {span(BOOTHS.cpd)}</text>
+        <text x={640} y={812} textAnchor="middle">Art Market {span(BOOTHS.mcl)}</text>
         {/* In the west row's own break at the path bend (between 37 and 38),
             along the row's direction, so it touches no number. */}
-        <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market 1–54</text>
-        <text x={645} y={496} textAnchor="middle" fontSize={LABEL - 1.5}>K0–K9</text>
+        <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market {span(BOOTHS.spine)}</text>
+        {/* Just below the south end of the Kidlandia column, wherever the
+            sheet's count puts it. */}
+        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle" fontSize={LABEL - 1.5}>{span(BOOTHS.kid)}</text>
       </g>
 
       {PINS.map((p, i) => (
-        <g key={i}>
+        <g key={i} className={`print-pin print-pin--${p.c}`}>
           <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
           <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
           {LABEL_AT[p.d] && LABEL_TEXT[p.d] && (
@@ -119,13 +129,12 @@ function artistIndex() {
   for (const key of ['spine', 'mcl', 'cpd', 'kid']) {
     for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n) });
   }
-  for (const u of UNNUMBERED) rows.push({ label: u.where ? `${u.biz} (at the ${u.where})` : `${u.biz} (no number)`, n: '—' });
+  for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
   return rows.sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
 }
 
 export default function PrintSheet() {
   const index = artistIndex();
-  const counts = { park: BOOTHS.spine.length, kid: BOOTHS.kid.length, mcl: BOOTHS.mcl.length, cpd: BOOTHS.cpd.length };
   return (
     <div className="print-page">
       <div className="print-mapcol"><PrintMap /></div>
@@ -152,17 +161,25 @@ export default function PrintSheet() {
             <span className="print-legend__sq" style={{ background: SLATE }} />Art market booth, numbered
           </span>
           <span className="print-legend__row">
+            <span className="print-legend__sq" style={{ background: PIN_COLOR.kids }} />Kidlandia booth
+          </span>
+          <span className="print-legend__row">
+            <span className="print-legend__sq print-legend__sq--hollow" />Artist with a spot, no number
+          </span>
+          <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
         </section>
 
+        {/* "Over 130 artists" is the public number (decided 9/17) -- never a
+            booth count, which moves every time the chair edits her sheet. */}
         <section className="print-key">
-          <h2>Art market · {counts.park + counts.mcl + counts.cpd} booths</h2>
+          <h2>Art market · over 130 artists</h2>
           <div className="print-key__rows">
-            <span><b>1–54</b> in the park</span>
-            <span><b>K0–K9</b> Kidlandia, on the field</span>
-            <span><b>55–81</b> McLendon Ave</span>
-            <span><b>82–142</b> Candler Park Dr</span>
+            <span><b>{span(BOOTHS.spine)}</b> in the park</span>
+            <span><b>{span(BOOTHS.kid)}</b> Kidlandia, on the field</span>
+            <span><b>{span(BOOTHS.mcl)}</b> McLendon Ave</span>
+            <span><b>{span(BOOTHS.cpd)}</b> Candler Park Dr</span>
           </div>
         </section>
 

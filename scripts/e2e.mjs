@@ -116,7 +116,7 @@ for (const [name, w, h] of SIZES) {
       return true;
     })());
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 10,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 12,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
@@ -237,10 +237,9 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: no booth numbers at Booths level`, !atBooths.some((t) => /^\d+$/.test(t)));
 
   // ---- pin sizing ----
-  // Two different numbers, deliberately. The VISIBLE pin is 34px at the overview
-  // and 40 from the first zoom step on -- the overview is where the festival is
-  // squeezed into a phone, so the markers give up a little there. The thing a
-  // FINGER has to hit is 44px at every level regardless.
+  // One visible size, 40px, at every level (the overview used to draw 34, and
+  // that step showed as a pop at the end of every pinch that crossed it). The
+  // thing a FINGER has to hit is 44px at every level regardless.
   await safe(`${name}: pin sizing`, async () => {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
@@ -253,8 +252,8 @@ for (const [name, w, h] of SIZES) {
     const d1 = await drawn(), h1 = await hit();
     await zoomIn(p);
     const d2 = await drawn(), h2 = await hit();
-    check(`${name}: pins are smaller at the overview, full size once you zoom`,
-      Math.abs(d0 - 34) <= 1.5 && Math.abs(d1 - 40) <= 1.5 && Math.abs(d2 - 40) <= 1.5,
+    check(`${name}: pins are one size at every level`,
+      [d0, d1, d2].every((v) => Math.abs(v - 40) <= 1.5),
       [d0, d1, d2].map((v) => v.toFixed(0)).join(' / ') + 'px');
     check(`${name}: the touch target stays 44px at every level`,
       [h0, h1, h2].every((v) => v >= 43.5), [h0, h1, h2].map((v) => v.toFixed(0)).join(' / ') + 'px');
@@ -360,9 +359,9 @@ for (const [name, w, h] of SIZES) {
       back && back.i === expected, back ? `${start.i} -> ${back.i} (expected ${expected})` : 'unparsed');
     check(`${name}: stepping stays in the same area`, back && back.area === start.area,
       back ? `${start.area} -> ${back.area}` : 'unparsed');
-    // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
+    // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls.
     check(`${name}: total matches the area, not all booths`,
-      [58, 27, 54, 10, 16].includes(start.total), `${start.total} in ${start.area}`);
+      [58, 27, 54, 11, 16].includes(start.total), `${start.total} in ${start.area}`);
 
     await p.locator('.ffc-step button').last().click();    // forward again
     await p.waitForTimeout(150);
@@ -404,8 +403,9 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: an area sheet lists its booths`, opened);
     if (!opened) return;
     const rows = await p.locator('button.boothrow').count();
-    // 58 on Candler Park Dr, 27 on McLendon, 54 + 10 Kidlandia in the park.
-    check(`${name}: the list is the whole run`, [58, 27, 64].includes(rows), `${rows} rows`);
+    // 58 on Candler Park Dr; 27 on McLendon + Achieve with Steve; 54 + 11
+    // Kidlandia + AWARE Wildlife in the park. The unnumbered pair are rows too.
+    check(`${name}: the list is the whole run`, [58, 28, 66].includes(rows), `${rows} rows`);
     const named = await p.locator('button.boothrow .who').allTextContents();
     check(`${name}: every row names an artist or says it is open`,
       named.every((t) => t.trim().length > 0 && !/undefined|null/.test(t)));
@@ -461,6 +461,150 @@ for (const [name, w, h] of SIZES) {
   });
 
   await p.screenshot({ path: `${OUT}/${name}.png` });
+  await p.close();
+}
+
+// ---- the phone's opening state (beta round 1, 9/17) ----
+// Bike valet and the beer stand are landmarks and were reached for first; the
+// merch booth is the festival's own. All three show at open, on the smallest
+// phone we care about, and no two overview targets overlap -- 44px is the
+// floor and circles may touch but not cross (decided).
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const cats = await p.locator('svg.ff-map g.ff-pin').evaluateAll((els) => els.map((e) => [...e.classList].find((c) => c.startsWith('ffc-pin--'))?.slice(9)));
+  check(`${name}: bike valet, beer and merch are on the opening view`,
+    cats.includes('bikevalet') && cats.includes('merch') && cats.includes('drinks'), cats.join(','));
+  check(`${name}: still only a handful of pins at open`, cats.length <= 8, `${cats.length} pins`);
+  const titles = [];
+  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--merch', 'g.ffc-pin--drinks']) {
+    const b = await p.locator(sel).first().boundingBox();
+    await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await p.waitForTimeout(450);
+    titles.push(await p.locator('.sheet .hd h3').first().textContent());
+    await p.locator('.sheet .close').click();
+    await p.waitForTimeout(350);
+  }
+  check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
+  const overlap = await p.evaluate(() => {
+    const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area > circle')]
+      .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
+    const out = [];
+    for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
+      const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
+      if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n.replace(/ff-tap |ffc-pin /g, '')} x ${cs[j].n.replace(/ff-tap |ffc-pin /g, '')} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+    }
+    return out;
+  });
+  check(`${name}: no two overview touch targets overlap`, overlap.length === 0, overlap.join(' | '));
+  await p.close();
+}
+
+// ---- the info booth is a pin, everywhere ----
+// Phone, desktop and paper: a circle filled with --pin-info carrying the info
+// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19).
+for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1440, 900, true]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  if (zoomFirst) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); }
+  const info = await p.evaluate(() => {
+    const g = document.querySelector('svg.ff-map g.ffc-pin--info');
+    if (!g) return { present: false };
+    // :scope > g -- the drawn circle sits in the shadowed inner group; the
+    // outer transparent circle is the 44px tap target, not the pin.
+    const circle = g.querySelector(':scope > g circle'), glyph = g.querySelector(':scope > g svg');
+    return { present: true, fill: circle && getComputedStyle(circle).fill, glyph: !!glyph, rects: g.querySelectorAll('rect').length,
+             size: circle ? Math.round(circle.getBoundingClientRect().width) : 0 };
+  });
+  check(`${name}: the info booth draws as a pin in --pin-info`,
+    info.present && info.fill === 'rgb(64, 126, 181)' && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
+    info.present ? `${info.fill}, glyph ${info.glyph}, ${info.rects} rects, ${info.size}px` : 'no info pin drawn');
+  await p.close();
+}
+
+// ---- pinch ----
+// Testers reach for a pinch before the buttons (Amy, iPhone 16). The map has to
+// follow the fingers while they move and land on a stop when they lift -- not
+// step once, ignore the rest of the gesture, then step again.
+{
+  const p = await browser.newPage({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const width = async () => Number((await p.locator('svg.ff-map').getAttribute('viewBox')).split(' ')[2]);
+  const w0 = await width();
+  // Two pointers, spread from 60px apart to 200px in eight moves, then lift.
+  const trace = await p.evaluate(async () => {
+    const svg = document.querySelector('svg.ff-map');
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const ev = (type, id, x, y, target = svg) => target.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, isPrimary: id === 1 }));
+    const widths = [];
+    ev('pointerdown', 1, cx - 30, cy); ev('pointerdown', 2, cx + 30, cy);
+    for (let i = 1; i <= 8; i++) {
+      const s = 30 + i * 8.75;
+      ev('pointermove', 1, cx - s, cy, window); ev('pointermove', 2, cx + s, cy, window);
+      await new Promise((r) => requestAnimationFrame(r));
+      widths.push(Number(svg.getAttribute('viewBox').split(' ')[2]));
+    }
+    ev('pointerup', 1, cx - 100, cy, window); ev('pointerup', 2, cx + 100, cy, window);
+    return widths;
+  });
+  await p.waitForTimeout(500);
+  const w1 = await width();
+  const monotone = trace.every((v, i) => i === 0 || v <= trace[i - 1] + 0.01);
+  check('pinch: the map follows the fingers while they move', monotone && trace[trace.length - 1] < trace[0] * 0.8,
+    trace.map((v) => Math.round(v)).join(' > '));
+  // Spreading 60 -> 200px is x3.33; the closest stop is Detail (0.315). It
+  // must land exactly on a stop, with the zoom-out button now live.
+  check('pinch: it settles on a stop when the fingers lift', Math.abs(w1 - w0 * 0.315) < 1 || Math.abs(w1 - w0 * 0.565) < 1,
+    `${Math.round(w0)} -> ${Math.round(w1)} (stops at ${Math.round(w0 * 0.565)} and ${Math.round(w0 * 0.315)})`);
+  check('pinch: the buttons agree about where it landed',
+    (await p.locator('.zoomctl button').nth(1).getAttribute('aria-disabled')) === 'false');
+  check('pinch: numbers appear if it landed on Detail',
+    Math.abs(w1 - w0 * 0.315) >= 1 || (await p.locator('svg.ff-map text').allTextContents()).some((t) => /^\d+$/.test(t)));
+
+  // Only the map scales. A pin, its glyph and a street label hold one on-screen
+  // size for the whole gesture and through the settle (Ernest, iPhone 9/19:
+  // pins shrank under the fingers and popped back on release). Real two-finger
+  // touch input through the DevTools protocol, measured every move -- the
+  // synthetic pointer events above cannot reproduce a browser's touch path.
+  await p.locator('.zoomctl button[aria-label="Reset to overview"]').click();
+  await p.waitForTimeout(400);
+  const cdp = await p.context().newCDPSession(p);
+  const sizes = () => p.evaluate(() => {
+    const pin = document.querySelector('svg.ff-map g.ffc-pin--kids g circle');
+    const glyph = document.querySelector('svg.ff-map g.ffc-pin--kids g svg');
+    const label = document.querySelector('svg.ff-map text');
+    return { pin: pin.getBoundingClientRect().width, glyph: glyph.getBoundingClientRect().width, label: label.getBoundingClientRect().height };
+  });
+  const cx = 196, cy = 500;
+  const two = (s) => [{ x: cx - s, y: cy, id: 1 }, { x: cx + s, y: cy, id: 2 }];
+  const run = async (spreads) => {
+    const frames = [await sizes()];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: two(spreads[0]) });
+    for (const s of spreads.slice(1)) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: two(s) });
+      await p.waitForTimeout(40);
+      frames.push(await sizes());
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    for (let i = 0; i < 6; i++) { await p.waitForTimeout(50); frames.push(await sizes()); }
+    return frames;
+  };
+  const steady = (frames, key) => Math.max(...frames.map((f) => f[key])) - Math.min(...frames.map((f) => f[key])) <= 0.5;
+  const report = (frames, key) => `${key} ${Math.min(...frames.map((f) => f[key])).toFixed(1)}–${Math.max(...frames.map((f) => f[key])).toFixed(1)}px`;
+  const inward = await run([30, 40, 50, 60, 70, 80, 90, 100, 110, 120]);
+  check('pinch in: pin, glyph and label hold their on-screen size, gesture and settle',
+    steady(inward, 'pin') && steady(inward, 'glyph') && steady(inward, 'label'),
+    ['pin', 'glyph', 'label'].map((k) => report(inward, k)).join(', '));
+  const outward = await run([120, 110, 100, 90, 80, 70, 60, 50, 40, 30]);
+  check('pinch out: pin, glyph and label hold their on-screen size, gesture and settle',
+    steady(outward, 'pin') && steady(outward, 'glyph') && steady(outward, 'label'),
+    ['pin', 'glyph', 'label'].map((k) => report(outward, k)).join(', '));
+  const wEnd = await width();
+  check('pinch out: it landed back on a stop', [1, 0.565, 0.315].some((r) => Math.abs(wEnd - w0 * r) < 1),
+    `${Math.round(wEnd)} (stops at ${[1, 0.565, 0.315].map((r) => Math.round(w0 * r)).join(' / ')})`);
   await p.close();
 }
 
@@ -854,11 +998,24 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     numbers: document.querySelectorAll('.print-map rect + text').length,
     chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
     index: document.querySelectorAll('.print-index li').length,
+    unnumbered: document.querySelectorAll('.print-booth--unnumbered').length,
+    infoPin: (() => { const c = document.querySelector('.print-pin--info circle'); return c ? getComputedStyle(c).fill : 'none'; })(),
+    infoGlyph: !!document.querySelector('.print-pin--info svg'),
+    infoRects: document.querySelectorAll('.print-pin--info rect').length,
+    text: document.querySelector('.print-side').innerText,
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
-  // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
-  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 10 + 16, `${pr.numbers} numbers`);
+  check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === 'rgb(64, 126, 181)' && pr.infoGlyph && pr.infoRects === 0,
+    `${pr.infoPin}, glyph ${pr.infoGlyph}, ${pr.infoRects} rects`);
+  // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls. The two
+  // unnumbered squares print with no number, so they are not counted here.
+  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);
+  check('print: the two unnumbered artists have a square', pr.unnumbered === 2, `${pr.unnumbered} squares`);
+  // innerText carries the heading's CSS uppercase, hence the /i.
+  check('print: the public count is "over 130 artists", never a booth total',
+    /over 130 artists/i.test(pr.text) && !/\b1[3-6]\d booths\b/i.test(pr.text) && !pr.text.includes('164'));
+  check('print: run endpoints come from the sheet', pr.text.includes('82–139') && pr.text.includes('K0–K10') && !pr.text.includes('142'), 'looked for 82–139 and K0–K10');
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);
   check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);
@@ -872,13 +1029,17 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   const warm = await ctx.newPage();
   await warm.goto(BASE, { waitUntil: 'networkidle' });
   await warm.waitForTimeout(1000);
+  // `ready` never resolves if sw.js is missing or served as HTML (a plain
+  // `vite build` empties dist and drops it; `npm run build` writes it), so the
+  // wait is bounded: a missing worker is a failure to report, not a hang.
   const sw = await warm.evaluate(async () => {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(() => r(null), 8000))]);
+    if (!reg) return { active: false, cache: '(no service worker registered in 8s -- was sw.js built?)', entries: 0 };
     const keys = await caches.keys();
     const c = await caches.open(keys[0]);
     return { active: !!reg.active, cache: keys[0], entries: (await c.keys()).length };
   });
-  check('a service worker takes control', sw.active && sw.cache.startsWith('fallfest-'), sw.cache);
+  check('a service worker takes control', sw.active && String(sw.cache).startsWith('fallfest-'), sw.cache);
   check('the whole map is precached', sw.entries >= 15, `${sw.entries} files`);
   await warm.close();
 

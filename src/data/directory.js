@@ -40,6 +40,7 @@ export const DIRECTORY = [
     title: 'Eat & drink',
     rows: [
       poi('food', 'Food Court', `${BOOTHS.food.length} stalls on the car path`),
+      poi('beer', 'Beer Stand', 'The main one, on the field'),
       cat('drinks', 'drinks', 'Beer & drinks'),
       cat('water', 'water', 'Water refill'),
     ],
@@ -56,14 +57,15 @@ export const DIRECTORY = [
   },
   {
     title: 'Family',
-    rows: [poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing')],
+    rows: [poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing with Trees for Tuition')],
   },
   {
     title: 'Amenities',
     rows: [
+      poi('merch', 'Merch Booth', 'Fall Fest goods, at the park entrance'),
       cat('wc', 'wc', 'Restrooms'),
       poi('firstaid', 'First Aid', 'EMS on site'),
-      poi('info', 'Info booth', 'Programs, lost & found'),
+      poi('info', 'Info booth', 'At the park entrance · programs, lost & found'),
       poi('bikevalet', 'Bike valet', 'Free, attended'),
     ],
   },
@@ -80,6 +82,7 @@ export const LEGEND = [
   { cat: 'water', label: 'Water' },
   { cat: 'firstaid', label: 'First aid' },
   { cat: 'info', label: 'Info' },
+  { cat: 'merch', label: 'Merch' },
   { cat: 'art', label: 'Art booth' },
   { cat: 'bikevalet', label: 'Services' },
 ];
