@@ -184,20 +184,30 @@ Figma workflow), and PR #8 (booth + beta fixes):
   left; side-column spacing is `--space-*` tokens only (`--space-8` between sections,
   `--space-2` heading to content); map labels sit at the 8pt floor; the phone header shows the
   dates beside the wordmark.
-- **Open on the print sheet: the artist index is still 6.4pt.** At 8pt its 150 rows need 7.3" of
-  the 5.2" the side column has left. Ernest is choosing what gives (options in PR #8: drop the
-  Food Court list from the side column and tighten the line height and section gap, or keep it
-  and accept a smaller index). Booth numbers on the map stay ~5.5pt on purpose: the rows are
-  pitched too tightly for 8pt.
+- 9/19 round three (each its own commit): the phone header's dates sit on the wordmark's
+  baseline; the **info booth is on the phone's opening view**, stacked 82 units above merch
+  (touching at the overview), with the southern restroom pin moved 20 W / 7 N to make room; the
+  print sheet's QR sits at the map's vertical centre with 12 units of edge clearance; the range
+  key is gone and the index is "Art Market · Over 130 artists"; the whole side column is one
+  four-column grid (`--print-cols`, `--print-gutter`) that the legend, food list and artist list
+  all snap to; legend swatches sit in one fixed `--space-4` box so every label starts on the
+  same x.
+- **Open on the print sheet: the artist list is still 6.4pt** (everything else in the side column
+  is 8pt). At 8pt on the four-column grid it is 1.0" over at the current section gap and line
+  height. It fits with line-height 1.15 and the section gap at `--space-6` (0.13" spare, tight),
+  or with the Food Court list dropped from the side column (0.8" spare at line-height 1.2).
+  Ernest is choosing (options in PR #8). Booth numbers on the map stay ~5.5pt on purpose: the
+  rows are pitched too tightly for 8pt.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
 - **Merch and the info booth** are from Jess's 2026 site plan (the CPNO Merch Tent): east side of
-  the entrance path, merch 20 units north of the McLendon kerb, info stacked directly north of it
-  (Ernest, 9/19). Their 44px targets touch at the first zoom step. To keep merch's overview
-  target clear, the **bike valet** pin sits 10 units east of the export's spot and the McLendon
-  art-market marker moved east with it.
+  the entrance path, merch 16 units north of the McLendon kerb, info stacked 82 units directly
+  above it so both fit the phone's opening view with their 44px targets touching (Ernest, 9/19;
+  he may pull info from the phone overview after judging it). To make room the **bike valet**
+  pin sits 10 units east of the export's spot, the McLendon art-market marker moved east with
+  it, and the **southern restroom** pin is 20 W / 7 N of the export's spot.
 - The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
   target clears the info booth's. Falls under the water-station question below.
 - The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
