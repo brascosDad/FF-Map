@@ -40,6 +40,19 @@ a volunteer picking this up next year opens the repo and can see immediately wha
 clearly named source of truth per kind of thing, a documented shape for each record, no duplicate
 copies of the same fact in two files. Propose structural changes before making them.
 
+**3. Every PR carries before/after screenshots.** Phone (390px) at open, desktop, and `?print=1`,
+from `main` and from the branch. The `PR screenshots` Action does it on every pull request: it
+runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, and writes a
+"Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
+push. Don't hand-edit that table; the Action rewrites it on each push.
+
+**4. Visual changes are gated by baselines.** `npm run test:e2e` diffs three renders — the phone at
+open, the phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A
+change to any of them fails the suite (and CI) until the baseline is updated on purpose:
+`node scripts/visual.mjs --update`, commit the PNGs in the same PR, and say in the PR which
+baselines changed and why. `tests/visual/README.md` has the steps. Never update a baseline
+without looking at `.e2e-out/visual/<case>-diff.png` first.
+
 ## Data — where the truth actually lives
 
 Upstream sources are other people's documents. They move. Re-read them rather than trusting a
@@ -98,13 +111,16 @@ on the map and refuses to write if anything on the sheet is unplaced.
 ```
 npm run dev        # local
 npm run lint       # oxlint
-npm run test:e2e   # required green before any PR (builds first, service worker included)
+npm run test:e2e   # required green before any PR: builds, runs the behaviour suite, then the visual diffs
+npm run test:visual -- --update   # accept the current renders as the visual baselines (see tests/visual/README.md)
+npm run pr-shots   # before/after screenshots (main vs branch) into docs/pr-shots/, prints the PR table
 npm run print      # writes the 11x17 print PDF + 300dpi PNG
 npm run sync       # git pull --ff-only && npm install
 python3 scripts/pull-sheet.py && python3 scripts/build-booths.py   # re-read Courtney's sheet
 ```
 
-Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel preview URL.
+Every PR: lint and e2e (with the visual diffs) pass — CI runs both on every pull request — and reply
+with the PR link **and** the Vercel preview URL. The screenshots Action adds the before/after table.
 
 ## Decided — don't reopen
 
@@ -185,29 +201,32 @@ Figma workflow), and PR #8 (booth + beta fixes):
   `--space-2` heading to content); map labels sit at the 8pt floor; the phone header shows the
   dates beside the wordmark.
 - 9/19 round three (each its own commit): the phone header's dates sit on the wordmark's
-  baseline; the **info booth is on the phone's opening view**, stacked 82 units above merch
-  (touching at the overview), with the southern restroom pin moved 20 W / 7 N to make room; the
-  print sheet's QR sits at the map's vertical centre with 12 units of edge clearance; the range
-  key is gone and the index is "Art Market · Over 130 artists"; the whole side column is one
-  four-column grid (`--print-cols`, `--print-gutter`) that the legend, food list and artist list
-  all snap to; legend swatches sit in one fixed `--space-4` box so every label starts on the
-  same x.
-- **Open on the print sheet: the artist list is still 6.4pt** (everything else in the side column
-  is 8pt). At 8pt on the four-column grid it is 1.0" over at the current section gap and line
-  height. It fits with line-height 1.15 and the section gap at `--space-6` (0.13" spare, tight),
-  or with the Food Court list dropped from the side column (0.8" spare at line-height 1.2).
-  Ernest is choosing (options in PR #8). Booth numbers on the map stay ~5.5pt on purpose: the
-  rows are pitched too tightly for 8pt.
+  baseline; the print sheet's QR sits at the map's vertical centre with 12 units of edge
+  clearance; the range key is gone and the index is "Art Market · Over 130 artists"; the whole
+  side column is one four-column grid (`--print-cols`, `--print-gutter`) that every section
+  snaps to.
+- 9/19 round four (each its own commit): the **info booth is 48 units above merch and off the
+  phone's opening view** (it arrives at the first zoom step) but on the desktop's, via
+  `overview: 'docked'` in `pins.js`, where the 48 units are a 13px gap; the phone-overview
+  version overlapped; food stalls 1, 2, 3 and 5 are one straight
+  line (2 and 3 poke a unit or two past the food blob's top edge, like 1 and 5 already did — a
+  Figma call whether the blob grows); the print sheet's **Food Court list is gone** and the
+  **artist list is 8pt** (line-height 1.35, 0.3" spare), every row on a shared `--print-lead`
+  box that also centres the legend swatches, so every label and every name starts on one x;
+  **PR screenshots** and **visual baselines** are standing rules 3 and 4 above, with the two
+  Actions (`PR screenshots`, `CI`) that enforce them. Booth numbers on the map stay ~5.5pt on
+  purpose: the rows are pitched too tightly for 8pt.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
 - **Merch and the info booth** are from Jess's 2026 site plan (the CPNO Merch Tent): east side of
-  the entrance path, merch 16 units north of the McLendon kerb, info stacked 82 units directly
-  above it so both fit the phone's opening view with their 44px targets touching (Ernest, 9/19;
-  he may pull info from the phone overview after judging it). To make room the **bike valet**
-  pin sits 10 units east of the export's spot, the McLendon art-market marker moved east with
-  it, and the **southern restroom** pin is 20 W / 7 N of the export's spot.
+  the entrance path, merch 26 units north of the McLendon kerb, info 48 units directly above it
+  (Ernest, 9/19). Info is not on the phone's opening view: at that scale the two targets would
+  need 81 units apart, which is a 60px gap on desktop. The **bike valet** pin sits 10 units east
+  of the export's spot, the McLendon art-market marker moved east with it, and the **southern
+  restroom** pin is 20 W / 7 N of the export's spot (its export spot also grazed booth 54's hit
+  area).
 - The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
   target clears the info booth's. Falls under the water-station question below.
 - The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
