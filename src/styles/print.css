@@ -32,7 +32,6 @@
 .print-head { border-bottom: 2px solid var(--ff-navy); padding-bottom: 0.1in; }
 .print-brand { font-family: var(--font-display); font-weight: 900; font-size: 44pt; line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
 .print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: 0.06in; }
-.print-kicker { font-size: 9.5pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 
 .print-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.04in 0.12in; font-size: 8pt; }
 .print-legend__row { display: flex; align-items: center; gap: 0.06in; white-space: nowrap; }

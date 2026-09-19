@@ -187,7 +187,6 @@ export default function PrintSheet() {
         <header className="print-head">
           <div className="print-brand">Fall Fest</div>
           <div className="print-sub">Candler Park · {FESTIVAL.dates}</div>
-          <div className="print-kicker">Site map</div>
         </header>
 
         <section className="print-legend">
