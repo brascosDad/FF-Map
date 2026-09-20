@@ -95,7 +95,19 @@ Courtney's answers, 9/17 evening (supersede anything earlier, including PR #7's 
 Two commands, no hand edits:
 `python3 scripts/pull-sheet.py && python3 scripts/build-booths.py` — the first rewrites the JSON
 from the live sheet (or from a CSV path you give it) and stamps the read date; the second lays it
-on the map and refuses to write if anything on the sheet is unplaced.
+on the map and refuses to write if anything on the sheet is unplaced. The sheet is **view-only**
+since 9/19, which is all the pull needs; if Google answers with a sign-in page (restricted to
+named accounts) or the network can't reach Google (the remote Claude Code container can't), the
+script says so and stops — then File → Download → CSV in a browser and run it on that file.
+**The JSON is still the 9/18 read**: the 9/20 session could not reach the sheet. Re-pull from a
+laptop before 9/22.
+
+**Candler Park Dr layout, verified 9/20 against the 2025 map and the sheet's own old-number
+column:** street side 82–94 | speed bump | 95–100 | barricade | 132–139 (the "final stretch",
+top of the column); park side 101–111 | the same speed bump | 112–131. The sheet skips three
+2025 numbers at each break (105–107, 126–128), which is how you can tell where the breaks are
+without the map. **The live site still shows the 9/17 numbering** (135–142 on the final stretch)
+until PR #8 merges — that is what Courtney saw on 9/19.
 
 ## Generated files — never hand-edit
 
@@ -154,6 +166,18 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   agreed 9/17). The QR code is a prominent feature with its own callout pointing at the schedule,
   food menus, and artist list.
 - Exact food-truck placement is not needed — trucks cluster and shift at load-in (Amy, 9/17).
+- **The three art-market area markers leave at the Detail stop.** They cross-fade with the zoom
+  (driven by the view's position between the stops, so a pinch never blinks them) and a faded
+  marker keeps no tap target: at Detail the area names are drawn and every booth is its own
+  target, and a marker the size of a pin sat on 96–98, 113–115 and 60–62 (Ernest, iPhone 9/20).
+  e2e proves those booths take the tap at Detail on phone and desktop.
+- **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): as close as the
+  touch rule allows, 46 units apart — targets touching at the phone's first zoom step on a 375px
+  screen, an 11px gap on the desktop opening view. Info stays off the phone's opening view.
+- **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the
+  streets are named, the index has every number); the index heading is just "Art Market" with no
+  count under it; the Food Court list stays out of the side column; legend swatches and index
+  numbers share one right edge in the `--print-lead` box.
 - The map URL is locked once posters print (~9/22). No hosting or routing changes after that.
 
 ## Calendar
@@ -221,14 +245,26 @@ Figma workflow), and PR #8 (booth + beta fixes):
   baselines were rendered by that Action on 9/19; this container's renders differed from the
   runner's by 0.4–3.8% of pixels, which is why the runner owns them. Booth numbers on the map stay ~5.5pt on
   purpose: the rows are pitched too tightly for 8pt.
+- 9/20 round (each its own commit): **Candler Park Dr re-verified from 82 up** — the branch already
+  had 132–139 on the final stretch (Courtney's 9/19 note was about the live site), and the
+  re-check found the 9/18 re-pull had dropped the park side's speed-bump break, so 101–111 moved
+  18 units south, level with 82–94; Kidlandia K0–K10 confirmed and closed; `pull-sheet.py` stops
+  with a plain message on a restricted sheet or no network (**the JSON is still the 9/18 read**
+  — re-pull from a laptop before 9/22); the area markers fade out at Detail; merch 10 north and
+  info 8 south, 46 apart; AWARE Wildlife's square is on the entrance path at the west lawn's
+  corner (598.5, 677); the print sheet lost its run ranges and the "Over 130 artists" subhead,
+  and its legend swatches sit on the index numbers' right edge with `--print-lead-gap` one step
+  wider. All three visual baselines change (print for the CPD move, the labels and the legend;
+  phone-open and sheet-open for merch) — re-rendered by the Action.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
 - **Merch and the info booth** are from Jess's 2026 site plan (the CPNO Merch Tent): east side of
-  the entrance path, merch 26 units north of the McLendon kerb, info 48 units directly above it
-  (Ernest, 9/19). Info is not on the phone's opening view: at that scale the two targets would
-  need 81 units apart, which is a 60px gap on desktop. The **bike valet** pin sits 10 units east
+  the entrance path, merch 36 units north of the McLendon kerb, info 46 units directly above it
+  (Ernest, 9/20; Jess: they are the same place). Info is not on the phone's opening view: at
+  that scale the two targets would need 81 units apart, which is a 60px gap on desktop. The
+  **bike valet** pin sits 10 units east
   of the export's spot, the McLendon art-market marker moved east with it, and the **southern
   restroom** pin is 20 W / 7 N of the export's spot (its export spot also grazed booth 54's hit
   area).
@@ -236,8 +272,10 @@ Figma workflow), and PR #8 (booth + beta fixes):
   target clears the info booth's. Falls under the water-station question below.
 - The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
   Verify at setup.
-- **AWARE Wildlife** square: on the grass off the south end of the park's west row. **Achieve with
-  Steve** square: one McLendon pitch east of booth 55. Both approximate.
+- **AWARE Wildlife** square: on the white ground of the entrance path, nestled into the west
+  lawn's corner where the path widens out to the booth rows (Ernest, 9/20; Courtney's words
+  were "on the grass"). **Achieve with Steve** square: one McLendon pitch east of booth 55. Both
+  approximate.
 
 **Not in this repo:** the **Food & Friendship tent** (Jess 9/17: remove it) does not exist in the
 app's data or basemap — nothing to delete here. It is on the printed poster / Figma artwork, which
