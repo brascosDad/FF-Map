@@ -559,9 +559,11 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
 // ---- the info booth is a pin, everywhere, just above merch ----
 // Phone, desktop and paper: a circle filled with --pin-info carrying the info
 // glyph, drawn like every other pin. Never a booth square (Ernest, 9/19). And
-// on the desktop overview it sits directly above merch with an 8-16px gap;
-// at the phone's first zoom step the two do not overlap.
-for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1440, 900, false]]) {
+// on the desktop overview it sits directly above merch with an 8-16px gap --
+// as close as that allows, since the two are one spot with two jobs (Jess,
+// 9/20); at the phone's first zoom step the two 44px targets may touch but
+// not overlap, and the 375px phone is the case that decides it.
+for (const [name, w, h, zoomFirst] of [['iPhone SE', 375, 667, true], ['mobile', 390, 800, true], ['desktop', 1440, 900, false]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h } });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
@@ -578,13 +580,15 @@ for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1
   check(`${name}: the info booth draws as a pin in --pin-info`,
     info.present && info.fill === 'rgb(64, 126, 181)' && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
     info.present ? `${info.fill}, glyph ${info.glyph}, ${info.rects} rects, ${info.size}px` : 'no info pin drawn');
-  const stack = await p.evaluate(() => {
-    const at = (c) => { const r = document.querySelector(`svg.ff-map g.ffc-pin--${c} > g circle`).getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2 }; };
+  // Desktop measures the drawn 40px circles (the visible gap); the phone
+  // measures the 44px tap circles, the direct children of the pin groups.
+  const stack = await p.evaluate((desktop) => {
+    const at = (c) => { const r = document.querySelector(desktop ? `svg.ff-map g.ffc-pin--${c} > g circle` : `svg.ff-map g.ffc-pin--${c} > circle`).getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2 }; };
     const i = at('info'), m = at('merch');
     return { dx: Math.abs(i.x - m.x), gap: (m.y - i.y) - i.r - m.r };
-  });
-  check(`${name}: the info pin sits directly above merch${w >= 1024 ? ', 8-16px clear' : ', not overlapping'}`,
-    stack.dx <= 1 && (w >= 1024 ? stack.gap >= 8 && stack.gap <= 16 : stack.gap >= 0), `${stack.gap.toFixed(1)}px gap, ${stack.dx.toFixed(1)}px off centre`);
+  }, w >= 1024);
+  check(`${name}: the info pin sits directly above merch${w >= 1024 ? ', 8-16px clear' : ', targets touching or clear'}`,
+    stack.dx <= 1 && (w >= 1024 ? stack.gap >= 8 && stack.gap <= 16 : stack.gap >= -0.5), `${stack.gap.toFixed(1)}px gap, ${stack.dx.toFixed(1)}px off centre`);
   await p.close();
 }
 

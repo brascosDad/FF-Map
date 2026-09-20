@@ -39,12 +39,12 @@ export const PINS = [
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
-  // McLendon -- 26 units above the street band (y ~776), well short of
+  // McLendon -- 36 units above the street band (y ~776), well short of
   // halfway to where the park's booth rows start (y ~650). The same spot
   // every year (Jess, 9/17). Not in the export. The bike valet moved 10 units
-  // east so this overview target clears its own (85 units; the floor is 81 on
+  // east so this overview target clears its own (83 units; the floor is 81 on
   // a 375px phone).
-  { x: 630.0, y: 750.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
+  { x: 630.0, y: 740.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips).
   // The southern bank is the export's (601.6, 665.1) moved 20 units west and
@@ -64,14 +64,16 @@ export const PINS = [
   { x: 584.0, y: 709.0, c: 'water', d: 'water' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
-  // the entrance path (Ernest, 9/19, per Jess's 2026 site plan). 48 units
-  // above merch: on the desktop opening view that is a 13px gap between the
-  // two 40px pins, and at the phone's first zoom step the 44px targets clear
-  // by 2 units. On the PHONE's opening view two targets would need 81 units,
-  // which on desktop is a 60px gap -- the two asks cannot share one
-  // coordinate -- so there it arrives at the first zoom step (Ernest, 9/19).
-  // Was the export's (644.3, 733.3).
-  { x: 630.0, y: 702.0, c: 'info', d: 'info', overview: 'docked' },
+  // the entrance path. "The info booth and the merch booth are the same
+  // place" (Jess, 9/20): one spot with two jobs, so the two pins sit as close
+  // as the touch rule allows -- 46 units apart, which is the 44px targets
+  // TOUCHING at the phone's first zoom step on a 375px screen (the tightest
+  // case; circles may touch, not overlap). On the desktop opening view that
+  // is an 11px gap between the two 40px pins. On the PHONE's opening view two
+  // targets would need 81 units, a 60px gap on desktop, so there info
+  // arrives at the first zoom step (Ernest, 9/19). Was the export's
+  // (644.3, 733.3).
+  { x: 630.0, y: 694.0, c: 'info', d: 'info', overview: 'docked' },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the
