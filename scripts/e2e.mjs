@@ -1100,8 +1100,12 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   // innerText carries the heading's CSS uppercase, hence the /i.
   check('print: the public count is "over 130 artists", never a booth total',
     /over 130 artists/i.test(pr.text) && !/\b1[3-6]\d booths\b/i.test(pr.text) && !pr.text.includes('164'));
-  check('print: run endpoints on the map come from the sheet',
-    pr.runLabels.some((t) => t.includes('82–139')) && pr.runLabels.some((t) => t.includes('K0–K10')) && !pr.runLabels.some((t) => t.includes('142')) && !pr.text.includes('142'),
+  // One plain "Art Market" on the car-path run and the Kidlandia range from
+  // the sheet; the three run ranges came off the map 9/20 (the index has
+  // every number). Nothing anywhere still says 142, the 9/17 top number.
+  check('print: one plain "Art Market" label, the Kidlandia range from the sheet, no run ranges',
+    pr.runLabels.filter((t) => t === 'Art Market').length === 1 && !pr.runLabels.some((t) => /Art Market\s*\d/.test(t))
+      && pr.runLabels.includes('K0–K10') && !pr.text.includes('142'),
     pr.runLabels.join(' | '));
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);

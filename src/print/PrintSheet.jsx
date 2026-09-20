@@ -125,16 +125,15 @@ function PrintMap() {
       <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
       <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
-      {/* The three runs carry their ranges on the map itself, where the 2025
-          sheet had them, so a reader with a booth number knows which street
-          to walk to before they find the key. The ranges are read off the
-          data, so this sheet cannot print an endpoint the app does not draw. */}
+      {/* One plain "Art Market" on the car-path run, which has no street name
+          to say what it is; the two street runs are named by their streets
+          and the index carries every number. The ranges came off the map on
+          9/20: 55-81 sat too high, 82-139 in the middle of the street north
+          of its run, 1-54 crowded the park rows. The label sits in the west
+          row's own break at the path bend (between 37 and 38), along the
+          row, so it touches no number. */}
       <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
-        <text x={411.5} y={290} textAnchor="middle" transform="rotate(-90 411.5 290)">Art Market {span(BOOTHS.cpd)}</text>
-        <text x={640} y={812} textAnchor="middle">Art Market {span(BOOTHS.mcl)}</text>
-        {/* In the west row's own break at the path bend (between 37 and 38),
-            along the row's direction, so it touches no number. */}
-        <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market {span(BOOTHS.spine)}</text>
+        <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market</text>
         {/* Just below the south end of the Kidlandia column, wherever the
             sheet's count puts it. */}
         <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
