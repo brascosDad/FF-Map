@@ -48,12 +48,17 @@ being numbered one-for-one:
                     x's at the 15 ft pitch. Numbers run north to south
                     DECREASING: the highest number at the top of the street
                     side, 82 at the bottom. The street side is the sheet's two
-                    "west side" zones (the second run north of the barricade,
-                    82-100 south of it) with the speed bump between 95 and 94;
-                    the park side is one continuous run, "field" (north) then
-                    "West Lawn" (south). The chair confirmed 9/17 that 112-114
-                    are real booths, so there is no gap on the park side.
-                    See lay_cpd().
+                    "west side" zones -- the second run (132-139, the "final
+                    stretch" the chair numbers last so booths can be added or
+                    dropped there) at the top, north of the barricade, then
+                    100-95, the speed bump, 94-82. The park side is "field"
+                    (north) then "West Lawn" (south) with the SAME speed bump
+                    between them, between 112 and 111: the 2025 map breaks
+                    both columns there, and the sheet's own old-number column
+                    skips three 2025 numbers at each break (105-107 on the
+                    street side, 126-128 on the park side). The chair
+                    confirmed 9/17 that 112-114 are real booths; that closed
+                    a NUMBERING gap, not the physical bump. See lay_cpd().
   Kidlandia         K0-Kn are not on the export at all. One vertical column
                     INSIDE the Kidlandia area (the basemap's kidlandia-area
                     shape), numbered south to north: K0 at the south end, the
@@ -126,9 +131,13 @@ def layout(zr, gaps):
         # 105-107, there -- the crosswalk).
         'cpd-street': {'dir': 'desc', 'segments': [(z['cpd-west-b'][1], z['cpd-west-b'][0]), 'barricade',
                                                     (z['cpd-west'][1], 95), 'speed bump', (94, z['cpd-west'][0])]},
-        # Park (inner) side: "field" then "West Lawn", one continuous run. The
-        # chair confirmed 9/17 that 112-114 are real booths, not a gap.
-        'cpd-park': {'dir': 'desc', 'segments': [(z['cpd-field'][1], z['cpd-west-lawn'][0])]},
+        # Park (inner) side: "field" then "West Lawn", the one physical speed
+        # bump between them, level with the street side's. (The 9/18 re-pull
+        # dropped this break by mistake, reading "112-114 are booths, not a
+        # gap" as "no gap on the park side"; 101-111 sat 18 units too far
+        # north until 9/20.)
+        'cpd-park': {'dir': 'desc', 'segments': [(z['cpd-field'][1], z['cpd-field'][0]), 'speed bump',
+                                                  (z['cpd-west-lawn'][1], z['cpd-west-lawn'][0])]},
         'kidlandia-stack': {'dir': 'asc', 'segments': [z['kidlandia']]},
     }
 
