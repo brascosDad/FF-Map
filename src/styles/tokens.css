@@ -27,6 +27,12 @@
   --pin-stage: #8F71B7;
   --pin-kids: #C25B7E;
   --pin-firstaid: #C84B46;
+  /* Merch is its own destination (the festival's own booth, at the park
+     entrance), so it takes its own hue rather than the services neutral.
+     Magenta sits in the widest open gap on the wheel: 40 degrees from the
+     stage lavender on one side and the kids rose on the other. 5.4:1 under
+     the white glyph. */
+  --pin-merch: #9E3F94;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
 
   /* Structural / neutral — unchanged */
@@ -156,9 +162,13 @@
   /* Sizing */
   --tap-min: 44px;        /* everything tappable; the visual may be smaller */
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
-     where 28 read as too small. The tap area is 44 either way. */
+     where 28 read as too small. The tap area is 44 either way. ONE size at
+     every zoom level: the overview used to draw pins a step smaller (34), and
+     a pinch that crossed the overview boundary ended with every pin popping
+     to a new size the moment the fingers lifted (Ernest, iPhone, 9/19). A pin
+     is a control, not ground; it holds one on-screen size while the map
+     scales under it, gesture and settle included. */
   --pin-size: 40px;
-  --pin-size-overview: 34px;   /* one step down where the map is most crowded */
   --panel-width: 360px;
   --sheet-max-height: 72%;
 }

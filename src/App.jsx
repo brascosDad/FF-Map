@@ -5,6 +5,7 @@ import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
+import { FESTIVAL } from './data/festival';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
@@ -20,8 +21,8 @@ const GAP = 20;       // --ff-gap / --space-5
 // still fits, but only just -- about 10 map units (~6px) of margin either side.
 const MOBILE_OVERVIEW_ZOOM = 1.1;
 
-// The brand lockup links back to the festival site. Confirmed by Ernest 9/11.
-const FEST_URL = 'https://fallfest.candlerpark.org/';
+// The brand lockup links back to the festival site (confirmed by Ernest 9/11);
+// the address lives with the festival's other facts in data/festival.js.
 
 function useMedia(query) {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -40,7 +41,7 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, ensureVisible, focusOn, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
@@ -186,8 +187,10 @@ export default function App() {
           viewBox={viewBox}
           filter={filter}
           overview={overview}
+          docked={docked}
           showBlobs={overview && !docked}
           unitsPerPx={unitsPerPx}
+          areaMarkerFade={areaMarkerFade}
           showNumbers={detail}
           detail={detail}
           onPinClick={handlePinClick}
@@ -202,9 +205,13 @@ export default function App() {
           <div className="tbrow">
             {/* No pill, no dates: the title sits directly on the map. The dates
                 are already in the panel header, and once is enough. */}
-            <a className="ffc-brand" href={FEST_URL} target="_blank" rel="noreferrer">
+            <a className="ffc-brand" href={FESTIVAL.siteUrl} target="_blank" rel="noreferrer">
               <span className="ffc-brand__name">Fall Fest</span>
             </a>
+            {/* The dates, small, beside the wordmark -- on the same row so the
+                chips do not move down. The docked panel already carries them,
+                so this hides at the desktop breakpoint (see .ffc-brand__date). */}
+            <span className="ffc-brand__date">{FESTIVAL.dates}</span>
           </div>
           <FilterChips active={filter} onToggle={handleChipToggle} />
         </div>

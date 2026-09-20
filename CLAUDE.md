@@ -40,6 +40,21 @@ a volunteer picking this up next year opens the repo and can see immediately wha
 clearly named source of truth per kind of thing, a documented shape for each record, no duplicate
 copies of the same fact in two files. Propose structural changes before making them.
 
+**3. Every PR carries before/after screenshots.** Phone (390px) at open, desktop, and `?print=1`,
+from `main` and from the branch. The `PR screenshots` Action does it on every pull request: it
+runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, and writes a
+"Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
+push. Don't hand-edit that table; the Action rewrites it on each push.
+
+**4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
+phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
+any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
+label on the PR, the Action re-renders on the runner and commits the PNGs to the branch, and
+the PR description says which baselines changed and why. The baselines are the **CI runner's**
+renders — other machines rasterise text differently, so `npm run test:visual` locally shows the
+diffs but CI has the verdict. `tests/visual/README.md` has the steps. Never update a baseline
+without looking at the diff image first.
+
 ## Data — where the truth actually lives
 
 Upstream sources are other people's documents. They move. Re-read them rather than trusting a
@@ -52,41 +67,75 @@ snapshot, and record the read date when you do.
 | Stage schedule | `stages.json` — final, both stages both days | Thomas Helland / Hallie Meushaw |
 | Site layout / amenity placement | 2026 site plan PDF (Operations) | Jess Richards / Van Jensen |
 
-Artist numbering: **1–54 park, 55–81 McLendon, 82–142 Candler Park Dr, K0–K9 Kidlandia.** Top
-number is 142, not 164 — every booth was resized to 15 ft on 9/16.
+Artist numbering, **as of the 9/18 sheet read: 1–54 park, 55–81 McLendon, 82–139 Candler Park Dr,
+K0–K10 Kidlandia.** The top number moves every time Courtney edits — it was 142 on 9/17 and 139
+on 9/18, because she inserted 112–114 and renumbered everything after them down by three. Never
+quote a top number from memory: `poster_endpoints` in `booth-numbering-2026.json` is the current
+one, with `read_date` beside it. Not 164 in any case — every booth was resized to 15 ft on 9/16.
 
 Courtney's answers, 9/17 evening (supersede anything earlier, including PR #7's description):
 - **112–114 are real booths.** Their absence was her mistake; numbering runs continuously. They are
-  *not* a speed-bump gap.
-- 67–68 (Tarik Berbey) and 132–133 (Michael Taylor) are the two double booths.
+  *not* a speed-bump gap. (Done in the sheet by 9/18: 112 Jae Montano, 113 Salameh Ghaderi, 114
+  Janet Gonzales.)
+- 67–68 (Tarik Berbey) and 130–131 (Michael Taylor, was 132–133 before the renumber) are the two
+  double booths.
 - Some sponsor/open slots were filled 9/17. Anything still marked Sponsor/open prints as "Sponsor".
-- 135–142 is a real last run at the far end of Candler Park Dr, numbered last on purpose so
-  booths can be added or dropped there.
+  As of 9/18 that is the last two, 138–139.
+- 132–139 (was 135–142) is a real last run at the far end of Candler Park Dr, numbered last on
+  purpose so booths can be added or dropped there. The build reads that run's endpoints from the
+  sheet, so a booth added there needs no code change.
 - AWARE Wildlife (on the grass) and Achieve with Steve (beside the Acoustic Stage) have spots but
-  no booth numbers — pin them unnumbered.
-- Public copy says **"over 130 artists"**. Never 164.
+  no booth numbers — pinned unnumbered, placed by description (see `UNNUMBERED_AT`).
+- Public copy says **"over 130 artists"**. Never 164, never a booth count.
+- Kidlandia is **K0–K10, eleven booths** (K8 Clifton Sanctuary is new; Primavera and Faces
+  Unlimited moved to K9 and K10). Confirmed by Courtney 9/19: "we added a spot in Kidlandia this
+  year."
 
-**Re-read the sheet before print files go out.** Courtney has edited it three times in three days.
+**Re-read the sheet before print files go out.** Courtney has edited it four times in four days.
+Two commands, no hand edits:
+`python3 scripts/pull-sheet.py && python3 scripts/build-booths.py` — the first rewrites the JSON
+from the live sheet (or from a CSV path you give it) and stamps the read date; the second lays it
+on the map and refuses to write if anything on the sheet is unplaced. The sheet is **view-only**
+since 9/19, which is all the pull needs; if Google answers with a sign-in page (restricted to
+named accounts) or the network can't reach Google (the remote Claude Code container can't), the
+script says so and stops — then File → Download → CSV in a browser and run it on that file.
+**The JSON is still the 9/18 read**: the 9/20 session could not reach the sheet. Re-pull from a
+laptop before 9/22.
+
+**Candler Park Dr layout, verified 9/20 against the 2025 map and the sheet's own old-number
+column:** street side 82–94 | speed bump | 95–100 | barricade | 132–139 (the "final stretch",
+top of the column); park side 101–111 | the same speed bump | 112–131. The sheet skips three
+2025 numbers at each break (105–107, 126–128), which is how you can tell where the breaks are
+without the map. **The live site still shows the 9/17 numbering** (135–142 on the final stretch)
+until PR #8 merges — that is what Courtney saw on 9/19.
 
 ## Generated files — never hand-edit
 
 - `src/assets/basemapBlobs.js`, `design/basemap.svg` — shape changes happen in **Figma**, then the
   "Sync from Figma" Action regenerates them. The frame is found by node id `5906:4939`; don't
   duplicate or replace it.
+- `src/data/booth-numbering-2026.json` — generated by `scripts/pull-sheet.py` from Courtney's sheet.
+  If the sheet is wrong, tell Courtney; the one deliberate correction (booth 39's columns are
+  swapped on her sheet) lives in the script as `NAME_BUSINESS_SWAPPED`.
 - `src/data/booths.js` — generated by `scripts/build-booths.py` from `basemapCoords.js` (where) and
-  `booth-numbering-2026.json` (what). Edit the inputs and re-run.
+  `booth-numbering-2026.json` (what). Edit the inputs and re-run. The two unnumbered artists'
+  positions are the script's `UNNUMBERED_AT` table.
 
 ## Commands
 
 ```
 npm run dev        # local
 npm run lint       # oxlint
-npm run test:e2e   # required green before any PR (needs `npm run build` first for dist/sw.js)
+npm run test:e2e   # required green before any PR: builds, runs the behaviour suite, then the visual diffs
+npm run test:visual   # just the visual diffs, advisory off CI; to accept a change, label the PR update-visual-baselines
+npm run pr-shots   # before/after screenshots (main vs branch) into docs/pr-shots/, prints the PR table
 npm run print      # writes the 11x17 print PDF + 300dpi PNG
 npm run sync       # git pull --ff-only && npm install
+python3 scripts/pull-sheet.py && python3 scripts/build-booths.py   # re-read Courtney's sheet
 ```
 
-Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel preview URL.
+Every PR: lint and e2e (with the visual diffs) pass — CI runs both on every pull request — and reply
+with the PR link **and** the Vercel preview URL. The screenshots Action adds the before/after table.
 
 ## Decided — don't reopen
 
@@ -98,11 +147,37 @@ Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel previ
 - No search bar.
 - **Pins are touch targets. 44×44 CSS px is the floor.** The visible icon glyph may shrink inside
   that target; the tappable area may not. Resolve collisions by moving pins. Circles may touch;
-  they may not overlap.
+  they may not overlap. The e2e suite now asserts this for the phone's opening view on a 375px
+  screen — a pin flagged `overview: true` in `pins.js` has to clear every other one.
+- Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
+  Still three stops; the pinch is just a nicer way between them.
+- **The print sheet's type floor is 8pt** for everything in the side column and every label on the
+  map. The one exception is booth numbers (~5.5pt), which the row pitch dictates.
+- **Pins hold one on-screen size at every zoom, through a pinch and through the settle.** Only the
+  map scales. The overview no longer draws pins a step smaller (the 34px `--pin-size-overview`
+  token is gone): that step popped every pin to a new size the moment the fingers lifted
+  (Ernest, iPhone, 9/19). e2e drives a real two-finger touch and measures a pin every frame.
+- **Kidlandia booths are one vertical column inside the Kidlandia shape, lowest number at the
+  south end**, in `--pin-kids` (Ernest 9/19, per Jess's 2026 site plan and the 2025 map). The
+  count is the sheet's.
+- **A spot with no booth number draws hollow**: `--ff-cream` inside a `--cat-booth` frame, on the
+  map and on paper, keyed in both legends. Still a booth; plainly not one of the numbered run.
 - **The printed handout is single-sided, map-dominant, no stage schedule** (decided 9/17, Erin
   agreed 9/17). The QR code is a prominent feature with its own callout pointing at the schedule,
   food menus, and artist list.
 - Exact food-truck placement is not needed — trucks cluster and shift at load-in (Amy, 9/17).
+- **The three art-market area markers leave at the Detail stop.** They cross-fade with the zoom
+  (driven by the view's position between the stops, so a pinch never blinks them) and a faded
+  marker keeps no tap target: at Detail the area names are drawn and every booth is its own
+  target, and a marker the size of a pin sat on 96–98, 113–115 and 60–62 (Ernest, iPhone 9/20).
+  e2e proves those booths take the tap at Detail on phone and desktop.
+- **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): as close as the
+  touch rule allows, 46 units apart — targets touching at the phone's first zoom step on a 375px
+  screen, an 11px gap on the desktop opening view. Info stays off the phone's opening view.
+- **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the
+  streets are named, the index has every number); the index heading is just "Art Market" with no
+  count under it; the Food Court list stays out of the side column; legend swatches and index
+  numbers share one right edge in the `--print-lead` box.
 - The map URL is locked once posters print (~9/22). No hosting or routing changes after that.
 
 ## Calendar
@@ -119,29 +194,95 @@ Every PR: lint and e2e pass, and reply with the PR link **and** the Vercel previ
 | Fri 10/2 | setup: check pins against the grounds, hang posters |
 | Sat–Sun 10/3–4 | festival. Hot fixes straight to `main` |
 
-## Open, as of 2026-09-18 morning
+## Open, as of 2026-09-18 evening
 
-Shipped 9/18: PR #7 (2026 artist assignments + `/?print=1` 11×17 print sheet) and PR #2 (Sync from
-Figma workflow).
+Shipped 9/18: PR #7 (2026 artist assignments + `/?print=1` 11×17 print sheet), PR #2 (Sync from
+Figma workflow), and PR #8 (booth + beta fixes):
+- Sheet re-pulled 9/18 via the new `scripts/pull-sheet.py`; 112–114 are booths, no park-side gap;
+  Sponsor/open rows read "Sponsor". **The renumber moved the top number to 139 and Kidlandia to
+  K0–K10 — the poster's endpoints must be re-read from the JSON before 9/22, not copied from
+  this file's history.**
+- Merch booth: own pin, category, glyph (Phosphor t-shirt) and token `--pin-merch`, at the McLendon
+  entrance; in the directory, legend and design system.
+- Pinch zoom is continuous and snaps to a stop on release.
+- Phone opening state shows bike valet (Phosphor bicycle on `--cat-utility`), the beer stand and
+  merch alongside the four destinations. The McLendon art-market marker moved east and the beer
+  stand pin 25 units WNW to keep every 44px target clear; nothing shrank.
+- `<title>` is "Fall Fest – October 3rd and 4th 2026".
+- Pumpkin smashing + Trees for Tuition is one line. AWARE Wildlife and Achieve with Steve are
+  unnumbered squares with their own sheets; Achieve with Steve is named under the Acoustic Stage.
+- Print/poster copy says "over 130 artists"; every run endpoint on the print sheet is read from
+  the data.
+- 9/19 review round (each its own commit): pins hold one on-screen size through a pinch and its
+  settle; Kidlandia booths are one column inside the area, south to north, in the Kidlandia
+  colour; merch and the info booth sit on the east side of the entrance path per Jess's 2026 site
+  plan, info stacked directly north of merch; AWARE Wildlife and Achieve with Steve draw as
+  hollow squares. The info booth has always drawn as a pin in `--pin-info`; e2e now asserts it on
+  phone, desktop and paper.
+- 9/19 final round (each its own commit): `src/data/festival.js` is the one source for the
+  festival's name, dates, site and locked map URL; the print sheet carries a **vector QR code**
+  (1.5" box on the east lawn under the north arrow, verified by decoding a 300 dpi raster of the
+  PDF down to 60 dpi) with the "Scan for the music schedule…" callout; the kicker, the hollow
+  legend row and the footer are gone; margins are 0.4" on all four sides with the map flush
+  left; side-column spacing is `--space-*` tokens only (`--space-8` between sections,
+  `--space-2` heading to content); map labels sit at the 8pt floor; the phone header shows the
+  dates beside the wordmark.
+- 9/19 round three (each its own commit): the phone header's dates sit on the wordmark's
+  baseline; the print sheet's QR sits at the map's vertical centre with 12 units of edge
+  clearance; the range key is gone and the index is "Art Market · Over 130 artists"; the whole
+  side column is one four-column grid (`--print-cols`, `--print-gutter`) that every section
+  snaps to.
+- 9/19 round four (each its own commit): the **info booth is 48 units above merch and off the
+  phone's opening view** (it arrives at the first zoom step) but on the desktop's, via
+  `overview: 'docked'` in `pins.js`, where the 48 units are a 13px gap; the phone-overview
+  version overlapped; food stalls 1, 2, 3 and 5 are one straight
+  line (2 and 3 poke a unit or two past the food blob's top edge, like 1 and 5 already did — a
+  Figma call whether the blob grows); the print sheet's **Food Court list is gone** and the
+  **artist list is 8pt** (line-height 1.35, 0.3" spare), every row on a shared `--print-lead`
+  box that also centres the legend swatches, so every label and every name starts on one x;
+  **PR screenshots** and **visual baselines** are standing rules 3 and 4 above, with the three
+  Actions (`PR screenshots`, `CI`, `Update visual baselines`) that enforce them. The first
+  baselines were rendered by that Action on 9/19; this container's renders differed from the
+  runner's by 0.4–3.8% of pixels, which is why the runner owns them. Booth numbers on the map stay ~5.5pt on
+  purpose: the rows are pitched too tightly for 8pt.
+- 9/20 round (each its own commit): **Candler Park Dr re-verified from 82 up** — the branch already
+  had 132–139 on the final stretch (Courtney's 9/19 note was about the live site), and the
+  re-check found the 9/18 re-pull had dropped the park side's speed-bump break, so 101–111 moved
+  18 units south, level with 82–94; Kidlandia K0–K10 confirmed and closed; `pull-sheet.py` stops
+  with a plain message on a restricted sheet or no network (**the JSON is still the 9/18 read**
+  — re-pull from a laptop before 9/22); the area markers fade out at Detail; merch 10 north and
+  info 8 south, 46 apart; AWARE Wildlife's square is on the entrance path at the west lawn's
+  corner (598.5, 677); the print sheet lost its run ranges and the "Over 130 artists" subhead,
+  and its legend swatches sit on the index numbers' right edge with `--print-lead-gap` one step
+  wider. All three visual baselines change (print for the CPD move, the labels and the legend;
+  phone-open and sheet-open for merch) — re-rendered by the Action.
 
-**Next PR — booth + beta fixes:**
-- Re-pull Courtney's sheet; 112–114 as booths (drop the speed-bump-gap treatment); remaining
-  Sponsor/open → "Sponsor".
-- **Merch booth** — own pin and category, **at the park entrance** (same spot every year, Jess 9/17).
-- **Remove the Food & Friendship tent** (Jess 9/17).
-- **Pinch-zoom on iPhone** — testers reach for it first; +/- works, pinch is awkward (Amy, iPhone 16).
-- **iPhone opening state** — add bike valet and beer to what shows at open (Alex). Beer stand pin
-  is missing entirely and is a landmark. Bike valet still a placeholder red circle → Phosphor icon,
-  `--cat-utility` #6E7C93. Make room by moving pins / slimming glyphs, never by shrinking targets.
-- Title: **"Fall Fest – October 3rd and 4th 2026"**.
-- Pumpkin smashing + Trees for Tuition are **one** POI.
-- Unnumbered pins for AWARE Wildlife and Achieve with Steve. If Anna K is named under Main Stage,
-  name Steve under Acoustic.
-- Artist count anywhere in print/poster copy: "over 130 artists".
+**Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
+- The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
+  Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
+- **Merch and the info booth** are from Jess's 2026 site plan (the CPNO Merch Tent): east side of
+  the entrance path, merch 36 units north of the McLendon kerb, info 46 units directly above it
+  (Ernest, 9/20; Jess: they are the same place). Info is not on the phone's opening view: at
+  that scale the two targets would need 81 units apart, which is a 60px gap on desktop. The
+  **bike valet** pin sits 10 units east
+  of the export's spot, the McLendon art-market marker moved east with it, and the **southern
+  restroom** pin is 20 W / 7 N of the export's spot (its export spot also grazed booth 54's hit
+  area).
+- The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
+  target clears the info booth's. Falls under the water-station question below.
+- The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
+  Verify at setup.
+- **AWARE Wildlife** square: on the white ground of the entrance path, nestled into the west
+  lawn's corner where the path widens out to the booth rows (Ernest, 9/20; Courtney's words
+  were "on the grass"). **Achieve with Steve** square: one McLendon pitch east of booth 55. Both
+  approximate.
+
+**Not in this repo:** the **Food & Friendship tent** (Jess 9/17: remove it) does not exist in the
+app's data or basemap — nothing to delete here. It is on the printed poster / Figma artwork, which
+is Cowork's and Ernest's to fix.
 
 **Waiting on people (don't guess):**
 - Park west row split (29–37 north / 38–54 south of the path bend) — unverified, asking Courtney.
-- Kidlandia K0–K9 order/position — placed by description only.
 - Hours for Kidlandia bounce houses, bike valet, artist market (Amy asked for them on the map).
 - Restrooms on Candler Park Dr (end of booths) and on the field; more water stations; Callaway
   Blue water and some sponsor locations moved in the 2026 site plan — confirming with Jess / Andy.

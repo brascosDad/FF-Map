@@ -69,7 +69,8 @@
       <tr><th>Teal</th><td><b>Zones.</b> Area fills only.</td></tr>
       <tr><th>Navy fill</th><td><b>Selected</b>, where the thing has no colour of its own to lose — a booth square.</td></tr>
       <tr><th>Navy ring</th><td><b>Selected</b>, where it does — a pin keeps its category hue and takes a cream-backed navy ring instead. Selecting a category (restrooms, beer) rings every pin in it.</td></tr>
-      <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid.</td></tr>
+      <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid, merch.</td></tr>
+      <tr><th>Hollow slate square</th><td><b>A spot with no booth number.</b> Cream (<code>--ff-cream</code>) inside a <code>--cat-booth</code> frame: still a booth, plainly not one of the numbered run. Two of them, on the map and on paper.</td></tr>
       <tr><th>The same hue, faded</th><td><b>That category's ground.</b> An area blob is its own marker's hue at 34% and <em>no stroke</em> — area, not outline. A sheet's list bullets are the hue of whatever you opened, so the badge at the top and the bullets below are obviously one place.</td></tr>
     </table>
   </div>
@@ -296,7 +297,7 @@
   grid('brand', [['--ff-navy','structure, text'],['--ff-cream','on navy'],['--ff-teal','zones'],['--ff-coral','you / now']]);
   grid('pins', [['--pin-food','food'],['--pin-drinks','drinks'],['--pin-restroom','restrooms'],['--pin-water','water'],
                 ['--pin-info','info'],['--pin-stage','stages'],['--pin-kids','kids'],['--pin-firstaid','first aid'],
-                ['--cat-booth','art market'],['--cat-utility','utility']]);
+                ['--pin-merch','merch'],['--cat-booth','art market'],['--cat-utility','utility']]);
   grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
                     ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
   grid('basemap', [['--map-ground','outside the park'],['--map-park','park footprint'],['--map-lawn','mown lawns'],
@@ -307,7 +308,7 @@
   const { ICONS } = await import('/src/assets/icons.js');
   const map = [['food','--pin-food'],['drinks','--pin-drinks'],['wc','--pin-restroom'],['water','--pin-water'],
                ['info','--pin-info'],['stage','--pin-stage'],['kids','--pin-kids'],['firstaid','--pin-firstaid'],
-               ['art','--cat-booth'],['bikevalet','--cat-utility']];
+               ['merch','--pin-merch'],['art','--cat-booth'],['bikevalet','--cat-utility']];
   document.getElementById('icons').innerHTML = map.map(([n, c]) =>
     `<div><i style="background:var(${c})"><svg viewBox="0 0 256 256">${ICONS[n]}</svg></i>${n}</div>`).join('');
 </script>

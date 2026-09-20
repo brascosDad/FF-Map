@@ -4,8 +4,8 @@
 //
 //   npm run build && npx vite preview --port 4310 &
 //   node scripts/shot.mjs [outdir]
-import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { launch } from './lib/browser.mjs';
 
 const OUT = process.argv[2] || 'shots';
 const URL = process.env.SHOT_URL || 'http://localhost:4310/';
@@ -17,7 +17,7 @@ const VIEWS = [
 ];
 
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await launch();
 for (const { name, width, height, ...rest } of VIEWS) {
   const page = await browser.newPage({ viewport: { width, height }, ...rest });
   await page.goto(URL, { waitUntil: 'networkidle' });

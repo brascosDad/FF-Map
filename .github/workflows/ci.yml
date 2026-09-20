@@ -1,0 +1,42 @@
+# Lint, the e2e suite and the visual comparisons, on every pull request. The
+# same `npm run test:e2e` a contributor runs before pushing; CLAUDE.md asks for
+# it green before any PR, and this is what makes that true rather than polite.
+#
+# A visual case that differs from its baseline fails here. That is the point:
+# a change to what people see is accepted by updating tests/visual/ on purpose
+# (the update-visual-baselines label, see tests/visual/README.md), not by a
+# green build that never looked. Only this runner's verdict counts: the
+# baselines are its renders, and other machines rasterise text differently.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # The "Update visual baselines" Action runs this on the branch after it
+  # commits new baselines: a push made with the workflow token does not start
+  # CI by itself, and a PR whose last commit is a baseline update would
+  # otherwise sit with no verdict until someone pushed something else.
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run lint
+      - run: npm run test:e2e
+      - name: Keep the renders when something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-out
+          path: .e2e-out/
+          if-no-files-found: ignore
+          include-hidden-files: true

@@ -3,6 +3,8 @@ import Icon from './Icon';
 import { PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
+import { span } from '../data/areas';
+import { FESTIVAL } from '../data/festival';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -33,9 +35,16 @@ function SheetHeader({ icon, color, title, sub }) {
 
 const POI_COPY = {
   kids: { title: 'Kidlandia', sub: 'Family activity zone', icon: 'kids', cat: 'kids',
-    lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing', 'Trees for Tuition'] },
+    // Pumpkin smashing and Trees for Tuition are one stop, not two (9/17).
+    lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing with Trees for Tuition'] },
+  // The beer stand is its own pin: the main one, on the field, and the
+  // landmark people navigate by. The other stations share the generic entry.
+  beer: { title: 'Beer Stand', sub: 'The main beer stand, on the field', icon: 'drinks', cat: 'drinks',
+    lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy', 'Three more drink stations are pinned around the grounds — zoom in to see them'] },
   drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
     lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
+  merch: { title: 'Merch Booth', sub: 'Fall Fest merchandise', icon: 'merch', cat: 'merch',
+    lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
   wc: { title: 'Restrooms', sub: 'Five-toilet banks + ADA units', icon: 'wc', cat: 'wc',
     lines: ['Multiple five-toilet banks plus ADA-accessible toilets', 'Selecting restrooms rings every one of them on the map'] },
   firstaid: { title: 'First Aid / EMS', sub: 'On-site medical support', icon: 'firstaid', cat: 'firstaid',
@@ -43,9 +52,9 @@ const POI_COPY = {
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',
     lines: ['Free water stations — bring a bottle to refill'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
-    lines: ['Programs and general festival information', 'Ask here about lost & found'] },
+    lines: ['At the park entrance off McLendon Ave, on the east side of the path just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
-    lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, by the info booth'] },
+    lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };
 
 function StageSchedule({ stageKey }) {
@@ -105,11 +114,11 @@ function FoodCourt() {
 function BoothRow({ booth, onOpen }) {
   return (
     <button className="boothrow" onClick={() => onOpen(booth)}>
-      <span className="n">{booth.n}</span>
+      <span className="n">{booth.n ?? '—'}</span>
       <span className="who">
         {booth.biz
           ? <>{booth.biz}{booth.name !== booth.biz && <em>{booth.name}</em>}</>
-          : <em>Sponsor or open booth</em>}
+          : <em>Sponsor</em>}
       </span>
     </button>
   );
@@ -118,7 +127,8 @@ function BoothRow({ booth, onOpen }) {
 // The run's booths in number order, each one a row. Kidlandia's K stack counts
 // toward the in-park run (the range says so), so it lists at the end of that
 // one. The two artists the sheet names but gives no number sit last, under the
-// run they belong to: there is nowhere to draw them, but they are still here.
+// run they belong to, with a dash for a number; they have a square on the map
+// like any other booth, so tapping the row flies to it.
 function ArtMarketArea({ area, onOpenBooth }) {
   const booths = area.id === 'spine' ? [...area.booths, ...BOOTHS.kid] : area.booths;
   const unnumbered = UNNUMBERED.filter((u) => u.group === area.id);
@@ -126,13 +136,7 @@ function ArtMarketArea({ area, onOpenBooth }) {
     <>
       <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />
       <div className="boothlist">
-        {booths.map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
-        {unnumbered.map((u) => (
-          <div className="boothrow boothrow--static" key={u.name}>
-            <span className="n">—</span>
-            <span className="who">{u.biz}{u.name !== u.biz && <em>{u.name}</em>}<em>{u.where ? `At the ${u.where}` : 'No booth number on the sheet'}</em></span>
-          </div>
-        ))}
+        {[...booths, ...unnumbered].map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
       </div>
       <div className="foot">Booth numbers and artists from the market chair's 2026 assignments.</div>
     </>
@@ -203,6 +207,11 @@ function Legend() {
           {l.label}
         </span>
       ))}
+      {/* The two artists with a spot but no number draw hollow on the map. */}
+      <span className="ffc-legend__row">
+        <span className="ffc-legend__dot ffc-legend__dot--hollow" />
+        Artist, no number
+      </span>
     </div>
   );
 }
@@ -210,6 +219,9 @@ function Legend() {
 function BoothDetail({ booth, onStep }) {
   const isFood = booth.area === 'Food Court';
   const isKid = booth.area === 'Kidlandia';
+  // A spot with no number is not in any row, so there is nothing to step
+  // through: the sheet is titled by the business instead of "Booth —".
+  const unnumbered = booth.n == null;
   const group = BOOTHS[booth.id.split('-')[0]] || [];
   const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
@@ -220,17 +232,21 @@ function BoothDetail({ booth, onStep }) {
           it wraps inside this area only, so running off the end of the car-path
           market returns you to its start rather than dumping you into the food
           trucks. */}
-      <div className="boothnav ffc-step">
-        <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
-        <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
-        <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
-      </div>
+      {!unnumbered && (
+        <div className="boothnav ffc-step">
+          <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+          <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
+          <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
+        </div>
+      )}
 
+      {/* A Kidlandia booth wears the Kidlandia colour, like its square on the
+          map; every other art booth wears the market slate. */}
       <SheetHeader
-        icon={isFood ? 'food' : 'art'}
-        color={isFood ? PIN_COLOR.food : SLATE}
-        title={`${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
-        sub={`${booth.area}${isFood ? '' : ' · Art Market'}`} />
+        icon={isFood ? 'food' : isKid ? 'kids' : 'art'}
+        color={isFood ? PIN_COLOR.food : isKid ? PIN_COLOR.kids : SLATE}
+        title={unnumbered ? booth.biz : `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
+        sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}`} />
 
       {/* One line, and it is the honest one. The old body ran a generic bullet,
           a "photos go here" note that told a festival-goer nothing, and the
@@ -242,12 +258,14 @@ function BoothDetail({ booth, onStep }) {
         ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
         : booth.biz
           ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
-          : <div className="li"><span className="b" />Sponsor or open booth — no artist on the 2026 list.</div>}
+          : <div className="li"><span className="b" />Sponsor booth.</div>}
       {/* One bullet, one footer line: the phone sheet has a 320px budget and a
           second bullet or a wrapped footer blows it. The Kidlandia caveat is
-          the footer on a K booth, since the position is the uncertain thing. */}
+          the footer on a K booth, since the position is the uncertain thing;
+          the unnumbered pair say where the chair put them. */}
       <div className="foot">{isFood ? 'Position from the official map.'
-        : isKid ? 'Artist from the 2026 list; the K0–K9 stack\'s position is approximate until the Kidlandia layout is confirmed.'
+        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} column runs south to north inside Kidlandia, position approximate until the layout is confirmed.`
+        : unnumbered ? `On the 2026 list with a spot but no number: ${booth.where}. Position approximate.`
         : 'Artist from the 2026 list; position from the official map.'}</div>
     </>
   );
@@ -259,7 +277,7 @@ function BoothDetail({ booth, onStep }) {
  * the top and the bullets below it are then obviously about the same place.
  */
 function accentFor(openId, openArea, openBooth) {
-  if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : SLATE;
+  if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : openBooth.area === 'Kidlandia' ? PIN_COLOR.kids : SLATE;
   if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
   if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
   if (openArea) return SLATE;
@@ -433,8 +451,8 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
           away. */}
       {docked && !isOpen && (
         <div className="panel-head">
-          <h3>Candler Park Fall Fest</h3>
-          <p>October 3–4, 2026</p>
+          <h3>{FESTIVAL.name}</h3>
+          <p>{FESTIVAL.dates}</p>
         </div>
       )}
       {docked && isOpen && (

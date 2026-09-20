@@ -11,16 +11,14 @@
 // so it cannot disagree with the phone map about where anything is.
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
-import { AREAS, BOOTH_ANGLE } from '../data/areas';
-import { PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
+import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
-import vendorsData from '../data/vendors.json';
-// The phone map ships Manrope's Latin subset only. One vendor name needs
-// Vietnamese glyphs, and on paper a fallback face in the middle of the list
-// shows; the subset is unicode-range scoped, so it only fetches for that name,
-// and only on this route.
-import '@fontsource/manrope/vietnamese-400.css';
+import { FESTIVAL } from '../data/festival';
+// The QR generator's core only: it returns the module matrix and we draw it
+// as vector rects, so the code prints as crisp as the booth squares.
+import QRCode from 'qrcode/lib/core/qrcode';
 import '../styles/print.css';
 
 // The festival footprint with breathing room, in map units -- the same box
@@ -30,23 +28,75 @@ const VIEW = { x: 340, y: 65, w: 760, h: 810 };
 
 // Print sizes, all in map units. At the sheet's scale one unit is ~0.9pt.
 const TICK = 8;          // booth square, same as the screen
-const NUMBER = 6;        // booth number: ~5.5pt, the row pitch is 8-13 units
+// The map draws 810 units to 10.2in, so 8pt -- the sheet's type floor -- is
+// 8.8 units. Every label on the map clears it. Booth numbers are the one
+// exception: the rows are pitched 8-13 units apart, so a number at the floor
+// would overrun its neighbours; they stay at 6 (about 5.5pt), the largest
+// size the geometry allows.
+const NUMBER = 6;        // booth number
 const PIN_R = 10;        // a pin is a symbol here, not a 44px tap target
 const PIN_ICON = 13;
-const LABEL = 8.5;       // named-place labels
+const LABEL = 8.9;       // named-place labels and run ranges: 8pt
 const STREET = 11;
 
 const NUMBER_FILL = 'var(--map-number)';
 const HALO = 'var(--map-halo)';
 
-function Squares({ booths, color, angle = 0 }) {
+// The QR code: about 1.5in square on the sheet, in map units. The map draws at
+// 810 units to 10.2in, so an inch is ~79.4 units. `QR_BOX` is the white quiet-
+// zone box; the code inside leaves the standard four modules of quiet zone on
+// every side. It sits on the empty park green east of the festival, at the
+// map's vertical centre, 12 units in from the map's right edge, where it
+// covers no pin, booth, path or label (Callan Circle's road band starts at
+// x ~1119, the festival's east edge at this height is x ~915).
+const QR_BOX = 119;                                  // ~1.5in
+const QR_QUIET = 4;                                  // modules, per the spec
+const QR_EDGE = 12;                                  // clearance from the map's right edge
+const QR_AT = { x: VIEW.x + VIEW.w - QR_EDGE - QR_BOX, y: VIEW.y + VIEW.h / 2 - QR_BOX / 2 };
+const QR_CAPTION = ['Scan for the music', 'schedule, food trucks', 'and every artist —', 'always up to date.'];
+
+/**
+ * The map's own URL as a scannable, vector QR code with a caption.
+ *
+ * Error correction M: the URL is short (version 3, 29 modules), so each module
+ * is ~1mm at this size, and M survives the smudges a poster collects. The
+ * modules are one path so the PDF carries one object, not 500.
+ */
+function MapQr() {
+  const qr = QRCode.create(FESTIVAL.mapUrl, { errorCorrectionLevel: 'M' });
+  const n = qr.modules.size;
+  const cell = QR_BOX / (n + QR_QUIET * 2);
+  const x0 = QR_AT.x + QR_QUIET * cell, y0 = QR_AT.y + QR_QUIET * cell;
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    if (qr.modules.get(r, c)) d += `M${(x0 + c * cell).toFixed(2)} ${(y0 + r * cell).toFixed(2)}h${cell.toFixed(2)}v${cell.toFixed(2)}h-${cell.toFixed(2)}z`;
+  }
+  return (
+    <g className="print-qr" data-url={FESTIVAL.mapUrl}>
+      <rect x={QR_AT.x} y={QR_AT.y} width={QR_BOX} height={QR_BOX} rx={3} fill="var(--ff-white)" />
+      <path d={d} fill="var(--ff-navy)" shapeRendering="crispEdges" />
+      <text x={QR_AT.x + QR_BOX / 2} y={QR_AT.y + QR_BOX + LABEL * 1.6} fontSize={LABEL} fontWeight={800}
+            fill="var(--text-strong)" textAnchor="middle" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
+        {QR_CAPTION.map((line, i) => <tspan key={i} x={QR_AT.x + QR_BOX / 2} dy={i ? LABEL * 1.25 : 0}>{line}</tspan>)}
+      </text>
+    </g>
+  );
+}
+
+// A booth with no number (the two unnumbered artists) is drawn hollow -- cream
+// inside a slate frame, as on the phone map -- and gets no text element at
+// all, not an empty one.
+function Squares({ booths, color, angle = 0, hollow = false }) {
   return booths.map((b) => (
-    <g key={b.id}>
+    <g key={b.id} className={b.n == null ? 'print-booth print-booth--unnumbered' : 'print-booth'}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK} rx={1.4}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
-            fill={color} fillOpacity={0.75} />
-      <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
-            textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
+            fill={hollow ? CREAM : color} fillOpacity={hollow ? 1 : 0.75}
+            stroke={hollow ? color : undefined} strokeWidth={hollow ? 1.4 : undefined} />
+      {b.n != null && (
+        <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
+              textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
+      )}
     </g>
   ));
 }
@@ -72,22 +122,25 @@ function PrintMap() {
 
       <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]} />)}
-      <Squares booths={BOOTHS.kid} color={SLATE} angle={BOOTH_ANGLE.kid} />
+      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
+      <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
-      {/* The three runs carry their ranges on the map itself, where the 2025
-          sheet had them, so a reader with a booth number knows which street
-          to walk to before they find the key. */}
+      {/* One plain "Art Market" on the car-path run, which has no street name
+          to say what it is; the two street runs are named by their streets
+          and the index carries every number. The ranges came off the map on
+          9/20: 55-81 sat too high, 82-139 in the middle of the street north
+          of its run, 1-54 crowded the park rows. The label sits in the west
+          row's own break at the path bend (between 37 and 38), along the
+          row, so it touches no number. */}
       <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
-        <text x={411.5} y={290} textAnchor="middle" transform="rotate(-90 411.5 290)">Art Market 82–142</text>
-        <text x={640} y={812} textAnchor="middle">Art Market 55–81</text>
-        {/* In the west row's own break at the path bend (between 37 and 38),
-            along the row's direction, so it touches no number. */}
-        <text x={769.5} y={480} textAnchor="middle" fontSize={LABEL - 1} transform="rotate(-63 769.5 480)">Art Market 1–54</text>
-        <text x={645} y={496} textAnchor="middle" fontSize={LABEL - 1.5}>K0–K9</text>
+        <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market</text>
+        {/* Just below the south end of the Kidlandia column, wherever the
+            sheet's count puts it. */}
+        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
       </g>
 
       {PINS.map((p, i) => (
-        <g key={i}>
+        <g key={i} className={`print-pin print-pin--${p.c}`}>
           <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
           <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
           {LABEL_AT[p.d] && LABEL_TEXT[p.d] && (
@@ -104,6 +157,8 @@ function PrintMap() {
         <path d="M0 -14 L7 8 L0 3 L-7 8 Z" />
         <text y={20} fontSize={9} fontWeight={800} textAnchor="middle">N</text>
       </g>
+
+      <MapQr />
     </svg>
   );
 }
@@ -119,13 +174,12 @@ function artistIndex() {
   for (const key of ['spine', 'mcl', 'cpd', 'kid']) {
     for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n) });
   }
-  for (const u of UNNUMBERED) rows.push({ label: u.where ? `${u.biz} (at the ${u.where})` : `${u.biz} (no number)`, n: '—' });
+  for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
   return rows.sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
 }
 
 export default function PrintSheet() {
   const index = artistIndex();
-  const counts = { park: BOOTHS.spine.length, kid: BOOTHS.kid.length, mcl: BOOTHS.mcl.length, cpd: BOOTHS.cpd.length };
   return (
     <div className="print-page">
       <div className="print-mapcol"><PrintMap /></div>
@@ -133,8 +187,7 @@ export default function PrintSheet() {
       <aside className="print-side">
         <header className="print-head">
           <div className="print-brand">Fall Fest</div>
-          <div className="print-sub">Candler Park · October 3–4, 2026</div>
-          <div className="print-kicker">Site map</div>
+          <div className="print-sub">Candler Park · {FESTIVAL.dates}</div>
         </header>
 
         <section className="print-legend">
@@ -149,30 +202,23 @@ export default function PrintSheet() {
             </span>
           ))}
           <span className="print-legend__row">
-            <span className="print-legend__sq" style={{ background: SLATE }} />Art market booth, numbered
+            <span className="print-legend__sq" style={{ background: SLATE }} />Art market booth
+          </span>
+          <span className="print-legend__row">
+            <span className="print-legend__sq" style={{ background: PIN_COLOR.kids }} />Kidlandia booth
           </span>
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
         </section>
 
-        <section className="print-key">
-          <h2>Art market · {counts.park + counts.mcl + counts.cpd} booths</h2>
-          <div className="print-key__rows">
-            <span><b>1–54</b> in the park</span>
-            <span><b>K0–K9</b> Kidlandia, on the field</span>
-            <span><b>55–81</b> McLendon Ave</span>
-            <span><b>82–142</b> Candler Park Dr</span>
-          </div>
-        </section>
-
-        <section className="print-food">
-          <h2>Food court · {vendorsData.vendors.length} vendors</h2>
-          <ul>{vendorsData.vendors.map((v) => <li key={v.id}>{v.name}</li>)}</ul>
-        </section>
-
+        {/* The alphabetical list, every artist with their booth number. No
+            count under the heading: a sheet that lists every artist needs
+            neither the public "over 130" nor a booth total -- and a booth
+            total is never printed anywhere, since it moves every time the
+            chair edits her sheet. */}
         <section className="print-index">
-          <h2>Find an artist</h2>
+          <h2>Art Market</h2>
           <ul>
             {index.map((r, i) => (
               <li key={i}><span className="print-index__n">{r.n}</span><span className="print-index__who">{r.label}</span></li>
@@ -180,10 +226,6 @@ export default function PrintSheet() {
           </ul>
         </section>
 
-        <footer className="print-foot">
-          Booth numbers and artists from the artist market chair's 2026 assignments; positions from the official site plan.
-          The phone map at fallfest.candlerpark.org stays current after this sheet prints.
-        </footer>
       </aside>
     </div>
   );

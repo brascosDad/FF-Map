@@ -12,7 +12,7 @@
 import { createServer } from 'node:http';
 import { createReadStream, existsSync, mkdirSync, statSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
-import { chromium } from 'playwright';
+import { launch } from './lib/browser.mjs';
 
 const DIST = resolve('dist');
 const OUT = resolve('print');
@@ -40,7 +40,7 @@ const server = createServer((req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await launch();
 try {
   // Screen pixels at 96dpi; the sheet is laid out in inches so this is exact.
   const ctx = await browser.newContext({ viewport: { width: PAGE.w * 96, height: PAGE.h * 96 }, deviceScaleFactor: DPI / 96 });

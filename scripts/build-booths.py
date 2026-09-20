@@ -12,10 +12,13 @@ Two inputs, and this script hand-edits neither:
   src/data/booth-numbering-2026.json
       WHAT each booth is called, and WHO is in it. The artist market chair's
       2026 assignment sheet, one record per booth: number, zone, artist,
-      business. This is the second numbering (v2): every artist booth was
-      resized to 15 ft, so there are fewer of them and every number after the
-      park moved. Poster endpoints are 1-54 park, 55-81 McLendon, 82-142
-      Candler Park Dr, K0-K9 Kidlandia. 112-114 are not on the sheet.
+      business. Rebuilt from her live sheet by scripts/pull-sheet.py -- run
+      that first when the sheet has moved. Every artist booth is 15 ft, so
+      there are fewer than in 2025 and every number after the park moved.
+      The run endpoints (1-54 park, 55-81 McLendon, 82-N Candler Park Dr,
+      K0-Kn Kidlandia) are read from the JSON's zone_ranges, not typed here,
+      so a booth added or dropped at the far end of Candler Park Dr -- the
+      end she numbers last on purpose -- needs no edit to this script.
 
 The sheet says which zone a booth is in but not where the zone sits on the
 ground. That comes from the 2025 official site map (the previous numbering
@@ -42,17 +45,31 @@ being numbered one-for-one:
                     Booths here were 15 ft already, so the count is unchanged
                     from 2025 and every number is simply the old one minus 7.
   Candler Park Dr   both columns are laid out afresh on the export's two column
-                    x's at the 15 ft pitch, so the mid-run speed bump reads as
-                    ONE break across both columns. Numbers run north to south
-                    DECREASING: 142 at the top of the street side, 82 at the
-                    bottom. The street side is the sheet's two "west side"
-                    zones (135-142 north of the barricade, 82-100 south of
-                    it); the park side is "West Lawn" (101-111, south) and
-                    "field" (115-134, north). See cpd().
-  Kidlandia         K0-K9 are not on the export at all. Placed as a short
-                    vertical stack on the lawn just east of the Kidlandia
-                    area. The stack's order (K0 north) is unconfirmed -- the
-                    sheet does not place them. See KID_STACK.
+                    x's at the 15 ft pitch. Numbers run north to south
+                    DECREASING: the highest number at the top of the street
+                    side, 82 at the bottom. The street side is the sheet's two
+                    "west side" zones -- the second run (132-139, the "final
+                    stretch" the chair numbers last so booths can be added or
+                    dropped there) at the top, north of the barricade, then
+                    100-95, the speed bump, 94-82. The park side is "field"
+                    (north) then "West Lawn" (south) with the SAME speed bump
+                    between them, between 112 and 111: the 2025 map breaks
+                    both columns there, and the sheet's own old-number column
+                    skips three 2025 numbers at each break (105-107 on the
+                    street side, 126-128 on the park side). The chair
+                    confirmed 9/17 that 112-114 are real booths; that closed
+                    a NUMBERING gap, not the physical bump. See lay_cpd().
+  Kidlandia         K0-Kn are not on the export at all. One vertical column
+                    INSIDE the Kidlandia area (the basemap's kidlandia-area
+                    shape), numbered south to north: K0 at the south end, the
+                    highest at the north, as the 2026 site plan and the 2025
+                    map have it (Ernest, 9/19). How many there are comes from
+                    the sheet. See KID_STACK.
+  Unnumbered        two artists have a spot and no number: AWARE Wildlife on
+                    the grass by the park's west row, Achieve with Steve
+                    beside the Acoustic Stage. They get a square each, with
+                    no number, at UNNUMBERED_AT -- placed by the chair's
+                    description, so check them against the grounds on setup.
   Food court        the 16 stalls, verbatim from the export apart from the two
                     documented nudges. No truck names: the 2026 placements
                     are not assigned yet (vendors.json carries the list and
@@ -85,28 +102,44 @@ GROUP = {'east-park': 'spine', 'west-park': 'spine', 'mclendon-south': 'mcl',
 # ---- Where each run of numbers sits on the export's rows ---------------------
 # One entry per export row, segments in map order. `(lo, hi)` is an inclusive
 # range of sheet numbers; the row's `dir` says which end comes first along the
-# row. A string is a break. Counts are checked against the sheet, not assumed.
-LAYOUT = {
-    # In the park: two rows flanking the diagonal path, numbers increasing
-    # north to south. The export's southeast row splits at the 20 ft gap; the
-    # northwest row splits where the path bends.
-    'park-east': {'dir': 'asc', 'segments': [(1, 24), 'gap', (25, 28)]},
-    'park-west': {'dir': 'asc', 'segments': [(29, 37), 'bend', (38, 54)]},
-    # McLendon: one run in two boxes either side of Mell Ave, numbers
-    # DECREASING west to east -- 81 at the west end, 55 by the Acoustic Stage.
-    'mclendon-west': {'dir': 'desc', 'segments': [(81, 69)]},
-    'mclendon-east': {'dir': 'desc', 'segments': [(68, 55)]},
-    # Candler Park Dr: numbers DECREASING north to south on both columns.
-    # Street (outer) side: the sheet's second west-side run sits north of the
-    # barricade; the first fills the rest, with the speed bump between 95 and
-    # 94 (the sheet's 2025 crosswalk puts three old numbers, 105-107, between
-    # them, and the 2025 bump sat between old 106 and 107).
-    'cpd-street': {'dir': 'desc', 'segments': [(142, 135), 'barricade', (100, 95), 'speed bump', (94, 82)]},
-    # Park (inner) side: "field" north of the bump, "West Lawn" south of it.
-    # 112-114 are not on the sheet; the bump is where they would have fallen.
-    'cpd-park': {'dir': 'desc', 'segments': [(134, 115), 'speed bump', (111, 101)]},
-    'kidlandia-stack': {'dir': 'asc', 'segments': [('K0', 'K9')]},
-}
+# row. A string is a break. The endpoints come from the sheet's zone_ranges
+# (`zr`); the only numbers typed here are the two breaks the sheet does not
+# know about -- where the park's west row bends, and where the speed bump
+# splits Candler Park Dr's street side. Counts are checked against the sheet.
+def layout(zr, gaps):
+    z = {k: (v['first'], v['last']) for k, v in zr.items()}
+    # The sheet marks one gap, the 20 ft bike/emergency gap in the east row.
+    gap = next(g for g in gaps if g['zone'] == 'east-park')
+    return {
+        # In the park: two rows flanking the diagonal path, numbers increasing
+        # north to south. The export's southeast row splits at the 20 ft gap;
+        # the northwest row splits where the path bends. How many of the west
+        # row's 26 fall either side of the bend is unverified (asking the
+        # chair); 9 north / 17 south is the export's own proportion.
+        'park-east': {'dir': 'asc', 'segments': [(z['east-park'][0], gap['after_booth']), 'gap',
+                                                  (gap['before_booth'], z['east-park'][1])]},
+        'park-west': {'dir': 'asc', 'segments': [(z['west-park'][0], 37), 'bend', (38, z['west-park'][1])]},
+        # McLendon: one run in two boxes either side of the park entrance,
+        # numbers DECREASING west to east -- 81 at the west end, 55 by the
+        # Acoustic Stage. 13 ticks west, 14 east.
+        'mclendon-west': {'dir': 'desc', 'segments': [(z['mclendon-south'][1], z['mclendon-south'][1] - 12)]},
+        'mclendon-east': {'dir': 'desc', 'segments': [(z['mclendon-south'][1] - 13, z['mclendon-south'][0])]},
+        # Candler Park Dr: numbers DECREASING north to south on both columns.
+        # Street (outer) side: the sheet's second west-side run sits north of
+        # the barricade; the first fills the rest, with the speed bump between
+        # 95 and 94 (the sheet's old-number column skips three 2025 numbers,
+        # 105-107, there -- the crosswalk).
+        'cpd-street': {'dir': 'desc', 'segments': [(z['cpd-west-b'][1], z['cpd-west-b'][0]), 'barricade',
+                                                    (z['cpd-west'][1], 95), 'speed bump', (94, z['cpd-west'][0])]},
+        # Park (inner) side: "field" then "West Lawn", the one physical speed
+        # bump between them, level with the street side's. (The 9/18 re-pull
+        # dropped this break by mistake, reading "112-114 are booths, not a
+        # gap" as "no gap on the park side"; 101-111 sat 18 units too far
+        # north until 9/20.)
+        'cpd-park': {'dir': 'desc', 'segments': [(z['cpd-field'][1], z['cpd-field'][0]), 'speed bump',
+                                                  (z['cpd-west-lawn'][1], z['cpd-west-lawn'][0])]},
+        'kidlandia-stack': {'dir': 'asc', 'segments': [z['kidlandia']]},
+    }
 
 # ---- Candler Park Dr layout -------------------------------------------------
 # Booth pitch, in map units. The 2025 layout fit 12 ft booths at 8.1 units,
@@ -126,20 +159,43 @@ CPD_BUMP = 17.9 + CPD_PITCH
 CPD_BARRICADE = 7 * CPD_PITCH
 CPD_GAP = {'speed bump': CPD_BUMP, 'barricade': CPD_BARRICADE}
 
-# ---- Kidlandia stack --------------------------------------------------------
-# On the 2025 map the K booths are "a short vertical stack in the centre of
-# the park, beside Pumpkin Smashing". The Kidlandia area on our basemap runs
-# to about x 629 at this latitude; the stack sits two booth widths east of
-# that edge, on the open lawn, level with the Kidlandia pin. Nothing in the
-# export marks these, so this is placement by description -- verify against
-# the 2026 Kidlandia layout before print.
-KID_STACK = {'x': 645.0, 'y0': 400.0, 'pitch': 9.0}
+# ---- Kidlandia column -------------------------------------------------------
+# One vertical column inside the Kidlandia area, along its east side: the
+# basemap's kidlandia-area shape spans x ~470-627, y ~297-538, and its east
+# edge at these latitudes is x ~610-615, so a column at x 592 sits inside it
+# with a booth's width to spare, clear of the Kidlandia pin (550.9, 422.3) at
+# every zoom and of the court to the south. `y_south` is the centre of the
+# LOWEST number; the column grows northward from there at `pitch`, so K0 is at
+# the south end and the highest number at the north, as the 2026 site plan and
+# the 2025 map have it. Eleven booths run y 472 up to 382; ten would stop at
+# 391 -- the count is the sheet's, not this table's. Nothing in the export
+# marks these, so verify the column against the grounds at setup.
+KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
+
+# ---- Artists with a spot but no number --------------------------------------
+# Keyed by business, as the sheet names them. Positions are by description.
+# AWARE Wildlife: on the white ground of the entrance path, nestled into the
+# corner where the path narrows south of the booth rows -- the west lawn's
+# corner is at about (592, 670), and the square sits a couple of units east
+# and south of it, just before the ground widens out to the rows (Ernest,
+# 9/20; the chair's own words were "on the grass"). Clear of the restroom pin's
+# target at the Detail stop. Achieve with Steve "beside the Acoustic Stage"
+# (chair, 9/17) -- one McLendon pitch east of booth 55, short of the stage
+# pin. `group` is the run whose sheet lists them. Check both against the
+# grounds at setup (10/2).
+UNNUMBERED_AT = {
+    'AWARE Wildlife': {'group': 'spine', 'x': 598.5, 'y': 677.0, 'where': 'on the entrance path, below the west row'},
+    'Achieve with Steve': {'group': 'mcl', 'x': 897.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
+}
 
 # ---- Food court -------------------------------------------------------------
-# Two stalls sat past the north tip of the hand-drawn food blob, so they read
-# as trucks parked outside their own area. Nudged ~9 units down the row's own
-# axis to sit inside it; spacing to their neighbours still matches the row.
-FOOD_NUDGE = {(872.0, 244.3): (868.0, 252.1), (885.6, 250.4): (881.3, 258.9)}
+# The top row of the east column -- stalls 1, 2, 3 and 5 -- is one straight
+# line (Ernest, 9/19). The export drew 2 and 3 a few units above it and an
+# earlier nudge pushed them below it; they now sit ON the line through 1 and
+# 5, evenly spaced. Their squares poke a unit or two past the hand-drawn food
+# blob's top edge, as 1 and 5 already did at its corners; whether the blob
+# grows to cover them is a Figma decision, not one for this script.
+FOOD_NUDGE = {(872.0, 244.3): (868.7, 249.6), (885.6, 250.4): (881.5, 255.0)}
 
 
 def read_coords(name, src):
@@ -207,7 +263,7 @@ def two_rows(pts):
     return (a, b) if se_first else (b, a)
 
 
-def lay_park(spn):
+def lay_park(spn, LAYOUT):
     se, nw = two_rows(spn)
     side = {'park-east': se, 'park-west': nw}
     out = []
@@ -223,7 +279,7 @@ def lay_park(spn):
     return out
 
 
-def lay_mclendon(mcl):
+def lay_mclendon(mcl, LAYOUT):
     boxes = split_on_gaps(sorted(mcl))                          # west to east
     want = [numbered(LAYOUT[r])[0] for r in ('mclendon-west', 'mclendon-east')]
     assert [len(b) for b in boxes] == [len(numbers(s)) for s in want], [len(b) for b in boxes]
@@ -233,7 +289,7 @@ def lay_mclendon(mcl):
     return out
 
 
-def lay_cpd(cpd):
+def lay_cpd(cpd, LAYOUT):
     xs = sorted({p[0] for p in cpd})
     street_x, park_x = xs[0], xs[-1]                            # outer, inner
     y0 = min(p[1] for p in cpd)                                 # the top tick
@@ -251,9 +307,10 @@ def lay_cpd(cpd):
     return out
 
 
-def lay_kid():
+def lay_kid(LAYOUT):
     seg = numbered(LAYOUT['kidlandia-stack'])[0]
-    return [(n, KID_STACK['x'], KID_STACK['y0'] + i * KID_STACK['pitch'])
+    # Numbers go up as the column goes north (y decreases).
+    return [(n, KID_STACK['x'], KID_STACK['y_south'] - i * KID_STACK['pitch'])
             for i, n in enumerate(numbers(seg))]
 
 
@@ -281,11 +338,12 @@ def main():
     sheet = {b['booth']: b for b in num['booths']}
     assert len(sheet) == len(num['booths']), 'duplicate booth number on the sheet'
 
+    LAYOUT = layout(num['zone_ranges'], num['gaps'])
     laid = {
-        'cpd': lay_cpd(coords['CPD']),
-        'mcl': lay_mclendon(coords['MCL']),
-        'spine': lay_park(coords['SPN']),
-        'kid': lay_kid(),
+        'cpd': lay_cpd(coords['CPD'], LAYOUT),
+        'mcl': lay_mclendon(coords['MCL'], LAYOUT),
+        'spine': lay_park(coords['SPN'], LAYOUT),
+        'kid': lay_kid(LAYOUT),
     }
 
     # ---- reconcile against the sheet before writing anything ----------------
@@ -308,14 +366,17 @@ def main():
     assert not missing, 'on the sheet but not laid out: %s' % missing
     assert total == num['numbers_assigned'], (total, num['numbers_assigned'])
     assert max(n for n in placed if isinstance(n, int)) == num['highest_number']
-    assert all(n not in placed for n in num['numbers_not_present'])
+    assert all(n not in placed for n in num.get('numbers_not_present', []))
+    assert {u['business'] for u in num['unnumbered']} == set(UNNUMBERED_AT), \
+        'UNNUMBERED_AT does not match the sheet\'s unnumbered artists'
     assert sorted(n for n in placed if sheet[n]['status'] != 'assigned') == num['sponsor_or_open']
     for zid, zr in num['zone_ranges'].items():
         got = sorted((n for n in placed if sheet[n]['zone'] == zid), key=sort_key)
         want = [n for n in numbers((zr['first'], zr['last'])) if n in sheet]
         assert got == want and len(got) == zr['count'], (zid, got[:3], want[:3])
-    print('  total  %3d numbered + %d Kidlandia, %d sponsor/open, %d not on the sheet'
-          % (total, len(laid['kid']), len(num['sponsor_or_open']), len(num['numbers_not_present'])))
+    print('  total  %3d numbered + %d Kidlandia, %d sponsor/open, %d unnumbered (sheet read %s)'
+          % (total, len(laid['kid']), len(num['sponsor_or_open']), len(num['unnumbered']),
+             num.get('read_date', '?')))
 
     lines = []
     w = lines.append
@@ -324,17 +385,22 @@ def main():
     w('// (basemapCoords.js for where, booth-numbering-2026.json for what) and')
     w('// re-run it rather than editing this file.')
     w('//')
+    zr = num['zone_ranges']
     w('// HONEST ABOUT WHAT IS AND ISN\'T REAL:')
     w('//   - Art-market numbers and names are the artist market chair\'s 2026')
-    w('//     assignments: 1-54 in the park, 55-81 on McLendon, 82-142 on Candler')
-    w('//     Park Dr (112-114 are not on her sheet), K0-K9 in Kidlandia. Each')
-    w('//     group is in number order, so stepping follows the numbers -- which')
-    w('//     on Candler Park Dr means south to north.')
+    w('//     assignments, sheet read %s: %s in the park, %s on McLendon,' % (
+        num.get('read_date', '?'), num['poster_endpoints']['park'], num['poster_endpoints']['mclendon']))
+    w('//     %s on Candler Park Dr, %s in Kidlandia. Each group is in number' % (
+        num['poster_endpoints']['candler_park_dr'], num['poster_endpoints']['kidlandia']))
+    w('//     order, so stepping follows the numbers -- which on Candler Park Dr')
+    w('//     means south to north.')
     w('//   - `name` is the artist, `biz` the business, straight from the sheet.')
-    w('//     Both are null on a sponsor or open booth.')
+    w('//     Both are null on a sponsor booth.')
     w('//   - Positions are laid along the rows the export draws, at the official')
-    w('//     counts. The K0-K9 stack is placed by description only; its order is')
-    w('//     unconfirmed.')
+    w('//     counts. The %s-%s column is one vertical run inside the Kidlandia' % (
+        zr['kidlandia']['first'], zr['kidlandia']['last']))
+    w('//     area, lowest number at the south end; its exact spot is unverified.')
+    w('//     So are the two unnumbered squares (UNNUMBERED).')
     w('//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;')
     w('//     which truck parks at which stall is not assigned yet.')
     w('')
@@ -355,13 +421,18 @@ def main():
     w('  ],')
     w('};')
     w('')
-    w('// On the sheet but with no booth number, so nowhere to draw them. The area')
-    w('// sheet lists them under the run they belong to.')
+    w('// On the sheet with a spot but no booth number. Drawn as a square with no')
+    w('// number (n is null), placed by the chair\'s description -- see UNNUMBERED_AT')
+    w('// in scripts/build-booths.py. `group` is the run whose sheet lists them;')
+    w('// `area` and `where` are what the booth sheet says.')
     w('export const UNNUMBERED = [')
     for u in num['unnumbered']:
-        w("  { group: '%s', name: %s, biz: %s, where: %s },"
-          % (GROUP[u['zone']], js_str(u['name']), js_str(u['business']),
-             js_str(u['booth'] if isinstance(u['booth'], str) else None)))
+        at = UNNUMBERED_AT[u['business']]
+        assert GROUP[u['zone']] == at['group'], (u['business'], u['zone'], at['group'])
+        ident = 'unnumbered-' + re.sub(r'[^a-z0-9]+', '-', u['business'].lower()).strip('-')
+        w("  { id: '%s', n: null, group: '%s', area: '%s', x: %s, y: %s, name: %s, biz: %s, where: %s },"
+          % (ident, at['group'], AREA[at['group']], fmt(at['x']), fmt(at['y']),
+             js_str(u['name']), js_str(u['business']), js_str(at['where'])))
     w('];')
     w('')
     w('// The three things a reader has to be told about this data used to live here as')

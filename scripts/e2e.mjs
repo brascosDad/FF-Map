@@ -9,10 +9,9 @@
  * LOOKS right -- that stays a human job, and the cases marked "?" in TESTING.md
  * are design decisions, not assertions.
  */
-import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { BASE, launch } from './lib/browser.mjs';
 
-const BASE = process.env.E2E_BASE || 'http://localhost:4310';
 const OUT = '.e2e-out';
 mkdirSync(OUT, { recursive: true });
 
@@ -81,7 +80,7 @@ async function drag(p, dx, dy) {
 const zoomIn = async (p) => { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); };
 const zoomOut = async (p) => { await p.locator('.zoomctl button').nth(1).click(); await p.waitForTimeout(600); };
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await launch();
 const pageErrors = [];
 
 for (const [name, w, h] of SIZES) {
@@ -116,7 +115,7 @@ for (const [name, w, h] of SIZES) {
       return true;
     })());
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 10,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 12,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
@@ -237,10 +236,9 @@ for (const [name, w, h] of SIZES) {
   check(`${name}: no booth numbers at Booths level`, !atBooths.some((t) => /^\d+$/.test(t)));
 
   // ---- pin sizing ----
-  // Two different numbers, deliberately. The VISIBLE pin is 34px at the overview
-  // and 40 from the first zoom step on -- the overview is where the festival is
-  // squeezed into a phone, so the markers give up a little there. The thing a
-  // FINGER has to hit is 44px at every level regardless.
+  // One visible size, 40px, at every level (the overview used to draw 34, and
+  // that step showed as a pop at the end of every pinch that crossed it). The
+  // thing a FINGER has to hit is 44px at every level regardless.
   await safe(`${name}: pin sizing`, async () => {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
@@ -253,12 +251,12 @@ for (const [name, w, h] of SIZES) {
     const d1 = await drawn(), h1 = await hit();
     await zoomIn(p);
     const d2 = await drawn(), h2 = await hit();
-    check(`${name}: pins are smaller at the overview, full size once you zoom`,
-      Math.abs(d0 - 34) <= 1.5 && Math.abs(d1 - 40) <= 1.5 && Math.abs(d2 - 40) <= 1.5,
+    check(`${name}: pins are one size at every level`,
+      [d0, d1, d2].every((v) => Math.abs(v - 40) <= 1.5),
       [d0, d1, d2].map((v) => v.toFixed(0)).join(' / ') + 'px');
     check(`${name}: the touch target stays 44px at every level`,
       [h0, h1, h2].every((v) => v >= 43.5), [h0, h1, h2].map((v) => v.toFixed(0)).join(' / ') + 'px');
-    const area = await p.locator('svg.ff-map g.ff-area > circle').first().boundingBox();
+    const area = await p.locator('svg.ff-map g.ff-area__mk > circle').first().boundingBox();
     check(`${name}: area marker is a 44px target too`, !!area && area.width >= 43.5,
       area ? `${area.width.toFixed(0)}px` : 'none');
   });
@@ -360,9 +358,9 @@ for (const [name, w, h] of SIZES) {
       back && back.i === expected, back ? `${start.i} -> ${back.i} (expected ${expected})` : 'unparsed');
     check(`${name}: stepping stays in the same area`, back && back.area === start.area,
       back ? `${start.area} -> ${back.area}` : 'unparsed');
-    // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
+    // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls.
     check(`${name}: total matches the area, not all booths`,
-      [58, 27, 54, 10, 16].includes(start.total), `${start.total} in ${start.area}`);
+      [58, 27, 54, 11, 16].includes(start.total), `${start.total} in ${start.area}`);
 
     await p.locator('.ffc-step button').last().click();    // forward again
     await p.waitForTimeout(150);
@@ -404,8 +402,9 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: an area sheet lists its booths`, opened);
     if (!opened) return;
     const rows = await p.locator('button.boothrow').count();
-    // 58 on Candler Park Dr, 27 on McLendon, 54 + 10 Kidlandia in the park.
-    check(`${name}: the list is the whole run`, [58, 27, 64].includes(rows), `${rows} rows`);
+    // 58 on Candler Park Dr; 27 on McLendon + Achieve with Steve; 54 + 11
+    // Kidlandia + AWARE Wildlife in the park. The unnumbered pair are rows too.
+    check(`${name}: the list is the whole run`, [58, 28, 66].includes(rows), `${rows} rows`);
     const named = await p.locator('button.boothrow .who').allTextContents();
     check(`${name}: every row names an artist or says it is open`,
       named.every((t) => t.trim().length > 0 && !/undefined|null/.test(t)));
@@ -461,6 +460,233 @@ for (const [name, w, h] of SIZES) {
   });
 
   await p.screenshot({ path: `${OUT}/${name}.png` });
+  await p.close();
+}
+
+// ---- the phone's opening state (beta round 1, 9/17) ----
+// Bike valet and the beer stand are landmarks and were reached for first; the
+// merch tent is the festival's own, at the gate. All three show at open, on
+// the smallest phone we care about, and no two overview targets overlap --
+// 44px is the floor and circles may touch but not cross. The info booth sits
+// 48 units above merch and arrives at the first zoom step (see pins.js).
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const cats = await p.locator('svg.ff-map g.ff-pin').evaluateAll((els) => els.map((e) => [...e.classList].find((c) => c.startsWith('ffc-pin--'))?.slice(9)));
+  check(`${name}: bike valet, beer and merch are on the opening view`,
+    cats.includes('bikevalet') && cats.includes('merch') && cats.includes('drinks'), cats.join(','));
+  check(`${name}: still only a handful of pins at open`, cats.length <= 8, `${cats.length} pins`);
+  const titles = [];
+  for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--merch', 'g.ffc-pin--drinks']) {
+    const b = await p.locator(sel).first().boundingBox();
+    await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await p.waitForTimeout(450);
+    titles.push(await p.locator('.sheet .hd h3').first().textContent());
+    await p.locator('.sheet .close').click();
+    await p.waitForTimeout(350);
+  }
+  check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
+  const overlap = await p.evaluate(() => {
+    const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area__mk > circle')]
+      .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
+    const out = [];
+    for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
+      const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
+      if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n.replace(/ff-tap |ffc-pin /g, '')} x ${cs[j].n.replace(/ff-tap |ffc-pin /g, '')} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+    }
+    return out;
+  });
+  check(`${name}: no two overview touch targets overlap`, overlap.length === 0, overlap.join(' | '));
+  await p.close();
+}
+
+// ---- the area markers leave at the Detail stop ----
+// Ernest, iPhone 9/20: at the closest stop the art-market marker sat on booths
+// 96-98 and 113-115 (Candler Park Dr) and 60-62 (McLendon), so those could not
+// be reached. At Detail the three markers are invisible and keep no tap
+// target: a tap on each of those booths' squares, and on its number, reaches
+// the booth. One step out brings the marker back, a 44px target again.
+for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
+  // The pan between the two steps: at the overview both markers sit near an
+  // edge of the screen (the phone overview crops the west; McLendon is the
+  // south edge), and the booths under them have to be on screen at Detail.
+  for (const [area, ids, nx, ny] of [['cpd', ['cpd-096', 'cpd-097', 'cpd-098', 'cpd-113', 'cpd-114', 'cpd-115'], 180, 0],
+                                     ['mcl', ['mcl-060', 'mcl-061', 'mcl-062'], 0, -160]]) {
+    const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(700);
+    // Step in to Detail with the marker under the pointer: a wheel step zooms
+    // about the pointer, so the marker stays put on screen (a double-tap on
+    // it would open it; the buttons zoom about the centre and push it off).
+    const onMarker = async () => { const b = await p.locator(`svg.ff-map g.ff-area[data-area="${area}"] .ff-marker circle`).boundingBox(); await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2); };
+    await onMarker(); await p.mouse.wheel(0, -100); await p.waitForTimeout(700);
+    await drag(p, nx, ny);
+    await onMarker(); await p.mouse.wheel(0, -100); await p.waitForTimeout(700);
+    const r = await p.evaluate((ids) => {
+      const mk = [...document.querySelectorAll('svg.ff-map g.ff-area__mk')].map((g) => ({ opacity: +getComputedStyle(g).opacity, pe: getComputedStyle(g).pointerEvents }));
+      const at = (x, y) => document.elementFromPoint(x, y);
+      const booths = ids.map((id) => {
+        const g = document.querySelector(`svg.ff-map [data-booth="${id}"]`);
+        const tap = g?.querySelector('rect[fill="transparent"]'), num = g?.querySelector('text');
+        if (!tap || !num) return { id, drawn: false };
+        const t = tap.getBoundingClientRect(), n = num.getBoundingClientRect();
+        const onScreen = t.x > 0 && t.y > 0 && t.right < innerWidth && t.bottom < innerHeight;
+        // The square's own cell has to take the tap. A number sits in the
+        // cell above its square (a column pitch is one cell), so what is
+        // asked of it is only that no marker is over it.
+        return { id, drawn: true, onScreen, tap: at(t.x + t.width / 2, t.y + t.height / 2)?.closest?.('[data-booth]')?.dataset.booth === id,
+                 num: !at(n.x + n.width / 2, n.y + n.height / 2)?.closest?.('.ff-area__mk') };
+      });
+      return { mk, numbers: [...document.querySelectorAll('svg.ff-map text')].some((t) => /^\d+$/.test(t.textContent)), booths };
+    }, ids);
+    const seen = r.booths.filter((b) => b.drawn && b.onScreen);
+    check(`${name}: reached Detail by ${area}`, r.numbers && seen.length === ids.length, `${seen.length} of ${ids.length} on screen, numbers ${r.numbers}`);
+    check(`${name}: at Detail every area marker is invisible and has no tap target`,
+      r.mk.length === 3 && r.mk.every((m) => m.opacity === 0 && m.pe === 'none'), r.mk.map((m) => `${m.opacity}/${m.pe}`).join(' '));
+    check(`${name}: at Detail no marker is over the ${area} booths' squares or numbers`,
+      seen.every((b) => b.tap && b.num), seen.map((b) => `${b.id}${b.tap && b.num ? '' : b.tap ? ' (number covered)' : ' (square covered)'}`).join(' '));
+    await zoomOut(p);
+    const back = await p.evaluate(() => {
+      const g = document.querySelector('svg.ff-map g.ff-area__mk');
+      return { opacity: +getComputedStyle(g).opacity, tap: g.querySelector('circle').getBoundingClientRect().width };
+    });
+    check(`${name}: one step out and the ${area} marker is back, a 44px target again`, back.opacity === 1 && back.tap >= 43.5, `opacity ${back.opacity}, ${back.tap.toFixed(0)}px`);
+    await p.close();
+  }
+}
+
+// ---- the info booth is a pin, everywhere, just above merch ----
+// Phone, desktop and paper: a circle filled with --pin-info carrying the info
+// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19). And
+// on the desktop overview it sits directly above merch with an 8-16px gap --
+// as close as that allows, since the two are one spot with two jobs (Jess,
+// 9/20); at the phone's first zoom step the two 44px targets may touch but
+// not overlap, and the 375px phone is the case that decides it.
+for (const [name, w, h, zoomFirst] of [['iPhone SE', 375, 667, true], ['mobile', 390, 800, true], ['desktop', 1440, 900, false]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h } });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  if (zoomFirst) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); }
+  const info = await p.evaluate(() => {
+    const g = document.querySelector('svg.ff-map g.ffc-pin--info');
+    if (!g) return { present: false };
+    // :scope > g -- the drawn circle sits in the shadowed inner group; the
+    // outer transparent circle is the 44px tap target, not the pin.
+    const circle = g.querySelector(':scope > g circle'), glyph = g.querySelector(':scope > g svg');
+    return { present: true, fill: circle && getComputedStyle(circle).fill, glyph: !!glyph, rects: g.querySelectorAll('rect').length,
+             size: circle ? Math.round(circle.getBoundingClientRect().width) : 0 };
+  });
+  check(`${name}: the info booth draws as a pin in --pin-info`,
+    info.present && info.fill === 'rgb(64, 126, 181)' && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
+    info.present ? `${info.fill}, glyph ${info.glyph}, ${info.rects} rects, ${info.size}px` : 'no info pin drawn');
+  // Desktop measures the drawn 40px circles (the visible gap); the phone
+  // measures the 44px tap circles, the direct children of the pin groups.
+  const stack = await p.evaluate((desktop) => {
+    const at = (c) => { const r = document.querySelector(desktop ? `svg.ff-map g.ffc-pin--${c} > g circle` : `svg.ff-map g.ffc-pin--${c} > circle`).getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2 }; };
+    const i = at('info'), m = at('merch');
+    return { dx: Math.abs(i.x - m.x), gap: (m.y - i.y) - i.r - m.r };
+  }, w >= 1024);
+  check(`${name}: the info pin sits directly above merch${w >= 1024 ? ', 8-16px clear' : ', targets touching or clear'}`,
+    stack.dx <= 1 && (w >= 1024 ? stack.gap >= 8 && stack.gap <= 16 : stack.gap >= -0.5), `${stack.gap.toFixed(1)}px gap, ${stack.dx.toFixed(1)}px off centre`);
+  await p.close();
+}
+
+// ---- pinch ----
+// Testers reach for a pinch before the buttons (Amy, iPhone 16). The map has to
+// follow the fingers while they move and land on a stop when they lift -- not
+// step once, ignore the rest of the gesture, then step again.
+{
+  const p = await browser.newPage({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const width = async () => Number((await p.locator('svg.ff-map').getAttribute('viewBox')).split(' ')[2]);
+  const w0 = await width();
+  // Two pointers, spread from 60px apart to 200px in eight moves, then lift.
+  const trace = await p.evaluate(async () => {
+    const svg = document.querySelector('svg.ff-map');
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const ev = (type, id, x, y, target = svg) => target.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, isPrimary: id === 1 }));
+    const widths = [];
+    ev('pointerdown', 1, cx - 30, cy); ev('pointerdown', 2, cx + 30, cy);
+    for (let i = 1; i <= 8; i++) {
+      const s = 30 + i * 8.75;
+      ev('pointermove', 1, cx - s, cy, window); ev('pointermove', 2, cx + s, cy, window);
+      await new Promise((r) => requestAnimationFrame(r));
+      widths.push(Number(svg.getAttribute('viewBox').split(' ')[2]));
+    }
+    ev('pointerup', 1, cx - 100, cy, window); ev('pointerup', 2, cx + 100, cy, window);
+    return widths;
+  });
+  await p.waitForTimeout(500);
+  const w1 = await width();
+  const monotone = trace.every((v, i) => i === 0 || v <= trace[i - 1] + 0.01);
+  check('pinch: the map follows the fingers while they move', monotone && trace[trace.length - 1] < trace[0] * 0.8,
+    trace.map((v) => Math.round(v)).join(' > '));
+  // Spreading 60 -> 200px is x3.33; the closest stop is Detail (0.315). It
+  // must land exactly on a stop, with the zoom-out button now live.
+  check('pinch: it settles on a stop when the fingers lift', Math.abs(w1 - w0 * 0.315) < 1 || Math.abs(w1 - w0 * 0.565) < 1,
+    `${Math.round(w0)} -> ${Math.round(w1)} (stops at ${Math.round(w0 * 0.565)} and ${Math.round(w0 * 0.315)})`);
+  check('pinch: the buttons agree about where it landed',
+    (await p.locator('.zoomctl button').nth(1).getAttribute('aria-disabled')) === 'false');
+  check('pinch: numbers appear if it landed on Detail',
+    Math.abs(w1 - w0 * 0.315) >= 1 || (await p.locator('svg.ff-map text').allTextContents()).some((t) => /^\d+$/.test(t)));
+
+  // Only the map scales. A pin, its glyph and a street label hold one on-screen
+  // size for the whole gesture and through the settle (Ernest, iPhone 9/19:
+  // pins shrank under the fingers and popped back on release). Real two-finger
+  // touch input through the DevTools protocol, measured every move -- the
+  // synthetic pointer events above cannot reproduce a browser's touch path.
+  await p.locator('.zoomctl button[aria-label="Reset to overview"]').click();
+  await p.waitForTimeout(400);
+  const cdp = await p.context().newCDPSession(p);
+  const sizes = () => p.evaluate(() => {
+    const pin = document.querySelector('svg.ff-map g.ffc-pin--kids g circle');
+    const glyph = document.querySelector('svg.ff-map g.ffc-pin--kids g svg');
+    const label = document.querySelector('svg.ff-map text');
+    const mk = document.querySelector('svg.ff-map g.ff-area__mk');
+    return { pin: pin.getBoundingClientRect().width, glyph: glyph.getBoundingClientRect().width, label: label.getBoundingClientRect().height,
+             mk: +getComputedStyle(mk).opacity };
+  });
+  const cx = 196, cy = 500;
+  const two = (s) => [{ x: cx - s, y: cy, id: 1 }, { x: cx + s, y: cy, id: 2 }];
+  const run = async (spreads) => {
+    const frames = [await sizes()];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: two(spreads[0]) });
+    for (const s of spreads.slice(1)) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: two(s) });
+      await p.waitForTimeout(40);
+      frames.push(await sizes());
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    for (let i = 0; i < 6; i++) { await p.waitForTimeout(50); frames.push(await sizes()); }
+    return frames;
+  };
+  const steady = (frames, key) => Math.max(...frames.map((f) => f[key])) - Math.min(...frames.map((f) => f[key])) <= 0.5;
+  const report = (frames, key) => `${key} ${Math.min(...frames.map((f) => f[key])).toFixed(1)}–${Math.max(...frames.map((f) => f[key])).toFixed(1)}px`;
+  const inward = await run([30, 40, 50, 60, 70, 80, 90, 100, 110, 120]);
+  check('pinch in: pin, glyph and label hold their on-screen size, gesture and settle',
+    steady(inward, 'pin') && steady(inward, 'glyph') && steady(inward, 'label'),
+    ['pin', 'glyph', 'label'].map((k) => report(inward, k)).join(', '));
+  // The area markers cross-fade with the zoom, under the fingers and through
+  // the settle: opacity moves one way per gesture, never jumps, and ends at 0
+  // on Detail. Spreading x4 from the overview lands on Detail (see below).
+  const fadeSteps = (frames) => frames.slice(1).map((f, i) => f.mk - frames[i].mk);
+  const mkIn = inward.map((f) => f.mk);
+  check('pinch in: the area markers fade out with the zoom, no pop, gone at Detail',
+    fadeSteps(inward).every((d) => d <= 0.01 && d > -0.5) && mkIn[0] === 1 && mkIn[mkIn.length - 1] === 0,
+    `opacity ${mkIn.map((v) => v.toFixed(2)).join(' > ')}`);
+  const outward = await run([120, 110, 100, 90, 80, 70, 60, 50, 40, 30]);
+  check('pinch out: pin, glyph and label hold their on-screen size, gesture and settle',
+    steady(outward, 'pin') && steady(outward, 'glyph') && steady(outward, 'label'),
+    ['pin', 'glyph', 'label'].map((k) => report(outward, k)).join(', '));
+  const mkOut = outward.map((f) => f.mk);
+  check('pinch out: the area markers fade back in, no pop, whole again at the stop',
+    fadeSteps(outward).every((d) => d >= -0.01 && d < 0.5) && mkOut[0] === 0 && mkOut[mkOut.length - 1] === 1,
+    `opacity ${mkOut.map((v) => v.toFixed(2)).join(' > ')}`);
+  const wEnd = await width();
+  check('pinch out: it landed back on a stop', [1, 0.565, 0.315].some((r) => Math.abs(wEnd - w0 * r) < 1),
+    `${Math.round(wEnd)} (stops at ${[1, 0.565, 0.315].map((r) => Math.round(w0 * r)).join(' / ')})`);
   await p.close();
 }
 
@@ -854,11 +1080,34 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     numbers: document.querySelectorAll('.print-map rect + text').length,
     chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
     index: document.querySelectorAll('.print-index li').length,
+    unnumbered: document.querySelectorAll('.print-booth--unnumbered').length,
+    infoPin: (() => { const c = document.querySelector('.print-pin--info circle'); return c ? getComputedStyle(c).fill : 'none'; })(),
+    infoGlyph: !!document.querySelector('.print-pin--info svg'),
+    infoRects: document.querySelectorAll('.print-pin--info rect').length,
+    text: document.querySelector('.print-side').innerText,
+    // The run labels only: the map's textContent runs every booth number
+    // together, so "41 42" would read as "142".
+    runLabels: [...document.querySelectorAll('.print-map text')].map((t) => t.textContent).filter((t) => /^Art Market|^K\d/.test(t)),
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
-  // 58 + 27 + 54 numbered art booths, 10 Kidlandia, 16 food stalls.
-  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 10 + 16, `${pr.numbers} numbers`);
+  check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === 'rgb(64, 126, 181)' && pr.infoGlyph && pr.infoRects === 0,
+    `${pr.infoPin}, glyph ${pr.infoGlyph}, ${pr.infoRects} rects`);
+  // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls. The two
+  // unnumbered squares print with no number, so they are not counted here.
+  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);
+  check('print: the two unnumbered artists have a square', pr.unnumbered === 2, `${pr.unnumbered} squares`);
+  // No count of any kind on paper: not the public "over 130", not a booth
+  // total (never printed anywhere -- it moves with every sheet edit).
+  check('print: no artist or booth count anywhere on the sheet',
+    !/over 130/i.test(pr.text) && !/\b\d+\s+(artists|booths)\b/i.test(pr.text) && !pr.text.includes('164'));
+  // One plain "Art Market" on the car-path run and the Kidlandia range from
+  // the sheet; the three run ranges came off the map 9/20 (the index has
+  // every number). Nothing anywhere still says 142, the 9/17 top number.
+  check('print: one plain "Art Market" label, the Kidlandia range from the sheet, no run ranges',
+    pr.runLabels.filter((t) => t === 'Art Market').length === 1 && !pr.runLabels.some((t) => /Art Market\s*\d/.test(t))
+      && pr.runLabels.includes('K0–K10') && !pr.text.includes('142'),
+    pr.runLabels.join(' | '));
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);
   check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);
@@ -872,13 +1121,17 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   const warm = await ctx.newPage();
   await warm.goto(BASE, { waitUntil: 'networkidle' });
   await warm.waitForTimeout(1000);
+  // `ready` never resolves if sw.js is missing or served as HTML (a plain
+  // `vite build` empties dist and drops it; `npm run build` writes it), so the
+  // wait is bounded: a missing worker is a failure to report, not a hang.
   const sw = await warm.evaluate(async () => {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(() => r(null), 8000))]);
+    if (!reg) return { active: false, cache: '(no service worker registered in 8s -- was sw.js built?)', entries: 0 };
     const keys = await caches.keys();
     const c = await caches.open(keys[0]);
     return { active: !!reg.active, cache: keys[0], entries: (await c.keys()).length };
   });
-  check('a service worker takes control', sw.active && sw.cache.startsWith('fallfest-'), sw.cache);
+  check('a service worker takes control', sw.active && String(sw.cache).startsWith('fallfest-'), sw.cache);
   check('the whole map is precached', sw.entries >= 15, `${sw.entries} files`);
   await warm.close();
 
