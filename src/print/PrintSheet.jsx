@@ -212,13 +212,13 @@ export default function PrintSheet() {
           </span>
         </section>
 
-        {/* The runs' number ranges are labelled on the map itself, so this is
-            the alphabetical list only. "Over 130 artists" is the public
-            number (decided 9/17) -- never a booth count, which moves every
-            time the chair edits her sheet. */}
+        {/* The alphabetical list, every artist with their booth number. No
+            count under the heading: a sheet that lists every artist needs
+            neither the public "over 130" nor a booth total -- and a booth
+            total is never printed anywhere, since it moves every time the
+            chair edits her sheet. */}
         <section className="print-index">
           <h2>Art Market</h2>
-          <p className="print-index__sub">Over 130 artists</p>
           <ul>
             {index.map((r, i) => (
               <li key={i}><span className="print-index__n">{r.n}</span><span className="print-index__who">{r.label}</span></li>

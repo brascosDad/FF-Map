@@ -1097,9 +1097,10 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   // unnumbered squares print with no number, so they are not counted here.
   check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);
   check('print: the two unnumbered artists have a square', pr.unnumbered === 2, `${pr.unnumbered} squares`);
-  // innerText carries the heading's CSS uppercase, hence the /i.
-  check('print: the public count is "over 130 artists", never a booth total',
-    /over 130 artists/i.test(pr.text) && !/\b1[3-6]\d booths\b/i.test(pr.text) && !pr.text.includes('164'));
+  // No count of any kind on paper: not the public "over 130", not a booth
+  // total (never printed anywhere -- it moves with every sheet edit).
+  check('print: no artist or booth count anywhere on the sheet',
+    !/over 130/i.test(pr.text) && !/\b\d+\s+(artists|booths)\b/i.test(pr.text) && !pr.text.includes('164'));
   // One plain "Art Market" on the car-path run and the Kidlandia range from
   // the sheet; the three run ranges came off the map 9/20 (the index has
   // every number). Nothing anywhere still says 142, the 9/17 top number.

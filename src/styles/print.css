@@ -72,7 +72,6 @@
    names start on the legend's label line. Check the PNG after any copy
    change: the list fills most of what the column has. */
 .print-index { flex: 1; min-height: 0; }
-.print-index__sub { margin: 0 0 var(--print-heading-gap); font-size: 8pt; font-weight: 700; color: var(--text-muted); }
 .print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
 .print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
 .print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
