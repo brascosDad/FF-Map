@@ -30,6 +30,15 @@ What the sheet looks like (columns, in order):
 
 If the sheet grows a column or a new zone name, this script stops rather than
 guessing: fix ZONES (or the parser) and re-run.
+
+Access: the sheet is view-only (the chair switched it 9/19), which is all this
+needs -- the CSV export works for anyone the sheet is shared with, and for
+everyone if it is "anyone with the link". If Google answers with a sign-in
+page instead of CSV (the sheet is restricted to named accounts, and this
+process is not signed in), or the network here cannot reach Google at all,
+the script says so and stops. Then download it yourself -- File > Download >
+Comma Separated Values -- and run this script on that file. The JSON is
+identical either way; only the read date is yours to remember.
 """
 import csv
 import datetime
@@ -80,10 +89,26 @@ def sheet_url():
     return json.load(open(OUT))['sheet_url']
 
 
+class SheetUnreadable(Exception):
+    pass
+
+
 def fetch_csv(url):
     export = re.sub(r'/edit.*$', '', url) + '/export?format=csv'
-    with urllib.request.urlopen(export, timeout=30) as r:
-        return r.read().decode('utf-8-sig')
+    try:
+        with urllib.request.urlopen(export, timeout=30) as r:
+            text = r.read().decode('utf-8-sig')
+            ctype = r.headers.get('Content-Type', '')
+    except urllib.error.HTTPError as e:
+        raise SheetUnreadable('Google answered HTTP %d for the CSV export. The sheet is probably restricted to '
+                              'named accounts (view-only is fine; "restricted" is not).' % e.code)
+    except urllib.error.URLError as e:
+        raise SheetUnreadable('could not reach Google from here (%s).' % e.reason)
+    # A restricted sheet does not 403: it 200s a sign-in page.
+    if 'text/html' in ctype or text.lstrip()[:1] == '<':
+        raise SheetUnreadable('Google sent a sign-in page instead of the CSV. The sheet is restricted to named '
+                              'accounts and this process is not signed in.')
+    return text
 
 
 def booth_key(s):
@@ -201,7 +226,13 @@ def main(argv):
     if len(argv) > 1:
         text = open(argv[1], encoding='utf-8-sig').read()
     else:
-        text = fetch_csv(url)
+        try:
+            text = fetch_csv(url)
+        except SheetUnreadable as e:
+            sys.exit('pull-sheet: %s\n'
+                     '  Open the sheet in a browser, File > Download > Comma Separated Values, then:\n'
+                     '    python3 scripts/pull-sheet.py ~/Downloads/<that file>.csv\n'
+                     '  %s is untouched (still the %s read).' % (e, OUT, json.load(open(OUT)).get('read_date', '?')))
     booths, unnumbered, gaps, zone_label = parse(text)
     data = build(booths, unnumbered, gaps, zone_label, url, datetime.date.today().isoformat())
     with open(OUT, 'w', encoding='utf-8') as f:
