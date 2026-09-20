@@ -173,14 +173,18 @@ CPD_GAP = {'speed bump': CPD_BUMP, 'barricade': CPD_BARRICADE}
 KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
 
 # ---- Artists with a spot but no number --------------------------------------
-# Keyed by business, as the sheet names them. Positions are by the chair's
-# description (9/17): AWARE Wildlife "on the grass" -- the lawn just off the
-# south end of the park's west row, clear of the restroom pin; Achieve with
-# Steve "beside the Acoustic Stage" -- one McLendon pitch east of booth 55,
-# short of the stage pin. `group` is the run whose sheet lists them. Check
-# both against the grounds at setup (10/2).
+# Keyed by business, as the sheet names them. Positions are by description.
+# AWARE Wildlife: on the white ground of the entrance path, nestled into the
+# corner where the path narrows south of the booth rows -- the west lawn's
+# corner is at about (592, 670), and the square sits a couple of units east
+# and south of it, just before the ground widens out to the rows (Ernest,
+# 9/20; the chair's own words were "on the grass"). Clear of the restroom pin's
+# target at the Detail stop. Achieve with Steve "beside the Acoustic Stage"
+# (chair, 9/17) -- one McLendon pitch east of booth 55, short of the stage
+# pin. `group` is the run whose sheet lists them. Check both against the
+# grounds at setup (10/2).
 UNNUMBERED_AT = {
-    'AWARE Wildlife': {'group': 'spine', 'x': 606.0, 'y': 632.0, 'where': 'on the grass by the west row'},
+    'AWARE Wildlife': {'group': 'spine', 'x': 598.5, 'y': 677.0, 'where': 'on the entrance path, below the west row'},
     'Achieve with Steve': {'group': 'mcl', 'x': 897.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
 }
 

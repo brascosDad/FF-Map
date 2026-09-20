@@ -202,7 +202,7 @@ export const BOOTHS = {
 // in scripts/build-booths.py. `group` is the run whose sheet lists them;
 // `area` and `where` are what the booth sheet says.
 export const UNNUMBERED = [
-  { id: 'unnumbered-aware-wildlife', n: null, group: 'spine', area: 'In the Park', x: 606.0, y: 632.0, name: 'Scott Lange', biz: 'AWARE Wildlife', where: 'on the grass by the west row' },
+  { id: 'unnumbered-aware-wildlife', n: null, group: 'spine', area: 'In the Park', x: 598.5, y: 677.0, name: 'Scott Lange', biz: 'AWARE Wildlife', where: 'on the entrance path, below the west row' },
   { id: 'unnumbered-achieve-with-steve', n: null, group: 'mcl', area: 'McLendon Ave', x: 897.0, y: 797.7, name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'beside the Acoustic Stage' },
 ];
 
