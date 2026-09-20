@@ -27,9 +27,9 @@ a local diff cannot tell a real change from a different font engine. **CI has th
    and `<case>-diff.png` (changed pixels in red). On a failed CI run, the same files are in
    the run's `e2e-out` artifact. Decide the change is the one you meant to make.
 2. Put the **`update-visual-baselines`** label on the PR. The "Update visual baselines"
-   Action re-renders all three on the runner, commits `tests/visual/*.png` to the branch, and
-   takes the label off. (Or: Actions tab → "Update visual baselines" → Run workflow, on the
-   branch.)
+   Action re-renders all three on the runner, commits `tests/visual/*.png` to the branch, takes
+   the label off, and starts CI on the branch so the PR gets its verdict on the new baselines.
+   (Or: Actions tab → "Update visual baselines" → Run workflow, on the branch.)
 3. Say in the PR description which baselines changed and why.
 
 Never update a baseline to make a red build green without looking at the diff first.

@@ -13,6 +13,11 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The "Update visual baselines" Action runs this on the branch after it
+  # commits new baselines: a push made with the workflow token does not start
+  # CI by itself, and a PR whose last commit is a baseline update would
+  # otherwise sit with no verdict until someone pushed something else.
+  workflow_dispatch:
 
 jobs:
   test:
