@@ -41,7 +41,7 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, stepLevel, ensureVisible, focusOn, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
@@ -190,6 +190,7 @@ export default function App() {
           docked={docked}
           showBlobs={overview && !docked}
           unitsPerPx={unitsPerPx}
+          areaMarkerFade={areaMarkerFade}
           showNumbers={detail}
           detail={detail}
           onPinClick={handlePinClick}

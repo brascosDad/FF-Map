@@ -60,7 +60,7 @@ const FOOD_LABEL = 'var(--map-food-label)';
 // a frame -- for a spot that is a booth but not one of the numbered run.
 function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false } = {}) {
   return booths.map((b) => (
-    <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined}
+    <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined} data-booth={b.id}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
       {/* Selected is a navy FILL, per the system -- not a ring. A ring big
           enough to read was 22px across against a ~16px booth pitch, so it
@@ -117,7 +117,7 @@ function SelectRing({ x, y, r, k }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   // One size at every level. The overview used to draw pins a step smaller,
@@ -128,6 +128,11 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
   const tapR = Math.max(pinR, (sz.tap / 2) * k);
   // Area markers are tappable too, so they take the same size as a pin.
   const clusterR = pinR;
+  // ...until the Detail stop, where they are gone: faded with the zoom (see
+  // useMapView's areaMarkerFade), and once fully out they keep no tap target
+  // over the booths they used to cover -- a tap there has to reach the booth.
+  const markerOut = areaMarkerFade >= 0.999;
+  const markerStyle = { opacity: 1 - areaMarkerFade, pointerEvents: markerOut ? 'none' : undefined };
   // A pin is on the overview if pins.js flags it (everywhere, or only where
   // the panel is docked), or if you asked for its category by chip -- tapping
   // "Restrooms" at the overview must show restrooms.
@@ -184,12 +189,14 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={(e) => { e.stopPropagation(); onAreaClick(cl); }}>
             {showBlobs ? <Blobs paths={cl.blobs} color={SLATE} clip={cl.clip} />
               : boxes(cl.booths, SLATE, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE[cl.id] })}
-            <circle cx={cl.mk[0]} cy={cl.mk[1]} r={tapR} fill="transparent" />
-            <g className="ff-marker" filter="url(#ds)">
-              <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
-              <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />
+            <g className="ff-area__mk" style={markerStyle} aria-hidden={markerOut || undefined}>
+              <circle cx={cl.mk[0]} cy={cl.mk[1]} r={tapR} fill="transparent" />
+              <g className="ff-marker" filter="url(#ds)">
+                <circle cx={cl.mk[0]} cy={cl.mk[1]} r={clusterR} fill={SLATE} />
+                <IconAt name="art" x={cl.mk[0]} y={cl.mk[1]} size={PIN_ICON_PX * k} />
+              </g>
+              {cl.id === selectedAreaId && <SelectRing x={cl.mk[0]} y={cl.mk[1]} r={clusterR} k={k} />}
             </g>
-            {cl.id === selectedAreaId && <SelectRing x={cl.mk[0]} y={cl.mk[1]} r={clusterR} k={k} />}
           </g>
         ))}
 

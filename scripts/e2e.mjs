@@ -256,7 +256,7 @@ for (const [name, w, h] of SIZES) {
       [d0, d1, d2].map((v) => v.toFixed(0)).join(' / ') + 'px');
     check(`${name}: the touch target stays 44px at every level`,
       [h0, h1, h2].every((v) => v >= 43.5), [h0, h1, h2].map((v) => v.toFixed(0)).join(' / ') + 'px');
-    const area = await p.locator('svg.ff-map g.ff-area > circle').first().boundingBox();
+    const area = await p.locator('svg.ff-map g.ff-area__mk > circle').first().boundingBox();
     check(`${name}: area marker is a 44px target too`, !!area && area.width >= 43.5,
       area ? `${area.width.toFixed(0)}px` : 'none');
   });
@@ -488,7 +488,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   }
   check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
   const overlap = await p.evaluate(() => {
-    const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area > circle')]
+    const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area__mk > circle')]
       .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
     const out = [];
     for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
@@ -499,6 +499,61 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   });
   check(`${name}: no two overview touch targets overlap`, overlap.length === 0, overlap.join(' | '));
   await p.close();
+}
+
+// ---- the area markers leave at the Detail stop ----
+// Ernest, iPhone 9/20: at the closest stop the art-market marker sat on booths
+// 96-98 and 113-115 (Candler Park Dr) and 60-62 (McLendon), so those could not
+// be reached. At Detail the three markers are invisible and keep no tap
+// target: a tap on each of those booths' squares, and on its number, reaches
+// the booth. One step out brings the marker back, a 44px target again.
+for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
+  // The pan between the two steps: at the overview both markers sit near an
+  // edge of the screen (the phone overview crops the west; McLendon is the
+  // south edge), and the booths under them have to be on screen at Detail.
+  for (const [area, ids, nx, ny] of [['cpd', ['cpd-096', 'cpd-097', 'cpd-098', 'cpd-113', 'cpd-114', 'cpd-115'], 180, 0],
+                                     ['mcl', ['mcl-060', 'mcl-061', 'mcl-062'], 0, -160]]) {
+    const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(700);
+    // Step in to Detail with the marker under the pointer: a wheel step zooms
+    // about the pointer, so the marker stays put on screen (a double-tap on
+    // it would open it; the buttons zoom about the centre and push it off).
+    const onMarker = async () => { const b = await p.locator(`svg.ff-map g.ff-area[data-area="${area}"] .ff-marker circle`).boundingBox(); await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2); };
+    await onMarker(); await p.mouse.wheel(0, -100); await p.waitForTimeout(700);
+    await drag(p, nx, ny);
+    await onMarker(); await p.mouse.wheel(0, -100); await p.waitForTimeout(700);
+    const r = await p.evaluate((ids) => {
+      const mk = [...document.querySelectorAll('svg.ff-map g.ff-area__mk')].map((g) => ({ opacity: +getComputedStyle(g).opacity, pe: getComputedStyle(g).pointerEvents }));
+      const at = (x, y) => document.elementFromPoint(x, y);
+      const booths = ids.map((id) => {
+        const g = document.querySelector(`svg.ff-map [data-booth="${id}"]`);
+        const tap = g?.querySelector('rect[fill="transparent"]'), num = g?.querySelector('text');
+        if (!tap || !num) return { id, drawn: false };
+        const t = tap.getBoundingClientRect(), n = num.getBoundingClientRect();
+        const onScreen = t.x > 0 && t.y > 0 && t.right < innerWidth && t.bottom < innerHeight;
+        // The square's own cell has to take the tap. A number sits in the
+        // cell above its square (a column pitch is one cell), so what is
+        // asked of it is only that no marker is over it.
+        return { id, drawn: true, onScreen, tap: at(t.x + t.width / 2, t.y + t.height / 2)?.closest?.('[data-booth]')?.dataset.booth === id,
+                 num: !at(n.x + n.width / 2, n.y + n.height / 2)?.closest?.('.ff-area__mk') };
+      });
+      return { mk, numbers: [...document.querySelectorAll('svg.ff-map text')].some((t) => /^\d+$/.test(t.textContent)), booths };
+    }, ids);
+    const seen = r.booths.filter((b) => b.drawn && b.onScreen);
+    check(`${name}: reached Detail by ${area}`, r.numbers && seen.length === ids.length, `${seen.length} of ${ids.length} on screen, numbers ${r.numbers}`);
+    check(`${name}: at Detail every area marker is invisible and has no tap target`,
+      r.mk.length === 3 && r.mk.every((m) => m.opacity === 0 && m.pe === 'none'), r.mk.map((m) => `${m.opacity}/${m.pe}`).join(' '));
+    check(`${name}: at Detail no marker is over the ${area} booths' squares or numbers`,
+      seen.every((b) => b.tap && b.num), seen.map((b) => `${b.id}${b.tap && b.num ? '' : b.tap ? ' (number covered)' : ' (square covered)'}`).join(' '));
+    await zoomOut(p);
+    const back = await p.evaluate(() => {
+      const g = document.querySelector('svg.ff-map g.ff-area__mk');
+      return { opacity: +getComputedStyle(g).opacity, tap: g.querySelector('circle').getBoundingClientRect().width };
+    });
+    check(`${name}: one step out and the ${area} marker is back, a 44px target again`, back.opacity === 1 && back.tap >= 43.5, `opacity ${back.opacity}, ${back.tap.toFixed(0)}px`);
+    await p.close();
+  }
 }
 
 // ---- the info booth is a pin, everywhere, just above merch ----
@@ -585,7 +640,9 @@ for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1
     const pin = document.querySelector('svg.ff-map g.ffc-pin--kids g circle');
     const glyph = document.querySelector('svg.ff-map g.ffc-pin--kids g svg');
     const label = document.querySelector('svg.ff-map text');
-    return { pin: pin.getBoundingClientRect().width, glyph: glyph.getBoundingClientRect().width, label: label.getBoundingClientRect().height };
+    const mk = document.querySelector('svg.ff-map g.ff-area__mk');
+    return { pin: pin.getBoundingClientRect().width, glyph: glyph.getBoundingClientRect().width, label: label.getBoundingClientRect().height,
+             mk: +getComputedStyle(mk).opacity };
   });
   const cx = 196, cy = 500;
   const two = (s) => [{ x: cx - s, y: cy, id: 1 }, { x: cx + s, y: cy, id: 2 }];
@@ -607,10 +664,22 @@ for (const [name, w, h, zoomFirst] of [['mobile', 390, 800, true], ['desktop', 1
   check('pinch in: pin, glyph and label hold their on-screen size, gesture and settle',
     steady(inward, 'pin') && steady(inward, 'glyph') && steady(inward, 'label'),
     ['pin', 'glyph', 'label'].map((k) => report(inward, k)).join(', '));
+  // The area markers cross-fade with the zoom, under the fingers and through
+  // the settle: opacity moves one way per gesture, never jumps, and ends at 0
+  // on Detail. Spreading x4 from the overview lands on Detail (see below).
+  const fadeSteps = (frames) => frames.slice(1).map((f, i) => f.mk - frames[i].mk);
+  const mkIn = inward.map((f) => f.mk);
+  check('pinch in: the area markers fade out with the zoom, no pop, gone at Detail',
+    fadeSteps(inward).every((d) => d <= 0.01 && d > -0.5) && mkIn[0] === 1 && mkIn[mkIn.length - 1] === 0,
+    `opacity ${mkIn.map((v) => v.toFixed(2)).join(' > ')}`);
   const outward = await run([120, 110, 100, 90, 80, 70, 60, 50, 40, 30]);
   check('pinch out: pin, glyph and label hold their on-screen size, gesture and settle',
     steady(outward, 'pin') && steady(outward, 'glyph') && steady(outward, 'label'),
     ['pin', 'glyph', 'label'].map((k) => report(outward, k)).join(', '));
+  const mkOut = outward.map((f) => f.mk);
+  check('pinch out: the area markers fade back in, no pop, whole again at the stop',
+    fadeSteps(outward).every((d) => d >= -0.01 && d < 0.5) && mkOut[0] === 0 && mkOut[mkOut.length - 1] === 1,
+    `opacity ${mkOut.map((v) => v.toFixed(2)).join(' > ')}`);
   const wEnd = await width();
   check('pinch out: it landed back on a stop', [1, 0.565, 0.315].some((r) => Math.abs(wEnd - w0 * r) < 1),
     `${Math.round(wEnd)} (stops at ${[1, 0.565, 0.315].map((r) => Math.round(w0 * r)).join(' / ')})`);

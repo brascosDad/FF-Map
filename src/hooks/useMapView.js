@@ -121,6 +121,29 @@ function clampPan(vb, px = 1, insetRight = 0) {
  * (pan + step-zoom), instead of free continuous scaling. Wire mapRef and
  * wrapRef to the <svg> and its wrapping <div> respectively.
  */
+// The three art-market markers are gone at the Detail stop: there the area
+// names are drawn and every booth is its own target, and a marker the size of
+// a pin sat on booths 96-98, 113-115 and 60-62 so those could not be reached
+// (Ernest, iPhone 9/20). They fade out over the second half of the way in
+// from Booths to Detail and back in on the way out, driven by the view's
+// position between the stops (levelPosition) rather than by which stop it
+// snapped to -- so under a pinch the fade follows the fingers, a released
+// pinch settles the fade with the map, and a pinch that hovers around the
+// snap threshold cannot blink a marker on and off. 1.5 is the log-space
+// midpoint between the two stops: the same point the snap decides at, so a
+// pinch that settles back to Booths has not started the fade.
+const MARKER_FADE_FROM = 1.5;
+
+/** The view's position between the stops for a width ratio r = vb.w / base:
+ *  0 at the overview, 1, 2 at the stops, log-interpolated between (a zoom is
+ *  a ratio), clamped to the stops' range. */
+function levelPosition(r) {
+  const L = LEVEL_RATIOS.map(Math.log), x = Math.log(r);
+  if (!(x < L[0])) return 0;
+  for (let i = 0; i < L.length - 1; i++) if (x >= L[i + 1]) return i + (L[i] - x) / (L[i] - L[i + 1]);
+  return L.length - 1;
+}
+
 export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   // Container size in px. Seeded phone-shaped so the very first paint is right;
   // the ResizeObserver below corrects it immediately.
@@ -449,6 +472,13 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   // Semantic swaps tie to a level, not a pixel width.
   const overview = levelIdx === 0; // area blobs instead of individual booths
   const detail = levelIdx >= 2;    // area names
+  // Where the view is BETWEEN the stops, continuously: 0 at the overview, 1 at
+  // Booths, 2 at Detail, in between mid-pinch or mid-fly. For the one thing
+  // that fades with the zoom rather than swapping at a stop (the area
+  // markers), so a pinch drives the fade under the fingers and nothing pops
+  // when they lift.
+  const levelPos = levelPosition(vb.w / fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current));
+  const areaMarkerFade = Math.min(1, Math.max(0, (levelPos - MARKER_FADE_FROM) / (LEVEL_RATIOS.length - 1 - MARKER_FADE_FROM)));
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, setLevel, stepLevel, centerOn, ensureVisible, focusOn, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, resetToOverview };
 }
