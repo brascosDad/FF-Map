@@ -87,8 +87,9 @@ Courtney's answers, 9/17 evening (supersede anything earlier, including PR #7's 
 - AWARE Wildlife (on the grass) and Achieve with Steve (beside the Acoustic Stage) have spots but
   no booth numbers — pinned unnumbered, placed by description (see `UNNUMBERED_AT`).
 - Public copy says **"over 130 artists"**. Never 164, never a booth count.
-- Kidlandia grew to **K0–K10** on the sheet by 9/18 (K8 Clifton Sanctuary is new; Primavera and
-  Faces Unlimited moved to K9 and K10).
+- Kidlandia is **K0–K10, eleven booths** (K8 Clifton Sanctuary is new; Primavera and Faces
+  Unlimited moved to K9 and K10). Confirmed by Courtney 9/19: "we added a spot in Kidlandia this
+  year."
 
 **Re-read the sheet before print files go out.** Courtney has edited it four times in four days.
 Two commands, no hand edits:
@@ -244,8 +245,6 @@ is Cowork's and Ernest's to fix.
 
 **Waiting on people (don't guess):**
 - Park west row split (29–37 north / 38–54 south of the path bend) — unverified, asking Courtney.
-- Kidlandia booth count — the sheet says K0–K10 (11) as of 9/18; Ernest is asking Courtney whether
-  it is 10 or 11. The column is built from the sheet, so no code change either way.
 - Hours for Kidlandia bounce houses, bike valet, artist market (Amy asked for them on the map).
 - Restrooms on Candler Park Dr (end of booths) and on the field; more water stations; Callaway
   Blue water and some sponsor locations moved in the 2026 site plan — confirming with Jess / Andy.
