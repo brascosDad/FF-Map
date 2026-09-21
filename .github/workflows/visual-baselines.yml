@@ -56,6 +56,9 @@ jobs:
             echo "baselines unchanged"
           else
             git commit -m "Visual baselines: re-rendered on the CI runner"
+            # The screenshots Action may have pushed to this branch meanwhile
+            # (it touches docs/pr-shots only, so the rebase is trivial).
+            git pull --rebase origin "${{ github.head_ref || github.ref_name }}"
             git push
             echo "pushed=true" >> "$GITHUB_OUTPUT"
           fi
