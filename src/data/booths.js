@@ -5,7 +5,7 @@
 //
 // HONEST ABOUT WHAT IS AND ISN'T REAL:
 //   - Art-market numbers and names are the artist market chair's 2026
-//     assignments, sheet read 2026-09-18: 1-54 in the park, 55-81 on McLendon,
+//     assignments, sheet read 2026-09-21: 1-54 in the park, 55-81 on McLendon,
 //     82-139 on Candler Park Dr, K0-K10 in Kidlandia. Each group is in number
 //     order, so stepping follows the numbers -- which on Candler Park Dr
 //     means south to north.
@@ -76,8 +76,8 @@ export const BOOTHS = {
     { id: 'cpd-135', n: 135, area: 'Candler Park Dr', x: 403.1, y: 419.1, name: 'Katie Hayes', biz: 'Healing Arts ATL' },
     { id: 'cpd-136', n: 136, area: 'Candler Park Dr', x: 403.1, y: 409.0, name: 'Rachael Furuta', biz: 'Art Rayz' },
     { id: 'cpd-137', n: 137, area: 'Candler Park Dr', x: 403.1, y: 398.9, name: 'Chawn Murrah', biz: 'Chawn Murrah Fine Art' },
-    { id: 'cpd-138', n: 138, area: 'Candler Park Dr', x: 403.1, y: 388.7, name: null, biz: null },
-    { id: 'cpd-139', n: 139, area: 'Candler Park Dr', x: 403.1, y: 378.6, name: null, biz: null },
+    { id: 'cpd-138', n: 138, area: 'Candler Park Dr', x: 403.1, y: 388.7, name: 'Kenyaita Hodge', biz: 'Elaine Monet Candle Co' },
+    { id: 'cpd-139', n: 139, area: 'Candler Park Dr', x: 403.1, y: 378.6, name: 'Renzo Iglesias', biz: 'L\'Harmonie Creative Jewelry' },
   ],
   mcl: [
     { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 875.8, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },

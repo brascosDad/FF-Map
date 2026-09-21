@@ -2,6 +2,7 @@ import { TRACE_BASE } from '../assets/basemapTrace';
 import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
+import { featuredTitle } from '../data/festival';
 import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
@@ -56,11 +57,21 @@ const MAP_NUMBER = 'var(--map-number)';
 const MAP_HALO = 'var(--map-halo)';
 const FOOD_LABEL = 'var(--map-food-label)';
 
+// The star that marks a featured booth (festival.js), drawn inside its own
+// square in the icon-on-colour, with the square at full opacity so the pair
+// reads as one solid badge. Sized in map units like the square, not in
+// screen pixels like a pin's glyph: it is part of the booth, and scales with
+// it. No colour of its own -- coral is "now", navy is selected, the pin hues
+// are categories -- the star IS the signal, on a phone and at 5.5pt on paper.
+const FEATURED_STAR = TICK * 0.85;
+
 // `hollow` draws the square as an outline -- cream inside, the run's colour as
 // a frame -- for a spot that is a booth but not one of the numbered run.
 function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false } = {}) {
-  return booths.map((b) => (
-    <g key={b.id} className={onTap ? 'ff-tap ff-booth' : undefined} data-booth={b.id}
+  return booths.map((b) => {
+    const featured = featuredTitle(b);
+    return (
+    <g key={b.id} className={`${onTap ? 'ff-tap ff-booth' : 'ff-booth'}${featured ? ' ff-booth--featured' : ''}`} data-booth={b.id}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
       {/* Selected is a navy FILL, per the system -- not a ring. A ring big
           enough to read was 22px across against a ~16px booth pitch, so it
@@ -73,9 +84,10 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle
             rx={1.6}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
             fill={b.id === selectedId ? NAVY : hollow ? CREAM : color}
-            fillOpacity={b.id === selectedId || hollow ? 1 : 0.6}
+            fillOpacity={b.id === selectedId || hollow || featured ? 1 : 0.6}
             stroke={hollow && b.id !== selectedId ? color : undefined}
             strokeWidth={hollow ? HOLLOW_STROKE : undefined} />
+      {featured && <IconAt name="star" x={b.x} y={b.y} size={FEATURED_STAR} />}
       {/* Hit area is one booth's own cell (pitch is ~9 units). Bigger would
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
@@ -84,7 +96,8 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle
               textAnchor="middle" stroke={MAP_HALO} strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
       )}
     </g>
-  ));
+    );
+  });
 }
 
 // At the furthest-out level the individual squares are illegible, so each area

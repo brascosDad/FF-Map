@@ -4,7 +4,7 @@ import { PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
 import { span } from '../data/areas';
-import { FESTIVAL } from '../data/festival';
+import { FESTIVAL, featuredTitle } from '../data/festival';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
 
@@ -112,9 +112,11 @@ function FoodCourt() {
 // opens that booth and flies the map to it -- on a phone the squares are too
 // dense to pick one by finger, so this list is how you find a specific artist.
 function BoothRow({ booth, onOpen }) {
+  const featured = featuredTitle(booth);
   return (
     <button className="boothrow" onClick={() => onOpen(booth)}>
       <span className="n">{booth.n ?? '—'}</span>
+      {featured && <Icon name="star" size={12} color="var(--text-strong)" className="boothrow__star" />}
       <span className="who">
         {booth.biz
           ? <>{booth.biz}{booth.name !== booth.biz && <em>{booth.name}</em>}</>
@@ -212,6 +214,13 @@ function Legend() {
         <span className="ffc-legend__dot ffc-legend__dot--hollow" />
         Artist, no number
       </span>
+      {/* A featured booth: a star in its own slate square (festival.js). */}
+      {FESTIVAL.featured.length > 0 && (
+        <span className="ffc-legend__row">
+          <span className="ffc-legend__dot ffc-legend__dot--featured"><Icon name="star" size={8} color="var(--icon-on-color)" /></span>
+          {FESTIVAL.featured[0].title}
+        </span>
+      )}
     </div>
   );
 }
@@ -222,6 +231,7 @@ function BoothDetail({ booth, onStep }) {
   // A spot with no number is not in any row, so there is nothing to step
   // through: the sheet is titled by the business instead of "Booth —".
   const unnumbered = booth.n == null;
+  const featured = featuredTitle(booth);
   const group = BOOTHS[booth.id.split('-')[0]] || [];
   const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
@@ -246,7 +256,7 @@ function BoothDetail({ booth, onStep }) {
         icon={isFood ? 'food' : isKid ? 'kids' : 'art'}
         color={isFood ? PIN_COLOR.food : isKid ? PIN_COLOR.kids : SLATE}
         title={unnumbered ? booth.biz : `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
-        sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}`} />
+        sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}${featured ? ` · ★ ${featured}` : ''}`} />
 
       {/* One line, and it is the honest one. The old body ran a generic bullet,
           a "photos go here" note that told a festival-goer nothing, and the

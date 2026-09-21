@@ -67,7 +67,7 @@ snapshot, and record the read date when you do.
 | Stage schedule | `stages.json` — final, both stages both days | Thomas Helland / Hallie Meushaw |
 | Site layout / amenity placement | 2026 site plan PDF (Operations) | Jess Richards / Van Jensen |
 
-Artist numbering, **as of the 9/18 sheet read: 1–54 park, 55–81 McLendon, 82–139 Candler Park Dr,
+Artist numbering, **as of the 9/21 sheet read: 1–54 park, 55–81 McLendon, 82–139 Candler Park Dr,
 K0–K10 Kidlandia.** The top number moves every time Courtney edits — it was 142 on 9/17 and 139
 on 9/18, because she inserted 112–114 and renumbered everything after them down by three. Never
 quote a top number from memory: `poster_endpoints` in `booth-numbering-2026.json` is the current
@@ -79,8 +79,12 @@ Courtney's answers, 9/17 evening (supersede anything earlier, including PR #7's 
   Janet Gonzales.)
 - 67–68 (Tarik Berbey) and 130–131 (Michael Taylor, was 132–133 before the renumber) are the two
   double booths.
-- Some sponsor/open slots were filled 9/17. Anything still marked Sponsor/open prints as "Sponsor".
-  As of 9/18 that is the last two, 138–139.
+- Anything marked Sponsor/open on the sheet prints as "Sponsor". As of the 9/21 read there are
+  **none**: 138 (Kenyaita Hodge, Elaine Monet Candle Co) and 139 (Renzo Iglesias, L'Harmonie
+  Creative Jewelry) were added 9/18 after that morning's pull — Courtney flagged them 9/20.
+- **Featured artist: Madison O'Brien, booth 11** (Courtney, 9/20). Listed in `FESTIVAL.featured`
+  in `src/data/festival.js` by booth number — a committee fact, not a sheet fact — and drawn as a
+  star in the booth's own square (see Decided). Re-check the number after any re-pull.
 - 132–139 (was 135–142) is a real last run at the far end of Candler Park Dr, numbered last on
   purpose so booths can be added or dropped there. The build reads that run's endpoints from the
   sheet, so a booth added there needs no code change.
@@ -99,8 +103,10 @@ on the map and refuses to write if anything on the sheet is unplaced. The sheet 
 since 9/19, which is all the pull needs; if Google answers with a sign-in page (restricted to
 named accounts) or the network can't reach Google (the remote Claude Code container can't), the
 script says so and stops — then File → Download → CSV in a browser and run it on that file.
-**The JSON is still the 9/18 read**: the 9/20 session could not reach the sheet. Re-pull from a
-laptop before 9/22.
+The 9/21 read came through the **Google Drive connector** in the Claude Code session (Ernest's
+own access to the sheet; the container's network cannot reach Google): the connector's CSV export
+is the same file the script fetches, saved to disk and passed as the CSV path. Diff the rebuilt
+JSON against the previous read every time and name every changed row in the PR.
 
 **Candler Park Dr layout, verified 9/20 against the 2025 map and the sheet's own old-number
 column:** street side 82–94 | speed bump | 95–100 | barricade | 132–139 (the "final stretch",
@@ -178,6 +184,15 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   streets are named, the index has every number); the index heading is just "Art Market" with no
   count under it; the Food Court list stays out of the side column; legend swatches and index
   numbers share one right edge in the `--print-lead` box.
+- **A featured booth is a star in its own square** (9/21): the square goes solid and carries the
+  Phosphor star in `--icon-on-color`, on the phone at every zoom that draws squares and on paper;
+  its sheet, the area list, both legends and the print index (star in the number cell, entry
+  bold) say "Featured artist". No colour of its own — coral is "now", navy is selected, pin hues
+  are categories — so the star is the whole signal and reads at 5.5pt. `FESTIVAL.featured` takes
+  any number of booths.
+- **Candler Park Dr numbers sit beside their squares on paper**, outward (west column left, east
+  column right), level, `NUMBER_GAP` off the edge; the park rows and McLendon keep numbers above
+  the square, where they have room (9/21).
 - The map URL is locked once posters print (~9/22). No hosting or routing changes after that.
 
 ## Calendar
@@ -256,6 +271,14 @@ Figma workflow), and PR #8 (booth + beta fixes):
   and its legend swatches sit on the index numbers' right edge with `--print-lead-gap` one step
   wider. All three visual baselines change (print for the CPD move, the labels and the legend;
   phone-open and sheet-open for merch) — re-rendered by the Action.
+- 9/21 round, PR #9 (each its own commit): sheet re-read through the Drive connector — only 138
+  and 139 changed since 9/18 (both now artists; no sponsor booths left); the **featured artist**
+  (booth 11) draws as a star in her square everywhere and is named in her sheet and the index;
+  Candler Park Dr numbers on paper sit beside their squares, outward. The print index is at
+  **0.08" spare** — the next two rows Courtney adds will not fit at line-height 1.35; the honest
+  next step is line-height 1.3 (0.21" spare, measured), not a smaller size. Baselines: print
+  (numbers, star, 138–139), phone-open and sheet-open (the star on booth 11 is off the phone's
+  opening view, so those two may not change — the Action decides).
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts

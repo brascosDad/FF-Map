@@ -1,16 +1,13 @@
 {
   "source": "Courtney Weil, Google Sheet 'FF map '26: for map updates'. Rebuilt from the live sheet by scripts/pull-sheet.py -- do not hand-edit; re-run it. Booth 39 keeps name/business the right way round (the sheet has them swapped).",
-  "read_date": "2026-09-18",
+  "read_date": "2026-09-21",
   "sheet_url": "https://docs.google.com/spreadsheets/d/1qdBmZKL7KRZ8wjPva060qHJ8kDxzLQpq0yqETixaBXQ/edit",
   "supersedes": "booth-numbering-2026.json (built from the 2025 official site map)",
   "change": "All artist market booths resized to 15 ft. Every number downstream of the park moved.",
   "highest_number": 139,
   "numbers_assigned": 139,
-  "named_artists": 150,
-  "sponsor_or_open": [
-    138,
-    139
-  ],
+  "named_artists": 152,
+  "sponsor_or_open": [],
   "numbers_not_present": [],
   "artists_holding_two_booths": [
     "Michael Taylor",
@@ -1201,17 +1198,17 @@
     {
       "booth": 138,
       "zone": "cpd-west-b",
-      "name": null,
-      "business": null,
-      "status": "sponsor_or_open",
+      "name": "Kenyaita Hodge",
+      "business": "Elaine Monet Candle Co",
+      "status": "assigned",
       "booth_2025": 161
     },
     {
       "booth": 139,
       "zone": "cpd-west-b",
-      "name": null,
-      "business": null,
-      "status": "sponsor_or_open",
+      "name": "Renzo Iglesias",
+      "business": "L'Harmonie Creative Jewelry",
+      "status": "assigned",
       "booth_2025": 162
     },
     {

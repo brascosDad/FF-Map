@@ -249,6 +249,8 @@
 .ffc-legend__dot { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 50%; }
 /* A hollow swatch: cream inside a slate frame, keying the unnumbered squares. */
 .ffc-legend__dot--hollow { background: var(--ff-cream); box-shadow: inset 0 0 0 2px var(--cat-booth); }
+/* A featured booth's key: the booth slate carrying the star, as its square does. */
+.ffc-legend__dot--featured { background: var(--cat-booth); display: inline-flex; align-items: center; justify-content: center; }
 /* Inline variant: the key as panel furniture rather than a floating card. Two
    columns, no chrome of its own -- the panel already provides it. */
 .ffc-legend--inline { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-1) var(--space-3); padding: 0; background: none; border: 0; box-shadow: none; }

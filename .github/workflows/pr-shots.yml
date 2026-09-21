@@ -47,6 +47,9 @@ jobs:
             echo "screenshots unchanged"
           else
             git commit -m "PR screenshots: before/after for ${{ github.head_ref }} [skip ci]"
+            # The baselines Action may have pushed to this branch meanwhile
+            # (it touches tests/visual only, so the rebase is trivial).
+            git pull --rebase origin "${{ github.head_ref }}"
             git push
           fi
       - name: Put them in the PR description
