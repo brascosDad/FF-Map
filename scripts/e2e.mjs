@@ -114,8 +114,9 @@ for (const [name, w, h] of SIZES) {
       }
       return true;
     })());
+    // Eleven categories, the hollow "no number" square, the featured star.
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 12,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 13,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
@@ -554,6 +555,37 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
     check(`${name}: one step out and the ${area} marker is back, a 44px target again`, back.opacity === 1 && back.tap >= 43.5, `opacity ${back.opacity}, ${back.tap.toFixed(0)}px`);
     await p.close();
   }
+}
+
+// ---- the featured booth wears a star, and says so when opened ----
+// Courtney 9/20: highlight the featured artist, Madison O'Brien, booth 11.
+// festival.js lists featured booths by number; the square draws solid with
+// the star glyph inside at every level that draws squares, the sheet says
+// "Featured artist", and food stall 11 is NOT booth 11.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await zoomIn(p);
+  const r = await p.evaluate(() => {
+    const g = document.querySelector('svg.ff-map [data-booth="spine-011"]');
+    return { featured: document.querySelectorAll('svg.ff-map .ff-booth--featured').length,
+             ids: [...document.querySelectorAll('svg.ff-map .ff-booth--featured')].map((e) => e.dataset.booth).join(','),
+             star: !!g?.querySelector('svg'), opacity: g?.querySelector('rect')?.getAttribute('fill-opacity') };
+  });
+  check('mobile: booth 11 is the one featured square, solid, with the star', r.featured === 1 && r.ids === 'spine-011' && r.star && r.opacity === '1',
+    `${r.featured} featured (${r.ids}), star ${r.star}, opacity ${r.opacity}`);
+  const b = await p.locator('svg.ff-map [data-booth="spine-011"] rect').first().boundingBox();
+  const wrap = await p.locator('.mapwrap').boundingBox();
+  await drag(p, wrap.x + wrap.width / 2 - (b.x + b.width / 2), wrap.y + wrap.height / 2 - (b.y + b.height / 2));
+  const c = await p.locator('svg.ff-map [data-booth="spine-011"] rect').first().boundingBox();
+  await p.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
+  await p.waitForTimeout(500);
+  const hd = await p.locator('.sheet .hd h3').first().innerText().catch(() => '');
+  const sub = await p.locator('.sheet .sub').first().innerText().catch(() => '');
+  const body = await p.locator('.sheet').first().innerText().catch(() => '');
+  check('mobile: booth 11\'s sheet says Featured artist and names her', /Booth 11/.test(hd) && /Featured artist/.test(sub) && /Madison O'Brien/.test(body), `${hd} · ${sub}`);
+  await p.close();
 }
 
 // ---- the info booth is a pin, everywhere, just above merch ----
@@ -1077,7 +1109,7 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   await p.waitForSelector('.print-page', { timeout: 5000 }).catch(() => {});
   const pr = await p.evaluate(() => ({
     page: !!document.querySelector('.print-page'),
-    numbers: document.querySelectorAll('.print-map rect + text').length,
+    numbers: document.querySelectorAll('.print-map .print-booth > text').length,
     chrome: document.querySelectorAll('.zoomctl, .ffc-chip, .sheet').length,
     index: document.querySelectorAll('.print-index li').length,
     unnumbered: document.querySelectorAll('.print-booth--unnumbered').length,
@@ -1089,6 +1121,13 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     // together, so "41 42" would read as "142".
     runLabels: [...document.querySelectorAll('.print-map text')].map((t) => t.textContent).filter((t) => /^Art Market|^K\d/.test(t)),
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
+    // The featured booth (festival.js): a star in its own square on the map,
+    // a starred bold entry in the index, a key row in the legend.
+    featuredSquares: document.querySelectorAll('.print-map .print-booth--featured').length,
+    featuredStar: !!document.querySelector('.print-map .print-booth--featured svg'),
+    featuredIndex: [...document.querySelectorAll('.print-index__row--featured')].map((li) => li.textContent.trim()),
+    featuredIndexStar: document.querySelectorAll('.print-index__row--featured .print-index__n svg').length,
+    featuredKey: [...document.querySelectorAll('.print-legend__row')].some((r) => /Featured artist/.test(r.textContent) && r.querySelector('svg')),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
   check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === 'rgb(64, 126, 181)' && pr.infoGlyph && pr.infoRects === 0,
@@ -1110,6 +1149,11 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     pr.runLabels.join(' | '));
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: the artist index is on the sheet', pr.index >= 140, `${pr.index} rows`);
+  check('print: the featured booth carries a star in its square, once',
+    pr.featuredSquares === 1 && pr.featuredStar, `${pr.featuredSquares} featured squares, star ${pr.featuredStar}`);
+  check('print: the featured artist is starred in the index and keyed in the legend',
+    pr.featuredIndex.length === 1 && /^11Madison O'Brien Art$/.test(pr.featuredIndex[0]) && pr.featuredIndexStar === 1 && pr.featuredKey,
+    `${pr.featuredIndex.join(' | ')}; star ${pr.featuredIndexStar}; key ${pr.featuredKey}`);
   check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);
   await p.close();
 }

@@ -69,6 +69,8 @@
 .print-legend__row { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); align-items: center; white-space: nowrap; }
 .print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: end; }
 .print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: end; opacity: 0.8; }
+/* A featured booth's key: the slate square carrying the star, solid, as on the map. */
+.print-legend__sq--featured { display: inline-flex; align-items: center; justify-content: center; opacity: 1; }
 
 /* The artist list takes whatever height is left and flows into the side
    column's four columns, at 8pt like everything else on the sheet. Each row
@@ -80,6 +82,10 @@
 .print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
 .print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 .print-index__who { min-width: 0; }
+/* A featured booth's entry: bold, the star in the number cell; the legend
+   says what the star means, so the entry does not spend a second line on it. */
+.print-index__row--featured { font-weight: 700; color: var(--text-strong); }
+.print-index__star { vertical-align: -1px; }
 
 
 /* On screen (proofing in a browser tab) show the sheet on a grey desk; the

@@ -15,7 +15,7 @@ import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
 import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
-import { FESTIVAL } from '../data/festival';
+import { FESTIVAL, featuredTitle } from '../data/festival';
 // The QR generator's core only: it returns the module matrix and we draw it
 // as vector rects, so the code prints as crisp as the booth squares.
 import QRCode from 'qrcode/lib/core/qrcode';
@@ -34,6 +34,7 @@ const TICK = 8;          // booth square, same as the screen
 // would overrun its neighbours; they stay at 6 (about 5.5pt), the largest
 // size the geometry allows.
 const NUMBER = 6;        // booth number
+const FEATURED_STAR = TICK * 0.85;   // the star in a featured booth's square, as on the screen
 const PIN_R = 10;        // a pin is a symbol here, not a 44px tap target
 const PIN_ICON = 13;
 const LABEL = 8.9;       // named-place labels and run ranges: 8pt
@@ -87,18 +88,25 @@ function MapQr() {
 // inside a slate frame, as on the phone map -- and gets no text element at
 // all, not an empty one.
 function Squares({ booths, color, angle = 0, hollow = false }) {
-  return booths.map((b) => (
-    <g key={b.id} className={b.n == null ? 'print-booth print-booth--unnumbered' : 'print-booth'}>
+  return booths.map((b) => {
+    const featured = featuredTitle(b);
+    return (
+    <g key={b.id} className={`print-booth${b.n == null ? ' print-booth--unnumbered' : ''}${featured ? ' print-booth--featured' : ''}`}>
       <rect x={b.x - TICK / 2} y={b.y - TICK / 2} width={TICK} height={TICK} rx={1.4}
             transform={angle ? `rotate(${angle} ${b.x} ${b.y})` : undefined}
-            fill={hollow ? CREAM : color} fillOpacity={hollow ? 1 : 0.75}
+            fill={hollow ? CREAM : color} fillOpacity={hollow || featured ? 1 : 0.75}
             stroke={hollow ? color : undefined} strokeWidth={hollow ? 1.4 : undefined} />
+      {/* A featured booth (festival.js): the star in its own square, full
+          opacity, as on the screen -- a mark that reads at 5.5pt without
+          leaning on colour. */}
+      {featured && <IconAt name="star" x={b.x} y={b.y} size={FEATURED_STAR} />}
       {b.n != null && (
         <text x={b.x} y={b.y - TICK * 0.85} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
               textAnchor="middle" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
       )}
     </g>
-  ));
+    );
+  });
 }
 
 // Where each named place's label sits relative to its pin. Chosen by eye so
@@ -172,7 +180,7 @@ const dotColor = (cat) => (cat === 'art' ? SLATE : PIN_COLOR[cat] || SLATE);
 function artistIndex() {
   const rows = [];
   for (const key of ['spine', 'mcl', 'cpd', 'kid']) {
-    for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n) });
+    for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n), featured: featuredTitle(b) });
   }
   for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
   return rows.sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
@@ -210,6 +218,13 @@ export default function PrintSheet() {
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
+          {FESTIVAL.featured.length > 0 && (
+            <span className="print-legend__row">
+              <span className="print-legend__sq print-legend__sq--featured" style={{ background: SLATE }}>
+                <Icon name="star" size={8} color="var(--icon-on-color)" />
+              </span>{FESTIVAL.featured[0].title}
+            </span>
+          )}
         </section>
 
         {/* The alphabetical list, every artist with their booth number. No
@@ -221,7 +236,15 @@ export default function PrintSheet() {
           <h2>Art Market</h2>
           <ul>
             {index.map((r, i) => (
-              <li key={i}><span className="print-index__n">{r.n}</span><span className="print-index__who">{r.label}</span></li>
+              /* A featured booth's star sits in the number cell, not before
+                 the name: in the name it wrapped the entry onto a second
+                 line, and the column has no line to spare. The lead box
+                 takes a star and two digits; a three-digit featured booth
+                 would need --print-lead one step wider. */
+              <li key={i} className={r.featured ? 'print-index__row--featured' : undefined}>
+                <span className="print-index__n">{r.featured && <Icon name="star" size={8} color="var(--text-strong)" className="print-index__star" />}{r.n}</span>
+                <span className="print-index__who">{r.label}</span>
+              </li>
             ))}
           </ul>
         </section>
