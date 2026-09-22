@@ -76,7 +76,12 @@ export const PINS = [
   // touching on a 375px phone -- so it sits on the same bearing from the beer
   // stand, 46.6 units out. On paper the two symbols are clearly apart.
   { x: 748.5, y: 399.0, c: 'water', d: 'water' },
-  { x: 584.0, y: 709.0, c: 'water', d: 'water' },
+  // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
+  // entrance next to the merch tent, exactly where Jess's arrow ends. That is
+  // 28 units from the merch pin, so on the phone the two 44px targets OVERLAP
+  // at the first zoom step (46 is touching); the print map is right and the
+  // phone treatment is Ernest's call, not a nudge to make here (9/22 brief).
+  { x: 623.0, y: 767.0, c: 'water', d: 'water' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
   // the entrance path. "The info booth and the merch booth are the same
