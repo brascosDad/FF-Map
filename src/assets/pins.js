@@ -58,7 +58,6 @@ export const PINS = [
   // touching at the first zoom step -- and both clear the stage pin (53) and
   // the bike valet. Was the export's (897.3, 747.3).
   { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks' },
-  { x: 908.0, y: 750.0, c: 'water', d: 'water' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
@@ -88,14 +87,6 @@ export const PINS = [
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
   // the darker amber. First aid is the EMS post, moved from the export's
   // (715, 373) by the Main Stage.
-  // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
-  // of the lawn -- clear of the Kidlandia pin's target at the first zoom
-  // step (50 units; 46 is touching) and of the K column at x 592 -- and the
-  // PTA booth at the south edge. Her PTA box was ~(551, 460), 38 units from
-  // the Kidlandia pin; 9 units south makes the two targets clear. The rocket
-  // is her own legend's glyph for it, on the services neutral.
-  { x: 527.0, y: 378.0, c: 'water', d: 'water' },
-  { x: 551.0, y: 469.0, c: 'pta', d: 'pta' },
   { x: 668.0, y: 470.0, c: 'beverage', d: 'beverage' },
   { x: 708.0, y: 496.0, c: 'firstaid', d: 'firstaid' },
   { x: 698.0, y: 542.0, c: 'beverage', d: 'beverage' },
@@ -107,12 +98,24 @@ export const PINS = [
   // touching on a 375px phone -- so it sits on the same bearing from the beer
   // stand, 46.6 units out. On paper the two symbols are clearly apart.
   { x: 748.5, y: 399.0, c: 'water', d: 'water' },
+  // The water half of the beer + water pair north of the Acoustic Stage (see
+  // the beer pin above for the spacing).
+  { x: 908.0, y: 750.0, c: 'water', d: 'water' },
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
   // entrance next to the merch tent, exactly where Jess's arrow ends. That is
   // 28 units from the merch pin, so on the phone the two 44px targets OVERLAP
   // at the first zoom step (46 is touching); the print map is right and the
   // phone treatment is Ernest's call, not a nudge to make here (9/22 brief).
   { x: 623.0, y: 767.0, c: 'water', d: 'water' },
+
+  // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
+  // of the lawn -- clear of the Kidlandia pin's target at the first zoom
+  // step (50 units; 46 is touching) and of the K column at x 592 -- and the
+  // PTA booth at the south edge. Her PTA box was ~(551, 460), 38 units from
+  // the Kidlandia pin; 9 units south makes the two targets clear. The rocket
+  // is her own legend's glyph for it, on the services neutral.
+  { x: 527.0, y: 378.0, c: 'water', d: 'water' },
+  { x: 551.0, y: 469.0, c: 'pta', d: 'pta' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
   // the entrance path. "The info booth and the merch booth are the same
