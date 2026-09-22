@@ -803,7 +803,10 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     const n = await p.locator(sel).count();
     for (let i = 0; i < n; i++) {
       const b = await p.locator(sel).nth(i).boundingBox();
-      if (b && b.x > 0 && b.y > 120 && b.x + b.width < w && b.y + b.height < h - 120) return [b.x + b.width / 2, b.y + b.height / 2];
+      if (!b || b.x < 0 || b.y < 120 || b.x + b.width > w || b.y + b.height > h) continue;
+      // ...and not under the open sheet or a control: the map has to take the tap.
+      const bare = await p.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('svg.ff-map'), [b.x + b.width / 2, b.y + b.height / 2]);
+      if (bare) return [b.x + b.width / 2, b.y + b.height / 2];
     }
     const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2];
   };
