@@ -18,6 +18,15 @@
 // at the first zoom step or when its chip is tapped. Before adding one, check
 // the spacing: scripts/e2e.mjs asserts that no two overview targets overlap
 // on a 375px phone.
+//
+// `print: true` marks a pin PAPER-ONLY: it exists for EMS and the fire
+// inspector (Jess, operations, 9/21), not for a visitor with a phone. The phone
+// map skips it entirely -- no pin, no tap target, no directory row -- so it
+// needs no `d`. PrintSheet draws it and keys it in the print legend
+// (PRINT_SITE_LEGEND in data/directory.js for the site/safety items; a
+// visitor category such as `wc` keys under its usual row). Next year: the
+// print-only entries are the ones with `print: true` below; everything else
+// is on both maps.
 export const PINS = [
   // Markers that carry a standing label on the map
   { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true },

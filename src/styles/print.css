@@ -72,6 +72,15 @@
 /* A featured booth's key: the slate square carrying the star, solid, as on the map. */
 .print-legend__sq--featured { display: inline-flex; align-items: center; justify-content: center; opacity: 1; }
 
+/* The site/safety key: the paper-only layer's own group, directly under the
+   visitor key with a heading-sized gap rather than a whole section gap -- it
+   is the same key continued, not a new section -- and a title that spans the
+   grid. A mark that is not a disc (a barricade, a speed bump) is drawn in a
+   swatch-sized SVG on the same right edge as the dots. */
+.print-legend--site { margin-top: calc(var(--print-heading-gap) - var(--print-section-gap)); }
+.print-legend__title { grid-column: 1 / -1; font-size: 8pt; font-weight: 800; color: var(--text-strong); letter-spacing: 0.02em; text-transform: uppercase; }
+.print-legend__mark { width: var(--space-6); height: var(--space-4); justify-self: end; display: block; }
+
 /* The artist list takes whatever height is left and flows into the side
    column's four columns, at 8pt like everything else on the sheet. Each row
    is the shared lead box (booth number, right-aligned) then the name, so the

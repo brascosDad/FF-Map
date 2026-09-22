@@ -203,7 +203,7 @@ function PanelDirectory({ onSelect }) {
 function Legend() {
   return (
     <div className="ffc-legend ffc-legend--inline">
-      {LEGEND.map((l) => (
+      {LEGEND.filter((l) => !l.printOnly).map((l) => (
         <span className="ffc-legend__row" key={l.cat}>
           <span className="ffc-legend__dot" style={{ background: dotColor(l.cat) }} />
           {l.label}

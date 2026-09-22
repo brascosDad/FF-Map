@@ -235,6 +235,9 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
         )}
 
         {PINS.map((p, i) => {
+          // Paper-only pins (print: true in pins.js -- the EMS / fire
+          // inspector layer) never reach the phone.
+          if (p.print) return null;
           if (detail && p.c === 'food') return null;
           if (overview && !onOverview(p)) return null;
           // The class carries the category and the category carries the colour:

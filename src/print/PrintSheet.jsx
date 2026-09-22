@@ -13,7 +13,7 @@ import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
 import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
-import { LEGEND } from '../data/directory';
+import { LEGEND, PRINT_SITE_LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import { FESTIVAL, featuredTitle } from '../data/festival';
 // The QR generator's core only: it returns the module matrix and we draw it
@@ -133,6 +133,13 @@ const LABEL_AT = {
 };
 const LABEL_TEXT = { food: 'Food Court', stageMain: 'Main Stage', stageAcoustic: 'Acoustic Stage', kids: 'Kidlandia' };
 
+// Paper-only marks that are not discs: keyed by category, each takes the pin
+// record and returns what to draw at its x/y. A category not listed here is a
+// disc with its glyph, like every visitor pin. The legend draws the same
+// shapes at swatch size (see SiteSwatch).
+const PRINT_SHAPES = {
+};
+
 // Candler Park Dr's two columns: the west (street-side) column's numbers go
 // left, the east (park-side) column's go right -- decided by which side of
 // the run's midline a square sits, so a re-pull that moves a column still
@@ -169,10 +176,17 @@ function PrintMap() {
         <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
       </g>
 
+      {/* Every pin, the paper-only ones included (print: true in pins.js --
+          the EMS / fire-inspector layer the phone skips). A category in
+          PRINT_SHAPES is drawn as its own mark rather than a disc. */}
       {PINS.map((p, i) => (
-        <g key={i} className={`print-pin print-pin--${p.c}`}>
-          <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
-          <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
+        <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`}>
+          {PRINT_SHAPES[p.c]
+            ? PRINT_SHAPES[p.c](p)
+            : <>
+                <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
+                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
+              </>}
           {LABEL_AT[p.d] && LABEL_TEXT[p.d] && (
             <text x={p.x + LABEL_AT[p.d].dx} y={p.y + LABEL_AT[p.d].dy} fontSize={LABEL} fontWeight={800}
                   fill="var(--text-strong)" textAnchor={LABEL_AT[p.d].anchor}
@@ -194,6 +208,26 @@ function PrintMap() {
 }
 
 const dotColor = (cat) => (cat === 'art' ? SLATE : PIN_COLOR[cat] || SLATE);
+
+// A site/safety key swatch: the category's own PRINT_SHAPES mark drawn at
+// swatch size in a small SVG, or -- for a category drawn as a disc -- the
+// disc with its glyph, like the visitor rows.
+function SiteSwatch({ cat }) {
+  const shape = PRINT_SHAPES[cat];
+  if (!shape) {
+    return (
+      <span className="print-legend__dot" style={{ background: dotColor(cat) }}>
+        <Icon name={cat} size={9} color="var(--icon-on-color)" />
+      </span>
+    );
+  }
+  // The mark drawn in map units, boxed to the swatch: one unit is one px here.
+  return (
+    <svg className="print-legend__mark" viewBox="-12 -8 24 16" aria-hidden="true">
+      {shape({ x: 0, y: 0, swatch: true })}
+    </svg>
+  );
+}
 
 // Every named booth, alphabetical by what the sign will say -- the business,
 // which is what a visitor is looking for; the artist behind it is on the phone
@@ -228,7 +262,7 @@ export default function PrintSheet() {
               <span className="print-legend__dot" style={{ background: dotColor(l.cat) }}>
                 <Icon name={l.cat} size={9} color="var(--icon-on-color)" />
               </span>
-              {l.label}
+              {l.printLabel || l.label}
             </span>
           ))}
           <span className="print-legend__row">
@@ -248,6 +282,21 @@ export default function PrintSheet() {
             </span>
           )}
         </section>
+
+        {/* The paper-only layer: what EMS and the fire inspector read the
+            sheet for (pins flagged print: true in pins.js). Its own compact
+            key, under the visitor key, on the same four-column grid. */}
+        {PRINT_SITE_LEGEND.length > 0 && (
+          <section className="print-legend print-legend--site" aria-label="Site and safety key">
+            <span className="print-legend__title">Site / safety</span>
+            {PRINT_SITE_LEGEND.map((l) => (
+              <span className="print-legend__row" key={l.cat}>
+                <SiteSwatch cat={l.cat} />
+                {l.label}
+              </span>
+            ))}
+          </section>
+        )}
 
         {/* The alphabetical list, every artist with their booth number. No
             count under the heading: a sheet that lists every artist needs

@@ -73,6 +73,13 @@ export const DIRECTORY = [
 
 // The panel footer. Colour is the only thing carrying category on the map once
 // the labels came off, so the key has to be visible without opening anything.
+//
+// The print sheet keys from the same list, so the two legends cannot disagree
+// about what a colour means. Two optional fields are for paper: `printLabel`
+// is the wording the print sheet uses when it differs from the phone's, and
+// `printOnly: true` keeps a row off the phone footer (a category that is drawn
+// on the phone in a shared neutral and needs no row of its own there, but
+// carries its own glyph on paper).
 export const LEGEND = [
   { cat: 'stage', label: 'Stage' },
   { cat: 'food', label: 'Food' },
@@ -85,4 +92,12 @@ export const LEGEND = [
   { cat: 'merch', label: 'Merch' },
   { cat: 'art', label: 'Art booth' },
   { cat: 'bikevalet', label: 'Services' },
+];
+
+// The print sheet's second key, "Site / safety": the paper-only layer that
+// EMS and the fire inspector read the map for (pins flagged `print: true` in
+// assets/pins.js). Nothing here is drawn on the phone, so nothing here is in
+// LEGEND. Each `cat` is drawn by PrintSheet's own shape for it and coloured
+// by PIN_COLOR.
+export const PRINT_SITE_LEGEND = [
 ];
