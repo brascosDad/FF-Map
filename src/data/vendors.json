@@ -1,12 +1,12 @@
 {
   "confirmed": true,
-  "source": "Todd Tharp (food chair), email 'Food Vendors 2026', 2026-09-13 — his final list. Every 'offering' is Todd's own wording, verbatim; do not rewrite.",
+  "source": "Todd Tharp (food chair), email 'Food Vendors 2026', 2026-09-13 — his final list, plus King of Pops (Todd, 2026-09-21). Every 'offering' is Todd's own wording, verbatim; do not rewrite.",
   "note": "2026 list from the food chair. Placements are not assigned yet — where each truck parks arrives later this week.",
   "_placement": "Todd has NOT assigned spots yet. He is measuring on site the week of 9/14 and warns placements shift at the last minute to fit everyone. 'location' is null everywhere except Mr Softee, the only placement he has committed to. The UI lists a vendor with a null location and pins nothing for it. Do NOT let nulls reach the print file without a re-check.",
   "changes_from_2025": {
     "added": ["Jazz Burger", "Gezzos", "Mr Softee", "Bánh Mì Chị Em", "Playa Bowls"],
-    "removed": ["Sokome", "Hermanita by Tio Lucho's", "Smash Hit Burgers", "Any Given Sundae", "King of Pops"],
-    "note": "King of Pops ran two carts in 2025 and is absent from the 2026 list. Ernest is confirming with Todd that this is intentional."
+    "removed": ["Sokome", "Hermanita by Tio Lucho's", "Smash Hit Burgers", "Any Given Sundae"],
+    "note": "King of Pops ran two carts in 2025, was missing from Todd's 9/13 list, and is back for 2026 (Todd, 9/21): two carts, one near the Main Stage and one at the park entrance. Listed, not pinned -- cart spots move at load-in like the trucks."
   },
   "vendors": [
     { "id": "v01", "name": "Curated Coffee",     "offering": "Coffee and Book",                                    "category": "food", "location": null },
@@ -23,6 +23,7 @@
     { "id": "v12", "name": "Island Noodles",     "offering": "Hawaiian-style soba noodles",                        "category": "food", "location": null },
     { "id": "v13", "name": "Azucar",             "offering": "Cuban",                                              "category": "food", "location": null },
     { "id": "v14", "name": "Makara",             "offering": "Greek",                                              "category": "food", "location": null },
-    { "id": "v15", "name": "The Pickle",         "offering": "Tex-mex, Southern and Bayou",                        "category": "food", "location": null }
+    { "id": "v15", "name": "The Pickle",         "offering": "Tex-mex, Southern and Bayou",                        "category": "food", "location": null },
+    { "id": "v16", "name": "King of Pops",       "offering": "Frozen pops — one cart near the Main Stage, one at the park entrance.", "category": "food", "location": null }
   ]
 }
