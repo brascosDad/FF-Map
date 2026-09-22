@@ -46,6 +46,11 @@ runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, 
 "Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
 push. Don't hand-edit that table; the Action rewrites it on each push.
 
+**5. Reporting, every PR (Ernest, 9/22):** every question, open decision, skipped item and pin
+nudge goes into `docs/pr-notes.md` on the branch, overwritten each PR — the PR description can
+summarise it, the file is the record. If an answer is needed before work can continue, the chat
+reply ends with a line starting `BLOCKED:`.
+
 **4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
 phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
 any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
