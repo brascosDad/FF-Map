@@ -15,7 +15,10 @@
 
 /* Shared: "not what you asked for". One rule so the fade has one value, on map
    features and chrome alike. */
-.ffc-dimmed { opacity: var(--opacity-dimmed); }
+/* Dimmed is also untappable: while a chip is on, only its own pins take a tap
+   (Ernest, 9/22) -- the chip's pins are drawn on top and a dimmed one under
+   them must not win the touch. */
+.ffc-dimmed { opacity: var(--opacity-dimmed); pointer-events: none; }
 
 :where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-step button):focus-visible {
   outline: 2px solid var(--focus-ring);

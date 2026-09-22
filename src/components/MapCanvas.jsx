@@ -234,12 +234,20 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         )}
 
-        {PINS.map((p, i) => {
+        {/* A filter chip's own pins draw last, so they sit on top of
+            everything they might share a spot with; the rest are dimmed and,
+            while the chip is on, take no taps (.ffc-dimmed). */}
+        {PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
           // Paper-only pins (print: true in pins.js -- the EMS / fire
           // inspector layer) never reach the phone.
           if (p.print) return null;
-          if (detail && p.c === 'food') return null;
+          // The Food Court pin gives way to its stalls at Detail; a food cart
+          // pin (King of Pops) is a place of its own and stays.
+          if (detail && p.d === 'food') return null;
           if (overview && !onOverview(p)) return null;
+          // Held back until Detail (from: 'detail' in pins.js) unless its
+          // chip asked for it.
+          if (p.from === 'detail' && !detail && filter !== p.c) return null;
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.

@@ -488,17 +488,56 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     await p.waitForTimeout(350);
   }
   check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
-  const overlap = await p.evaluate(() => {
+
+  // ---- no element covers another, at any stop (Ernest, 9/22) ----
+  // Every live tap target on the map -- a pin's 44px circle, an area marker's
+  // -- against every other, at each of the three stops; and at Detail against
+  // every booth's own hit cell too. Edge to edge is fine (-0.5px tolerance);
+  // crossing is not. Pins hidden at a stop (from: 'detail') are not on the
+  // map and cannot collide; a faded marker or a dimmed pin takes no tap, so
+  // it is not a target either. Then the same with each filter chip on, at
+  // each stop: the chip's pins are the only live targets then.
+  const overlaps = () => p.evaluate(() => {
+    const live = (el) => { const cs = getComputedStyle(el); return cs.pointerEvents !== 'none' && +cs.opacity > 0; };
     const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area__mk > circle')]
-      .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal }; });
+      .filter((c) => live(c.parentElement))
+      .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal.replace(/ff-tap |ffc-pin |ff-pin |ff-area__mk/g, '').trim() || 'area' }; });
     const out = [];
     for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
       const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
-      if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n.replace(/ff-tap |ffc-pin /g, '')} x ${cs[j].n.replace(/ff-tap |ffc-pin /g, '')} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+      if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n} x ${cs[j].n} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+    }
+    // Booth hit cells only exist as targets where numbers are drawn (Detail).
+    const numbers = [...document.querySelectorAll('svg.ff-map text')].some((t) => /^\d+$/.test(t.textContent));
+    if (numbers) {
+      for (const rect of document.querySelectorAll('svg.ff-map g.ff-booth rect[fill="transparent"]')) {
+        const b = rect.getBoundingClientRect(), id = rect.closest('[data-booth]').dataset.booth;
+        for (const c of cs) {
+          const nx = Math.max(b.left, Math.min(c.x, b.right)), ny = Math.max(b.top, Math.min(c.y, b.bottom));
+          const d = Math.hypot(c.x - nx, c.y - ny);
+          if (d < c.r - 0.5) out.push(`${c.n} x ${id} by ${(c.r - d).toFixed(1)}px`);
+        }
+      }
     }
     return out;
   });
-  check(`${name}: no two overview touch targets overlap`, overlap.length === 0, overlap.join(' | '));
+  const STOPS = ['overview', 'first step', 'Detail'];
+  for (let stop = 0; stop < 3; stop++) {
+    if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+    const o = await overlaps();
+    check(`${name}: no two touch targets overlap at the ${STOPS[stop]}`, o.length === 0, o.join(' | '));
+  }
+  for (const chip of ['Restrooms', 'First aid', 'Water']) {
+    await p.locator('.ffc-chip', { hasText: chip }).click();   // a chip resets to the overview
+    await p.waitForTimeout(650);
+    for (let stop = 0; stop < 3; stop++) {
+      if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+      const o = await overlaps();
+      check(`${name}: with ${chip} on, no two touch targets overlap at the ${STOPS[stop]}`, o.length === 0, o.join(' | '));
+    }
+    await p.locator('.ffc-chip', { hasText: chip }).click();
+    await p.waitForTimeout(650);
+  }
   await p.close();
 }
 
@@ -1178,6 +1217,37 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     pr.featuredIndex.length === 1 && /^11Madison O'Brien Art$/.test(pr.featuredIndex[0]) && pr.featuredIndexStar === 1 && pr.featuredKey,
     `${pr.featuredIndex.join(' | ')}; star ${pr.featuredIndexStar}; key ${pr.featuredKey}`);
   check('print: the side column fits the page', pr.overflow <= 0, `${pr.overflow}px over`);
+
+  // Nothing on paper covers anything else (Ernest, 9/22): every pin symbol
+  // (a disc, or a barricade / speed-bump mark) against every other symbol,
+  // every booth square, every label, the QR block and the north arrow.
+  // Discs are compared as circles, so edge to edge passes; marks and
+  // squares as their boxes.
+  const cover = await p.evaluate(() => {
+    const box = (el) => el.getBoundingClientRect();
+    const circles = [...document.querySelectorAll('.print-map .print-pin > circle')].map((c) => { const b = box(c); return { kind: 'pin', n: c.parentElement.className.baseVal.replace(/print-pin /, '').replace(/ print-pin--print-only/, ''), x: b.x + b.width / 2, y: b.y + b.height / 2, r: b.width / 2 - 0.6 }; });
+    const marks = [...document.querySelectorAll('.print-map .print-pin')].filter((g) => !g.querySelector(':scope > circle')).map((g) => ({ kind: 'mark', n: g.className.baseVal.replace(/print-pin /, ''), b: box(g) }));
+    const squares = [...document.querySelectorAll('.print-map .print-booth > rect')].map((r) => ({ kind: 'square', n: r.parentElement.querySelector('text')?.textContent || 'unnumbered', b: box(r) }));
+    const texts = [...document.querySelectorAll('.print-map text')].filter((t) => !t.closest('.print-booth')).map((t) => ({ kind: 'label', n: t.textContent.trim().slice(0, 16), b: box(t) }));
+    const numbers = [...document.querySelectorAll('.print-map .print-booth > text')].map((t) => ({ kind: 'number', n: t.textContent, b: box(t) }));
+    const qr = document.querySelector('.print-map .print-qr rect'); const other = qr ? [{ kind: 'qr', n: 'QR', b: box(qr) }] : [];
+    const rects = [...marks, ...squares, ...texts, ...numbers, ...other];
+    const hit = (a, b) => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5;
+    const out = [];
+    for (let i = 0; i < circles.length; i++) {
+      for (let j = i + 1; j < circles.length; j++) {
+        const d = Math.hypot(circles[i].x - circles[j].x, circles[i].y - circles[j].y);
+        if (d < circles[i].r + circles[j].r) out.push(`${circles[i].n} x ${circles[j].n}`);
+      }
+      for (const r of rects) {
+        const nx = Math.max(r.b.left, Math.min(circles[i].x, r.b.right)), ny = Math.max(r.b.top, Math.min(circles[i].y, r.b.bottom));
+        if (Math.hypot(circles[i].x - nx, circles[i].y - ny) < circles[i].r - 0.5) out.push(`${circles[i].n} x ${r.kind} ${r.n}`);
+      }
+    }
+    for (const m of marks) for (const r of rects) if (r !== m && hit(m.b, r.b)) out.push(`${m.n} x ${r.kind} ${r.n}`);
+    return out;
+  });
+  check('print: nothing covers anything else', cover.length === 0, cover.join(' | '));
   await p.close();
 }
 

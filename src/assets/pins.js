@@ -19,6 +19,21 @@
 // the spacing: scripts/e2e.mjs asserts that no two overview targets overlap
 // on a 375px phone.
 //
+// STANDING RULE (Ernest, 9/22): no tap target may overlap another tap target at
+// any zoom stop, on either map -- an overlap invites a wrong tap. Circles may
+// touch edge to edge; they may not cross. When two collide, one of two things
+// happens: the lower-priority pin waits for a closer stop (`from: 'detail'`
+// below), or the two are moved edge to edge. Priority when something must
+// wait: labelled destinations (stages, Food Court, Kidlandia) > first aid /
+// EMS > restrooms > info, merch, bike valet, beer > water, beverage stations,
+// PTA, food carts. scripts/e2e.mjs measures every stop on a 375px phone.
+//
+// `from: 'detail'` holds a pin back until the Detail stop, the closest one,
+// where its 44px target has room. Everything else arrives at the first zoom
+// step (or at the overview, per `overview` above). A filter chip overrides
+// it: the chip's category is always drawn, on top, and while a chip is on the
+// dimmed pins cannot be tapped.
+//
 // `print: true` marks a pin PAPER-ONLY: it exists for EMS and the fire
 // inspector (Jess, operations, 9/21), not for a visitor with a phone. The phone
 // map skips it entirely -- no pin, no tap target, no directory row -- so it

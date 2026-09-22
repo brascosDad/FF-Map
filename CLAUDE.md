@@ -147,14 +147,25 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 
 - No GPS, no "you are here."
 - Three zoom stops, not four.
-- Tap a pin to open it; double-tap elsewhere to zoom. Booth sheets stay open on zoom-out. Dimmed
-  pins stay tappable. Desktop directory rows fly the map in one level.
+- Tap a pin to open it; double-tap elsewhere to zoom. Booth sheets stay open on zoom-out.
+  Desktop directory rows fly the map in one level.
 - Reset control is arrows-to-corners, not a locate button.
 - No search bar.
 - **Pins are touch targets. 44×44 CSS px is the floor.** The visible icon glyph may shrink inside
-  that target; the tappable area may not. Resolve collisions by moving pins. Circles may touch;
-  they may not overlap. The e2e suite now asserts this for the phone's opening view on a 375px
-  screen — a pin flagged `overview: true` in `pins.js` has to clear every other one.
+  that target; the tappable area may not.
+- **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
+  may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
+  Circles may touch edge to edge; they may not cross. When two collide, one of two things happens:
+  the lower-priority pin **doesn't show until a closer stop** has room for it (`from: 'detail'`
+  in `pins.js`), or the two are **moved edge to edge**. Priority when something must wait:
+  labelled destinations (stages, Food Court, Kidlandia) → first aid / EMS → restrooms → info,
+  merch, bike valet, beer → water, beverage stations, PTA, food carts. Booth hit areas count as
+  targets at the Detail stop. The e2e suite measures every stop on a 375px phone, with each
+  filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
+  anything else — nudge edge to edge; paper has no zoom to hide behind. e2e checks the paper too.
+- **Filter chips:** when a chip is on, its pins are always shown (whatever the stop) and drawn on
+  top, and dimmed pins **cannot be tapped** while it is on (this replaced "dimmed pins stay
+  tappable", 9/22). A pin hidden at the current stop still appears when its chip is tapped.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
 - **The print sheet's type floor is 8pt** for everything in the side column and every label on the
