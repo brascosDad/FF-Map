@@ -632,13 +632,14 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
 // glyph, drawn like every other pin. Never a booth square (Ernest, 9/19). And
 // on the desktop overview it sits directly above merch with an 8-16px gap --
 // as close as that allows, since the two are one spot with two jobs (Jess,
-// 9/20); at the phone's first zoom step the two 44px targets may touch but
-// not overlap, and the 375px phone is the case that decides it.
-for (const [name, w, h, zoomFirst] of [['iPhone SE', 375, 667, true], ['mobile', 390, 800, true], ['desktop', 1440, 900, false]]) {
+// 9/20); on the phone it arrives at Detail (since 9/22 the south restroom
+// bank sits on the path above it and outranks it at the first step), where
+// the two 44px targets may touch but not overlap; the 375px phone decides.
+for (const [name, w, h, zooms] of [['iPhone SE', 375, 667, 2], ['mobile', 390, 800, 2], ['desktop', 1440, 900, 0]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h } });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
-  if (zoomFirst) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); }
+  for (let z = 0; z < zooms; z++) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(600); }
   const info = await p.evaluate(() => {
     const g = document.querySelector('svg.ff-map g.ffc-pin--info');
     if (!g) return { present: false };
@@ -795,7 +796,17 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
   const title = async () => (await p.locator('.sheet .hd h3').allTextContents()).join('|');
-  const centre = async (sel) => { const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+  // The first pin of that category that is on screen: some water stations
+  // wait for Detail (from: 'detail'), and the rest sit wherever the plan
+  // puts them, not necessarily in the middle of a phone's first step.
+  const centre = async (sel) => {
+    const n = await p.locator(sel).count();
+    for (let i = 0; i < n; i++) {
+      const b = await p.locator(sel).nth(i).boundingBox();
+      if (b && b.x > 0 && b.y > 120 && b.x + b.width < w && b.y + b.height < h - 120) return [b.x + b.width / 2, b.y + b.height / 2];
+    }
+    const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2];
+  };
   const vb = () => p.locator('svg.ff-map').getAttribute('viewBox');
   // Amenities only appear once you zoom in -- the overview carries destinations.
   await p.locator('.zoomctl button').first().click();

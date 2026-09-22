@@ -190,7 +190,9 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   e2e proves those booths take the tap at Detail on phone and desktop.
 - **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): as close as the
   touch rule allows, 46 units apart — targets touching at the phone's first zoom step on a 375px
-  screen, an 11px gap on the desktop opening view. Info stays off the phone's opening view.
+  screen, an 11px gap on the desktop opening view. On the phone info arrives at Detail (9/22: the
+  south restroom bank on the path above it outranks it at the first step); on the desktop it is
+  on the opening view.
 - **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the
   streets are named, the index has every number); the index heading is just "Art Market" with no
   count under it; the Food Court list stays out of the side column; legend swatches and index

@@ -27,11 +27,14 @@ export const AREAS = [
   // at 712.4 (it moved east to make room for the merch tent on the corner).
   { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [775.0, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
     range: `Booths ${span(BOOTHS.mcl)} · ${BOOTHS.mcl.length} booths` },
-  // The car-path marker sits 25 units north of where the export put it (509.3).
-  // At the booth-level zoom the original position covered booth 29's number and
-  // sat 9px inside it; 25 north clears every number in the row with 15px to
-  // spare, and the marker is still plainly in the middle of its own run.
-  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [774.9, 484.3], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market',
+  // The car-path marker sits up the path from where the export put it
+  // (774.9, 509.3): first 25 units north so it cleared booth 29's number at
+  // the booth zoom (moot now that markers fade out at Detail), then on 9/22
+  // a further 55 along the path so its overview target clears the beer
+  // stand's, which moved to Jess's spot at (728, 472) -- 83 units, where 81
+  // is touching on a 375px phone. Still between the two rows, in the run's
+  // north half.
+  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [801.0, 433.0], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market',
     range: `Booths ${span(BOOTHS.spine)} & ${span(BOOTHS.kid)} · ${BOOTHS.spine.length + BOOTHS.kid.length} booths` },
 ];
 

@@ -29,10 +29,13 @@
 // PTA, food carts. scripts/e2e.mjs measures every stop on a 375px phone.
 //
 // `from: 'detail'` holds a pin back until the Detail stop, the closest one,
-// where its 44px target has room. Everything else arrives at the first zoom
-// step (or at the overview, per `overview` above). A filter chip overrides
-// it: the chip's category is always drawn, on top, and while a chip is on the
-// dimmed pins cannot be tapped.
+// where its 44px target has room -- on the phone. Where the panel is docked
+// the first step's 44px is 22 units against the phone's 46, so there the pin
+// arrives at the first step (and `overview: 'docked'` still puts it on that
+// opening view). Everything else arrives at the first zoom step (or at the
+// overview, per `overview` above). A filter chip overrides it: the chip's
+// category is always drawn, on top, and while a chip is on the dimmed pins
+// cannot be tapped.
 //
 // `print: true` marks a pin PAPER-ONLY: it exists for EMS and the fire
 // inspector (Jess, operations, 9/21), not for a visitor with a phone. The phone
@@ -59,19 +62,19 @@ export const PINS = [
 
   // The beer stand: the main one, on the field below the Main Stage -- the
   // landmark the food chair places Mr Softee against ("to the right of the
-  // beer stand when facing it"). It is the export's main-lawn beverage marker
-  // (734.7, 442.0), moved 25 units west-north-west so its overview target
-  // clears the in-park art market marker; nothing else on the field is that
-  // close. Confirm the spot against the 2026 site plan.
-  { x: 712.0, y: 428.0, c: 'drinks', d: 'beer', label: 'Beer', overview: true },
+  // beer stand when facing it"). Where Jess's 2026 site plan puts it (Ernest,
+  // 9/22): down and a little east of the export's (734.7, 442.0). It is on
+  // the phone's opening view, where two targets need 81 units on a 375px
+  // screen, so the in-park art market marker moved up the path to 83 units
+  // from it (areas.js) rather than the stand leaving its spot.
+  { x: 728.0, y: 472.0, c: 'drinks', d: 'beer', label: 'Beer', overview: true },
   // The other beer stations the export marks
   { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks' },
   { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks' },
   // ...and the one just north of the Acoustic Stage, which Jess's plan pairs
-  // with a water station side by side (9/21). The pair is centred over the
-  // stage's new x (885, since Mell Ave moved), 46 units apart -- 44px targets
-  // touching at the first zoom step -- and both clear the stage pin (53) and
-  // the bike valet. Was the export's (897.3, 747.3).
+  // with a water station tight against it (9/21; the water is in the water
+  // block below, held to Detail). Was the export's (897.3, 747.3); 53 units
+  // from the stage pin, clear of the bike valet.
   { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
@@ -84,65 +87,71 @@ export const PINS = [
   { x: 630.0, y: 740.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips).
-  // The southern bank is the export's (601.6, 665.1) moved 20 units west and
-  // 7 north, clear of the info booth's target and of booth 54's hit area
-  // (the export spot overlapped it by a hair). Restroom placement for 2026
-  // is still being confirmed with Jess regardless.
+  // The southern bank is ON the entrance path between booth 54 and AWARE
+  // Wildlife's square, in that order going down the path as Jess's plan has
+  // it (Ernest, 9/22): centred on the line from 54 (623.1, 645.3) to the
+  // square (598.5, 677), 20 units from each -- its Detail target (12.75) and
+  // a booth's hit cell (4.7) need 17.45, so it overlaps neither and the
+  // square did not have to move. Was the export's (601.6, 665.1), then
+  // (582, 658).
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
-  { x: 582.0, y: 658.0, c: 'wc', d: 'wc' },
+  { x: 611.0, y: 661.0, c: 'wc', d: 'wc' },
 
-  // The field side of the art-market path, top to bottom, per Jess's 2026
-  // plan (9/21): a beverage station, EMS, a beverage station, then a restroom
-  // bank (paper only, below). Her boxes were ~(678, 476), (709, 496) and
-  // (707, 524): closer than the 46 units two 44px targets need at the first
-  // zoom step, so EMS keeps her spot and the two stations move out along the
-  // column -- the top one 10 units north-west, the lower one 20 south, where
-  // it also clears the west row's booth hit areas at Detail.
+  // The field below the Main Stage, per Jess's 2026 plan as Ernest read it
+  // against the printed sheet (9/22): EMS is the export's first-aid spot, and
+  // the two beverage stations flank it up the field -- one west, one just
+  // east. Ernest's endpoints were (671, 370) and (720, 385); the first is 44
+  // units from EMS and the second 13, so each sits edge to edge with EMS at
+  // the first zoom step instead (46 units): the west one 2 units further
+  // west, the east one out to 761 on its own side. The east one clears the
+  // beer station at (802.5, 309) and the park's west row at Detail.
   //
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
-  // the darker amber. First aid is the EMS post, moved from the export's
-  // (715, 373) by the Main Stage.
-  { x: 668.0, y: 470.0, c: 'beverage', d: 'beverage' },
-  { x: 708.0, y: 496.0, c: 'firstaid', d: 'firstaid' },
-  { x: 698.0, y: 542.0, c: 'beverage', d: 'beverage' },
+  // the darker amber.
+  { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
+  { x: 669.0, y: 370.0, c: 'beverage', d: 'beverage' },
+  { x: 761.0, y: 379.0, c: 'beverage', d: 'beverage' },
 
-  // Water refill stations, per Jess's 2026 site plan (9/21). The one the
-  // export drew by the Main Stage (668.2, 318.7) is down on the field beside
-  // the beer stand: Jess's box is ~(731, 413), which is 24 units from the
-  // beer pin -- overlapping targets at the first zoom step, where 46 is
-  // touching on a 375px phone -- so it sits on the same bearing from the beer
-  // stand, 46.6 units out. On paper the two symbols are clearly apart.
-  { x: 748.5, y: 399.0, c: 'water', d: 'water' },
-  // The water half of the beer + water pair north of the Acoustic Stage (see
-  // the beer pin above for the spacing).
-  { x: 908.0, y: 750.0, c: 'water', d: 'water' },
+  // Water refill stations, per Jess's 2026 site plan (9/21, Ernest 9/22).
+  // Water is the lowest priority on the map, so where a station sits close
+  // to something it waits for the Detail stop (from: 'detail') -- the Water
+  // chip shows it at any stop.
+  //
+  // On the field, exactly at Jess's box, between EMS and the beer stand: 43
+  // units from EMS and 30 from the east beverage station, so it arrives at
+  // Detail, where a 44px target is 25.5 units and both clear.
+  { x: 731.0, y: 413.0, c: 'water', d: 'water', from: 'detail' },
+  // The water half of the beer + water pair north of the Acoustic Stage:
+  // tight against the beer at (862, 750) -- edge to edge at Detail, 25.5
+  // units east -- so it too waits for Detail. Ernest's 877 would overlap.
+  { x: 887.5, y: 750.0, c: 'water', d: 'water', from: 'detail' },
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
-  // entrance next to the merch tent, exactly where Jess's arrow ends. That is
-  // 28 units from the merch pin, so on the phone the two 44px targets OVERLAP
-  // at the first zoom step (46 is touching); the print map is right and the
-  // phone treatment is Ernest's call, not a nudge to make here (9/22 brief).
-  { x: 623.0, y: 767.0, c: 'water', d: 'water' },
+  // entrance tucked against the merch tent's lower-right side, edge to edge
+  // at Detail (25.5 units on Ernest's bearing; his (636, 749) was 11 from
+  // merch). Hidden at the first zoom step, where it would sit on merch.
+  { x: 644.0, y: 761.0, c: 'water', d: 'water', from: 'detail' },
 
   // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
   // of the lawn -- clear of the Kidlandia pin's target at the first zoom
   // step (50 units; 46 is touching) and of the K column at x 592 -- and the
-  // PTA booth at the south edge. Her PTA box was ~(551, 460), 38 units from
-  // the Kidlandia pin; 9 units south makes the two targets clear. The rocket
-  // is her own legend's glyph for it, on the services neutral.
+  // PTA booth inside the shape's south-west, where Ernest read it off her
+  // plan (9/22), clear of the generator at (507, 488) on paper. The rocket
+  // is her own legend's glyph for it, in the Kidlandia colour.
   { x: 527.0, y: 378.0, c: 'water', d: 'water' },
-  { x: 551.0, y: 469.0, c: 'pta', d: 'pta' },
+  { x: 519.0, y: 520.0, c: 'pta', d: 'pta' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
   // the entrance path. "The info booth and the merch booth are the same
   // place" (Jess, 9/20): one spot with two jobs, so the two pins sit as close
-  // as the touch rule allows -- 46 units apart, which is the 44px targets
-  // TOUCHING at the phone's first zoom step on a 375px screen (the tightest
-  // case; circles may touch, not overlap). On the desktop opening view that
-  // is an 11px gap between the two 40px pins. On the PHONE's opening view two
-  // targets would need 81 units, a 60px gap on desktop, so there info
-  // arrives at the first zoom step (Ernest, 9/19). Was the export's
-  // (644.3, 733.3).
-  { x: 630.0, y: 694.0, c: 'info', d: 'info', overview: 'docked' },
+  // as the touch rule allows -- 46 units apart, the 44px targets edge to
+  // edge at the phone's first zoom step on a 375px screen. Ernest's 9/22
+  // endpoint (638, 723) is 19 units from merch, which would overlap at every
+  // stop, so it stays at 46, directly above. On the phone it now arrives at
+  // Detail: the south restroom bank, on the path 38 units above it since
+  // 9/22, outranks it and the two would cross at the first step. On the
+  // desktop it is on the opening view (an 11px gap between the 40px pins)
+  // and at every step. Was the export's (644.3, 733.3).
+  { x: 630.0, y: 694.0, c: 'info', d: 'info', overview: 'docked', from: 'detail' },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the
@@ -186,10 +195,9 @@ export const PINS = [
   // Restroom banks EMS needs on paper but a visitor does not need pinned:
   // the same restroom symbol as the visitor pins (one icon for every toilet,
   // ADA units included -- the print key says "Restroom (+ ADA)").
-  //   The field side of the art-market path, below the lower beverage
-  //   station (her ~678, 554; 4 units down and 2 west so the two symbols
-  //   sit apart on paper).
-  { x: 676.0, y: 558.0, c: 'wc', print: true },
+  //   The field side of the art-market path, up from Jess's (678, 554) to
+  //   where Ernest read it (9/22), clear of booths 43-45.
+  { x: 680.0, y: 526.0, c: 'wc', print: true },
   //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
   { x: 422.0, y: 217.0, c: 'wc', print: true },
 

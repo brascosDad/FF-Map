@@ -246,8 +246,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           if (detail && p.d === 'food') return null;
           if (overview && !onOverview(p)) return null;
           // Held back until Detail (from: 'detail' in pins.js) unless its
-          // chip asked for it.
-          if (p.from === 'detail' && !detail && filter !== p.c) return null;
+          // chip asked for it. Only where the sheet is a bottom sheet: the
+          // docked map's first step draws 44px as 22 units, half the
+          // phone's 46, so there the first step already has the room.
+          if (p.from === 'detail' && !detail && !docked && filter !== p.c) return null;
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.
