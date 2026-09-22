@@ -132,6 +132,12 @@ export const PINS = [
   // tight against the beer at (862, 750) -- edge to edge at Detail, 25.5
   // units east -- so it too waits for Detail. Ernest's 877 would overlap.
   { x: 887.5, y: 750.0, c: 'water', d: 'water', from: 'detail' },
+  // At the Candler Park Dr speed bump, in the break between 94/95 (street
+  // side) and 111/112 (park side), which Jess's plan marks and the 9/22 PR
+  // missed (Ernest). Off the street's east edge (425.6) on the park side:
+  // 438 keeps its Detail target 21.6 units from booths 111 and 112 (17.45 is
+  // touching) and, on paper, the disc off the bar and off their numbers.
+  { x: 438.0, y: 585.0, c: 'water', d: 'water' },
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
   // entrance tucked against the merch tent's lower-right side, edge to edge
   // at Detail (25.5 units on Ernest's bearing; his (636, 749) was 11 from
