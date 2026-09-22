@@ -83,8 +83,8 @@ npm run preview   # serve the production build locally
 - **Squarespace integration.** If the answer comes back as "embed," point an Embed
   Block / code injection at the Vercel URL. If it comes back as "replace," that's a
   different path — worth a fresh look once the tier is known.
-- **Kidlandia booths.** One vertical column inside the Kidlandia area, lowest
-  number at the south end (per the 2026 site plan), in the Kidlandia colour.
+- **Kidlandia booths.** One vertical column inside the Kidlandia area, K0 at the
+  north end (the chair, 9/21), in the Kidlandia colour.
   The count is the sheet's (10 vs 11 is being confirmed with the chair); the
   column's exact spot is by description, and there is no blob for them at the
   phone overview until a `blob-kid` layer exists in Figma.

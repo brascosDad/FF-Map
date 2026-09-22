@@ -174,8 +174,8 @@ function PrintMap() {
           row, so it touches no number. */}
       <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
         <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market</text>
-        {/* Just below the south end of the Kidlandia column, wherever the
-            sheet's count puts it. */}
+        {/* Just below the south end of the Kidlandia column -- the highest
+            K number, wherever the sheet's count puts it. */}
         <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
       </g>
 

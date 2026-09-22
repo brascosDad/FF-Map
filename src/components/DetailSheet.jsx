@@ -274,7 +274,7 @@ function BoothDetail({ booth, onStep }) {
           the footer on a K booth, since the position is the uncertain thing;
           the unnumbered pair say where the chair put them. */}
       <div className="foot">{isFood ? 'Position from the official map.'
-        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} column runs south to north inside Kidlandia, position approximate until the layout is confirmed.`
+        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} column runs north to south inside Kidlandia, position approximate until the layout is confirmed.`
         : unnumbered ? `On the 2026 list with a spot but no number: ${booth.where}. Position approximate.`
         : 'Artist from the 2026 list; position from the official map.'}</div>
     </>

@@ -66,10 +66,10 @@ being numbered one-for-one:
                     a NUMBERING gap, not the physical bump. See lay_cpd().
   Kidlandia         K0-Kn are not on the export at all. One vertical column
                     INSIDE the Kidlandia area (the basemap's kidlandia-area
-                    shape), numbered south to north: K0 at the south end, the
-                    highest at the north, as the 2026 site plan and the 2025
-                    map have it (Ernest, 9/19). How many there are comes from
-                    the sheet. See KID_STACK.
+                    shape), numbered north to south: K0 at the north end, the
+                    highest at the south (the chair, 9/21 -- the column was
+                    laid the other way up until 9/22). How many there are
+                    comes from the sheet. See KID_STACK.
   Unnumbered        two artists have a spot and no number: AWARE Wildlife on
                     the grass by the park's west row, Achieve with Steve
                     beside the Acoustic Stage. They get a square each, with
@@ -180,13 +180,14 @@ MCL_EAST_END = 840.0
 # basemap's kidlandia-area shape spans x ~470-627, y ~297-538, and its east
 # edge at these latitudes is x ~610-615, so a column at x 592 sits inside it
 # with a booth's width to spare, clear of the Kidlandia pin (550.9, 422.3) at
-# every zoom and of the court to the south. `y_south` is the centre of the
-# LOWEST number; the column grows northward from there at `pitch`, so K0 is at
-# the south end and the highest number at the north, as the 2026 site plan and
-# the 2025 map have it. Eleven booths run y 472 up to 382; ten would stop at
-# 391 -- the count is the sheet's, not this table's. Nothing in the export
-# marks these, so verify the column against the grounds at setup.
-KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
+# every zoom and of the court to the south. `y_north` is the centre of the
+# LOWEST number; the column grows southward from there at `pitch`, so K0 (the
+# Sand Art Cart) is at the north end and the highest number at the south --
+# the chair's 9/21 correction; until 9/22 the column ran the other way up.
+# Eleven booths run y 382 down to 472; ten would stop at 463 -- the count is
+# the sheet's, not this table's. Nothing in the export marks these, so verify
+# the column against the grounds at setup.
+KID_STACK = {'x': 592.0, 'y_north': 382.0, 'pitch': 9.0}
 
 # ---- Artists with a spot but no number --------------------------------------
 # Keyed by business, as the sheet names them. Positions are by description.
@@ -330,8 +331,8 @@ def lay_cpd(cpd, LAYOUT):
 
 def lay_kid(LAYOUT):
     seg = numbered(LAYOUT['kidlandia-stack'])[0]
-    # Numbers go up as the column goes north (y decreases).
-    return [(n, KID_STACK['x'], KID_STACK['y_south'] - i * KID_STACK['pitch'])
+    # Numbers go up as the column goes south (y increases).
+    return [(n, KID_STACK['x'], KID_STACK['y_north'] + i * KID_STACK['pitch'])
             for i, n in enumerate(numbers(seg))]
 
 
@@ -414,13 +415,13 @@ def main():
     w('//     %s on Candler Park Dr, %s in Kidlandia. Each group is in number' % (
         num['poster_endpoints']['candler_park_dr'], num['poster_endpoints']['kidlandia']))
     w('//     order, so stepping follows the numbers -- which on Candler Park Dr')
-    w('//     means south to north.')
+    w('//     means south to north, and in Kidlandia north to south.')
     w('//   - `name` is the artist, `biz` the business, straight from the sheet.')
     w('//     Both are null on a sponsor booth.')
     w('//   - Positions are laid along the rows the export draws, at the official')
     w('//     counts. The %s-%s column is one vertical run inside the Kidlandia' % (
         zr['kidlandia']['first'], zr['kidlandia']['last']))
-    w('//     area, lowest number at the south end; its exact spot is unverified.')
+    w('//     area, K0 at the NORTH end (the chair, 9/21); its exact spot is unverified.')
     w('//     So are the two unnumbered squares (UNNUMBERED).')
     w('//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;')
     w('//     which truck parks at which stall is not assigned yet.')

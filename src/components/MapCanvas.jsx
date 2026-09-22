@@ -213,8 +213,8 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
-        {/* Kidlandia's booths, one column inside the Kidlandia area, lowest
-            number at the south end. Not part of the numbered run and not on
+        {/* Kidlandia's booths, one column inside the Kidlandia area, K0 at
+            the north end (the chair, 9/21). Not part of the numbered run and not on
             any market row, so they draw on their own, in the Kidlandia
             category's own colour rather than the art-market slate: squares
             from the first zoom step, and nothing at the phone overview --
