@@ -139,9 +139,10 @@ export const PINS = [
   // Detail, where a 44px target is 25.5 units and both clear.
   { x: 731.0, y: 413.0, c: 'water', d: 'water', from: 'detail' },
   // The water half of the beer + water pair north of the Acoustic Stage:
-  // tight against the beer at (862, 750) -- edge to edge at Detail, 25.5
-  // units east -- so it too waits for Detail. Ernest's 877 would overlap.
-  { x: 887.5, y: 750.0, c: 'water', d: 'water', from: 'detail' },
+  // tight against the beer at (862, 750) -- edge to edge at Detail, 26
+  // units east (25.5 is touching on a 375px phone; half a unit of air) -- so
+  // it too waits for Detail. Ernest's 877 would overlap.
+  { x: 888.0, y: 750.0, c: 'water', d: 'water', from: 'detail' },
   // At the Candler Park Dr speed bump, in the break between 94/95 (street
   // side) and 111/112 (park side), which Jess's plan marks and the 9/22 PR
   // missed (Ernest). Off the street's east edge (425.6) on the park side:
@@ -150,9 +151,10 @@ export const PINS = [
   { x: 438.0, y: 585.0, c: 'water', d: 'water' },
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
   // entrance tucked against the merch tent's lower-right side, edge to edge
-  // at Detail (25.5 units on Ernest's bearing; his (636, 749) was 11 from
-  // merch). Hidden at the first zoom step, where it would sit on merch.
-  { x: 644.0, y: 761.0, c: 'water', d: 'water', from: 'detail' },
+  // at Detail (26.6 units on Ernest's bearing, where 25.5 is touching on a
+  // 375px phone; his (636, 749) was 11 from merch). Hidden at the first zoom
+  // step, where it would sit on merch.
+  { x: 645.0, y: 762.0, c: 'water', d: 'water', from: 'detail' },
 
   // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
   // of the lawn -- clear of the Kidlandia pin's target at the first zoom

@@ -817,11 +817,13 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     const t = await title();
     check(`${name}: second pin swaps the sheet`, /First Aid/.test(t), t || '(closed)');
   });
+  // A restroom pin: every restroom shows from the first step, and one is on
+  // screen on each of these phones (water stations mostly wait for Detail).
   await safe(`${name}: double-tap on a pin opens, does not zoom`, async () => {
     const v0 = await vb();
-    await p.mouse.dblclick(...await centre('g.ffc-pin--water')); await p.waitForTimeout(600);
+    await p.mouse.dblclick(...await centre('g.ffc-pin--wc')); await p.waitForTimeout(600);
     const t = await title();
-    check(`${name}: double-tap on a pin opens, does not zoom`, /Water/.test(t) && v0 === await vb(), `${t || '(closed)'}; zoomed=${v0 !== await vb()}`);
+    check(`${name}: double-tap on a pin opens, does not zoom`, /Restroom/.test(t) && v0 === await vb(), `${t || '(closed)'}; zoomed=${v0 !== await vb()}`);
   });
   if (w >= 1024) {
     await safe(`${name}: directory row flies in a level`, async () => {
@@ -1192,7 +1194,7 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
     text: document.querySelector('.print-side').innerText,
     // The run labels only: the map's textContent runs every booth number
     // together, so "41 42" would read as "142".
-    runLabels: [...document.querySelectorAll('.print-map text')].map((t) => t.textContent).filter((t) => /^Art Market|^K\d/.test(t)),
+    runLabels: [...document.querySelectorAll('.print-map text')].filter((t) => !t.closest('.print-booth')).map((t) => t.textContent).filter((t) => /^Art Market|^K\d/.test(t)),
     overflow: (() => { const el = document.querySelector('.print-side'); return el ? el.scrollHeight - el.clientHeight : -1; })(),
     // The featured booth (festival.js): a star in its own square on the map,
     // a starred bold entry in the index, a key row in the legend.
