@@ -314,11 +314,11 @@ export default function PrintSheet() {
         </section>
 
         {/* The paper-only layer: what EMS and the fire inspector read the
-            sheet for (pins flagged print: true in pins.js). Its own compact
-            key, under the visitor key, on the same four-column grid. */}
+            sheet for (pins flagged print: true in pins.js). Its own row
+            under the visitor key, on the same four-column grid, set apart by
+            a gap alone -- no heading (Ernest, 9/22). */}
         {PRINT_SITE_LEGEND.length > 0 && (
           <section className="print-legend print-legend--site" aria-label="Site and safety key">
-            <span className="print-legend__title">Site / safety</span>
             {PRINT_SITE_LEGEND.map((l) => (
               <span className="print-legend__row" key={l.cat}>
                 <SiteSwatch cat={l.cat} />

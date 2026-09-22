@@ -72,13 +72,16 @@
 /* A featured booth's key: the slate square carrying the star, solid, as on the map. */
 .print-legend__sq--featured { display: inline-flex; align-items: center; justify-content: center; opacity: 1; }
 
-/* The site/safety key: the paper-only layer's own group, directly under the
-   visitor key with a heading-sized gap rather than a whole section gap -- it
-   is the same key continued, not a new section -- and a title that spans the
-   grid. A mark that is not a disc (a barricade, a speed bump) is drawn in a
-   swatch-sized SVG on the same right edge as the dots. */
-.print-legend--site { margin-top: calc(var(--print-heading-gap) - var(--print-section-gap)); }
-.print-legend__title { grid-column: 1 / -1; font-size: 8pt; font-weight: 800; color: var(--text-strong); letter-spacing: 0.02em; text-transform: uppercase; }
+/* The legend sits half a section gap under the header's rule (--space-4,
+   16px, against the 32px between the other sections; Ernest, 9/22): the rule
+   already separates it, so the full gap read as dead air. */
+.print-legend { margin-top: calc(var(--space-4) - var(--print-section-gap)); }
+/* The site/safety key: the paper-only layer's own row, directly under the
+   visitor key and set apart from it by a gap alone -- --space-3, three times
+   the grid's row gap, so it reads as a second group without a heading -- on
+   the same grid. A mark that is not a disc (a barricade, a speed bump) is
+   drawn in a swatch-sized SVG on the same right edge as the dots. */
+.print-legend--site { margin-top: calc(var(--space-3) - var(--print-section-gap)); }
 .print-legend__mark { width: var(--space-6); height: var(--space-4); justify-self: end; display: block; }
 
 /* The artist list takes whatever height is left and flows into the side
@@ -87,13 +90,13 @@
    names start on the legend's label line. Check the PNG after any copy
    change: the list fills most of what the column has.
 
-   Leading 1.25 (10pt on 8pt), down from 1.35 on 9/22, when the Site / safety
-   key arrived: at 1.35 the list ran 0.08in over the page with the key's
-   title, and at 1.3 still 0.08in over. At 1.25 it has 0.19in spare -- ONE
-   more line, so the next two rows the chair adds will not fit at this size;
-   that is the next honest decision, not a smaller size (8pt is the floor). */
+   Leading 1.3, down from 1.35 on 9/22 when the site/safety key arrived (it
+   went to 1.25 for a day, with the key under a heading; the heading and half
+   the gap under the header's rule then came out and the room went back into
+   the leading). Measure the spare in the PNG after any copy change: the next
+   two rows the chair adds may not fit at this size, and 8pt is the floor. */
 .print-index { flex: 1; min-height: 0; }
-.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.25; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.3; }
 .print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
 .print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 .print-index__who { min-width: 0; }
