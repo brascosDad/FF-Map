@@ -69,11 +69,13 @@ export const PINS = [
 
   { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
 
-  // Water refill stations -- the export marks two. The southern one is the
-  // export's (588.1, 708.3) nudged 4 units west and 1 south so its target
-  // clears the info booth's, now stacked above merch on the far side of the
-  // path. Water placement is still being confirmed with Jess for 2026 anyway.
-  { x: 668.2, y: 318.7, c: 'water', d: 'water' },
+  // Water refill stations, per Jess's 2026 site plan (9/21). The one the
+  // export drew by the Main Stage (668.2, 318.7) is down on the field beside
+  // the beer stand: Jess's box is ~(731, 413), which is 24 units from the
+  // beer pin -- overlapping targets at the first zoom step, where 46 is
+  // touching on a 375px phone -- so it sits on the same bearing from the beer
+  // stand, 46.6 units out. On paper the two symbols are clearly apart.
+  { x: 748.5, y: 399.0, c: 'water', d: 'water' },
   { x: 584.0, y: 709.0, c: 'water', d: 'water' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
