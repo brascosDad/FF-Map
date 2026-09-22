@@ -85,9 +85,15 @@
    column's four columns, at 8pt like everything else on the sheet. Each row
    is the shared lead box (booth number, right-aligned) then the name, so the
    names start on the legend's label line. Check the PNG after any copy
-   change: the list fills most of what the column has. */
+   change: the list fills most of what the column has.
+
+   Leading 1.25 (10pt on 8pt), down from 1.35 on 9/22, when the Site / safety
+   key arrived: at 1.35 the list ran 0.08in over the page with the key's
+   title, and at 1.3 still 0.08in over. At 1.25 it has 0.19in spare -- ONE
+   more line, so the next two rows the chair adds will not fit at this size;
+   that is the next honest decision, not a smaller size (8pt is the floor). */
 .print-index { flex: 1; min-height: 0; }
-.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.25; }
 .print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
 .print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 .print-index__who { min-width: 0; }
