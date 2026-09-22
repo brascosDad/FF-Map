@@ -125,10 +125,13 @@ function Squares({ booths, color, angle = 0, hollow = false, numberSide }) {
 
 // Where each named place's label sits relative to its pin. Chosen by eye so
 // none lands on a booth row: the food court's goes above, the stages' beside.
+// The Acoustic Stage's runs above and to the LEFT of its pin (anchored just
+// past the pin's centre): centred, it reached the barricade across McLendon
+// at Mell Ave, 27 units east of the pin since the 9/22 repack.
 const LABEL_AT = {
   food: { dx: 0, dy: -PIN_R - 5, anchor: 'middle' },
   stageMain: { dx: -PIN_R - 4, dy: 3, anchor: 'end' },
-  stageAcoustic: { dx: 0, dy: -PIN_R - 5, anchor: 'middle' },
+  stageAcoustic: { dx: PIN_R, dy: -PIN_R - 5, anchor: 'end' },
   kids: { dx: 0, dy: PIN_R + 10, anchor: 'middle' },
 };
 const LABEL_TEXT = { food: 'Food Court', stageMain: 'Main Stage', stageAcoustic: 'Acoustic Stage', kids: 'Kidlandia' };

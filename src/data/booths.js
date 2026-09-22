@@ -80,19 +80,19 @@ export const BOOTHS = {
     { id: 'cpd-139', n: 139, area: 'Candler Park Dr', x: 403.1, y: 378.6, name: 'Renzo Iglesias', biz: 'L\'Harmonie Creative Jewelry' },
   ],
   mcl: [
-    { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 875.8, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },
-    { id: 'mcl-056', n: 56, area: 'McLendon Ave', x: 857.2, y: 797.7, name: 'Kelly Cook', biz: 'Pink Jean Art Agency' },
-    { id: 'mcl-057', n: 57, area: 'McLendon Ave', x: 838.7, y: 797.7, name: 'Ashley Flack', biz: 'Flack Injury Law' },
-    { id: 'mcl-058', n: 58, area: 'McLendon Ave', x: 820.1, y: 797.7, name: 'Duo-Wei Yang', biz: 'Merry Artisan' },
-    { id: 'mcl-059', n: 59, area: 'McLendon Ave', x: 801.7, y: 797.7, name: 'Neighborhood Church', biz: 'Neighborhood Church' },
-    { id: 'mcl-060', n: 60, area: 'McLendon Ave', x: 783.1, y: 797.7, name: 'John Lundy', biz: 'John Lundy Sculpture' },
-    { id: 'mcl-061', n: 61, area: 'McLendon Ave', x: 764.5, y: 797.7, name: 'Bilal Ahmed', biz: 'Iron Borne Blades' },
-    { id: 'mcl-062', n: 62, area: 'McLendon Ave', x: 746.0, y: 797.7, name: 'Gail Cohn', biz: 'Cohn Creations' },
-    { id: 'mcl-063', n: 63, area: 'McLendon Ave', x: 727.4, y: 797.7, name: 'Chanel Hicks', biz: 'Harmony and Heaven Co.' },
-    { id: 'mcl-064', n: 64, area: 'McLendon Ave', x: 708.8, y: 797.7, name: 'AJ Jensen', biz: 'Toonheadz' },
-    { id: 'mcl-065', n: 65, area: 'McLendon Ave', x: 690.4, y: 797.7, name: 'Gene Brighton', biz: 'Nanotrek9' },
-    { id: 'mcl-066', n: 66, area: 'McLendon Ave', x: 671.8, y: 797.7, name: 'Mayela Mercedes', biz: 'Are.t Clay Jewelry' },
-    { id: 'mcl-067', n: 67, area: 'McLendon Ave', x: 653.3, y: 797.7, name: 'Tarik Berbey', biz: 'The Tin Man and Friends' },
+    { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 840.0, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },
+    { id: 'mcl-056', n: 56, area: 'McLendon Ave', x: 824.2, y: 797.7, name: 'Kelly Cook', biz: 'Pink Jean Art Agency' },
+    { id: 'mcl-057', n: 57, area: 'McLendon Ave', x: 808.4, y: 797.7, name: 'Ashley Flack', biz: 'Flack Injury Law' },
+    { id: 'mcl-058', n: 58, area: 'McLendon Ave', x: 792.6, y: 797.7, name: 'Duo-Wei Yang', biz: 'Merry Artisan' },
+    { id: 'mcl-059', n: 59, area: 'McLendon Ave', x: 776.8, y: 797.7, name: 'Neighborhood Church', biz: 'Neighborhood Church' },
+    { id: 'mcl-060', n: 60, area: 'McLendon Ave', x: 761.0, y: 797.7, name: 'John Lundy', biz: 'John Lundy Sculpture' },
+    { id: 'mcl-061', n: 61, area: 'McLendon Ave', x: 745.2, y: 797.7, name: 'Bilal Ahmed', biz: 'Iron Borne Blades' },
+    { id: 'mcl-062', n: 62, area: 'McLendon Ave', x: 729.5, y: 797.7, name: 'Gail Cohn', biz: 'Cohn Creations' },
+    { id: 'mcl-063', n: 63, area: 'McLendon Ave', x: 713.7, y: 797.7, name: 'Chanel Hicks', biz: 'Harmony and Heaven Co.' },
+    { id: 'mcl-064', n: 64, area: 'McLendon Ave', x: 697.9, y: 797.7, name: 'AJ Jensen', biz: 'Toonheadz' },
+    { id: 'mcl-065', n: 65, area: 'McLendon Ave', x: 682.1, y: 797.7, name: 'Gene Brighton', biz: 'Nanotrek9' },
+    { id: 'mcl-066', n: 66, area: 'McLendon Ave', x: 666.3, y: 797.7, name: 'Mayela Mercedes', biz: 'Are.t Clay Jewelry' },
+    { id: 'mcl-067', n: 67, area: 'McLendon Ave', x: 650.5, y: 797.7, name: 'Tarik Berbey', biz: 'The Tin Man and Friends' },
     { id: 'mcl-068', n: 68, area: 'McLendon Ave', x: 634.7, y: 797.7, name: 'Tarik Berbey', biz: 'The Tin Man and Friends' },
     { id: 'mcl-069', n: 69, area: 'McLendon Ave', x: 587.4, y: 797.7, name: 'Shera Walton', biz: 'Moonflower Candles, Pottery and Plants' },
     { id: 'mcl-070', n: 70, area: 'McLendon Ave', x: 574.7, y: 797.7, name: 'Greg', biz: 'Candler Park Market' },
@@ -203,7 +203,7 @@ export const BOOTHS = {
 // `area` and `where` are what the booth sheet says.
 export const UNNUMBERED = [
   { id: 'unnumbered-aware-wildlife', n: null, group: 'spine', area: 'In the Park', x: 598.5, y: 677.0, name: 'Scott Lange', biz: 'AWARE Wildlife', where: 'on the entrance path, below the west row' },
-  { id: 'unnumbered-achieve-with-steve', n: null, group: 'mcl', area: 'McLendon Ave', x: 897.0, y: 797.7, name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'beside the Acoustic Stage' },
+  { id: 'unnumbered-achieve-with-steve', n: null, group: 'mcl', area: 'McLendon Ave', x: 858.0, y: 797.7, name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'beside the Acoustic Stage' },
 ];
 
 // The three things a reader has to be told about this data used to live here as

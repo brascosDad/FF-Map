@@ -41,9 +41,14 @@ being numbered one-for-one:
                     export where the path bends; the sheet does not say how
                     many of its 26 fall either side, so they are split in the
                     export's own proportion (9 north of the bend, 17 south).
-  McLendon Ave      13 + 14 ticks match 81-69 and 68-55 exactly. Kept as is.
-                    Booths here were 15 ft already, so the count is unchanged
-                    from 2025 and every number is simply the old one minus 7.
+  McLendon Ave      13 + 14 ticks match 81-69 and 68-55 exactly. The west box
+                    is kept as is. The east box is repacked: Mell Ave moved to
+                    x 938.5 on 9/21 and the run has to end west of its kerb
+                    (x 924.5) with the Acoustic Stage, Achieve with Steve and
+                    a barricade beyond booth 55, so 56-68 are laid at an even
+                    pitch from the export's 68 to MCL_EAST_END. Booths here
+                    were 15 ft already, so the count is unchanged from 2025
+                    and every number is simply the old one minus 7.
   Candler Park Dr   both columns are laid out afresh on the export's two column
                     x's at the 15 ft pitch. Numbers run north to south
                     DECREASING: the highest number at the top of the street
@@ -159,6 +164,17 @@ CPD_BUMP = 17.9 + CPD_PITCH
 CPD_BARRICADE = 7 * CPD_PITCH
 CPD_GAP = {'speed bump': CPD_BUMP, 'barricade': CPD_BARRICADE}
 
+# ---- McLendon east box ------------------------------------------------------
+# Where booth 55, the east end of the McLendon run, sits. The export put it at
+# 875.8 with Mell Ave at 806; Mell Ave moved to x 938.5 (Figma, 9/21), and
+# east of 55 there still have to be Achieve with Steve (one pitch east), the
+# Acoustic Stage pin and the barricade across McLendon just west of Mell's
+# kerb at 924.5. 840 leaves room for all three (Jess, Ernest, 9/22). The box's
+# 14 booths are laid evenly from the export's 68 (634.7) to here: a 15.8 pitch
+# against the export's 18.55, still clear of the 8-unit squares and the 9.4
+# hit areas. Booth 69 and the entrance-path gap do not move.
+MCL_EAST_END = 840.0
+
 # ---- Kidlandia column -------------------------------------------------------
 # One vertical column inside the Kidlandia area, along its east side: the
 # basemap's kidlandia-area shape spans x ~470-627, y ~297-538, and its east
@@ -180,12 +196,13 @@ KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
 # and south of it, just before the ground widens out to the rows (Ernest,
 # 9/20; the chair's own words were "on the grass"). Clear of the restroom pin's
 # target at the Detail stop. Achieve with Steve "beside the Acoustic Stage"
-# (chair, 9/17) -- one McLendon pitch east of booth 55, short of the stage
-# pin. `group` is the run whose sheet lists them. Check both against the
-# grounds at setup (10/2).
+# (chair, 9/17) -- 18 units east of booth 55 (MCL_EAST_END), short of the
+# stage pin at 885, since 9/22 when Mell Ave moved and the east end of
+# McLendon was repacked. `group` is the run whose sheet lists them. Check
+# both against the grounds at setup (10/2).
 UNNUMBERED_AT = {
     'AWARE Wildlife': {'group': 'spine', 'x': 598.5, 'y': 677.0, 'where': 'on the entrance path, below the west row'},
-    'Achieve with Steve': {'group': 'mcl', 'x': 897.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
+    'Achieve with Steve': {'group': 'mcl', 'x': 858.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
 }
 
 # ---- Food court -------------------------------------------------------------
@@ -283,6 +300,10 @@ def lay_mclendon(mcl, LAYOUT):
     boxes = split_on_gaps(sorted(mcl))                          # west to east
     want = [numbered(LAYOUT[r])[0] for r in ('mclendon-west', 'mclendon-east')]
     assert [len(b) for b in boxes] == [len(numbers(s)) for s in want], [len(b) for b in boxes]
+    # The east box ends at MCL_EAST_END, not where the export put it: same
+    # west end, same row, evenly repacked (see the note on MCL_EAST_END).
+    west_end, y = boxes[1][0]
+    boxes[1] = resample([(west_end, y), (MCL_EAST_END, y)], len(boxes[1]))
     out = []
     for seg, pts in zip(want, boxes):
         out.extend((n, x, y) for n, (x, y) in zip(numbers(seg), pts))

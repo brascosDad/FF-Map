@@ -31,7 +31,11 @@ export const PINS = [
   // Markers that carry a standing label on the map
   { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true },
   { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage', overview: true },
-  { x: 938.5, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true },
+  // The Acoustic Stage sits where the export drew it until Mell Ave moved to
+  // x 938.5 (Figma, 9/21) -- exactly where the pin was. The east end of
+  // McLendon repacked west of Mell's kerb (924.5): barricade ~912, stage 885,
+  // Achieve with Steve 858, booth 55 at 840 (Jess, Ernest, 9/22).
+  { x: 885.0, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true },
   { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true },
 
   // The beer stand: the main one, on the field below the Main Stage -- the
