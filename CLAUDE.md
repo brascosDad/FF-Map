@@ -309,16 +309,36 @@ Figma workflow), and PR #8 (booth + beta fixes):
   step — Ernest decides the phone treatment**; four barricades, seven generators / dumpsters,
   two speed bumps and two restroom banks on paper; the field side of the art-market path has
   two **beverage stations**, EMS (the first-aid pin, moved from the Main Stage) and a restroom
-  bank; Kidlandia has a water station and the **PTA booth** (Phosphor rocket on `--cat-utility`);
+  bank; Kidlandia has a water station and the **PTA booth** (Phosphor rocket, now in `--pin-kids`);
   **Mell Ave is at x 938.5** in the trace and the McLendon east end is repacked west of it
   (barricade 912, stage 885, Achieve with Steve 858, booth 55 at 840, 56–68 at a 15.8 pitch);
   beer and a new water station sit 46 apart over the Acoustic Stage. The print index is at
   **leading 1.25 (provisional)** to make room for the Site / safety key — 0.19" spare, one line;
   the options are in `docs/pr-shots/print-side-option-*.png`. Phosphor has no `Cup` glyph
   (checked core 2.1.1): the beverage cup is `PintGlass`, one line in `icons.js` to swap.
-  Proposed, not done: the `drinks` sheet and directory row still say "Beer & Drinks" — with
-  the cup now meaning beverages they should read "Beer" / "Beer stands"; the beverage sheet's
-  wording is provisional until Jess or Todd say what the stations pour.
+  The `drinks` card and directory row now say "Beer" / "Beer stands" (round 2).
+- 9/22 round 2, Ernest's review of that PR (one commit per item, same branch): the **no-overlap
+  standing rule** above, with `from: 'detail'` and the chip behaviour, and e2e measuring every
+  stop plus the paper; **every restroom on both maps** (the two 9/21 banks lost `print: true`);
+  a **water station at the Candler Park Dr speed bump** (438, 585); ops colours — **generator
+  yellow with a navy bolt, dumpster white with a charcoal ring, PTA in `--pin-kids`**
+  (`PIN_INK` in `pins.js` carries the two glyph/ring exceptions; `--ops-equipment` retired);
+  **Kidlandia numbers beside their squares, outward**, no "K0–K10" on paper; the print legend's
+  "Site / safety" heading is gone (the row groups by a `--space-3` gap) and the gap under the
+  header rule is `--space-4`, half what it was — the room went back into the index at
+  **leading 1.3, 0.24" spare on this render**; **King of Pops has two food pins** (Main Stage
+  cart 690, 320; entrance cart 583, 735) whose card is the vendor record; beverage and PTA
+  cards are one neutral line each with `TODO(Jess)` beside them; the **bottom sheet's grip/close
+  row is fixed** and only the body scrolls (on `.ffc-panel--bottom`, every sheet). Pin moves
+  to Ernest's endpoints, nudged only where rule 1 demanded: EMS (715, 373); beverage stations
+  (669, 370) and (761, 379) edge to edge with it; beer stand (728, 472) and the in-park marker
+  up the path to (801, 433) to keep 81 units from it at the overview; field water exactly at
+  Jess's (731, 413), Detail only; field restroom (680, 526); PTA (519, 520); the south restroom
+  on the path at (611, 661), the midpoint between booth 54 and AWARE's square, 20 from each,
+  so **AWARE stays at (598.5, 677)**; **info stays 46 above merch at (630, 694)** — Ernest's
+  (638, 723) would overlap at every stop — and on the phone arrives at Detail, since the south
+  restroom now outranks it at the first step; entrance water (644, 761) and Acoustic water
+  (887.5, 750), each edge to edge at Detail and Detail only.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
@@ -335,6 +355,8 @@ Figma workflow), and PR #8 (booth + beta fixes):
   target clears the info booth's. Falls under the water-station question below.
 - The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the north end.
   Verify at setup.
+- **Ernest's 9/22 endpoints** (round 2) supersede the 9/21 box readings for every pin they name;
+  the table is in PR #12's round-2 description. Still verify at setup.
 - Everything from **Jess's 9/21 markup** was read off red boxes on the printed sheet and lands
   within a few units; where a spot was nudged the reason is in `pins.js` beside it. Verify the
   barricade at (395, 791) is across McLendon west of Candler Park Dr, not across Candler Park Dr
