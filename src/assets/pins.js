@@ -49,10 +49,16 @@ export const PINS = [
   // clears the in-park art market marker; nothing else on the field is that
   // close. Confirm the spot against the 2026 site plan.
   { x: 712.0, y: 428.0, c: 'drinks', d: 'beer', label: 'Beer', overview: true },
-  // The other beverage stations the export marks
+  // The other beer stations the export marks
   { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks' },
   { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks' },
-  { x: 897.3, y: 747.3, c: 'drinks', d: 'drinks' },
+  // ...and the one just north of the Acoustic Stage, which Jess's plan pairs
+  // with a water station side by side (9/21). The pair is centred over the
+  // stage's new x (885, since Mell Ave moved), 46 units apart -- 44px targets
+  // touching at the first zoom step -- and both clear the stage pin (53) and
+  // the bike valet. Was the export's (897.3, 747.3).
+  { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks' },
+  { x: 908.0, y: 750.0, c: 'water', d: 'water' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
