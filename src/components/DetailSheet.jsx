@@ -50,8 +50,10 @@ const POI_COPY = {
     lines: ['Drinks other than beer — the beer stands are the mug pins', 'Two stations on the field beside the art-market path, either side of EMS'] },
   merch: { title: 'Merch Booth', sub: 'Fall Fest merchandise', icon: 'merch', cat: 'merch',
     lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
-  wc: { title: 'Restrooms', sub: 'Five-toilet banks + ADA units', icon: 'wc', cat: 'wc',
-    lines: ['Multiple five-toilet banks plus ADA-accessible toilets', 'Selecting restrooms rings every one of them on the map'] },
+  // "Restroom (+ ADA)" is the print key's wording (Jess, 9/21); one symbol
+  // for every toilet, ADA units included.
+  wc: { title: 'Restrooms', sub: 'Restroom (+ ADA) — five-toilet banks with ADA units', icon: 'wc', cat: 'wc',
+    lines: ['Every bank is five toilets plus ADA-accessible units', 'Selecting restrooms rings every one of them on the map'] },
   firstaid: { title: 'First Aid / EMS', sub: 'On-site medical support', icon: 'firstaid', cat: 'firstaid',
     lines: ['EMS staffed on-site for the duration of the festival', 'Dial 911 for emergencies'] },
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',

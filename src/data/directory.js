@@ -93,7 +93,8 @@ export const LEGEND = [
   { cat: 'beverage', label: 'Beverages' },
   { cat: 'kids', label: 'Kids' },
   // One symbol for every toilet, ADA units included; the print sheet says
-  // so, since EMS reads it for the ADA banks (Jess, 9/21).
+  // so, since EMS reads it for the ADA banks (Jess, 9/21), and the phone
+  // card repeats the wording.
   { cat: 'wc', label: 'Restroom', printLabel: 'Restroom (+ ADA)' },
   { cat: 'water', label: 'Water' },
   { cat: 'firstaid', label: 'First aid' },

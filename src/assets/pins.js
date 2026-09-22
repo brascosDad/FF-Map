@@ -41,10 +41,9 @@
 // inspector (Jess, operations, 9/21), not for a visitor with a phone. The phone
 // map skips it entirely -- no pin, no tap target, no directory row -- so it
 // needs no `d`. PrintSheet draws it and keys it in the print legend
-// (PRINT_SITE_LEGEND in data/directory.js for the site/safety items; a
-// visitor category such as `wc` keys under its usual row). Next year: the
-// print-only entries are the ones with `print: true` below; everything else
-// is on both maps.
+// (PRINT_SITE_LEGEND in data/directory.js). Next year: the print-only entries
+// are the ones with `print: true` below -- barricades, speed bumps,
+// generators, dumpsters; every restroom is on both maps (Ernest, 9/22).
 //
 // A `barricade` is three cones in a row ACROSS a street, so it carries `axis`:
 // 'x' when the row runs east-west (across a north-south street), 'y' when it
@@ -96,6 +95,14 @@ export const PINS = [
   // (582, 658).
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
   { x: 611.0, y: 661.0, c: 'wc', d: 'wc' },
+  // The two banks Jess's plan added (9/21), on both maps since 9/22 (Ernest:
+  // every restroom shows everywhere). One symbol for every toilet, ADA units
+  // included -- the print key says "Restroom (+ ADA)", the phone card too.
+  //   The field side of the art-market path, up from Jess's (678, 554) to
+  //   where Ernest read it (9/22), clear of booths 43-45.
+  { x: 680.0, y: 526.0, c: 'wc', d: 'wc' },
+  //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
+  { x: 422.0, y: 217.0, c: 'wc', d: 'wc' },
 
   // The field below the Main Stage, per Jess's 2026 plan as Ernest read it
   // against the printed sheet (9/22): EMS is the export's first-aid spot, and
@@ -192,14 +199,6 @@ export const PINS = [
   // One at the south edge of Kidlandia.
   { x: 507.0, y: 488.0, c: 'generator', print: true },
 
-  // Restroom banks EMS needs on paper but a visitor does not need pinned:
-  // the same restroom symbol as the visitor pins (one icon for every toilet,
-  // ADA units included -- the print key says "Restroom (+ ADA)").
-  //   The field side of the art-market path, up from Jess's (678, 554) to
-  //   where Ernest read it (9/22), clear of booths 43-45.
-  { x: 680.0, y: 526.0, c: 'wc', print: true },
-  //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
-  { x: 422.0, y: 217.0, c: 'wc', print: true },
 
   // Speed bumps on Candler Park Dr: thin bars across the street (x is the
   // street's centreline, 411.5). One just north of the top of the booth run,
