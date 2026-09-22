@@ -1133,6 +1133,29 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   await p.close();
 }
 
+// ---- the sheet's top row never scrolls ----
+// Grip and close stay put while a long sheet -- a stage lineup at 375px --
+// scrolls under them (Ernest, 9/22). Only the body scrolls.
+{
+  const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const b = await p.locator('g.ffc-pin--stage').first().boundingBox();
+  await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await p.waitForTimeout(600);
+  const r = await p.evaluate(() => {
+    const top = document.querySelector('.sheet .sheettop'), body = document.querySelector('.sheet .panel-scroll'), close = document.querySelector('.sheet .close');
+    const before = { top: top.getBoundingClientRect().top, close: close.getBoundingClientRect().top };
+    const canScroll = body.scrollHeight > body.clientHeight + 20;
+    body.scrollTop = 300;
+    return { canScroll, scrolled: body.scrollTop, topMoved: top.getBoundingClientRect().top - before.top, closeMoved: close.getBoundingClientRect().top - before.close,
+             title: document.querySelector('.sheet .hd h3')?.textContent };
+  });
+  check('375: a stage lineup is a scrolling body', r.canScroll && r.scrolled > 0, `${r.title}: scrolled ${r.scrolled}px`);
+  check('375: the grip and close row stays put while the body scrolls', r.topMoved === 0 && r.closeMoved === 0, `top row moved ${r.topMoved}px, close ${r.closeMoved}px`);
+  await p.close();
+}
+
 // Sheet bullets take the colour of the thing you opened, not one shared teal.
 {
   const p = await browser.newPage({ viewport: { width: 390, height: 800 } });

@@ -211,6 +211,14 @@
   transition: transform var(--motion-panel) var(--ease);
 }
 .ffc-panel--bottom[data-open='true'] { transform: translateY(0); }
+/* Only the body scrolls. The sheet's own top row -- grip and close -- stays
+   where it is while a long sheet (a stage lineup, the food list) scrolls
+   under it; it used to scroll away with the content (Ernest, 9/22). The
+   sheet is a column flex box, so the body takes the height that is left and
+   scrolls inside it; min-height: 0 is what lets a flex child shrink below
+   its content. Every sheet built on .ffc-panel--bottom gets this. */
+.ffc-panel--bottom { overflow: hidden; }
+.ffc-panel--bottom .panel-scroll, .ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .ffc-panel--bottom[hidden] { display: none; }        /* out of the tab order when closed */
 @media (min-width: 768px) {
   .ffc-panel--bottom { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }

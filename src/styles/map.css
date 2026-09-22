@@ -83,7 +83,7 @@
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-sheet);
   padding: var(--space-2) var(--space-4) var(--space-5);
-  max-height: var(--sheet-max-height); overflow: auto;
+  max-height: var(--sheet-max-height);
   transform: translateY(100%);
   transition: transform var(--motion-panel) var(--ease);
 }
