@@ -171,7 +171,7 @@
 .ffc-pin--kids { --pin-fill: var(--pin-kids); }
 .ffc-pin--firstaid { --pin-fill: var(--pin-firstaid); }
 .ffc-pin--bikevalet { --pin-fill: var(--cat-utility); }
-.ffc-pin--pta { --pin-fill: var(--cat-utility); }
+.ffc-pin--pta { --pin-fill: var(--pin-kids); }
 .ffc-pin--merch { --pin-fill: var(--pin-merch); }
 .ffc-pin:active { opacity: 0.9; }
 

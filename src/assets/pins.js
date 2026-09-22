@@ -247,12 +247,23 @@ export const PIN_COLOR = {
   // Low-frequency services (bike valet, entrances, ADA, picnic/seating) share
   // one quiet neutral rather than each taking a vivid pin hue.
   bikevalet: 'var(--cat-utility)',
-  pta: 'var(--cat-utility)',
+  // The PTA booth is in Kidlandia and wears its colour; the rocket glyph
+  // tells it from the Kidlandia pin (Ernest, 9/22).
+  pta: 'var(--pin-kids)',
   // The paper-only operations layer (print: true), in the --ops-* tokens.
   barricade: 'var(--ops-barricade)',
-  generator: 'var(--ops-equipment)',
-  dumpster: 'var(--ops-equipment)',
+  generator: 'var(--ops-generator)',
+  dumpster: 'var(--ops-dumpster-fill)',
   speedbump: 'var(--ops-speed-bump)',
+};
+
+// Where a disc is not "category fill, white glyph": the glyph's colour and,
+// if it has one, the ring. Only the ops layer so far -- the generator's navy
+// bolt on yellow, the dumpster's charcoal glyph and ring on white (Ernest,
+// 9/22). Read by PrintSheet for the disc and for the legend swatch.
+export const PIN_INK = {
+  generator: { glyph: 'var(--ff-navy)' },
+  dumpster: { glyph: 'var(--ops-dumpster-ink)', ring: 'var(--ops-dumpster-ink)' },
 };
 
 export const SLATE = 'var(--cat-booth)';

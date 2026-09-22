@@ -113,7 +113,7 @@
      category, used identically on the map, in chips, and in panel badges.</p>
   <div class="card"><div class="icons" id="icons"></div></div>
   <div class="use"><b>Do:</b> reuse the category glyph everywhere that category appears.</div>
-  <div class="use dont"><b>Don't:</b> introduce a second glyph for the same category, or tint a glyph anything but white.</div>
+  <div class="use dont"><b>Don't:</b> introduce a second glyph for the same category, or tint a glyph anything but white — the two paper-only ops discs (a navy bolt on the generator's yellow, a charcoal trash can on the dumpster's white) are the documented exceptions, in <code>PIN_INK</code>.</div>
 
   <h2>3 · Components</h2>
 
@@ -304,7 +304,7 @@
   grid('pins', [['--pin-food','food'],['--pin-drinks','beer'],['--pin-beverage','beverages'],['--pin-restroom','restrooms'],['--pin-water','water'],
                 ['--pin-info','info'],['--pin-stage','stages'],['--pin-kids','kids'],['--pin-firstaid','first aid'],
                 ['--pin-merch','merch'],['--cat-booth','art market'],['--cat-utility','utility']]);
-  grid('ops', [['--ops-barricade','barricade cones'],['--ops-equipment','generators, dumpsters'],['--ops-speed-bump','speed bump bars']]);
+  grid('ops', [['--ops-barricade','barricade cones'],['--ops-generator','generator disc, navy bolt'],['--ops-dumpster-fill','dumpster disc'],['--ops-dumpster-ink','dumpster ring + glyph'],['--ops-speed-bump','speed bump bars']]);
   grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
                     ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
   grid('basemap', [['--map-ground','outside the park'],['--map-park','park footprint'],['--map-lawn','mown lawns'],
@@ -316,9 +316,10 @@
   const map = [['food','--pin-food'],['drinks','--pin-drinks'],['beverage','--pin-beverage'],['wc','--pin-restroom'],['water','--pin-water'],
                ['info','--pin-info'],['stage','--pin-stage'],['kids','--pin-kids'],['firstaid','--pin-firstaid'],
                ['merch','--pin-merch'],['art','--cat-booth'],['bikevalet','--cat-utility'],
-               ['pta','--cat-utility'],['generator','--ops-equipment'],['dumpster','--ops-equipment']];
-  document.getElementById('icons').innerHTML = map.map(([n, c]) =>
-    `<div><i style="background:var(${c})"><svg viewBox="0 0 256 256">${ICONS[n]}</svg></i>${n}</div>`).join('');
+               ['pta','--pin-kids'],['generator','--ops-generator','--ff-navy'],['dumpster','--ops-dumpster-fill','--ops-dumpster-ink','--ops-dumpster-ink']];
+  // A glyph is white on its disc unless the entry names its own ink (and ring).
+  document.getElementById('icons').innerHTML = map.map(([n, c, ink, ring]) =>
+    `<div><i style="background:var(${c});${ring ? `box-shadow:inset 0 0 0 2px var(${ring})` : ''}"><svg viewBox="0 0 256 256" style="${ink ? `fill:var(${ink})` : ''}">${ICONS[n]}</svg></i>${n}</div>`).join('');
 </script>
 </body>
 </html>

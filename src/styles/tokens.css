@@ -49,10 +49,13 @@
      not pin hues. The barricade orange is the traffic-cone orange of Jess's
      2026 site plan, chosen to read on the street grey. */
   --ops-barricade: #F07A22;
-  /* Generators and dumpsters: one quiet ink, darker than the services neutral
-     so the glyph reads as infrastructure, not a visitor service. 6.2:1 under
-     the white glyph. */
-  --ops-equipment: #56606F;
+  /* A generator is Jess's gold bolt: a clear yellow disc -- nowhere near the
+     beer amber -- with the bolt in navy (--ff-navy on it: 8.6:1). A dumpster
+     is the quiet one: a white disc with a charcoal ring and glyph, so it
+     reads as low priority rather than as one more dark fill. */
+  --ops-generator: #F7D117;
+  --ops-dumpster-fill: var(--ff-white);
+  --ops-dumpster-ink: var(--slate-700);
   /* A speed bump is a thin bar across the street, white as Jess asked (her
      plan hatches them yellow). */
   --ops-speed-bump: var(--ff-white);

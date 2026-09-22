@@ -12,7 +12,7 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
-import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { CREAM, PINS, PIN_COLOR, PIN_INK, SLATE } from '../assets/pins';
 import { LEGEND, PRINT_SITE_LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import { FESTIVAL, featuredTitle } from '../data/festival';
@@ -209,8 +209,10 @@ function PrintMap() {
           {PRINT_SHAPES[p.c]
             ? PRINT_SHAPES[p.c](p)
             : <>
-                <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
-                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
+                {/* A disc with its own ring (the dumpster) draws the ring in
+                    place of the white halo; the rest keep the halo. */}
+                <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={PIN_INK[p.c]?.ring || HALO} strokeWidth={PIN_INK[p.c]?.ring ? 1.4 : 1.2} />
+                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} color={PIN_INK[p.c]?.glyph} />
               </>}
           {LABEL_AT[p.d] && LABEL_TEXT[p.d] && (
             <text x={p.x + LABEL_AT[p.d].dx} y={p.y + LABEL_AT[p.d].dy} fontSize={LABEL} fontWeight={800}
@@ -240,9 +242,10 @@ const dotColor = (cat) => (cat === 'art' ? SLATE : PIN_COLOR[cat] || SLATE);
 function SiteSwatch({ cat }) {
   const shape = PRINT_SHAPES[cat];
   if (!shape) {
+    const ink = PIN_INK[cat];
     return (
-      <span className="print-legend__dot" style={{ background: dotColor(cat) }}>
-        <Icon name={cat} size={9} color="var(--icon-on-color)" />
+      <span className="print-legend__dot" style={{ background: dotColor(cat), boxShadow: ink?.ring ? `inset 0 0 0 1.5px ${ink.ring}` : undefined }}>
+        <Icon name={cat} size={9} color={ink?.glyph || 'var(--icon-on-color)'} />
       </span>
     );
   }
