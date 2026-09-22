@@ -6,7 +6,7 @@
   "changes_from_2025": {
     "added": ["Jazz Burger", "Gezzos", "Mr Softee", "Bánh Mì Chị Em", "Playa Bowls"],
     "removed": ["Sokome", "Hermanita by Tio Lucho's", "Smash Hit Burgers", "Any Given Sundae"],
-    "note": "King of Pops ran two carts in 2025, was missing from Todd's 9/13 list, and is back for 2026 (Todd, 9/21): two carts, one near the Main Stage and one at the park entrance. Listed, not pinned -- cart spots move at load-in like the trucks."
+    "note": "King of Pops ran two carts in 2025, was missing from Todd's 9/13 list, and is back for 2026 (Todd, 9/21): two carts, one near the Main Stage and one at the park entrance. Listed here and pinned twice in assets/pins.js (d: 'kingofpops'); the pins open the card built from this record. Cart spots move at load-in like the trucks."
   },
   "vendors": [
     { "id": "v01", "name": "Curated Coffee",     "offering": "Coffee and Book",                                    "category": "food", "location": null },
@@ -24,6 +24,6 @@
     { "id": "v13", "name": "Azucar",             "offering": "Cuban",                                              "category": "food", "location": null },
     { "id": "v14", "name": "Makara",             "offering": "Greek",                                              "category": "food", "location": null },
     { "id": "v15", "name": "The Pickle",         "offering": "Tex-mex, Southern and Bayou",                        "category": "food", "location": null },
-    { "id": "v16", "name": "King of Pops",       "offering": "Frozen pops — one cart near the Main Stage, one at the park entrance.", "category": "food", "location": null }
+    { "id": "v16", "name": "King of Pops",       "offering": "Frozen pops",                                         "category": "food", "location": "Two carts: one on the field near the Main Stage, one by the park entrance." }
   ]
 }

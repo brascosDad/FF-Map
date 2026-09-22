@@ -76,6 +76,16 @@ export const PINS = [
   // from the stage pin, clear of the bike valet.
   { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks' },
 
+  // King of Pops: two carts (Todd, 9/21), in the food colour, each opening
+  // the cart's card. One on the field side near the Main Stage, west of the
+  // truck row per Todd's layout -- 60 units from the stage pin, 54 from the
+  // west beverage station, clear of the "Main Stage" label on paper. One by
+  // the park entrance, on the west lawn edge at the path mouth -- 47 units
+  // from merch (46 is edge to edge at the first step), clear of the west
+  // beer station and booth 69. Cart spots move at load-in like the trucks.
+  { x: 690.0, y: 320.0, c: 'food', d: 'kingofpops' },
+  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops' },
+
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
   // McLendon -- 36 units above the street band (y ~776), well short of

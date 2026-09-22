@@ -40,6 +40,7 @@ export const DIRECTORY = [
     title: 'Eat & drink',
     rows: [
       poi('food', 'Food Court', `${BOOTHS.food.length} stalls on the car path`),
+      poi('kingofpops', 'King of Pops', 'Frozen pops · two carts, Main Stage and the entrance'),
       poi('beer', 'Beer Stand', 'The main one, on the field'),
       cat('drinks', 'drinks', 'Beer & drinks'),
       cat('beverage', 'beverage', 'Beverages'),

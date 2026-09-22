@@ -154,7 +154,22 @@ function ArtMarketArea({ area, onOpenBooth }) {
   );
 }
 
+// A food cart with its own pins (King of Pops): the card is the vendor's own
+// record in vendors.json, so the list and the pins cannot say different things.
+function FoodCart({ name }) {
+  const v = vendorsData.vendors.find((x) => x.name === name);
+  if (!v) return null;
+  return (
+    <>
+      <SheetHeader icon="food" color={PIN_COLOR.food} title={v.name} sub={v.offering} />
+      {v.location && <div className="li"><span className="b" />{v.location}</div>}
+      <div className="foot">{vendorsData.note}</div>
+    </>
+  );
+}
+
 function GenericPoi({ id }) {
+  if (id === 'kingofpops') return <FoodCart name="King of Pops" />;
   const d = POI_COPY[id];
   if (!d) return null;
   return (
@@ -298,6 +313,7 @@ function BoothDetail({ booth, onStep }) {
 function accentFor(openId, openArea, openBooth) {
   if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : openBooth.area === 'Kidlandia' ? PIN_COLOR.kids : SLATE;
   if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
+  if (openId === 'kingofpops') return PIN_COLOR.food;
   if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
   if (openArea) return SLATE;
   return SLATE;
