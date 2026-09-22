@@ -166,6 +166,8 @@ export const PINS = [
   //   station (her ~678, 554; 4 units down and 2 west so the two symbols
   //   sit apart on paper).
   { x: 676.0, y: 558.0, c: 'wc', print: true },
+  //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
+  { x: 422.0, y: 217.0, c: 'wc', print: true },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
