@@ -11,7 +11,7 @@
 // so it cannot disagree with the phone map about where anything is.
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
-import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
+import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { CREAM, PINS, PIN_COLOR, PIN_INK, SLATE } from '../assets/pins';
 import { LEGEND, PRINT_SITE_LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
@@ -184,7 +184,10 @@ function PrintMap() {
       <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]}
                                  numberSide={a.id === 'cpd' ? cpdNumberSide : undefined} />)}
-      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
+      {/* Kidlandia's numbers sit beside their squares, on the east -- the
+          side away from the shape's interior -- like Candler Park Dr's: in a
+          vertical stack a number above reads as the one above's (9/22). */}
+      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} numberSide={() => 'right'} />
       <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
       {/* One plain "Art Market" on the car-path run, which has no street name
@@ -196,9 +199,8 @@ function PrintMap() {
           row, so it touches no number. */}
       <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
         <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market</text>
-        {/* Just below the south end of the Kidlandia column -- the highest
-            K number, wherever the sheet's count puts it. */}
-        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
+        {/* No range under the Kidlandia column: every K number is beside its
+            own square (Ernest, 9/22). */}
       </g>
 
       {/* Every pin, the paper-only ones included (print: true in pins.js --

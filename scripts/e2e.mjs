@@ -1210,12 +1210,13 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   // total (never printed anywhere -- it moves with every sheet edit).
   check('print: no artist or booth count anywhere on the sheet',
     !/over 130/i.test(pr.text) && !/\b\d+\s+(artists|booths)\b/i.test(pr.text) && !pr.text.includes('164'));
-  // One plain "Art Market" on the car-path run and the Kidlandia range from
-  // the sheet; the three run ranges came off the map 9/20 (the index has
-  // every number). Nothing anywhere still says 142, the 9/17 top number.
-  check('print: one plain "Art Market" label, the Kidlandia range from the sheet, no run ranges',
+  // One plain "Art Market" on the car-path run and nothing under the
+  // Kidlandia column (its numbers sit beside their squares, 9/22); the three
+  // run ranges came off the map 9/20 (the index has every number). Nothing
+  // anywhere still says 142, the 9/17 top number.
+  check('print: one plain "Art Market" label, no Kidlandia range, no run ranges',
     pr.runLabels.filter((t) => t === 'Art Market').length === 1 && !pr.runLabels.some((t) => /Art Market\s*\d/.test(t))
-      && pr.runLabels.includes('K0–K10') && !pr.text.includes('142'),
+      && !pr.runLabels.some((t) => /^K\d/.test(t)) && !pr.text.includes('142'),
     pr.runLabels.join(' | '));
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: Candler Park Dr numbers sit outward beside their squares, over nothing',

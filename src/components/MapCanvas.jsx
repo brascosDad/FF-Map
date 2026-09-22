@@ -67,9 +67,16 @@ const FEATURED_STAR = TICK * 0.85;
 
 // `hollow` draws the square as an outline -- cream inside, the run's colour as
 // a frame -- for a spot that is a booth but not one of the numbered run.
-function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false } = {}) {
+// `numberSide: 'right'` sets each number BESIDE its square, level with it,
+// instead of above: in a tight vertical stack (Kidlandia) a number above a
+// square reads as the one above's (Ernest, 9/22). The gap off the square's
+// edge is in screen pixels like the number itself.
+const NUMBER_GAP_PX = 2.5;
+function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false, numberSide } = {}) {
   return booths.map((b) => {
     const featured = featuredTitle(b);
+    const nx = numberSide === 'right' ? b.x + TICK / 2 + NUMBER_GAP_PX * k : b.x;
+    const ny = numberSide ? b.y + NUMBER_PX * k * 0.36 : b.y - TICK * 0.9;
     return (
     <g key={b.id} className={`${onTap ? 'ff-tap ff-booth' : 'ff-booth'}${featured ? ' ff-booth--featured' : ''}`} data-booth={b.id}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
@@ -92,8 +99,8 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
       {numbers && (
-        <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill={MAP_NUMBER}
-              textAnchor="middle" stroke={MAP_HALO} strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
+        <text x={nx} y={ny} fontSize={NUMBER_PX * k} fontWeight={700} fill={MAP_NUMBER}
+              textAnchor={numberSide === 'right' ? 'start' : 'middle'} stroke={MAP_HALO} strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
       )}
     </g>
     );
@@ -225,7 +232,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
             be mistaken for a numbered booth whose number is too small to read. */}
         {!showBlobs && (
           <g className="ff-area" data-area="kid">
-            {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+            {/* Numbers beside the squares, on the east -- the side facing
+                away from the Kidlandia shape's interior, since the column
+                runs along its east edge. */}
+            {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid, numberSide: 'right' })}
           </g>
         )}
         {!showBlobs && (
