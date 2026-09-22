@@ -44,10 +44,10 @@ const POI_COPY = {
   drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
     lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
   // Beverage stations are not beer: Jess's 2026 plan draws them apart from
-  // the beer stands, on the field side of the art-market path. Wording is
-  // provisional (9/22) -- what they pour is Jess's / Todd's to say.
+  // the beer stands. TODO(Jess): what the stations serve -- Ernest has asked;
+  // until then one neutral line that invents nothing (9/22).
   beverage: { title: 'Beverages', sub: 'Beverage station', icon: 'beverage', cat: 'beverage',
-    lines: ['Drinks other than beer — the beer stands are the mug pins', 'Two stations on the field beside the art-market path, either side of EMS'] },
+    lines: ['Beverage station — drinks for sale.'] },
   merch: { title: 'Merch Booth', sub: 'Fall Fest merchandise', icon: 'merch', cat: 'merch',
     lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
   // "Restroom (+ ADA)" is the print key's wording (Jess, 9/21); one symbol
@@ -60,8 +60,10 @@ const POI_COPY = {
     lines: ['Free water stations — bring a bottle to refill'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
     lines: ['At the park entrance off McLendon Ave, on the east side of the path just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
-  pta: { title: 'PTA booth', sub: 'At the south edge of Kidlandia', icon: 'pta', cat: 'pta',
-    lines: ['The PTA booth, on Kidlandia\'s south edge (Jess\'s 2026 site plan)'] },
+  // TODO(Jess): which PTA runs the booth -- Ernest has asked; one neutral
+  // line until then (9/22).
+  pta: { title: 'PTA booth', sub: 'In Kidlandia', icon: 'pta', cat: 'pta',
+    lines: ['PTA booth.'] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
     lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };

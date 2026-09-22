@@ -43,6 +43,8 @@ export const DIRECTORY = [
       poi('kingofpops', 'King of Pops', 'Frozen pops · two carts, Main Stage and the entrance'),
       poi('beer', 'Beer Stand', 'The main one, on the field'),
       cat('drinks', 'drinks', 'Beer & drinks'),
+      // TODO(Jess): what the beverage stations serve (Ernest asked, 9/22);
+      // the card's line in DetailSheet.jsx is a placeholder until then.
       cat('beverage', 'beverage', 'Beverages'),
       cat('water', 'water', 'Water refill'),
     ],
@@ -61,7 +63,9 @@ export const DIRECTORY = [
     title: 'Family',
     rows: [
       poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing with Trees for Tuition'),
-      poi('pta', 'PTA booth', 'At the south edge of Kidlandia'),
+      // TODO(Jess): which PTA runs the booth (Ernest asked, 9/22); the card's
+      // line in DetailSheet.jsx is a placeholder until then.
+      poi('pta', 'PTA booth', 'In Kidlandia'),
     ],
   },
   {
