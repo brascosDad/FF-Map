@@ -98,13 +98,14 @@ export const PINS = [
   // Restrooms (category key is `wc`, matching icons.js and the filter chips).
   // The southern bank is ON the entrance path between booth 54 and AWARE
   // Wildlife's square, in that order going down the path as Jess's plan has
-  // it (Ernest, 9/22): centred on the line from 54 (623.1, 645.3) to the
-  // square (598.5, 677), 20 units from each -- its Detail target (12.75) and
-  // a booth's hit cell (4.7) need 17.45, so it overlaps neither and the
-  // square did not have to move. Was the export's (601.6, 665.1), then
-  // (582, 658).
+  // it (Ernest, 9/22): at the exact midpoint of the line from 54
+  // (623.1, 645.3) to the square (598.5, 677), 20.1 units from each. Edge to
+  // edge with both: at Detail its 44px target clears each hit cell's corner
+  // by 0.7 units (about 1px), and on paper the disc clears both squares. So
+  // the square did not need to move down the path. Was the export's
+  // (601.6, 665.1), then (582, 658).
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
-  { x: 611.0, y: 661.0, c: 'wc', d: 'wc' },
+  { x: 610.8, y: 661.2, c: 'wc', d: 'wc' },
   // The two banks Jess's plan added (9/21), on both maps since 9/22 (Ernest:
   // every restroom shows everywhere). One symbol for every toilet, ADA units
   // included -- the print key says "Restroom (+ ADA)", the phone card too.
