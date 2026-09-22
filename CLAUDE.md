@@ -163,9 +163,9 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   map scales. The overview no longer draws pins a step smaller (the 34px `--pin-size-overview`
   token is gone): that step popped every pin to a new size the moment the fingers lifted
   (Ernest, iPhone, 9/19). e2e drives a real two-finger touch and measures a pin every frame.
-- **Kidlandia booths are one vertical column inside the Kidlandia shape, lowest number at the
-  south end**, in `--pin-kids` (Ernest 9/19, per Jess's 2026 site plan and the 2025 map). The
-  count is the sheet's.
+- **Kidlandia booths are one vertical column inside the Kidlandia shape, K0 at the NORTH end,
+  K10 at the south** (Courtney 9/21; it was laid the other way up until 9/22), in `--pin-kids`.
+  The count is the sheet's.
 - **A spot with no booth number draws hollow**: `--ff-cream` inside a `--cat-booth` frame, on the
   map and on paper, keyed in both legends. Still a booth; plainly not one of the numbered run.
 - **The printed handout is single-sided, map-dominant, no stage schedule** (decided 9/17, Erin
@@ -193,6 +193,14 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 - **Candler Park Dr numbers sit beside their squares on paper**, outward (west column left, east
   column right), level, `NUMBER_GAP` off the edge; the park rows and McLendon keep numbers above
   the square, where they have room (9/21).
+- **A pin flagged `print: true` in `pins.js` is paper-only** (9/22): the EMS / fire-inspector
+  layer Jess marked up — barricades, speed bumps, generators, dumpsters, two restroom banks. The
+  phone skips it; the print sheet draws it and keys it under "Site / safety". Ops colours are
+  `--ops-*` tokens, not pin hues.
+- **Beer and beverages are two categories** (Jess's plan, 9/21): the mug in `--pin-drinks` is
+  beer, the cup in `--pin-beverage` (a step darker, same amber family) is everything else.
+- **`basemapTrace.js` is not refreshed by Sync from Figma.** A street moved in Figma is moved
+  there by hand too (Mell Ave, 9/22). Wiring it in is a post-festival job.
 - The map URL is locked once posters print (~9/22). No hosting or routing changes after that.
 
 ## Calendar
@@ -280,6 +288,25 @@ Figma workflow), and PR #8 (booth + beta fixes):
   (numbers, star, 138–139), phone-open and sheet-open (the star on booth 11 is off the phone's
   opening view, so those two may not change — the Action decides).
 
+- 9/22 round, the committee feedback PR (one commit per item): the **print-only layer** above;
+  Kidlandia column flipped (K0 north); **King of Pops** back on the food list, unpinned; the Main
+  Stage water is on the field by the beer stand (nudged to 46 units from it, the touch floor at
+  the first zoom step); the entrance-path water is at the McLendon entrance next to merch
+  **exactly where Jess put it, and on the phone it overlaps the merch target at the first zoom
+  step — Ernest decides the phone treatment**; four barricades, seven generators / dumpsters,
+  two speed bumps and two restroom banks on paper; the field side of the art-market path has
+  two **beverage stations**, EMS (the first-aid pin, moved from the Main Stage) and a restroom
+  bank; Kidlandia has a water station and the **PTA booth** (Phosphor rocket on `--cat-utility`);
+  **Mell Ave is at x 938.5** in the trace and the McLendon east end is repacked west of it
+  (barricade 912, stage 885, Achieve with Steve 858, booth 55 at 840, 56–68 at a 15.8 pitch);
+  beer and a new water station sit 46 apart over the Acoustic Stage. The print index is at
+  **leading 1.25 (provisional)** to make room for the Site / safety key — 0.19" spare, one line;
+  the options are in `docs/pr-shots/print-side-option-*.png`. Phosphor has no `Cup` glyph
+  (checked core 2.1.1): the beverage cup is `PintGlass`, one line in `icons.js` to swap.
+  Proposed, not done: the `drinks` sheet and directory row still say "Beer & Drinks" — with
+  the cup now meaning beverages they should read "Beer" / "Beer stands"; the beverage sheet's
+  wording is provisional until Jess or Todd say what the stations pour.
+
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
@@ -293,8 +320,12 @@ Figma workflow), and PR #8 (booth + beta fixes):
   area).
 - The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
   target clears the info booth's. Falls under the water-station question below.
-- The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
+- The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the north end.
   Verify at setup.
+- Everything from **Jess's 9/21 markup** was read off red boxes on the printed sheet and lands
+  within a few units; where a spot was nudged the reason is in `pins.js` beside it. Verify the
+  barricade at (395, 791) is across McLendon west of Candler Park Dr, not across Candler Park Dr
+  itself — read that way because her four barricades then close every road into the zone.
 - **AWARE Wildlife** square: on the white ground of the entrance path, nestled into the west
   lawn's corner where the path widens out to the booth rows (Ernest, 9/20; Courtney's words
   were "on the grass"). **Achieve with Steve** square: one McLendon pitch east of booth 55. Both
@@ -309,7 +340,7 @@ is Cowork's and Ernest's to fix.
 - Hours for Kidlandia bounce houses, bike valet, artist market (Amy asked for them on the map).
 - Restrooms on Candler Park Dr (end of booths) and on the field; more water stations; Callaway
   Blue water and some sponsor locations moved in the 2026 site plan — confirming with Jess / Andy.
-- King of Pops — Todd has asked them; answer before Mon 9/21.
+- ~~King of Pops~~ — coming (Todd 9/21), listed unpinned.
 
 **Before the 9/28 freeze:**
 - **Analytics.** Ernest wants to know how many people use the map and how deep they go: sessions,
