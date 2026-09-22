@@ -53,6 +53,9 @@
      so the glyph reads as infrastructure, not a visitor service. 6.2:1 under
      the white glyph. */
   --ops-equipment: #56606F;
+  /* A speed bump is a thin bar across the street, white as Jess asked (her
+     plan hatches them yellow). */
+  --ops-speed-bump: var(--ff-white);
 
   /* Neutrals — these replace the ad-hoc greys scattered through map.css */
   --ff-white: #FFFFFF;

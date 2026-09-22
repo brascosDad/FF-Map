@@ -114,6 +114,7 @@ export const LEGEND = [
 // by PIN_COLOR.
 export const PRINT_SITE_LEGEND = [
   { cat: 'barricade', label: 'Barricade' },
+  { cat: 'speedbump', label: 'Speed bump' },
   { cat: 'generator', label: 'Generator' },
   { cat: 'dumpster', label: 'Dumpster' },
 ];

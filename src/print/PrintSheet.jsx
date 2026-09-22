@@ -154,6 +154,16 @@ const PRINT_SHAPES = {
 };
 const CONE = 6;          // one barricade cone, base and height, in map units
 const CONE_PITCH = 9;    // cone centre to cone centre
+const STREET_W = 28;     // the street band, from the basemap trace
+const BUMP_H = 2.5;      // a speed bump's bar
+// A speed bump: a thin white bar the width of the street. In the legend the
+// bar is drawn on a patch of street grey, since white on white is nothing.
+PRINT_SHAPES.speedbump = ({ x, y, swatch }) => (
+  <>
+    {swatch && <rect x={-12} y={-8} width={24} height={16} rx={1} fill="var(--map-street)" />}
+    <rect x={x - (swatch ? 10 : STREET_W / 2)} y={y - BUMP_H / 2} width={swatch ? 20 : STREET_W} height={BUMP_H} fill={PIN_COLOR.speedbump} />
+  </>
+);
 
 // Candler Park Dr's two columns: the west (street-side) column's numbers go
 // left, the east (park-side) column's go right -- decided by which side of

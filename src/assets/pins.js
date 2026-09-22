@@ -168,6 +168,16 @@ export const PINS = [
   { x: 676.0, y: 558.0, c: 'wc', print: true },
   //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
   { x: 422.0, y: 217.0, c: 'wc', print: true },
+
+  // Speed bumps on Candler Park Dr: thin bars across the street (x is the
+  // street's centreline, 411.5). One just north of the top of the booth run,
+  // above 139 / 131 (her ~421, 360); one in the break the mid-run bump makes
+  // in both columns, between 94 and 95 on the street side and 111 and 112 on
+  // the park side -- her plan calls that 106/107 and 128/129 in the old
+  // numbering. Its y is the midpoint of that break as build-booths.py lays
+  // it (CPD_BUMP); re-check after any re-pull that moves the columns.
+  { x: 411.5, y: 360.0, c: 'speedbump', print: true },
+  { x: 411.5, y: 585.0, c: 'speedbump', print: true },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
@@ -195,6 +205,7 @@ export const PIN_COLOR = {
   barricade: 'var(--ops-barricade)',
   generator: 'var(--ops-equipment)',
   dumpster: 'var(--ops-equipment)',
+  speedbump: 'var(--ops-speed-bump)',
 };
 
 export const SLATE = 'var(--cat-booth)';
