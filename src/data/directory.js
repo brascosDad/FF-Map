@@ -100,4 +100,5 @@ export const LEGEND = [
 // LEGEND. Each `cat` is drawn by PrintSheet's own shape for it and coloured
 // by PIN_COLOR.
 export const PRINT_SITE_LEGEND = [
+  { cat: 'barricade', label: 'Barricade' },
 ];

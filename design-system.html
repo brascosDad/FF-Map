@@ -54,6 +54,11 @@
   <h3>Category pins</h3>
   <p style="color:var(--text-muted);font-size:var(--text-sm)">Hue carries category and nothing else.</p>
   <div class="swatches" id="pins"></div>
+  <h3>Operations (paper only)</h3>
+  <p style="color:var(--text-muted);font-size:var(--text-sm)">The EMS / fire-inspector layer: pins flagged
+     <code>print: true</code> in <code>src/assets/pins.js</code>. Drawn on the print sheet and keyed in its
+     "Site / safety" legend; the phone map skips them. Not visitor categories, so not pin hues.</p>
+  <div class="swatches" id="ops"></div>
   <h3>Neutrals</h3>
   <div class="swatches" id="neutrals"></div>
   <h3>Basemap</h3>
@@ -299,6 +304,7 @@
   grid('pins', [['--pin-food','food'],['--pin-drinks','drinks'],['--pin-restroom','restrooms'],['--pin-water','water'],
                 ['--pin-info','info'],['--pin-stage','stages'],['--pin-kids','kids'],['--pin-firstaid','first aid'],
                 ['--pin-merch','merch'],['--cat-booth','art market'],['--cat-utility','utility']]);
+  grid('ops', [['--ops-barricade','barricade cones']]);
   grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
                     ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
   grid('basemap', [['--map-ground','outside the park'],['--map-park','park footprint'],['--map-lawn','mown lawns'],

@@ -141,7 +141,19 @@ const LABEL_TEXT = { food: 'Food Court', stageMain: 'Main Stage', stageAcoustic:
 // disc with its glyph, like every visitor pin. The legend draws the same
 // shapes at swatch size (see SiteSwatch).
 const PRINT_SHAPES = {
+  // Three traffic cones in a row across the street, the way Jess's site plan
+  // draws a barricade: 6-unit triangles at CONE_PITCH along `axis`, all
+  // pointing north, spanning most of a 28-unit street. A thin white halo, so
+  // the orange holds its edge on the street grey.
+  barricade: ({ x, y, axis = 'x' }) => [-1, 0, 1].map((i) => {
+    const cx = axis === 'x' ? x + i * CONE_PITCH : x;
+    const cy = axis === 'x' ? y : y + i * CONE_PITCH;
+    return <path key={i} d={`M${cx - CONE / 2} ${cy + CONE / 2}L${cx + CONE / 2} ${cy + CONE / 2}L${cx} ${cy - CONE / 2}Z`}
+                 fill={PIN_COLOR.barricade} stroke={HALO} strokeWidth={0.8} strokeLinejoin="round" paintOrder="stroke" />;
+  }),
 };
+const CONE = 6;          // one barricade cone, base and height, in map units
+const CONE_PITCH = 9;    // cone centre to cone centre
 
 // Candler Park Dr's two columns: the west (street-side) column's numbers go
 // left, the east (park-side) column's go right -- decided by which side of

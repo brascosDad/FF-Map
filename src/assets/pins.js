@@ -27,6 +27,10 @@
 // visitor category such as `wc` keys under its usual row). Next year: the
 // print-only entries are the ones with `print: true` below; everything else
 // is on both maps.
+//
+// A `barricade` is three cones in a row ACROSS a street, so it carries `axis`:
+// 'x' when the row runs east-west (across a north-south street), 'y' when it
+// runs north-south (across an east-west one).
 export const PINS = [
   // Markers that carry a standing label on the map
   { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true },
@@ -100,6 +104,24 @@ export const PINS = [
   // export's spot so its overview target clears the merch tent's on the
   // corner (the McLendon marker moved east with it).
   { x: 712.4, y: 730.1, c: 'bikevalet', d: 'bikevalet', overview: true },
+
+  // ---- PAPER ONLY from here: the EMS / fire-inspector layer (Jess, 9/21) ----
+
+  // Barricades: one across every road into the closed streets, as on Jess's
+  // plan. Her boxes were read off the printed sheet; each is centred on the
+  // street it closes (Candler Park Dr is centred on x 411.5, McLendon on
+  // y 789.9, both 28 wide), which is the only nudge.
+  //   Candler Park Dr at the north edge of the sheet (her ~414, 71).
+  { x: 411.5, y: 71.0, c: 'barricade', print: true, axis: 'x' },
+  //   Miller Ave where it meets Candler Park Dr, by booths 121-122 (her
+  //   ~395, 481 -- Miller's centreline is y 480.7, and x 395 is its mouth,
+  //   just west of the Candler Park Dr kerb).
+  { x: 395.0, y: 480.7, c: 'barricade', print: true, axis: 'y' },
+  //   McLendon just west of Candler Park Dr (her ~395, 791).
+  { x: 395.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
+  //   McLendon just west of Mell Ave, between the Acoustic Stage and Mell
+  //   (her ~912, 792; Mell's kerb is at 924.5).
+  { x: 912.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
@@ -121,6 +143,8 @@ export const PIN_COLOR = {
   // Low-frequency services (bike valet, entrances, ADA, picnic/seating) share
   // one quiet neutral rather than each taking a vivid pin hue.
   bikevalet: 'var(--cat-utility)',
+  // The paper-only operations layer (print: true), in the --ops-* tokens.
+  barricade: 'var(--ops-barricade)',
 };
 
 export const SLATE = 'var(--cat-booth)';

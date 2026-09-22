@@ -39,6 +39,12 @@
   --cat-booth: #47597A;
   --cat-utility: #6E7C93;
 
+  /* Operations — the paper-only layer EMS and the fire inspector read
+     (pins flagged print: true in assets/pins.js). Not visitor categories, so
+     not pin hues. The barricade orange is the traffic-cone orange of Jess's
+     2026 site plan, chosen to read on the street grey. */
+  --ops-barricade: #F07A22;
+
   /* Neutrals — these replace the ad-hoc greys scattered through map.css */
   --ff-white: #FFFFFF;
   --sand-100: #F0EDE4;   /* dividers, pressed fills */
