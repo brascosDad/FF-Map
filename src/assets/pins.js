@@ -122,6 +122,21 @@ export const PINS = [
   //   McLendon just west of Mell Ave, between the Acoustic Stage and Mell
   //   (her ~912, 792; Mell's kerb is at 924.5).
   { x: 912.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
+
+  // Generators (Phosphor lightning) and dumpsters (trash), where Jess's plan
+  // puts them. By the changing rooms north of the Main Stage: two generators
+  // west, two dumpsters east, a 2x2 in her (800-840, 238-267) box, lifted a
+  // few units so the dumpsters clear the "Food Court" label on paper.
+  { x: 806.0, y: 236.0, c: 'generator', print: true },
+  { x: 806.0, y: 256.0, c: 'generator', print: true },
+  { x: 828.0, y: 236.0, c: 'dumpster', print: true },
+  { x: 828.0, y: 256.0, c: 'dumpster', print: true },
+  // Two on the east side of the food-truck row (her ~911, 291), stacked so
+  // neither sits on stall 5 or 7.
+  { x: 912.0, y: 281.0, c: 'generator', print: true },
+  { x: 912.0, y: 303.0, c: 'generator', print: true },
+  // One at the south edge of Kidlandia.
+  { x: 507.0, y: 488.0, c: 'generator', print: true },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
@@ -145,6 +160,8 @@ export const PIN_COLOR = {
   bikevalet: 'var(--cat-utility)',
   // The paper-only operations layer (print: true), in the --ops-* tokens.
   barricade: 'var(--ops-barricade)',
+  generator: 'var(--ops-equipment)',
+  dumpster: 'var(--ops-equipment)',
 };
 
 export const SLATE = 'var(--cat-booth)';

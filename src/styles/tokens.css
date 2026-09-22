@@ -44,6 +44,10 @@
      not pin hues. The barricade orange is the traffic-cone orange of Jess's
      2026 site plan, chosen to read on the street grey. */
   --ops-barricade: #F07A22;
+  /* Generators and dumpsters: one quiet ink, darker than the services neutral
+     so the glyph reads as infrastructure, not a visitor service. 6.2:1 under
+     the white glyph. */
+  --ops-equipment: #56606F;
 
   /* Neutrals — these replace the ad-hoc greys scattered through map.css */
   --ff-white: #FFFFFF;
