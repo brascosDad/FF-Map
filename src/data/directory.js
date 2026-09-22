@@ -42,7 +42,7 @@ export const DIRECTORY = [
       poi('food', 'Food Court', `${BOOTHS.food.length} stalls on the car path`),
       poi('kingofpops', 'King of Pops', 'Frozen pops · two carts, Main Stage and the entrance'),
       poi('beer', 'Beer Stand', 'The main one, on the field'),
-      cat('drinks', 'drinks', 'Beer & drinks'),
+      cat('drinks', 'drinks', 'Beer stands'),
       // TODO(Jess): what the beverage stations serve (Ernest asked, 9/22);
       // the card's line in DetailSheet.jsx is a placeholder until then.
       cat('beverage', 'beverage', 'Beverages'),

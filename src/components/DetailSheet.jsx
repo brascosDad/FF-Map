@@ -41,8 +41,9 @@ const POI_COPY = {
   // landmark people navigate by. The other stations share the generic entry.
   beer: { title: 'Beer Stand', sub: 'The main beer stand, on the field', icon: 'drinks', cat: 'drinks',
     lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy', 'Three more drink stations are pinned around the grounds — zoom in to see them'] },
-  drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
-    lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
+  // The mug is beer and only beer since the cup (beverages) arrived, 9/22.
+  drinks: { title: 'Beer', sub: 'Beer stands', icon: 'drinks', cat: 'drinks',
+    lines: ['Beer stands around the grounds — the main one is on the field below the Main Stage', '21+ with ID — check with volunteers for wristband policy'] },
   // Beverage stations are not beer: Jess's 2026 plan draws them apart from
   // the beer stands. TODO(Jess): what the stations serve -- Ernest has asked;
   // until then one neutral line that invents nothing (9/22).
