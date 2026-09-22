@@ -71,7 +71,20 @@ export const PINS = [
   { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
   { x: 582.0, y: 658.0, c: 'wc', d: 'wc' },
 
-  { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
+  // The field side of the art-market path, top to bottom, per Jess's 2026
+  // plan (9/21): a beverage station, EMS, a beverage station, then a restroom
+  // bank (paper only, below). Her boxes were ~(678, 476), (709, 496) and
+  // (707, 524): closer than the 46 units two 44px targets need at the first
+  // zoom step, so EMS keeps her spot and the two stations move out along the
+  // column -- the top one 10 units north-west, the lower one 20 south, where
+  // it also clears the west row's booth hit areas at Detail.
+  //
+  // Beverage stations are NOT beer (`drinks`): their own category, the cup on
+  // the darker amber. First aid is the EMS post, moved from the export's
+  // (715, 373) by the Main Stage.
+  { x: 668.0, y: 470.0, c: 'beverage', d: 'beverage' },
+  { x: 708.0, y: 496.0, c: 'firstaid', d: 'firstaid' },
+  { x: 698.0, y: 542.0, c: 'beverage', d: 'beverage' },
 
   // Water refill stations, per Jess's 2026 site plan (9/21). The one the
   // export drew by the Main Stage (668.2, 318.7) is down on the field beside
@@ -137,6 +150,14 @@ export const PINS = [
   { x: 912.0, y: 303.0, c: 'generator', print: true },
   // One at the south edge of Kidlandia.
   { x: 507.0, y: 488.0, c: 'generator', print: true },
+
+  // Restroom banks EMS needs on paper but a visitor does not need pinned:
+  // the same restroom symbol as the visitor pins (one icon for every toilet,
+  // ADA units included -- the print key says "Restroom (+ ADA)").
+  //   The field side of the art-market path, below the lower beverage
+  //   station (her ~678, 554; 4 units down and 2 west so the two symbols
+  //   sit apart on paper).
+  { x: 676.0, y: 558.0, c: 'wc', print: true },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
@@ -148,6 +169,7 @@ export const PINS = [
 export const PIN_COLOR = {
   food: 'var(--pin-food)',
   drinks: 'var(--pin-drinks)',
+  beverage: 'var(--pin-beverage)',
   stage: 'var(--pin-stage)',
   kids: 'var(--pin-kids)',
   wc: 'var(--pin-restroom)',

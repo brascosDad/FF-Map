@@ -42,6 +42,7 @@ export const DIRECTORY = [
       poi('food', 'Food Court', `${BOOTHS.food.length} stalls on the car path`),
       poi('beer', 'Beer Stand', 'The main one, on the field'),
       cat('drinks', 'drinks', 'Beer & drinks'),
+      cat('beverage', 'beverage', 'Beverages'),
       cat('water', 'water', 'Water refill'),
     ],
   },
@@ -83,7 +84,10 @@ export const DIRECTORY = [
 export const LEGEND = [
   { cat: 'stage', label: 'Stage' },
   { cat: 'food', label: 'Food' },
-  { cat: 'drinks', label: 'Drinks' },
+  // The mug is beer; the cup is everything else (Jess's plan draws the two
+  // apart, 9/21).
+  { cat: 'drinks', label: 'Beer' },
+  { cat: 'beverage', label: 'Beverages' },
   { cat: 'kids', label: 'Kids' },
   { cat: 'wc', label: 'Restroom' },
   { cat: 'water', label: 'Water' },

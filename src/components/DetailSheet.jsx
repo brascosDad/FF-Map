@@ -43,6 +43,11 @@ const POI_COPY = {
     lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy', 'Three more drink stations are pinned around the grounds — zoom in to see them'] },
   drinks: { title: 'Beer & Drinks', sub: 'Beer stations, kiosks, and draft trailers', icon: 'drinks', cat: 'drinks',
     lines: ['Multiple beer stations and beverage tents throughout the grounds', '21+ with ID — check with volunteers for wristband policy'] },
+  // Beverage stations are not beer: Jess's 2026 plan draws them apart from
+  // the beer stands, on the field side of the art-market path. Wording is
+  // provisional (9/22) -- what they pour is Jess's / Todd's to say.
+  beverage: { title: 'Beverages', sub: 'Beverage station', icon: 'beverage', cat: 'beverage',
+    lines: ['Drinks other than beer — the beer stands are the mug pins', 'Two stations on the field beside the art-market path, either side of EMS'] },
   merch: { title: 'Merch Booth', sub: 'Fall Fest merchandise', icon: 'merch', cat: 'merch',
     lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
   wc: { title: 'Restrooms', sub: 'Five-toilet banks + ADA units', icon: 'wc', cat: 'wc',

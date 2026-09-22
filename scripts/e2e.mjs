@@ -114,9 +114,9 @@ for (const [name, w, h] of SIZES) {
       }
       return true;
     })());
-    // Eleven categories, the hollow "no number" square, the featured star.
+    // Twelve categories, the hollow "no number" square, the featured star.
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 13,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 14,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));

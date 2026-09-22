@@ -33,6 +33,11 @@
      stage lavender on one side and the kids rose on the other. 5.4:1 under
      the white glyph. */
   --pin-merch: #9E3F94;
+  /* Beverage stations are not beer (Jess's 2026 plan draws them apart), so
+     they take their own hue in the drinks family: the same amber, a step
+     darker, so a cup beside a mug reads as two things. 6.4:1 under the white
+     glyph. */
+  --pin-beverage: #8A6521;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
 
   /* Structural / neutral — unchanged */

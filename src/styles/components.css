@@ -160,6 +160,7 @@
 .ffc-pin { --pin-fill: var(--cat-booth); }
 .ffc-pin--food { --pin-fill: var(--pin-food); }
 .ffc-pin--drinks { --pin-fill: var(--pin-drinks); }
+.ffc-pin--beverage { --pin-fill: var(--pin-beverage); }
 .ffc-pin--wc { --pin-fill: var(--pin-restroom); }
 .ffc-pin--water { --pin-fill: var(--pin-water); }
 .ffc-pin--info { --pin-fill: var(--pin-info); }
