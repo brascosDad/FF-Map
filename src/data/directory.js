@@ -58,7 +58,10 @@ export const DIRECTORY = [
   },
   {
     title: 'Family',
-    rows: [poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing with Trees for Tuition')],
+    rows: [
+      poi('kids', 'Kidlandia', 'Games, bounce houses, pumpkin smashing with Trees for Tuition'),
+      poi('pta', 'PTA booth', 'At the south edge of Kidlandia'),
+    ],
   },
   {
     title: 'Amenities',
@@ -96,6 +99,10 @@ export const LEGEND = [
   { cat: 'merch', label: 'Merch' },
   { cat: 'art', label: 'Art booth' },
   { cat: 'bikevalet', label: 'Services' },
+  // Drawn on the phone in the same services neutral as the bike valet, so
+  // the phone footer's "Services" dot already covers it; on paper the rocket
+  // glyph is what keys it, and it gets its own row.
+  { cat: 'pta', label: 'PTA booth', printOnly: true },
 ];
 
 // The print sheet's second key, "Site / safety": the paper-only layer that

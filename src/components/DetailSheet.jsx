@@ -58,6 +58,8 @@ const POI_COPY = {
     lines: ['Free water stations — bring a bottle to refill'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
     lines: ['At the park entrance off McLendon Ave, on the east side of the path just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
+  pta: { title: 'PTA booth', sub: 'At the south edge of Kidlandia', icon: 'pta', cat: 'pta',
+    lines: ['The PTA booth, on Kidlandia\'s south edge (Jess\'s 2026 site plan)'] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
     lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };

@@ -316,7 +316,7 @@
   const map = [['food','--pin-food'],['drinks','--pin-drinks'],['beverage','--pin-beverage'],['wc','--pin-restroom'],['water','--pin-water'],
                ['info','--pin-info'],['stage','--pin-stage'],['kids','--pin-kids'],['firstaid','--pin-firstaid'],
                ['merch','--pin-merch'],['art','--cat-booth'],['bikevalet','--cat-utility'],
-               ['generator','--ops-equipment'],['dumpster','--ops-equipment']];
+               ['pta','--cat-utility'],['generator','--ops-equipment'],['dumpster','--ops-equipment']];
   document.getElementById('icons').innerHTML = map.map(([n, c]) =>
     `<div><i style="background:var(${c})"><svg viewBox="0 0 256 256">${ICONS[n]}</svg></i>${n}</div>`).join('');
 </script>

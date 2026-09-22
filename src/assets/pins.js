@@ -82,6 +82,14 @@ export const PINS = [
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
   // the darker amber. First aid is the EMS post, moved from the export's
   // (715, 373) by the Main Stage.
+  // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
+  // of the lawn -- clear of the Kidlandia pin's target at the first zoom
+  // step (50 units; 46 is touching) and of the K column at x 592 -- and the
+  // PTA booth at the south edge. Her PTA box was ~(551, 460), 38 units from
+  // the Kidlandia pin; 9 units south makes the two targets clear. The rocket
+  // is her own legend's glyph for it, on the services neutral.
+  { x: 527.0, y: 378.0, c: 'water', d: 'water' },
+  { x: 551.0, y: 469.0, c: 'pta', d: 'pta' },
   { x: 668.0, y: 470.0, c: 'beverage', d: 'beverage' },
   { x: 708.0, y: 496.0, c: 'firstaid', d: 'firstaid' },
   { x: 698.0, y: 542.0, c: 'beverage', d: 'beverage' },
@@ -180,6 +188,7 @@ export const PIN_COLOR = {
   // Low-frequency services (bike valet, entrances, ADA, picnic/seating) share
   // one quiet neutral rather than each taking a vivid pin hue.
   bikevalet: 'var(--cat-utility)',
+  pta: 'var(--cat-utility)',
   // The paper-only operations layer (print: true), in the --ops-* tokens.
   barricade: 'var(--ops-barricade)',
   generator: 'var(--ops-equipment)',
