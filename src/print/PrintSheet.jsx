@@ -208,7 +208,9 @@ function PrintMap() {
           PRINT_SHAPES is drawn as its own mark rather than a disc. */}
       {PINS.map((p, i) => (
         <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`}>
-          {PRINT_SHAPES[p.c]
+          {p.shape === 'square'
+            ? <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.4} fill={PIN_COLOR[p.c]} />
+            : PRINT_SHAPES[p.c]
             ? PRINT_SHAPES[p.c](p)
             : <>
                 {/* A disc with its own ring (the dumpster) draws the ring in
@@ -303,6 +305,11 @@ export default function PrintSheet() {
           </span>
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
+          </span>
+          {/* The King of Pops carts: the same square at full strength (a
+              stall square is drawn at 75%). */}
+          <span className="print-legend__row">
+            <span className="print-legend__sq print-legend__sq--solid" style={{ background: PIN_COLOR.food }} />King of Pops
           </span>
           {FESTIVAL.featured.length > 0 && (
             <span className="print-legend__row">

@@ -269,10 +269,15 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
                   has to hit does not. This invisible circle holds the 44px
                   floor whatever the marker is drawn at. */}
               <circle cx={p.x} cy={p.y} r={tapR} fill="transparent" />
-              <g filter="url(#ds)">
-                <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
-                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
-              </g>
+              {/* A square pin (the King of Pops carts) is a booth-sized tick
+                  in its category colour at full strength, no glyph -- ground
+                  scale, like the stalls, under the same 44px target. */}
+              {p.shape === 'square'
+                ? <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.6} fill="var(--pin-fill)" />
+                : <g filter="url(#ds)">
+                    <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
+                    <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
+                  </g>}
               {/* The tapped pin wears the ring. With no one pin selected (a
                   category row in the directory) every pin of the open card
                   does -- the honest answer to "where are the restrooms". */}

@@ -45,6 +45,11 @@
 // are the ones with `print: true` below -- barricades, speed bumps,
 // generators, dumpsters; every restroom is on both maps (Ernest, 9/22).
 //
+// `shape: 'square'` draws the pin as a booth-sized square in its category
+// colour, no glyph -- the King of Pops carts, which read like food stalls
+// rather than places (Ernest, round 3). The tap target is still the 44px
+// circle, and rule 1 applies to it.
+//
 // `where` is the card's location line -- how someone confirms which of a
 // category's pins they tapped (Ernest, 9/22). Plain words from the map, one
 // line, on every visitor pin; the lines Ernest wrote carry TODO(Jess):
@@ -92,8 +97,11 @@ export const PINS = [
   // mouth -- 47 units from merch (46 is edge to edge at the first step),
   // clear of the west beer station and booth 69. Cart spots move at load-in
   // like the trucks.
-  { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
-  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
+  // Both carts draw as SQUARES like the food stalls (shape: 'square'), the
+  // same 8-unit tick in --pin-food at full strength, no glyph, with a 44px
+  // tap target on the phone like any pin (Ernest, round 3).
+  { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', shape: 'square', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
+  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', shape: 'square', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of

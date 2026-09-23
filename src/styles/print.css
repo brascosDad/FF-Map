@@ -69,6 +69,8 @@
 .print-legend__row { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); align-items: center; white-space: nowrap; }
 .print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: end; }
 .print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: end; opacity: 0.8; }
+/* A square drawn at full strength on the map (the King of Pops carts). */
+.print-legend__sq--solid { opacity: 1; }
 /* A featured booth's key: the slate square carrying the star, solid, as on the map. */
 .print-legend__sq--featured { display: inline-flex; align-items: center; justify-content: center; opacity: 1; }
 
