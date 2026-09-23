@@ -67,10 +67,12 @@ export const PINS = [
   // The beer stand: the main one, on the field below the Main Stage -- the
   // landmark the food chair places Mr Softee against ("to the right of the
   // beer stand when facing it"). Where Jess's 2026 site plan puts it (Ernest,
-  // 9/22): down and a little east of the export's (734.7, 442.0). It is on
-  // the phone's opening view, where two targets need 81 units on a 375px
-  // screen, so the in-park art market marker moved up the path to 83 units
-  // from it (areas.js) rather than the stand leaving its spot.
+  // 9/22, confirmed unchanged in round 3): down and a little east of the
+  // export's (734.7, 442.0). It is on the phone's opening view, where two
+  // targets need 81 units on a 375px screen, so the in-park art market
+  // marker moved up the path to 83 units from it (areas.js) rather than the
+  // stand leaving its spot; the marker's old spot (774.9, 484.3) is 48.5
+  // from here, so it cannot come back while the stand is here.
   { x: 728.0, y: 472.0, c: 'drinks', d: 'beer', label: 'Beer', overview: true, where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
   // The other beer stations the export marks
   { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks', where: 'By the Main Stage, next to the Food Court' }, // TODO(Jess): confirm location
@@ -82,13 +84,15 @@ export const PINS = [
   { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks', where: 'By the Acoustic Stage' }, // TODO(Jess): confirm location
 
   // King of Pops: two carts (Todd, 9/21), in the food colour, each opening
-  // the cart's card. One on the field side near the Main Stage, west of the
-  // truck row per Todd's layout -- 60 units from the stage pin, 54 from the
-  // west beverage station, clear of the "Main Stage" label on paper. One by
-  // the park entrance, on the west lawn edge at the path mouth -- 47 units
-  // from merch (46 is edge to edge at the first step), clear of the west
-  // beer station and booth 69. Cart spots move at load-in like the trucks.
-  { x: 690.0, y: 320.0, c: 'food', d: 'kingofpops', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
+  // the cart's card. The Main Stage cart is in the front row on the lawn
+  // beside Kidlandia, down off the white path onto the green (Ernest, round
+  // 3: 693, 378; half a unit out so its Detail target is edge to edge with
+  // first aid's), waiting for Detail like the stations beside it. The
+  // entrance cart is by the park entrance, on the west lawn edge at the path
+  // mouth -- 47 units from merch (46 is edge to edge at the first step),
+  // clear of the west beer station and booth 69. Cart spots move at load-in
+  // like the trucks.
+  { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
   { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
@@ -120,30 +124,35 @@ export const PINS = [
   //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
   { x: 422.0, y: 217.0, c: 'wc', d: 'wc', where: 'Candler Park Dr, at the north path into the park' }, // TODO(Jess): confirm location
 
-  // The field below the Main Stage, per Jess's 2026 plan as Ernest read it
-  // against the printed sheet (9/22): EMS is the export's first-aid spot, and
-  // the two beverage stations flank it up the field -- one west, one just
-  // east. Ernest's endpoints were (671, 370) and (720, 385); the first is 44
-  // units from EMS and the second 13, so each sits edge to edge with EMS at
-  // the first zoom step instead (46 units): the west one 2 units further
-  // west, the east one out to 761 on its own side. The east one clears the
-  // beer station at (802.5, 309) and the park's west row at Detail.
+  // The lawn beside Kidlandia, as Ernest drew it on the print sheet (round 3,
+  // 9/22): six pins ride the edge of the green lawn shape, just inside it --
+  // a front row, close together, of beverage station, King of Pops cart
+  // (below), first aid, beverage station; then water and the beer stand just
+  // below. Print is the priority and the discs clear each other at his
+  // spots, but on the phone the front row's 44px targets need 25.5 units
+  // between neighbours at Detail (the closest stop, where the lower-priority
+  // pins finally show), so with first aid anchored at his (712, 395) each
+  // neighbour sits edge to edge on his own bearing: the King of Pops cart
+  // 0.5 units out from (693, 378), the west station 7.8 units WSW of
+  // (677, 387), the east station 4 units E of (734, 391). First aid is on the
+  // map from the first zoom step; the stations and the cart wait for Detail.
   //
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
   // the darker amber.
-  { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid', where: 'On the lawn below the Main Stage, between the two beverage stations' },
-  { x: 669.0, y: 370.0, c: 'beverage', d: 'beverage', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
-  { x: 761.0, y: 379.0, c: 'beverage', d: 'beverage', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 712.0, y: 395.0, c: 'firstaid', d: 'firstaid', where: 'On the lawn below the Main Stage, between the two beverage stations' },
+  { x: 670.0, y: 391.5, c: 'beverage', d: 'beverage', from: 'detail', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 738.0, y: 390.5, c: 'beverage', d: 'beverage', from: 'detail', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
 
   // Water refill stations, per Jess's 2026 site plan (9/21, Ernest 9/22).
   // Water is the lowest priority on the map, so where a station sits close
   // to something it waits for the Detail stop (from: 'detail') -- the Water
   // chip shows it at any stop.
   //
-  // On the field, exactly at Jess's box, between EMS and the beer stand: 43
-  // units from EMS and 30 from the east beverage station, so it arrives at
-  // Detail, where a 44px target is 25.5 units and both clear.
-  { x: 731.0, y: 413.0, c: 'water', d: 'water', from: 'detail', where: 'On the lawn beside Kidlandia, next to the beer stand' }, // TODO(Jess): confirm location
+  // On the lawn just above-left of the beer stand (Ernest, round 3: 712, 459).
+  // His spot is 20.6 units from the stand, under the 25.5 two Detail targets
+  // need, so it sits edge to edge on his bearing, 5.7 units further out:
+  // 26.3 from the stand. Detail only.
+  { x: 707.5, y: 455.5, c: 'water', d: 'water', from: 'detail', where: 'On the lawn beside Kidlandia, next to the beer stand' }, // TODO(Jess): confirm location
   // The water half of the beer + water pair north of the Acoustic Stage:
   // tight against the beer at (862, 750) -- edge to edge at Detail, 26
   // units east (25.5 is touching on a 375px phone; half a unit of air) -- so
