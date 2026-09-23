@@ -804,17 +804,21 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   // The first pin of that category that is on screen: some water stations
   // wait for Detail (from: 'detail'), and the rest sit wherever the plan
   // puts them, not necessarily in the middle of a phone's first step.
-  const centre = async (sel) => {
+  // `pick` returns the index of that pin too, so a later tap can go to the
+  // SAME pin wherever the map has moved it since.
+  const pick = async (sel) => {
     const n = await p.locator(sel).count();
     for (let i = 0; i < n; i++) {
       const b = await p.locator(sel).nth(i).boundingBox();
       if (!b || b.x < 0 || b.y < 120 || b.x + b.width > w || b.y + b.height > h) continue;
       // ...and not under the open sheet or a control: the map has to take the tap.
       const bare = await p.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('svg.ff-map'), [b.x + b.width / 2, b.y + b.height / 2]);
-      if (bare) return [b.x + b.width / 2, b.y + b.height / 2];
+      if (bare) return { at: [b.x + b.width / 2, b.y + b.height / 2], i };
     }
-    const b = await p.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2];
+    const b = await p.locator(sel).first().boundingBox(); return { at: [b.x + b.width / 2, b.y + b.height / 2], i: 0 };
   };
+  const centre = async (sel) => (await pick(sel)).at;
+  const centreOf = async (sel, i) => { const b = await p.locator(sel).nth(i).boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
   const vb = () => p.locator('svg.ff-map').getAttribute('viewBox');
   // Amenities only appear once you zoom in -- the overview carries destinations.
   await p.locator('.zoomctl button').first().click();
@@ -827,11 +831,18 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   });
   // A restroom pin: every restroom shows from the first step, and one is on
   // screen on each of these phones (water stations mostly wait for Detail).
+  // A tap brings the pin into the band above its sheet (it may pan, and step
+  // in if the band cannot be reached), so "does not zoom" is judged against
+  // what a single tap on the same pin does: the double-tap must land on the
+  // same view, not a step further in.
   await safe(`${name}: double-tap on a pin opens, does not zoom`, async () => {
-    const v0 = await vb();
-    await p.mouse.dblclick(...await centre('g.ffc-pin--wc')); await p.waitForTimeout(600);
+    const { at, i } = await pick('g.ffc-pin--wc');
+    await p.mouse.click(...at); await p.waitForTimeout(700);
+    const v1 = await vb();
+    await p.locator('.sheet .close, .panel-back').first().click(); await p.waitForTimeout(400);
+    await p.mouse.dblclick(...await centreOf('g.ffc-pin--wc', i)); await p.waitForTimeout(700);
     const t = await title();
-    check(`${name}: double-tap on a pin opens, does not zoom`, /Restroom/.test(t) && v0 === await vb(), `${t || '(closed)'}; zoomed=${v0 !== await vb()}`);
+    check(`${name}: double-tap on a pin opens, does not zoom`, /Restroom/.test(t) && v1 === await vb(), `${t || '(closed)'}; zoomed=${v1 !== await vb()}`);
   });
   if (w >= 1024) {
     await safe(`${name}: directory row flies in a level`, async () => {
