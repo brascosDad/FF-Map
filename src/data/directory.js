@@ -43,6 +43,7 @@ const SECTIONS = [
     rows: [
       poi('food', 'Food Court', `${BOOTHS.food.length} stalls on the car path`),
       poi('kingofpops', 'King of Pops', 'Frozen pops · two carts, Main Stage and the entrance'),
+      poi('mrsoftee', 'Mr Softee', 'Soft serve · on the lawn beside Kidlandia'),
       poi('beer', 'Beer Stand', 'The main one, on the field'),
       cat('drinks', 'drinks', 'Beer stands'),
       // TODO(Jess): what the beverage stations serve (Ernest asked, 9/22);
@@ -127,4 +128,6 @@ export const PRINT_SITE_LEGEND = ([
   { cat: 'speedbump', label: 'Speed bump' },
   { cat: 'generator', label: 'Generator' },
   { cat: 'dumpster', label: 'Dumpster' },
+  { cat: 'iceTruck', label: 'Ice truck' },
+  { cat: 'musicianTent', label: "Musicians' tent" },
 ]).filter((l) => hasPins(l.cat));

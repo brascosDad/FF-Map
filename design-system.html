@@ -304,7 +304,7 @@
   grid('pins', [['--pin-food','food'],['--pin-drinks','beer'],['--pin-beverage','beverages'],['--pin-restroom','restrooms'],['--pin-water','water'],
                 ['--pin-info','info'],['--pin-stage','stages'],['--pin-kids','kids'],['--pin-firstaid','first aid'],
                 ['--pin-merch','merch'],['--cat-booth','art market'],['--cat-utility','utility']]);
-  grid('ops', [['--ops-barricade','barricade cones'],['--ops-generator','generator disc, navy bolt'],['--ops-dumpster-fill','dumpster disc'],['--ops-dumpster-ink','dumpster ring + glyph'],['--ops-speed-bump','speed bump bars']]);
+  grid('ops', [['--ops-barricade','barricade cones'],['--ops-generator','generator disc, navy bolt'],['--ops-dumpster-fill','dumpster disc'],['--ops-dumpster-ink','dumpster ring + glyph'],['--ops-speed-bump','speed bump bars'],['--ops-ice-truck','ice truck disc, navy glyph'],['--ops-musician-tent',"musicians' tent"]]);
   grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
                     ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
   grid('basemap', [['--map-ground','outside the park'],['--map-park','park footprint'],['--map-lawn','mown lawns'],
@@ -316,7 +316,8 @@
   const map = [['food','--pin-food'],['drinks','--pin-drinks'],['beverage','--pin-beverage'],['wc','--pin-restroom'],['water','--pin-water'],
                ['info','--pin-info'],['stage','--pin-stage'],['kids','--pin-kids'],['firstaid','--pin-firstaid'],
                ['merch','--pin-merch'],['art','--cat-booth'],['bikevalet','--cat-utility'],
-               ['pta','--pin-kids'],['generator','--ops-generator','--ff-navy'],['dumpster','--ops-dumpster-fill','--ops-dumpster-ink','--ops-dumpster-ink']];
+               ['pta','--pin-kids'],['generator','--ops-generator','--ff-navy'],['dumpster','--ops-dumpster-fill','--ops-dumpster-ink','--ops-dumpster-ink'],
+               ['iceTruck','--ops-ice-truck','--ff-navy'],['musicianTent','--ops-musician-tent']];
   // A glyph is white on its disc unless the entry names its own ink (and ring).
   document.getElementById('icons').innerHTML = map.map(([n, c, ink, ring]) =>
     `<div><i style="background:var(${c});${ring ? `box-shadow:inset 0 0 0 2px var(${ring})` : ''}"><svg viewBox="0 0 256 256" style="${ink ? `fill:var(${ink})` : ''}">${ICONS[n]}</svg></i>${n}</div>`).join('');

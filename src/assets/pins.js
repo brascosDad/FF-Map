@@ -109,6 +109,11 @@ export const PINS = [
   // tap target on the phone like any pin (Ernest, round 3).
   { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', shape: 'square', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
   { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', shape: 'square', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
+  // Mr Softee: "Add an additional food icon here (this one is Mr Softee)"
+  // (Jess's markup, 9/23), a food-cart square like King of Pops, on the lawn
+  // south-west of the beer stand. Clear of everything at every stop, so on
+  // the map from the first step.
+  { x: 678.0, y: 476.0, c: 'food', d: 'mrsoftee', shape: 'square', where: 'On the lawn beside Kidlandia, south-west of the beer stand' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
@@ -231,13 +236,21 @@ export const PINS = [
   { x: 912.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
 
   // Generators (Phosphor lightning) and dumpsters (trash), where Jess's plan
-  // puts them. By the changing rooms north of the Main Stage: two generators
-  // west, two dumpsters east, a 2x2 in her (800-840, 238-267) box, lifted a
-  // few units so the dumpsters clear the "Food Court" label on paper.
-  { x: 806.0, y: 236.0, c: 'generator', print: true },
-  { x: 806.0, y: 256.0, c: 'generator', print: true },
-  { x: 828.0, y: 236.0, c: 'dumpster', print: true },
-  { x: 828.0, y: 256.0, c: 'dumpster', print: true },
+  // puts them. By the changing rooms north of the Main Stage: the musicians'
+  // tent at her (805, 267), and the generator pair and the dumpster pair
+  // stacked above it -- her spots for the pairs were (811, 239) and
+  // (836, 239); each pair's lower disc sits edge to edge with the tent
+  // (20.9 units) and the upper one 20 above it, and the dumpsters clear the
+  // "Food Court" label and food stall 4 on paper (9/23).
+  { x: 805.0, y: 267.0, c: 'musicianTent', print: true },
+  { x: 811.0, y: 247.0, c: 'generator', print: true },
+  { x: 811.0, y: 227.0, c: 'generator', print: true },
+  { x: 836.0, y: 247.0, c: 'dumpster', print: true },
+  { x: 836.0, y: 227.0, c: 'dumpster', print: true },
+  // On the lawn beside Kidlandia, from Jess's markup (9/23): the ice truck
+  // ("Please label this 'Ice truck'") and one more generator, both paper only.
+  { x: 710.0, y: 497.0, c: 'iceTruck', print: true },
+  { x: 708.0, y: 524.0, c: 'generator', print: true },
   // Two on the east side of the food-truck row (her ~911, 291), stacked so
   // neither sits on stall 5 or 7.
   { x: 912.0, y: 281.0, c: 'generator', print: true },
@@ -292,6 +305,8 @@ export const PIN_COLOR = {
   generator: 'var(--ops-generator)',
   dumpster: 'var(--ops-dumpster-fill)',
   speedbump: 'var(--ops-speed-bump)',
+  iceTruck: 'var(--ops-ice-truck)',
+  musicianTent: 'var(--ops-musician-tent)',
 };
 
 // Where a disc is not "category fill, white glyph": the glyph's colour and,
@@ -300,6 +315,7 @@ export const PIN_COLOR = {
 // 9/22). Read by PrintSheet for the disc and for the legend swatch.
 export const PIN_INK = {
   generator: { glyph: 'var(--ff-navy)' },
+  iceTruck: { glyph: 'var(--ff-navy)' },
   dumpster: { glyph: 'var(--ops-dumpster-ink)', ring: 'var(--ops-dumpster-ink)' },
 };
 

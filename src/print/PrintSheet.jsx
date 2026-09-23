@@ -306,10 +306,11 @@ export default function PrintSheet() {
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
-          {/* The King of Pops carts: the same square at full strength (a
-              stall square is drawn at 75%). */}
+          {/* The food carts (King of Pops, Mr Softee): the same square at full
+              strength (a stall square is drawn at 75%); each card names its
+              vendor. */}
           <span className="print-legend__row">
-            <span className="print-legend__sq print-legend__sq--solid" style={{ background: PIN_COLOR.food }} />King of Pops
+            <span className="print-legend__sq print-legend__sq--solid" style={{ background: PIN_COLOR.food }} />Food cart
           </span>
           {FESTIVAL.featured.length > 0 && (
             <span className="print-legend__row">

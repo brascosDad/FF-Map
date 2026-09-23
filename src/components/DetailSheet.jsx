@@ -182,8 +182,12 @@ function FoodCart({ name, pin }) {
   );
 }
 
+// Food carts with their own square on the map (pins.js), by card id -> the
+// vendor's name in vendors.json.
+const FOOD_CARTS = { kingofpops: 'King of Pops', mrsoftee: 'Mr Softee' };
+
 function GenericPoi({ id, pin }) {
-  if (id === 'kingofpops') return <FoodCart name="King of Pops" pin={pin} />;
+  if (FOOD_CARTS[id]) return <FoodCart name={FOOD_CARTS[id]} pin={pin} />;
   const d = POI_COPY[id];
   if (!d) return null;
   return (
@@ -328,7 +332,7 @@ function BoothDetail({ booth, onStep }) {
 function accentFor(openId, openArea, openBooth) {
   if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : openBooth.area === 'Kidlandia' ? PIN_COLOR.kids : SLATE;
   if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
-  if (openId === 'kingofpops') return PIN_COLOR.food;
+  if (FOOD_CARTS[openId]) return PIN_COLOR.food;
   if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
   if (openArea) return SLATE;
   return SLATE;

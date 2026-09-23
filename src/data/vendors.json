@@ -2,7 +2,7 @@
   "confirmed": true,
   "source": "Todd Tharp (food chair), email 'Food Vendors 2026', 2026-09-13 — his final list, plus King of Pops (Todd, 2026-09-21). Every 'offering' is Todd's own wording, verbatim; do not rewrite.",
   "note": "2026 list from the food chair. Placements are not assigned yet — where each truck parks arrives later this week.",
-  "_placement": "Todd has NOT assigned spots yet. He is measuring on site the week of 9/14 and warns placements shift at the last minute to fit everyone. 'location' is null everywhere except Mr Softee, the only placement he has committed to. The UI lists a vendor with a null location and pins nothing for it. Do NOT let nulls reach the print file without a re-check.",
+  "_placement": "Todd has NOT assigned truck spots yet. He is measuring on site the week of 9/14 and warns placements shift at the last minute to fit everyone. 'location' is null for every truck; the two carts with a square on the map are King of Pops (two squares, d: 'kingofpops' in assets/pins.js) and Mr Softee (one, d: 'mrsoftee', where Jess's 9/23 markup put it -- Todd's own note had it right of the beer stand). The UI lists a vendor with a null location and pins nothing for it. Do NOT let nulls reach the print file without a re-check.",
   "changes_from_2025": {
     "added": ["Jazz Burger", "Gezzos", "Mr Softee", "Bánh Mì Chị Em", "Playa Bowls"],
     "removed": ["Sokome", "Hermanita by Tio Lucho's", "Smash Hit Burgers", "Any Given Sundae"],
@@ -17,7 +17,7 @@
     { "id": "v06", "name": "Jazz Burger",        "offering": "Hamburgers, Cheeseburgers",                          "category": "food", "location": null },
     { "id": "v07", "name": "Sweet Auburn",       "offering": "BBQ",                                                "category": "food", "location": null },
     { "id": "v08", "name": "Gezzos",             "offering": "Burritos, Tacos",                                    "category": "food", "location": null },
-    { "id": "v09", "name": "Mr Softee",          "offering": "Soft Serve Ice Cream",                               "category": "food", "location": "On the field, immediately to the right of the beer stand when facing it." },
+    { "id": "v09", "name": "Mr Softee",          "offering": "Soft Serve Ice Cream",                               "category": "food", "location": "On the lawn beside Kidlandia, south-west of the beer stand — the food-cart square on the map (Jess's site plan, 9/23)." },
     { "id": "v10", "name": "Bánh Mì Chị Em",     "offering": "Banh Mi",                                            "category": "food", "location": null },
     { "id": "v11", "name": "Playa Bowls",        "offering": "Acai Bowls",                                         "category": "food", "location": null },
     { "id": "v12", "name": "Island Noodles",     "offering": "Hawaiian-style soba noodles",                        "category": "food", "location": null },

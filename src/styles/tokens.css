@@ -59,6 +59,13 @@
   /* A speed bump is a thin bar across the street, white as Jess asked (her
      plan hatches them yellow). */
   --ops-speed-bump: var(--ff-white);
+  /* The ice truck (Jess, 9/23): an ice-blue disc with the truck in navy --
+     reads on the lawn green and is no visitor hue (water is a mid teal-blue
+     under a white glyph). Navy on it: 9.2:1. */
+  --ops-ice-truck: #CFEAF5;
+  /* The musicians' tent (Jess, 9/23): canvas brown, white glyph (8.1:1). Not
+     the food orange, not the stage lavender; a structure, not a service. */
+  --ops-musician-tent: #6B4A2B;
 
   /* Neutrals — these replace the ad-hoc greys scattered through map.css */
   --ff-white: #FFFFFF;
