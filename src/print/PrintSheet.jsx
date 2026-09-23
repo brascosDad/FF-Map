@@ -345,13 +345,13 @@ export default function PrintSheet() {
           </section>
         )}
 
-        {/* The alphabetical list, every artist with their booth number. No
-            count under the heading: a sheet that lists every artist needs
-            neither the public "over 130" nor a booth total -- and a booth
-            total is never printed anywhere, since it moves every time the
-            chair edits her sheet. */}
-        <section className="print-index">
-          <h2>Art Market</h2>
+        {/* The alphabetical list, every artist with their booth number, and
+            no heading over it (Ernest, 9/23): the list starts straight under
+            the key at the usual section gap. No count either: a sheet that
+            lists every artist needs neither the public "over 130" nor a
+            booth total -- and a booth total is never printed anywhere, since
+            it moves every time the chair edits her sheet. */}
+        <section className="print-index" aria-label="Art market index">
           <ul>
             {index.map((r, i) => (
               /* A featured booth's star sits in the number cell, not before

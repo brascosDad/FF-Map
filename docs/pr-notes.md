@@ -1,4 +1,13 @@
-# PR notes — 9/22–23 committee feedback, rounds 1–6 (PR #12)
+# PR notes — 9/22–23 committee feedback, rounds 1–7 (PR #12)
+
+## Round 7 (9/23): no "Art Market" heading over the index; leading back to 1.3
+
+- The heading is gone; the list starts straight under the key at the usual section gap
+  (`--print-section-gap`, 32px). The recovered room: the 9.5pt heading plus its `--space-2`
+  gap, ≈21px.
+- **Index at leading 1.3 fits: 0.14" spare on this render** (155 rows, C1–C3 included). Shipped
+  at 1.3; the round-6 provisional 1.25 is withdrawn and the round-6 fit decision below is closed.
+- The `update-visual-baselines` label stays on; the print baseline changes again (heading, leading).
 
 ## Round 6 (print legibility and clutter; 9/23)
 
@@ -27,7 +36,7 @@ index and the phone card ("Cart C1 · Frozen pops") all read it. Index rows: "Ki
 in the 8pt column; shorter wording that would not wrap: **"King of Pops · Stage" / "King of Pops
 · Gate"**, if Ernest prefers.
 
-### Index fit — DECISION NEEDED
+### Index fit — closed in round 7 (heading removed; 1.3 fits with 0.14" spare)
 | State | Spare (this render) |
 |---|---|
 | Round 5, leading 1.3 | 0.03" (the ice-truck and musicians'-tent rows had wrapped the site key to two rows) |

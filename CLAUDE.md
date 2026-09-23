@@ -400,9 +400,9 @@ Figma workflow), and PR #8 (booth + beta fixes):
   index and the phone card read it); the **food-stall numbers are off the paper** (squares stay;
   the phone still numbers and opens them); the slanted **"Art Market" label is off the car path**;
   the print header is a 40pt wordmark (`--print-brand-size`) with the date line tight under it
-  (16px / 15px optical); the field restroom is 8 units out on the lawn at (672.5, 550). **The
-  index is at leading 1.25, provisional**: the cart rows do not fit at 1.3 (0.12" over) — Ernest
-  decides; options in `docs/pr-notes.md`.
+  (16px / 15px optical); the field restroom is 8 units out on the lawn at (672.5, 550). Round 7
+  (same day): the **"Art Market" heading over the index is gone** — the list starts under the key
+  at the section gap — and the index is back at **leading 1.3 with 0.14" spare** (155 rows).
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
