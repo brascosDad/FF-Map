@@ -138,9 +138,11 @@ export const PINS = [
   // The two banks Jess's plan added (9/21), on both maps since 9/22 (Ernest:
   // every restroom shows everywhere). One symbol for every toilet, ADA units
   // included -- the print key says "Restroom (+ ADA)", the phone card too.
-  //   The field side of the art-market path, up from Jess's (678, 554) to
-  //   where Ernest read it (9/22), clear of booths 43-45.
-  { x: 680.0, y: 526.0, c: 'wc', d: 'wc', where: 'On the lawn beside Kidlandia, near art booths 43–45' }, // TODO(Jess): confirm location
+  //   The field side of the art-market path, back at Jess's own spot
+  //   (9/23; it was lifted to 526 on 9/22). 23 units from booths 45 and 46's
+  //   centres, where a Detail target and a hit cell need 17.45: no overlap,
+  //   so no nudge.
+  { x: 679.0, y: 555.0, c: 'wc', d: 'wc', where: 'On the lawn beside Kidlandia, by art booths 45 and 46' },
   //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
   { x: 422.0, y: 217.0, c: 'wc', d: 'wc', where: 'Candler Park Dr, at the north path into the park' }, // TODO(Jess): confirm location
 
@@ -197,7 +199,15 @@ export const PINS = [
   // PTA booth inside the shape's south-west, where Ernest read it off her
   // plan (9/22), clear of the generator at (507, 488) on paper. The rocket
   // is her own legend's glyph for it, in the Kidlandia colour.
-  { x: 527.0, y: 378.0, c: 'water', d: 'water', where: 'Inside Kidlandia' }, // TODO(Jess): confirm location
+  // Kidlandia's water is south-east of the Kidlandia pin, where Jess's markup
+  // put it (9/23; was the north-centre of the lawn). 38.7 units from the pin,
+  // so it waits for Detail on the phone.
+  { x: 552.0, y: 461.0, c: 'water', d: 'water', from: 'detail', where: 'Inside Kidlandia, at its south end' },
+  // At the top of the Candler Park Dr booth run, park side of the street:
+  // Jess asked for water here, not the speed bump the 9/22 round drew
+  // (hidden below). Her (421, 361), one unit north so its Detail target
+  // clears booth 131's hit cell.
+  { x: 421.0, y: 360.0, c: 'water', d: 'water', where: 'Candler Park Dr, at the north end of the booth run' },
   { x: 519.0, y: 520.0, c: 'pta', d: 'pta', where: 'Inside Kidlandia, at its south-west edge' },
 
   // Info booth: directly on top of the merch tent, edge to edge. "The info
@@ -231,9 +241,9 @@ export const PINS = [
   { x: 395.0, y: 480.7, c: 'barricade', print: true, axis: 'y' },
   //   McLendon just west of Candler Park Dr (her ~395, 791).
   { x: 395.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
-  //   McLendon just west of Mell Ave, between the Acoustic Stage and Mell
-  //   (her ~912, 792; Mell's kerb is at 924.5).
-  { x: 912.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
+  //   McLendon east of the Acoustic Stage AND east of Mell Ave (her box,
+  //   9/23; Mell is at x 938.5 and its kerb at 952.5), across McLendon.
+  { x: 979.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
 
   // Generators (Phosphor lightning) and dumpsters (trash), where Jess's plan
   // puts them. By the changing rooms north of the Main Stage: the musicians'
