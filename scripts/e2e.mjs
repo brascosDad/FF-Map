@@ -478,14 +478,19 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   check(`${name}: bike valet, beer and merch are on the opening view`,
     cats.includes('bikevalet') && cats.includes('merch') && cats.includes('drinks'), cats.join(','));
   check(`${name}: still only a handful of pins at open`, cats.length <= 8, `${cats.length} pins`);
+  // Each tap from the opening view: a tapped pin is brought into the band
+  // above its sheet (the interaction model), which can step the map in, so
+  // the view is reset before the next one.
   const titles = [];
   for (const sel of ['g.ffc-pin--bikevalet', 'g.ffc-pin--merch', 'g.ffc-pin--drinks']) {
     const b = await p.locator(sel).first().boundingBox();
     await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
-    await p.waitForTimeout(450);
+    await p.waitForTimeout(700);
     titles.push(await p.locator('.sheet .hd h3').first().textContent());
     await p.locator('.sheet .close').click();
     await p.waitForTimeout(350);
+    await p.locator('.zoomctl button[aria-label="Reset to overview"]').click();
+    await p.waitForTimeout(500);
   }
   check(`${name}: the three open their own sheets`, /Bike Valet/.test(titles[0]) && /Merch/.test(titles[1]) && /Beer Stand/.test(titles[2]), titles.join(' | '));
 
