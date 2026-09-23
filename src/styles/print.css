@@ -28,6 +28,10 @@
      than the legend's rows strictly need so the names get air. */
   --print-lead: var(--space-6);
   --print-lead-gap: var(--space-3);
+  /* The wordmark: 40pt, a tenth under the 44pt it had until 9/23 (Ernest:
+     a little smaller, and the header tighter). Paper points, like the type
+     floor: this is the sheet's own scale, not the phone's --text-brand. */
+  --print-brand-size: 40pt;
   width: 17in;
   height: 11in;
   padding: var(--print-margin);
@@ -52,9 +56,16 @@
 .print-side { display: flex; flex-direction: column; gap: var(--print-section-gap); min-width: 0; height: calc(11in - 2 * var(--print-margin)); overflow: hidden; }
 .print-side h2 { margin: 0 0 var(--print-heading-gap); font-size: 9.5pt; font-weight: 800; color: var(--text-strong); letter-spacing: 0.02em; text-transform: uppercase; }
 
+/* Two gaps that should read the same (Ernest, 9/23): wordmark to date line,
+   date line to the rule. The all-caps wordmark's line box carries ~16px of
+   empty descender air below its ink, so the date line sits on the box with
+   no margin at all -- a --space-2 margin on top of that air read as twice
+   the gap under it. Measured optically (ink to ink): 25px / 15px before,
+   16px / 15px after. The rule gap is --space-3 plus the date line's own 3px
+   of descender. */
 .print-head { border-bottom: 2px solid var(--ff-navy); padding-bottom: var(--space-3); }
-.print-brand { font-family: var(--font-display); font-weight: 900; font-size: 44pt; line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
-.print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: var(--space-2); }
+.print-brand { font-family: var(--font-display); font-weight: 900; font-size: var(--print-brand-size); line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
+.print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: 0; }
 
 /* minmax(0, 1fr), not 1fr: a bare 1fr column will not shrink below its
    content, so one long label widened its column and the legend fell off the
@@ -69,16 +80,35 @@
 .print-legend__row { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); align-items: center; white-space: nowrap; }
 .print-legend__dot { width: var(--space-4); height: var(--space-4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; justify-self: end; }
 .print-legend__sq { width: var(--space-3); height: var(--space-3); border-radius: 1px; justify-self: end; opacity: 0.8; }
+/* A square drawn at full strength on the map (the King of Pops carts). */
+.print-legend__sq--solid { opacity: 1; }
 /* A featured booth's key: the slate square carrying the star, solid, as on the map. */
 .print-legend__sq--featured { display: inline-flex; align-items: center; justify-content: center; opacity: 1; }
+
+/* The legend sits half a section gap under the header's rule (--space-4,
+   16px, against the 32px between the other sections; Ernest, 9/22): the rule
+   already separates it, so the full gap read as dead air. */
+.print-legend { margin-top: calc(var(--space-4) - var(--print-section-gap)); }
+/* The site/safety key: the paper-only layer's own row, directly under the
+   visitor key and set apart from it by a gap alone -- --space-3, three times
+   the grid's row gap, so it reads as a second group without a heading -- on
+   the same grid. A mark that is not a disc (a barricade, a speed bump) is
+   drawn in a swatch-sized SVG on the same right edge as the dots. */
+.print-legend--site { margin-top: calc(var(--space-3) - var(--print-section-gap)); }
+.print-legend__mark { width: var(--space-6); height: var(--space-4); justify-self: end; display: block; }
 
 /* The artist list takes whatever height is left and flows into the side
    column's four columns, at 8pt like everything else on the sheet. Each row
    is the shared lead box (booth number, right-aligned) then the name, so the
    names start on the legend's label line. Check the PNG after any copy
-   change: the list fills most of what the column has. */
+   change: the list fills most of what the column has.
+
+   Leading 1.3, 8pt (the floor). The "Art Market" heading over the list came
+   off on 9/23 (Ernest) and gave back the room the three food-cart rows had
+   taken; measure the spare in the PNG after any copy change, and if the
+   list runs over the page the leading is the knob, never the size. */
 .print-index { flex: 1; min-height: 0; }
-.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.35; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.3; }
 .print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
 .print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 .print-index__who { min-width: 0; }

@@ -33,11 +33,39 @@
      stage lavender on one side and the kids rose on the other. 5.4:1 under
      the white glyph. */
   --pin-merch: #9E3F94;
+  /* Beverage stations are not beer (Jess's 2026 plan draws them apart), so
+     they take their own hue in the drinks family: the same amber, a step
+     darker, so a cup beside a mug reads as two things. 6.4:1 under the white
+     glyph. */
+  --pin-beverage: #8A6521;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
 
   /* Structural / neutral — unchanged */
   --cat-booth: #47597A;
   --cat-utility: #6E7C93;
+
+  /* Operations — the paper-only layer EMS and the fire inspector read
+     (pins flagged print: true in assets/pins.js). Not visitor categories, so
+     not pin hues. The barricade orange is the traffic-cone orange of Jess's
+     2026 site plan, chosen to read on the street grey. */
+  --ops-barricade: #F07A22;
+  /* A generator is Jess's gold bolt: a clear yellow disc -- nowhere near the
+     beer amber -- with the bolt in navy (--ff-navy on it: 8.6:1). A dumpster
+     is the quiet one: a white disc with a charcoal ring and glyph, so it
+     reads as low priority rather than as one more dark fill. */
+  --ops-generator: #F7D117;
+  --ops-dumpster-fill: var(--ff-white);
+  --ops-dumpster-ink: var(--slate-700);
+  /* A speed bump is a thin bar across the street, white as Jess asked (her
+     plan hatches them yellow). */
+  --ops-speed-bump: var(--ff-white);
+  /* The ice truck (Jess, 9/23): an ice-blue disc with the truck in navy --
+     reads on the lawn green and is no visitor hue (water is a mid teal-blue
+     under a white glyph). Navy on it: 9.2:1. */
+  --ops-ice-truck: #CFEAF5;
+  /* The musicians' tent (Jess, 9/23): canvas brown, white glyph (8.1:1). Not
+     the food orange, not the stage lavender; a structure, not a service. */
+  --ops-musician-tent: #6B4A2B;
 
   /* Neutrals — these replace the ad-hoc greys scattered through map.css */
   --ff-white: #FFFFFF;

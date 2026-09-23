@@ -5,6 +5,7 @@ import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
+import { ACTIVE_PINS } from './assets/pins';
 import { FESTIVAL } from './data/festival';
 import './styles/map.css';
 
@@ -41,26 +42,59 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
   const [openBooth, setOpenBooth] = useState(null);
+  // The one pin that was tapped (or chosen from the directory): it wears the
+  // selected ring and is the point the map is brought to. `openId` alone is
+  // the card -- several pins share one card (every restroom is 'wc'), and a
+  // category row opens the card with no pin, ringing all of them.
+  const [selectedPin, setSelectedPin] = useState(null);
+  // A pin to bring into view once its sheet has rendered (see the effect below).
+  const [reveal, setReveal] = useState(null);
 
   function closeAll() {
     setOpenId(null);
     setOpenArea(null);
     setOpenBooth(null);
+    setSelectedPin(null);
   }
 
+  // The interaction model (CLAUDE.md, "Chips, pin taps and the sheet"). A tap
+  // on a pin never touches the chip: with a chip on, the pin you tapped is one
+  // of its own (dimmed pins take no taps), and clearing the chip here is what
+  // made the tapped pin vanish -- it was only on the map because the chip
+  // asked for it (Ernest, iPhone, 9/22). The map then pans so the pin sits in
+  // the visible area above the sheet.
   function handlePinClick(pin) {
     if (suppressClickRef.current) return;
-    setFilter(null);
     setOpenArea(null);
     setOpenBooth(null);
     setOpenId(pin.d);
+    setSelectedPin(pin);
+    setReveal({ x: pin.x, y: pin.y, n: (reveal?.n || 0) + 1 });
   }
+
+  // Bring the selected pin into the band above the open sheet. Measured after
+  // the sheet has rendered its content, and once more after a swap (the sheet
+  // holds the old content for --motion-sheet-out before the new card rises),
+  // since the band's bottom is the sheet's own height.
+  useEffect(() => {
+    if (!reveal) return;
+    const go = () => {
+      const bar = wrapRef.current?.querySelector('.topbar');
+      const sheet = document.querySelector('.sheet:not(.docked)');
+      const top = (bar ? Math.round(bar.getBoundingClientRect().bottom) : 96) + 24;
+      const bottom = (sheet ? Math.round(sheet.getBoundingClientRect().height) : 0) + 24;
+      revealAt(reveal.x, reveal.y, { top, bottom });
+    };
+    const a = requestAnimationFrame(() => requestAnimationFrame(go));
+    const b = setTimeout(go, 220);
+    return () => { cancelAnimationFrame(a); clearTimeout(b); };
+  }, [reveal, revealAt, wrapRef]);
 
   function handleAreaClick(cluster) {
     if (suppressClickRef.current) return;
@@ -152,16 +186,22 @@ export default function App() {
     setOpenId(row.d);
     if (row.kind === 'cat') {
       setFilter(row.filter);
+      setSelectedPin(null);              // no one pin: every pin in the category rings
     } else {
       setFilter(null);
+      setSelectedPin(ACTIVE_PINS.find((p) => p.d === row.d) || null);
       focusOn(row.at[0], row.at[1]);
     }
   }
 
+  // A chip going ON shows its whole category, so the map goes to the overview
+  // where all of it fits. A chip going OFF (tapping it again) leaves the map
+  // where it is and returns to the normal per-stop visibility.
   function handleChipToggle(catId) {
-    setFilter((cur) => (cur === catId ? null : catId));
+    const turningOff = filter === catId;
+    setFilter(turningOff ? null : catId);
     closeAll();
-    resetToOverview();
+    if (!turningOff) resetToOverview();
   }
 
   function handleBack() {
@@ -170,11 +210,14 @@ export default function App() {
     resetToOverview();
   }
 
+  // A tap on empty map clears one layer at a time: an open sheet closes (the
+  // chip stays on, its pins stay, the map stays); with nothing open, the chip
+  // goes off. A pan or pinch is never a tap (suppressClickRef), so the layers
+  // survive a drag that happens to start on bare map.
   function handleBackgroundClick() {
-    if (filter || openId || openArea || openBooth) {
-      setFilter(null);
-      closeAll();
-    }
+    if (suppressClickRef.current) return;
+    if (openId || openArea || openBooth) closeAll();
+    else if (filter) setFilter(null);
   }
 
   return (
@@ -198,6 +241,7 @@ export default function App() {
           onBoothClick={handleBoothClick}
           selectedBoothId={openBooth?.id}
           selectedPoiId={openId}
+          selectedPin={selectedPin}
           selectedAreaId={openArea?.id}
         />
 
@@ -229,6 +273,7 @@ export default function App() {
             openArea={openArea}
             openBooth={openBooth}
             onStepBooth={stepBooth}
+            selectedPin={selectedPin}
             onSelect={handleDirectorySelect}
             onOpenBooth={handleBoothFromList}
             onClose={closeAll}

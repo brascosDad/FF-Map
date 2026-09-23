@@ -3,7 +3,7 @@ import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { featuredTitle } from '../data/festival';
-import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { ACTIVE_PINS, CREAM, NAVY, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
 // Side of one booth / food-truck square, in map units. The export draws its own
@@ -67,9 +67,16 @@ const FEATURED_STAR = TICK * 0.85;
 
 // `hollow` draws the square as an outline -- cream inside, the run's colour as
 // a frame -- for a spot that is a booth but not one of the numbered run.
-function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false } = {}) {
+// `numberSide: 'right'` sets each number BESIDE its square, level with it,
+// instead of above: in a tight vertical stack (Kidlandia) a number above a
+// square reads as the one above's (Ernest, 9/22). The gap off the square's
+// edge is in screen pixels like the number itself.
+const NUMBER_GAP_PX = 2.5;
+function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle = 0, hollow = false, numberSide } = {}) {
   return booths.map((b) => {
     const featured = featuredTitle(b);
+    const nx = numberSide === 'right' ? b.x + TICK / 2 + NUMBER_GAP_PX * k : b.x;
+    const ny = numberSide ? b.y + NUMBER_PX * k * 0.36 : b.y - TICK * 0.9;
     return (
     <g key={b.id} className={`${onTap ? 'ff-tap ff-booth' : 'ff-booth'}${featured ? ' ff-booth--featured' : ''}`} data-booth={b.id}
        onClick={onTap ? (e) => { e.stopPropagation(); onTap(b); } : undefined}>
@@ -92,8 +99,8 @@ function boxes(booths, color, { numbers = false, onTap, k = 1, selectedId, angle
           overlap the neighbours and make the wrong booth win the tap. */}
       {onTap && <rect x={b.x - 4.7} y={b.y - 4.7} width={9.4} height={9.4} fill="transparent" />}
       {numbers && (
-        <text x={b.x} y={b.y - TICK * 0.9} fontSize={NUMBER_PX * k} fontWeight={700} fill={MAP_NUMBER}
-              textAnchor="middle" stroke={MAP_HALO} strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
+        <text x={nx} y={ny} fontSize={NUMBER_PX * k} fontWeight={700} fill={MAP_NUMBER}
+              textAnchor={numberSide === 'right' ? 'start' : 'middle'} stroke={MAP_HALO} strokeWidth={2 * k} paintOrder="stroke">{b.n}</text>
       )}
     </g>
     );
@@ -130,7 +137,7 @@ function SelectRing({ x, y, r, k }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedPin = null, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   // One size at every level. The overview used to draw pins a step smaller,
@@ -213,8 +220,8 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         ))}
 
-        {/* Kidlandia's booths, one column inside the Kidlandia area, lowest
-            number at the south end. Not part of the numbered run and not on
+        {/* Kidlandia's booths, one column inside the Kidlandia area, K0 at
+            the north end (the chair, 9/21). Not part of the numbered run and not on
             any market row, so they draw on their own, in the Kidlandia
             category's own colour rather than the art-market slate: squares
             from the first zoom step, and nothing at the phone overview --
@@ -225,7 +232,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
             be mistaken for a numbered booth whose number is too small to read. */}
         {!showBlobs && (
           <g className="ff-area" data-area="kid">
-            {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid })}
+            {/* Numbers beside the squares, on the east -- the side facing
+                away from the Kidlandia shape's interior, since the column
+                runs along its east edge. */}
+            {boxes(BOOTHS.kid, PIN_COLOR.kids, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.kid, numberSide: 'right' })}
           </g>
         )}
         {!showBlobs && (
@@ -234,9 +244,22 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         )}
 
-        {PINS.map((p, i) => {
-          if (detail && p.c === 'food') return null;
+        {/* A filter chip's own pins draw last, so they sit on top of
+            everything they might share a spot with; the rest are dimmed and,
+            while the chip is on, take no taps (.ffc-dimmed). */}
+        {ACTIVE_PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
+          // Paper-only pins (print: true in pins.js -- the EMS / fire
+          // inspector layer) never reach the phone.
+          if (p.print) return null;
+          // The Food Court pin gives way to its stalls at Detail; a food cart
+          // pin (King of Pops) is a place of its own and stays.
+          if (detail && p.d === 'food') return null;
           if (overview && !onOverview(p)) return null;
+          // Held back until Detail (from: 'detail' in pins.js) unless its
+          // chip asked for it. Only where the sheet is a bottom sheet: the
+          // docked map's first step draws 44px as 22 units, half the
+          // phone's 46, so there the first step already has the room.
+          if (p.from === 'detail' && !detail && !docked && filter !== p.c) return null;
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.
@@ -246,11 +269,19 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
                   has to hit does not. This invisible circle holds the 44px
                   floor whatever the marker is drawn at. */}
               <circle cx={p.x} cy={p.y} r={tapR} fill="transparent" />
-              <g filter="url(#ds)">
-                <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
-                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
-              </g>
-              {p.d === selectedPoiId && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}
+              {/* A square pin (the King of Pops carts) is a booth-sized tick
+                  in its category colour at full strength, no glyph -- ground
+                  scale, like the stalls, under the same 44px target. */}
+              {p.shape === 'square'
+                ? <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.6} fill="var(--pin-fill)" />
+                : <g filter="url(#ds)">
+                    <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
+                    <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
+                  </g>}
+              {/* The tapped pin wears the ring. With no one pin selected (a
+                  category row in the directory) every pin of the open card
+                  does -- the honest answer to "where are the restrooms". */}
+              {(selectedPin ? p === selectedPin : p.d === selectedPoiId) && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}
             </g>
           );
         })}

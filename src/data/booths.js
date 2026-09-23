@@ -8,12 +8,12 @@
 //     assignments, sheet read 2026-09-21: 1-54 in the park, 55-81 on McLendon,
 //     82-139 on Candler Park Dr, K0-K10 in Kidlandia. Each group is in number
 //     order, so stepping follows the numbers -- which on Candler Park Dr
-//     means south to north.
+//     means south to north, and in Kidlandia north to south.
 //   - `name` is the artist, `biz` the business, straight from the sheet.
 //     Both are null on a sponsor booth.
 //   - Positions are laid along the rows the export draws, at the official
 //     counts. The K0-K10 column is one vertical run inside the Kidlandia
-//     area, lowest number at the south end; its exact spot is unverified.
+//     area, K0 at the NORTH end (the chair, 9/21); its exact spot is unverified.
 //     So are the two unnumbered squares (UNNUMBERED).
 //   - Food stalls carry NO truck names. The 2026 list is in vendors.json;
 //     which truck parks at which stall is not assigned yet.
@@ -80,19 +80,19 @@ export const BOOTHS = {
     { id: 'cpd-139', n: 139, area: 'Candler Park Dr', x: 403.1, y: 378.6, name: 'Renzo Iglesias', biz: 'L\'Harmonie Creative Jewelry' },
   ],
   mcl: [
-    { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 875.8, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },
-    { id: 'mcl-056', n: 56, area: 'McLendon Ave', x: 857.2, y: 797.7, name: 'Kelly Cook', biz: 'Pink Jean Art Agency' },
-    { id: 'mcl-057', n: 57, area: 'McLendon Ave', x: 838.7, y: 797.7, name: 'Ashley Flack', biz: 'Flack Injury Law' },
-    { id: 'mcl-058', n: 58, area: 'McLendon Ave', x: 820.1, y: 797.7, name: 'Duo-Wei Yang', biz: 'Merry Artisan' },
-    { id: 'mcl-059', n: 59, area: 'McLendon Ave', x: 801.7, y: 797.7, name: 'Neighborhood Church', biz: 'Neighborhood Church' },
-    { id: 'mcl-060', n: 60, area: 'McLendon Ave', x: 783.1, y: 797.7, name: 'John Lundy', biz: 'John Lundy Sculpture' },
-    { id: 'mcl-061', n: 61, area: 'McLendon Ave', x: 764.5, y: 797.7, name: 'Bilal Ahmed', biz: 'Iron Borne Blades' },
-    { id: 'mcl-062', n: 62, area: 'McLendon Ave', x: 746.0, y: 797.7, name: 'Gail Cohn', biz: 'Cohn Creations' },
-    { id: 'mcl-063', n: 63, area: 'McLendon Ave', x: 727.4, y: 797.7, name: 'Chanel Hicks', biz: 'Harmony and Heaven Co.' },
-    { id: 'mcl-064', n: 64, area: 'McLendon Ave', x: 708.8, y: 797.7, name: 'AJ Jensen', biz: 'Toonheadz' },
-    { id: 'mcl-065', n: 65, area: 'McLendon Ave', x: 690.4, y: 797.7, name: 'Gene Brighton', biz: 'Nanotrek9' },
-    { id: 'mcl-066', n: 66, area: 'McLendon Ave', x: 671.8, y: 797.7, name: 'Mayela Mercedes', biz: 'Are.t Clay Jewelry' },
-    { id: 'mcl-067', n: 67, area: 'McLendon Ave', x: 653.3, y: 797.7, name: 'Tarik Berbey', biz: 'The Tin Man and Friends' },
+    { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 840.0, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },
+    { id: 'mcl-056', n: 56, area: 'McLendon Ave', x: 824.2, y: 797.7, name: 'Kelly Cook', biz: 'Pink Jean Art Agency' },
+    { id: 'mcl-057', n: 57, area: 'McLendon Ave', x: 808.4, y: 797.7, name: 'Ashley Flack', biz: 'Flack Injury Law' },
+    { id: 'mcl-058', n: 58, area: 'McLendon Ave', x: 792.6, y: 797.7, name: 'Duo-Wei Yang', biz: 'Merry Artisan' },
+    { id: 'mcl-059', n: 59, area: 'McLendon Ave', x: 776.8, y: 797.7, name: 'Neighborhood Church', biz: 'Neighborhood Church' },
+    { id: 'mcl-060', n: 60, area: 'McLendon Ave', x: 761.0, y: 797.7, name: 'John Lundy', biz: 'John Lundy Sculpture' },
+    { id: 'mcl-061', n: 61, area: 'McLendon Ave', x: 745.2, y: 797.7, name: 'Bilal Ahmed', biz: 'Iron Borne Blades' },
+    { id: 'mcl-062', n: 62, area: 'McLendon Ave', x: 729.5, y: 797.7, name: 'Gail Cohn', biz: 'Cohn Creations' },
+    { id: 'mcl-063', n: 63, area: 'McLendon Ave', x: 713.7, y: 797.7, name: 'Chanel Hicks', biz: 'Harmony and Heaven Co.' },
+    { id: 'mcl-064', n: 64, area: 'McLendon Ave', x: 697.9, y: 797.7, name: 'AJ Jensen', biz: 'Toonheadz' },
+    { id: 'mcl-065', n: 65, area: 'McLendon Ave', x: 682.1, y: 797.7, name: 'Gene Brighton', biz: 'Nanotrek9' },
+    { id: 'mcl-066', n: 66, area: 'McLendon Ave', x: 666.3, y: 797.7, name: 'Mayela Mercedes', biz: 'Are.t Clay Jewelry' },
+    { id: 'mcl-067', n: 67, area: 'McLendon Ave', x: 650.5, y: 797.7, name: 'Tarik Berbey', biz: 'The Tin Man and Friends' },
     { id: 'mcl-068', n: 68, area: 'McLendon Ave', x: 634.7, y: 797.7, name: 'Tarik Berbey', biz: 'The Tin Man and Friends' },
     { id: 'mcl-069', n: 69, area: 'McLendon Ave', x: 587.4, y: 797.7, name: 'Shera Walton', biz: 'Moonflower Candles, Pottery and Plants' },
     { id: 'mcl-070', n: 70, area: 'McLendon Ave', x: 574.7, y: 797.7, name: 'Greg', biz: 'Candler Park Market' },
@@ -165,17 +165,17 @@ export const BOOTHS = {
     { id: 'spine-054', n: 54, area: 'In the Park', x: 623.1, y: 645.3, name: 'Boutte Tree', biz: 'Boutte Tree' },
   ],
   kid: [
-    { id: 'kid-K0', n: 'K0', area: 'Kidlandia', x: 592.0, y: 472.0, name: 'Liam Whalen', biz: 'Sand Art Cart' },
-    { id: 'kid-K1', n: 'K1', area: 'Kidlandia', x: 592.0, y: 463.0, name: 'Barbara Marston', biz: 'Dekalb Democrats' },
-    { id: 'kid-K2', n: 'K2', area: 'Kidlandia', x: 592.0, y: 454.0, name: 'Nicholas Carey', biz: 'Musicologie Atlanta' },
-    { id: 'kid-K3', n: 'K3', area: 'Kidlandia', x: 592.0, y: 445.0, name: 'Smita Gupta', biz: 'Smita Gupta' },
-    { id: 'kid-K4', n: 'K4', area: 'Kidlandia', x: 592.0, y: 436.0, name: 'Stephanie DeSantis', biz: 'Lake Claire Community Land Trust' },
+    { id: 'kid-K0', n: 'K0', area: 'Kidlandia', x: 592.0, y: 382.0, name: 'Liam Whalen', biz: 'Sand Art Cart' },
+    { id: 'kid-K1', n: 'K1', area: 'Kidlandia', x: 592.0, y: 391.0, name: 'Barbara Marston', biz: 'Dekalb Democrats' },
+    { id: 'kid-K2', n: 'K2', area: 'Kidlandia', x: 592.0, y: 400.0, name: 'Nicholas Carey', biz: 'Musicologie Atlanta' },
+    { id: 'kid-K3', n: 'K3', area: 'Kidlandia', x: 592.0, y: 409.0, name: 'Smita Gupta', biz: 'Smita Gupta' },
+    { id: 'kid-K4', n: 'K4', area: 'Kidlandia', x: 592.0, y: 418.0, name: 'Stephanie DeSantis', biz: 'Lake Claire Community Land Trust' },
     { id: 'kid-K5', n: 'K5', area: 'Kidlandia', x: 592.0, y: 427.0, name: 'Addison Moore', biz: 'Mulberry Fields' },
-    { id: 'kid-K6', n: 'K6', area: 'Kidlandia', x: 592.0, y: 418.0, name: 'Bob James', biz: 'CCL GA ATL Chapter' },
-    { id: 'kid-K7', n: 'K7', area: 'Kidlandia', x: 592.0, y: 409.0, name: 'Erin Aube', biz: 'Midtown High' },
-    { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 592.0, y: 400.0, name: 'Clifton Sanctuary', biz: 'Clifton Sanctuary' },
-    { id: 'kid-K9', n: 'K9', area: 'Kidlandia', x: 592.0, y: 391.0, name: 'Primavera Preschool and Aftercare', biz: 'Primavera' },
-    { id: 'kid-K10', n: 'K10', area: 'Kidlandia', x: 592.0, y: 382.0, name: 'Marsha Weinstein / Brooke Ussery', biz: 'Faces Unlimited by Marsha and Brooke' },
+    { id: 'kid-K6', n: 'K6', area: 'Kidlandia', x: 592.0, y: 436.0, name: 'Bob James', biz: 'CCL GA ATL Chapter' },
+    { id: 'kid-K7', n: 'K7', area: 'Kidlandia', x: 592.0, y: 445.0, name: 'Erin Aube', biz: 'Midtown High' },
+    { id: 'kid-K8', n: 'K8', area: 'Kidlandia', x: 592.0, y: 454.0, name: 'Clifton Sanctuary', biz: 'Clifton Sanctuary' },
+    { id: 'kid-K9', n: 'K9', area: 'Kidlandia', x: 592.0, y: 463.0, name: 'Primavera Preschool and Aftercare', biz: 'Primavera' },
+    { id: 'kid-K10', n: 'K10', area: 'Kidlandia', x: 592.0, y: 472.0, name: 'Marsha Weinstein / Brooke Ussery', biz: 'Faces Unlimited by Marsha and Brooke' },
   ],
   food: [
     { id: 'food-01', n: 1, area: 'Food Court', x: 856.0, y: 244.3 },
@@ -203,7 +203,7 @@ export const BOOTHS = {
 // `area` and `where` are what the booth sheet says.
 export const UNNUMBERED = [
   { id: 'unnumbered-aware-wildlife', n: null, group: 'spine', area: 'In the Park', x: 598.5, y: 677.0, name: 'Scott Lange', biz: 'AWARE Wildlife', where: 'on the entrance path, below the west row' },
-  { id: 'unnumbered-achieve-with-steve', n: null, group: 'mcl', area: 'McLendon Ave', x: 897.0, y: 797.7, name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'beside the Acoustic Stage' },
+  { id: 'unnumbered-achieve-with-steve', n: null, group: 'mcl', area: 'McLendon Ave', x: 858.0, y: 797.7, name: 'Achieve with Steve', biz: 'Achieve with Steve', where: 'beside the Acoustic Stage' },
 ];
 
 // The three things a reader has to be told about this data used to live here as

@@ -1,10 +1,12 @@
 import Icon from './Icon';
+import { hasPins } from '../assets/pins';
 
+// A chip for a category with no pin on the map (every one hidden) is not shown.
 const QUICK_FILTERS = [
   { id: 'wc', label: 'Restrooms', icon: 'wc' },
   { id: 'firstaid', label: 'First aid', icon: 'firstaid' },
   { id: 'water', label: 'Water', icon: 'water' },
-];
+].filter((c) => hasPins(c.id));
 
 /**
  * FilterChip row. Selection is carried by aria-pressed and a navy fill.

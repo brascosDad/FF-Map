@@ -41,9 +41,14 @@ being numbered one-for-one:
                     export where the path bends; the sheet does not say how
                     many of its 26 fall either side, so they are split in the
                     export's own proportion (9 north of the bend, 17 south).
-  McLendon Ave      13 + 14 ticks match 81-69 and 68-55 exactly. Kept as is.
-                    Booths here were 15 ft already, so the count is unchanged
-                    from 2025 and every number is simply the old one minus 7.
+  McLendon Ave      13 + 14 ticks match 81-69 and 68-55 exactly. The west box
+                    is kept as is. The east box is repacked: Mell Ave moved to
+                    x 938.5 on 9/21 and the run has to end west of its kerb
+                    (x 924.5) with the Acoustic Stage, Achieve with Steve and
+                    a barricade beyond booth 55, so 56-68 are laid at an even
+                    pitch from the export's 68 to MCL_EAST_END. Booths here
+                    were 15 ft already, so the count is unchanged from 2025
+                    and every number is simply the old one minus 7.
   Candler Park Dr   both columns are laid out afresh on the export's two column
                     x's at the 15 ft pitch. Numbers run north to south
                     DECREASING: the highest number at the top of the street
@@ -61,10 +66,10 @@ being numbered one-for-one:
                     a NUMBERING gap, not the physical bump. See lay_cpd().
   Kidlandia         K0-Kn are not on the export at all. One vertical column
                     INSIDE the Kidlandia area (the basemap's kidlandia-area
-                    shape), numbered south to north: K0 at the south end, the
-                    highest at the north, as the 2026 site plan and the 2025
-                    map have it (Ernest, 9/19). How many there are comes from
-                    the sheet. See KID_STACK.
+                    shape), numbered north to south: K0 at the north end, the
+                    highest at the south (the chair, 9/21 -- the column was
+                    laid the other way up until 9/22). How many there are
+                    comes from the sheet. See KID_STACK.
   Unnumbered        two artists have a spot and no number: AWARE Wildlife on
                     the grass by the park's west row, Achieve with Steve
                     beside the Acoustic Stage. They get a square each, with
@@ -159,18 +164,30 @@ CPD_BUMP = 17.9 + CPD_PITCH
 CPD_BARRICADE = 7 * CPD_PITCH
 CPD_GAP = {'speed bump': CPD_BUMP, 'barricade': CPD_BARRICADE}
 
+# ---- McLendon east box ------------------------------------------------------
+# Where booth 55, the east end of the McLendon run, sits. The export put it at
+# 875.8 with Mell Ave at 806; Mell Ave moved to x 938.5 (Figma, 9/21), and
+# east of 55 there still have to be Achieve with Steve (one pitch east), the
+# Acoustic Stage pin and the barricade across McLendon just west of Mell's
+# kerb at 924.5. 840 leaves room for all three (Jess, Ernest, 9/22). The box's
+# 14 booths are laid evenly from the export's 68 (634.7) to here: a 15.8 pitch
+# against the export's 18.55, still clear of the 8-unit squares and the 9.4
+# hit areas. Booth 69 and the entrance-path gap do not move.
+MCL_EAST_END = 840.0
+
 # ---- Kidlandia column -------------------------------------------------------
 # One vertical column inside the Kidlandia area, along its east side: the
 # basemap's kidlandia-area shape spans x ~470-627, y ~297-538, and its east
 # edge at these latitudes is x ~610-615, so a column at x 592 sits inside it
 # with a booth's width to spare, clear of the Kidlandia pin (550.9, 422.3) at
-# every zoom and of the court to the south. `y_south` is the centre of the
-# LOWEST number; the column grows northward from there at `pitch`, so K0 is at
-# the south end and the highest number at the north, as the 2026 site plan and
-# the 2025 map have it. Eleven booths run y 472 up to 382; ten would stop at
-# 391 -- the count is the sheet's, not this table's. Nothing in the export
-# marks these, so verify the column against the grounds at setup.
-KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
+# every zoom and of the court to the south. `y_north` is the centre of the
+# LOWEST number; the column grows southward from there at `pitch`, so K0 (the
+# Sand Art Cart) is at the north end and the highest number at the south --
+# the chair's 9/21 correction; until 9/22 the column ran the other way up.
+# Eleven booths run y 382 down to 472; ten would stop at 463 -- the count is
+# the sheet's, not this table's. Nothing in the export marks these, so verify
+# the column against the grounds at setup.
+KID_STACK = {'x': 592.0, 'y_north': 382.0, 'pitch': 9.0}
 
 # ---- Artists with a spot but no number --------------------------------------
 # Keyed by business, as the sheet names them. Positions are by description.
@@ -180,12 +197,13 @@ KID_STACK = {'x': 592.0, 'y_south': 472.0, 'pitch': 9.0}
 # and south of it, just before the ground widens out to the rows (Ernest,
 # 9/20; the chair's own words were "on the grass"). Clear of the restroom pin's
 # target at the Detail stop. Achieve with Steve "beside the Acoustic Stage"
-# (chair, 9/17) -- one McLendon pitch east of booth 55, short of the stage
-# pin. `group` is the run whose sheet lists them. Check both against the
-# grounds at setup (10/2).
+# (chair, 9/17) -- 18 units east of booth 55 (MCL_EAST_END), short of the
+# stage pin at 885, since 9/22 when Mell Ave moved and the east end of
+# McLendon was repacked. `group` is the run whose sheet lists them. Check
+# both against the grounds at setup (10/2).
 UNNUMBERED_AT = {
     'AWARE Wildlife': {'group': 'spine', 'x': 598.5, 'y': 677.0, 'where': 'on the entrance path, below the west row'},
-    'Achieve with Steve': {'group': 'mcl', 'x': 897.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
+    'Achieve with Steve': {'group': 'mcl', 'x': 858.0, 'y': 797.7, 'where': 'beside the Acoustic Stage'},
 }
 
 # ---- Food court -------------------------------------------------------------
@@ -283,6 +301,10 @@ def lay_mclendon(mcl, LAYOUT):
     boxes = split_on_gaps(sorted(mcl))                          # west to east
     want = [numbered(LAYOUT[r])[0] for r in ('mclendon-west', 'mclendon-east')]
     assert [len(b) for b in boxes] == [len(numbers(s)) for s in want], [len(b) for b in boxes]
+    # The east box ends at MCL_EAST_END, not where the export put it: same
+    # west end, same row, evenly repacked (see the note on MCL_EAST_END).
+    west_end, y = boxes[1][0]
+    boxes[1] = resample([(west_end, y), (MCL_EAST_END, y)], len(boxes[1]))
     out = []
     for seg, pts in zip(want, boxes):
         out.extend((n, x, y) for n, (x, y) in zip(numbers(seg), pts))
@@ -309,8 +331,8 @@ def lay_cpd(cpd, LAYOUT):
 
 def lay_kid(LAYOUT):
     seg = numbered(LAYOUT['kidlandia-stack'])[0]
-    # Numbers go up as the column goes north (y decreases).
-    return [(n, KID_STACK['x'], KID_STACK['y_south'] - i * KID_STACK['pitch'])
+    # Numbers go up as the column goes south (y increases).
+    return [(n, KID_STACK['x'], KID_STACK['y_north'] + i * KID_STACK['pitch'])
             for i, n in enumerate(numbers(seg))]
 
 
@@ -393,13 +415,13 @@ def main():
     w('//     %s on Candler Park Dr, %s in Kidlandia. Each group is in number' % (
         num['poster_endpoints']['candler_park_dr'], num['poster_endpoints']['kidlandia']))
     w('//     order, so stepping follows the numbers -- which on Candler Park Dr')
-    w('//     means south to north.')
+    w('//     means south to north, and in Kidlandia north to south.')
     w('//   - `name` is the artist, `biz` the business, straight from the sheet.')
     w('//     Both are null on a sponsor booth.')
     w('//   - Positions are laid along the rows the export draws, at the official')
     w('//     counts. The %s-%s column is one vertical run inside the Kidlandia' % (
         zr['kidlandia']['first'], zr['kidlandia']['last']))
-    w('//     area, lowest number at the south end; its exact spot is unverified.')
+    w('//     area, K0 at the NORTH end (the chair, 9/21); its exact spot is unverified.')
     w('//     So are the two unnumbered squares (UNNUMBERED).')
     w('//   - Food stalls carry NO truck names. The 2026 list is in vendors.json;')
     w('//     which truck parks at which stall is not assigned yet.')

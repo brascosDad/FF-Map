@@ -11,9 +11,9 @@
 // so it cannot disagree with the phone map about where anything is.
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
-import { AREAS, BOOTH_ANGLE, span } from '../data/areas';
-import { CREAM, PINS, PIN_COLOR, SLATE } from '../assets/pins';
-import { LEGEND } from '../data/directory';
+import { AREAS, BOOTH_ANGLE } from '../data/areas';
+import { ACTIVE_PINS, CREAM, PIN_COLOR, PIN_INK, SLATE } from '../assets/pins';
+import { LEGEND, PRINT_SITE_LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import { FESTIVAL, featuredTitle } from '../data/festival';
 // The QR generator's core only: it returns the module matrix and we draw it
@@ -97,7 +97,7 @@ function MapQr() {
 // landed on the grey of the square (Ernest, 9/20). Each column's numbers go
 // to the far side from the street -- west column left into the green, east
 // column right into the park -- so nothing is printed over a booth.
-function Squares({ booths, color, angle = 0, hollow = false, numberSide }) {
+function Squares({ booths, color, angle = 0, hollow = false, numberSide, numbers = true }) {
   return booths.map((b) => {
     const featured = featuredTitle(b);
     const side = numberSide?.(b);
@@ -114,7 +114,7 @@ function Squares({ booths, color, angle = 0, hollow = false, numberSide }) {
           opacity, as on the screen -- a mark that reads at 5.5pt without
           leaning on colour. */}
       {featured && <IconAt name="star" x={b.x} y={b.y} size={FEATURED_STAR} />}
-      {b.n != null && (
+      {numbers && b.n != null && (
         <text x={nx} y={ny} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
               textAnchor={side === 'left' ? 'end' : side === 'right' ? 'start' : 'middle'} stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
       )}
@@ -125,13 +125,45 @@ function Squares({ booths, color, angle = 0, hollow = false, numberSide }) {
 
 // Where each named place's label sits relative to its pin. Chosen by eye so
 // none lands on a booth row: the food court's goes above, the stages' beside.
+// The Acoustic Stage's runs above and to the LEFT of its pin (anchored just
+// past the pin's centre): centred, it reached the barricade across McLendon
+// at Mell Ave, 27 units east of the pin since the 9/22 repack.
 const LABEL_AT = {
   food: { dx: 0, dy: -PIN_R - 5, anchor: 'middle' },
   stageMain: { dx: -PIN_R - 4, dy: 3, anchor: 'end' },
-  stageAcoustic: { dx: 0, dy: -PIN_R - 5, anchor: 'middle' },
+  stageAcoustic: { dx: PIN_R, dy: -PIN_R - 5, anchor: 'end' },
   kids: { dx: 0, dy: PIN_R + 10, anchor: 'middle' },
 };
 const LABEL_TEXT = { food: 'Food Court', stageMain: 'Main Stage', stageAcoustic: 'Acoustic Stage', kids: 'Kidlandia' };
+
+// Paper-only marks that are not discs: keyed by category, each takes the pin
+// record and returns what to draw at its x/y. A category not listed here is a
+// disc with its glyph, like every visitor pin. The legend draws the same
+// shapes at swatch size (see SiteSwatch).
+const PRINT_SHAPES = {
+  // Three traffic cones in a row across the street, the way Jess's site plan
+  // draws a barricade: 6-unit triangles at CONE_PITCH along `axis`, all
+  // pointing north, spanning most of a 28-unit street. A thin white halo, so
+  // the orange holds its edge on the street grey.
+  barricade: ({ x, y, axis = 'x' }) => [-1, 0, 1].map((i) => {
+    const cx = axis === 'x' ? x + i * CONE_PITCH : x;
+    const cy = axis === 'x' ? y : y + i * CONE_PITCH;
+    return <path key={i} d={`M${cx - CONE / 2} ${cy + CONE / 2}L${cx + CONE / 2} ${cy + CONE / 2}L${cx} ${cy - CONE / 2}Z`}
+                 fill={PIN_COLOR.barricade} stroke={HALO} strokeWidth={0.8} strokeLinejoin="round" paintOrder="stroke" />;
+  }),
+};
+const CONE = 6;          // one barricade cone, base and height, in map units
+const CONE_PITCH = 9;    // cone centre to cone centre
+const STREET_W = 28;     // the street band, from the basemap trace
+const BUMP_H = 2.5;      // a speed bump's bar
+// A speed bump: a thin white bar the width of the street. In the legend the
+// bar is drawn on a patch of street grey, since white on white is nothing.
+PRINT_SHAPES.speedbump = ({ x, y, swatch }) => (
+  <>
+    {swatch && <rect x={-12} y={-8} width={24} height={16} rx={1} fill="var(--map-street)" />}
+    <rect x={x - (swatch ? 10 : STREET_W / 2)} y={y - BUMP_H / 2} width={swatch ? 20 : STREET_W} height={BUMP_H} fill={PIN_COLOR.speedbump} />
+  </>
+);
 
 // Candler Park Dr's two columns: the west (street-side) column's numbers go
 // left, the east (park-side) column's go right -- decided by which side of
@@ -149,30 +181,47 @@ function PrintMap() {
       <text x={411.5} y={130} fontSize={STREET} fill="var(--map-label)" textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
       <text x={1015} y={795} fontSize={STREET} fill="var(--map-label)" textAnchor="start">McLendon Ave</text>
 
-      <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
+      {/* The stalls keep their squares but not their numbers on paper: the
+          handout lists nothing for stalls 1-16 (the food list is behind
+          the QR, and the stalls are unassigned), so a number would point
+          at nothing (Ernest, 9/23). The phone still numbers them. */}
+      <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} numbers={false} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]}
                                  numberSide={a.id === 'cpd' ? cpdNumberSide : undefined} />)}
-      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} />
+      {/* Kidlandia's numbers sit beside their squares, on the east -- the
+          side away from the shape's interior -- like Candler Park Dr's: in a
+          vertical stack a number above reads as the one above's (9/22). */}
+      <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} numberSide={() => 'right'} />
       <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
-      {/* One plain "Art Market" on the car-path run, which has no street name
-          to say what it is; the two street runs are named by their streets
-          and the index carries every number. The ranges came off the map on
-          9/20: 55-81 sat too high, 82-139 in the middle of the street north
-          of its run, 1-54 crowded the park rows. The label sits in the west
-          row's own break at the path bend (between 37 and 38), along the
-          row, so it touches no number. */}
-      <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
-        <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market</text>
-        {/* Just below the south end of the Kidlandia column, wherever the
-            sheet's count puts it. */}
-        <text x={BOOTHS.kid[0].x} y={Math.max(...BOOTHS.kid.map((b) => b.y)) + 15} textAnchor="middle">{span(BOOTHS.kid)}</text>
-      </g>
+      {/* No "Art Market" label on the car-path run (Ernest, 9/23): set at the
+          path's angle it crowded the booth numbers, and the numbered rows
+          explain themselves -- the index heading says Art Market, the two
+          street runs are named by their streets. The run ranges came off
+          9/20 and the Kidlandia range 9/22 for the same reason. */}
 
-      {PINS.map((p, i) => (
-        <g key={i} className={`print-pin print-pin--${p.c}`}>
-          <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={HALO} strokeWidth={1.2} />
-          <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} />
+      {/* Every pin, the paper-only ones included (print: true in pins.js --
+          the EMS / fire-inspector layer the phone skips). A category in
+          PRINT_SHAPES is drawn as its own mark rather than a disc. */}
+      {ACTIVE_PINS.map((p, i) => (
+        <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`}>
+          {p.shape === 'square'
+            ? <>
+                <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.4} fill={PIN_COLOR[p.c]} />
+                {/* A cart's number (C1-C3, pins.js) beside its square, level,
+                    set like a Candler Park Dr booth number: to the right, in
+                    the same type and halo, so it points at its index row. */}
+                {p.n && <text x={p.x + TICK / 2 + NUMBER_GAP} y={p.y + NUMBER * 0.36} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
+                              textAnchor="start" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{p.n}</text>}
+              </>
+            : PRINT_SHAPES[p.c]
+            ? PRINT_SHAPES[p.c](p)
+            : <>
+                {/* A disc with its own ring (the dumpster) draws the ring in
+                    place of the white halo; the rest keep the halo. */}
+                <circle cx={p.x} cy={p.y} r={PIN_R} fill={PIN_COLOR[p.c]} stroke={PIN_INK[p.c]?.ring || HALO} strokeWidth={PIN_INK[p.c]?.ring ? 1.4 : 1.2} />
+                <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON} color={PIN_INK[p.c]?.glyph} />
+              </>}
           {LABEL_AT[p.d] && LABEL_TEXT[p.d] && (
             <text x={p.x + LABEL_AT[p.d].dx} y={p.y + LABEL_AT[p.d].dy} fontSize={LABEL} fontWeight={800}
                   fill="var(--text-strong)" textAnchor={LABEL_AT[p.d].anchor}
@@ -195,6 +244,27 @@ function PrintMap() {
 
 const dotColor = (cat) => (cat === 'art' ? SLATE : PIN_COLOR[cat] || SLATE);
 
+// A site/safety key swatch: the category's own PRINT_SHAPES mark drawn at
+// swatch size in a small SVG, or -- for a category drawn as a disc -- the
+// disc with its glyph, like the visitor rows.
+function SiteSwatch({ cat }) {
+  const shape = PRINT_SHAPES[cat];
+  if (!shape) {
+    const ink = PIN_INK[cat];
+    return (
+      <span className="print-legend__dot" style={{ background: dotColor(cat), boxShadow: ink?.ring ? `inset 0 0 0 1.5px ${ink.ring}` : undefined }}>
+        <Icon name={cat} size={9} color={ink?.glyph || 'var(--icon-on-color)'} />
+      </span>
+    );
+  }
+  // The mark drawn in map units, boxed to the swatch: one unit is one px here.
+  return (
+    <svg className="print-legend__mark" viewBox="-12 -8 24 16" aria-hidden="true">
+      {shape({ x: 0, y: 0, swatch: true })}
+    </svg>
+  );
+}
+
 // Every named booth, alphabetical by what the sign will say -- the business,
 // which is what a visitor is looking for; the artist behind it is on the phone
 // map. Sponsor booths have no name to list; the two unnumbered artists list
@@ -205,6 +275,11 @@ function artistIndex() {
     for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n), featured: featuredTitle(b) });
   }
   for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
+  // The food carts, C1-C3, alphabetical with the booths the way the K
+  // booths are: a number on the map has to point at a row (Ernest, 9/23).
+  // The vendor's name from the pin, a tag to tell two carts of one vendor
+  // apart.
+  for (const p of ACTIVE_PINS) if (p.shape === 'square' && p.n) rows.push({ label: `${p.vendor}${p.tag ? ` (${p.tag})` : ''}`, n: p.n });
   return rows.sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
 }
 
@@ -228,7 +303,7 @@ export default function PrintSheet() {
               <span className="print-legend__dot" style={{ background: dotColor(l.cat) }}>
                 <Icon name={l.cat} size={9} color="var(--icon-on-color)" />
               </span>
-              {l.label}
+              {l.printLabel || l.label}
             </span>
           ))}
           <span className="print-legend__row">
@@ -240,6 +315,12 @@ export default function PrintSheet() {
           <span className="print-legend__row">
             <span className="print-legend__sq" style={{ background: PIN_COLOR.food }} />Food stall
           </span>
+          {/* The food carts (King of Pops, Mr Softee): the same square at full
+              strength (a stall square is drawn at 75%); each card names its
+              vendor. */}
+          <span className="print-legend__row">
+            <span className="print-legend__sq print-legend__sq--solid" style={{ background: PIN_COLOR.food }} />Food cart
+          </span>
           {FESTIVAL.featured.length > 0 && (
             <span className="print-legend__row">
               <span className="print-legend__sq print-legend__sq--featured" style={{ background: SLATE }}>
@@ -249,13 +330,28 @@ export default function PrintSheet() {
           )}
         </section>
 
-        {/* The alphabetical list, every artist with their booth number. No
-            count under the heading: a sheet that lists every artist needs
-            neither the public "over 130" nor a booth total -- and a booth
-            total is never printed anywhere, since it moves every time the
-            chair edits her sheet. */}
-        <section className="print-index">
-          <h2>Art Market</h2>
+        {/* The paper-only layer: what EMS and the fire inspector read the
+            sheet for (pins flagged print: true in pins.js). Its own row
+            under the visitor key, on the same four-column grid, set apart by
+            a gap alone -- no heading (Ernest, 9/22). */}
+        {PRINT_SITE_LEGEND.length > 0 && (
+          <section className="print-legend print-legend--site" aria-label="Site and safety key">
+            {PRINT_SITE_LEGEND.map((l) => (
+              <span className="print-legend__row" key={l.cat}>
+                <SiteSwatch cat={l.cat} />
+                {l.label}
+              </span>
+            ))}
+          </section>
+        )}
+
+        {/* The alphabetical list, every artist with their booth number, and
+            no heading over it (Ernest, 9/23): the list starts straight under
+            the key at the usual section gap. No count either: a sheet that
+            lists every artist needs neither the public "over 130" nor a
+            booth total -- and a booth total is never printed anywhere, since
+            it moves every time the chair edits her sheet. */}
+        <section className="print-index" aria-label="Art market index">
           <ul>
             {index.map((r, i) => (
               /* A featured booth's star sits in the number cell, not before

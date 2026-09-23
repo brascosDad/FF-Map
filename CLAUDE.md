@@ -46,6 +46,11 @@ runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, 
 "Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
 push. Don't hand-edit that table; the Action rewrites it on each push.
 
+**5. Reporting, every PR (Ernest, 9/22):** every question, open decision, skipped item and pin
+nudge goes into `docs/pr-notes.md` on the branch, overwritten each PR — the PR description can
+summarise it, the file is the record. If an answer is needed before work can continue, the chat
+reply ends with a line starting `BLOCKED:`.
+
 **4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
 phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
 any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
@@ -147,14 +152,45 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 
 - No GPS, no "you are here."
 - Three zoom stops, not four.
-- Tap a pin to open it; double-tap elsewhere to zoom. Booth sheets stay open on zoom-out. Dimmed
-  pins stay tappable. Desktop directory rows fly the map in one level.
+- Tap a pin to open it; double-tap elsewhere to zoom. Booth sheets stay open on zoom-out.
+  Desktop directory rows fly the map in one level.
 - Reset control is arrows-to-corners, not a locate button.
 - No search bar.
 - **Pins are touch targets. 44×44 CSS px is the floor.** The visible icon glyph may shrink inside
-  that target; the tappable area may not. Resolve collisions by moving pins. Circles may touch;
-  they may not overlap. The e2e suite now asserts this for the phone's opening view on a 375px
-  screen — a pin flagged `overview: true` in `pins.js` has to clear every other one.
+  that target; the tappable area may not.
+- **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
+  may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
+  Circles may touch edge to edge; they may not cross. When two collide, one of two things happens:
+  the lower-priority pin **doesn't show until a closer stop** has room for it (`from: 'detail'`
+  in `pins.js`), or the two are **moved edge to edge**. Priority when something must wait:
+  labelled destinations (stages, Food Court, Kidlandia) → first aid / EMS → restrooms → info,
+  merch, bike valet, beer → water, beverage stations, PTA, food carts. Booth hit areas count as
+  targets at the Detail stop. The e2e suite measures every stop on a 375px phone, with each
+  filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
+  anything else — nudge edge to edge; paper has no zoom to hide behind. e2e checks the paper too.
+- **Chips, pin taps and the sheet — the standing interaction model** (Ernest, iPhone, 9/22; phone
+  and desktop, every chip):
+  1. **Chip on:** every pin in that category shows, whatever the zoom, highlighted and drawn on
+     top; everything else dims and cannot be tapped (this replaced "dimmed pins stay tappable").
+     Turning a chip on goes to the overview so the whole category is in frame.
+  2. **Tap a highlighted pin:** the map pans so the pin sits centred in the visible map area
+     above the open bottom sheet (left of the docked panel on desktop), never behind it. It
+     zooms in only if needed — the current stop is kept when the pin is shown there, else the
+     nearest closer stop that can bring it into view (`revealAt` in `useMapView`). The pin keeps
+     the navy selected ring and the sheet opens with its card. The tapped pin never disappears:
+     a pin tap never touches the chip.
+  3. **Close the sheet** (close button, swipe down, tap on empty map): the ring clears, the chip
+     stays on, all its pins stay shown, the map stays where it is.
+  4. **Tapping empty map clears one layer at a time:** a sheet open → only the sheet closes; no
+     sheet → the chip turns off.
+  5. **Tapping the active chip again turns it off**, back to normal per-stop visibility; the map
+     stays where it is.
+  6. **A pan or pinch that starts on empty map is never a tap.** Only a genuine tap (no movement
+     past the usual slop) counts for step 4.
+  The same pan-into-view applies to a pin tapped with no chip on: centred above the sheet and
+  selected while the sheet is open. One tapped pin wears the ring; a category row in the
+  directory (no one pin) rings every pin of that category. e2e drives the Water and Restrooms
+  flows at 375px.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
 - **The print sheet's type floor is 8pt** for everything in the side column and every label on the
@@ -163,9 +199,9 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   map scales. The overview no longer draws pins a step smaller (the 34px `--pin-size-overview`
   token is gone): that step popped every pin to a new size the moment the fingers lifted
   (Ernest, iPhone, 9/19). e2e drives a real two-finger touch and measures a pin every frame.
-- **Kidlandia booths are one vertical column inside the Kidlandia shape, lowest number at the
-  south end**, in `--pin-kids` (Ernest 9/19, per Jess's 2026 site plan and the 2025 map). The
-  count is the sheet's.
+- **Kidlandia booths are one vertical column inside the Kidlandia shape, K0 at the NORTH end,
+  K10 at the south** (Courtney 9/21; it was laid the other way up until 9/22), in `--pin-kids`.
+  The count is the sheet's.
 - **A spot with no booth number draws hollow**: `--ff-cream` inside a `--cat-booth` frame, on the
   map and on paper, keyed in both legends. Still a booth; plainly not one of the numbered run.
 - **The printed handout is single-sided, map-dominant, no stage schedule** (decided 9/17, Erin
@@ -177,9 +213,11 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   marker keeps no tap target: at Detail the area names are drawn and every booth is its own
   target, and a marker the size of a pin sat on 96–98, 113–115 and 60–62 (Ernest, iPhone 9/20).
   e2e proves those booths take the tap at Detail on phone and desktop.
-- **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): as close as the
-  touch rule allows, 46 units apart — targets touching at the phone's first zoom step on a 375px
-  screen, an 11px gap on the desktop opening view. Info stays off the phone's opening view.
+- **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): info sits directly
+  on top of merch, edge to edge — 26.4 units out on Ernest's round-3 bearing (a little east of
+  north), the two 44px targets touching at the phone's Detail stop, which is where info arrives
+  on the phone. On the desktop it arrives at the first step (a 12px gap between the 40px pins),
+  no longer on the opening view, where 44px is 40 units. Don't move it back up.
 - **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the
   streets are named, the index has every number); the index heading is just "Art Market" with no
   count under it; the Food Court list stays out of the side column; legend swatches and index
@@ -193,6 +231,14 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 - **Candler Park Dr numbers sit beside their squares on paper**, outward (west column left, east
   column right), level, `NUMBER_GAP` off the edge; the park rows and McLendon keep numbers above
   the square, where they have room (9/21).
+- **A pin flagged `print: true` in `pins.js` is paper-only** (9/22): the EMS / fire-inspector
+  layer Jess marked up — barricades, speed bumps, generators, dumpsters, two restroom banks. The
+  phone skips it; the print sheet draws it and keys it under "Site / safety". Ops colours are
+  `--ops-*` tokens, not pin hues.
+- **Beer and beverages are two categories** (Jess's plan, 9/21): the mug in `--pin-drinks` is
+  beer, the cup in `--pin-beverage` (a step darker, same amber family) is everything else.
+- **`basemapTrace.js` is not refreshed by Sync from Figma.** A street moved in Figma is moved
+  there by hand too (Mell Ave, 9/22). Wiring it in is a post-festival job.
 - The map URL is locked once posters print (~9/22). No hosting or routing changes after that.
 
 ## Calendar
@@ -280,6 +326,84 @@ Figma workflow), and PR #8 (booth + beta fixes):
   (numbers, star, 138–139), phone-open and sheet-open (the star on booth 11 is off the phone's
   opening view, so those two may not change — the Action decides).
 
+- 9/22 round, the committee feedback PR (one commit per item): the **print-only layer** above;
+  Kidlandia column flipped (K0 north); **King of Pops** back on the food list, unpinned; the Main
+  Stage water is on the field by the beer stand (nudged to 46 units from it, the touch floor at
+  the first zoom step); the entrance-path water is at the McLendon entrance next to merch
+  **exactly where Jess put it, and on the phone it overlaps the merch target at the first zoom
+  step — Ernest decides the phone treatment**; four barricades, seven generators / dumpsters,
+  two speed bumps and two restroom banks on paper; the field side of the art-market path has
+  two **beverage stations**, EMS (the first-aid pin, moved from the Main Stage) and a restroom
+  bank; Kidlandia has a water station and the **PTA booth** (Phosphor rocket, now in `--pin-kids`);
+  **Mell Ave is at x 938.5** in the trace and the McLendon east end is repacked west of it
+  (barricade 912, stage 885, Achieve with Steve 858, booth 55 at 840, 56–68 at a 15.8 pitch);
+  beer and a new water station sit 46 apart over the Acoustic Stage. The print index is at
+  **leading 1.25 (provisional)** to make room for the Site / safety key — 0.19" spare, one line;
+  the options are in `docs/pr-shots/print-side-option-*.png`. Phosphor has no `Cup` glyph
+  (checked core 2.1.1): the beverage cup is `PintGlass`, one line in `icons.js` to swap.
+  The `drinks` card and directory row now say "Beer" / "Beer stands" (round 2).
+- 9/22 round 2, Ernest's review of that PR (one commit per item, same branch): the **no-overlap
+  standing rule** above, with `from: 'detail'` and the chip behaviour, and e2e measuring every
+  stop plus the paper; **every restroom on both maps** (the two 9/21 banks lost `print: true`);
+  a **water station at the Candler Park Dr speed bump** (438, 585); ops colours — **generator
+  yellow with a navy bolt, dumpster white with a charcoal ring, PTA in `--pin-kids`**
+  (`PIN_INK` in `pins.js` carries the two glyph/ring exceptions; `--ops-equipment` retired);
+  **Kidlandia numbers beside their squares, outward**, no "K0–K10" on paper; the print legend's
+  "Site / safety" heading is gone (the row groups by a `--space-3` gap) and the gap under the
+  header rule is `--space-4`, half what it was — the room went back into the index at
+  **leading 1.3, 0.24" spare on this render**; **King of Pops has two food pins** (Main Stage
+  cart 690, 320; entrance cart 583, 735) whose card is the vendor record; beverage and PTA
+  cards are one neutral line each with `TODO(Jess)` beside them; the **bottom sheet's grip/close
+  row is fixed** and only the body scrolls (on `.ffc-panel--bottom`, every sheet). Pin moves
+  to Ernest's endpoints, nudged only where rule 1 demanded: EMS (715, 373); beverage stations
+  (669, 370) and (761, 379) edge to edge with it; beer stand (728, 472) and the in-park marker
+  up the path to (801, 433) to keep 81 units from it at the overview; field water exactly at
+  Jess's (731, 413), Detail only; field restroom (680, 526); PTA (519, 520); the south restroom
+  on the path at (611, 661), the midpoint between booth 54 and AWARE's square, 20 from each,
+  so **AWARE stays at (598.5, 677)**; **info stays 46 above merch at (630, 694)** — Ernest's
+  (638, 723) would overlap at every stop — and on the phone arrives at Detail, since the south
+  restroom now outranks it at the first step; entrance water (644, 761) and Acoustic water
+  (887.5, 750), each edge to edge at Detail and Detail only.
+
+- 9/22 round 3, Ernest's print-sheet review of round 2 (same PR; it reached the session after
+  round 4 and sits on top of it): the **lawn beside Kidlandia** is a front row of beverage
+  station (670, 391.5), King of Pops cart (692.5, 377.5), first aid (712, 395), beverage station
+  (738, 390.5), with water (707.5, 455.5) and the beer stand (728, 472) below — Ernest's spots,
+  nudged 0.5–7.8 units so the Detail targets are edge to edge; first aid shows from the first
+  step, the rest of the row and the water wait for Detail. **King of Pops carts are squares**
+  (`shape: 'square'` in `pins.js`): an 8-unit tick in `--pin-food` at full strength, no glyph,
+  44px target, keyed "King of Pops" in the print legend beside "Food stall". **Info is on top of
+  merch, edge to edge** at (637, 714.5) — see Decided. The in-park marker stays at (801, 433):
+  the beer stand did not move, so it cannot come back. Every nudge and every pin hidden at a
+  stop is in `docs/pr-notes.md`.
+- 9/22 round 4, Ernest's iPhone check (same PR): the **interaction model** above (the tap on a
+  pin no longer clears the chip — that is what made the Kidlandia water pin vanish; `revealAt`
+  pans the pin into the band above the sheet; one tapped pin wears the ring; empty-map taps clear
+  one layer at a time; e2e drives the Water and Restrooms flows at 375); **every pin card has a
+  location line** (`where` on each visitor pin in `pins.js`, shown first on the card). Round 3
+  reached the session after round 4 and was applied on top of it.
+
+- 9/23 round 5, Jess's markup PDF fit to the map (same PR): **`hidden: true`** on a pin takes it
+  off both maps, the directory, the legends and the chips (kept for next year; delete the flag
+  to bring it back) — both beverage stations, the PTA booth, both speed bumps and the speed-bump
+  water are hidden. Added: **Mr Softee** as a food-cart square at (678, 476) (both maps, his
+  vendor card), the **ice truck** (710, 497) and **musicians' tent** (805, 267) as paper-only
+  ops items (`--ops-ice-truck`, `--ops-musician-tent`, Phosphor Truck and Tent), one more
+  generator (708, 524); the generator/dumpster pairs stack above the tent. Moved: water at the
+  top of the CPD run (421, 360, both maps — Jess asked for water there, not a speed bump),
+  Kidlandia water to (552, 461), the field restroom back to her (679, 555), the McLendon-east
+  barricade to (979, 789.9) east of Mell. Print legend: "Food cart" covers both carts. Every
+  nudge and hidden pin is in `docs/pr-notes.md`.
+
+- 9/23 round 6, print legibility (same PR): **a number on paper has to point at a list row.** The
+  three food carts are **C1–C3** (`n` on the cart's pin, the one place; the print map, the print
+  index and the phone card read it); the **food-stall numbers are off the paper** (squares stay;
+  the phone still numbers and opens them); the slanted **"Art Market" label is off the car path**;
+  the print header is a 40pt wordmark (`--print-brand-size`) with the date line tight under it
+  (16px / 15px optical); the field restroom is 8 units out on the lawn at (672.5, 550). Round 7
+  (same day): the **"Art Market" heading over the index is gone** — the list starts under the key
+  at the section gap — and the index is back at **leading 1.3 with 0.14" spare** (155 rows).
+
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
@@ -293,8 +417,13 @@ Figma workflow), and PR #8 (booth + beta fixes):
   area).
 - The **southern water station** pin is 5 units off the export's spot (4 west, 1 south) so its
   target clears the info booth's. Falls under the water-station question below.
-- The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the south end.
+- The **Kidlandia column** sits along the east side of the Kidlandia shape, K0 at the north end.
   Verify at setup.
+- **Ernest's 9/22 endpoints** (round 2) supersede the 9/21 box readings for every pin they name;
+  the table is in PR #12's round-2 description. Still verify at setup.
+- Everything from **Jess's 9/21 markup** was read off red boxes on the printed sheet and lands
+  within a few units; where a spot was nudged the reason is in `pins.js` beside it. Her 9/23
+  comment text confirms the barricade at the CPD/McLendon corner is across McLendon.
 - **AWARE Wildlife** square: on the white ground of the entrance path, nestled into the west
   lawn's corner where the path widens out to the booth rows (Ernest, 9/20; Courtney's words
   were "on the grass"). **Achieve with Steve** square: one McLendon pitch east of booth 55. Both
@@ -309,7 +438,7 @@ is Cowork's and Ernest's to fix.
 - Hours for Kidlandia bounce houses, bike valet, artist market (Amy asked for them on the map).
 - Restrooms on Candler Park Dr (end of booths) and on the field; more water stations; Callaway
   Blue water and some sponsor locations moved in the 2026 site plan — confirming with Jess / Andy.
-- King of Pops — Todd has asked them; answer before Mon 9/21.
+- ~~King of Pops~~ — coming (Todd 9/21), listed unpinned.
 
 **Before the 9/28 freeze:**
 - **Analytics.** Ernest wants to know how many people use the map and how deep they go: sessions,

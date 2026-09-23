@@ -15,7 +15,10 @@
 
 /* Shared: "not what you asked for". One rule so the fade has one value, on map
    features and chrome alike. */
-.ffc-dimmed { opacity: var(--opacity-dimmed); }
+/* Dimmed is also untappable: while a chip is on, only its own pins take a tap
+   (Ernest, 9/22) -- the chip's pins are drawn on top and a dimmed one under
+   them must not win the touch. */
+.ffc-dimmed { opacity: var(--opacity-dimmed); pointer-events: none; }
 
 :where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-step button):focus-visible {
   outline: 2px solid var(--focus-ring);
@@ -160,6 +163,7 @@
 .ffc-pin { --pin-fill: var(--cat-booth); }
 .ffc-pin--food { --pin-fill: var(--pin-food); }
 .ffc-pin--drinks { --pin-fill: var(--pin-drinks); }
+.ffc-pin--beverage { --pin-fill: var(--pin-beverage); }
 .ffc-pin--wc { --pin-fill: var(--pin-restroom); }
 .ffc-pin--water { --pin-fill: var(--pin-water); }
 .ffc-pin--info { --pin-fill: var(--pin-info); }
@@ -167,6 +171,7 @@
 .ffc-pin--kids { --pin-fill: var(--pin-kids); }
 .ffc-pin--firstaid { --pin-fill: var(--pin-firstaid); }
 .ffc-pin--bikevalet { --pin-fill: var(--cat-utility); }
+.ffc-pin--pta { --pin-fill: var(--pin-kids); }
 .ffc-pin--merch { --pin-fill: var(--pin-merch); }
 .ffc-pin:active { opacity: 0.9; }
 
@@ -206,6 +211,14 @@
   transition: transform var(--motion-panel) var(--ease);
 }
 .ffc-panel--bottom[data-open='true'] { transform: translateY(0); }
+/* Only the body scrolls. The sheet's own top row -- grip and close -- stays
+   where it is while a long sheet (a stage lineup, the food list) scrolls
+   under it; it used to scroll away with the content (Ernest, 9/22). The
+   sheet is a column flex box, so the body takes the height that is left and
+   scrolls inside it; min-height: 0 is what lets a flex child shrink below
+   its content. Every sheet built on .ffc-panel--bottom gets this. */
+.ffc-panel--bottom { overflow: hidden; }
+.ffc-panel--bottom .panel-scroll, .ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .ffc-panel--bottom[hidden] { display: none; }        /* out of the tab order when closed */
 @media (min-width: 768px) {
   .ffc-panel--bottom { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }

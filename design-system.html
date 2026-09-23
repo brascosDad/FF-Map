@@ -54,6 +54,11 @@
   <h3>Category pins</h3>
   <p style="color:var(--text-muted);font-size:var(--text-sm)">Hue carries category and nothing else.</p>
   <div class="swatches" id="pins"></div>
+  <h3>Operations (paper only)</h3>
+  <p style="color:var(--text-muted);font-size:var(--text-sm)">The EMS / fire-inspector layer: pins flagged
+     <code>print: true</code> in <code>src/assets/pins.js</code>. Drawn on the print sheet and keyed in its
+     "Site / safety" legend; the phone map skips them. Not visitor categories, so not pin hues.</p>
+  <div class="swatches" id="ops"></div>
   <h3>Neutrals</h3>
   <div class="swatches" id="neutrals"></div>
   <h3>Basemap</h3>
@@ -69,7 +74,7 @@
       <tr><th>Teal</th><td><b>Zones.</b> Area fills only.</td></tr>
       <tr><th>Navy fill</th><td><b>Selected</b>, where the thing has no colour of its own to lose — a booth square.</td></tr>
       <tr><th>Navy ring</th><td><b>Selected</b>, where it does — a pin keeps its category hue and takes a cream-backed navy ring instead. Selecting a category (restrooms, beer) rings every pin in it.</td></tr>
-      <tr><th>Pin hues</th><td><b>Category.</b> Food, drinks, restrooms, water, info, stage, kids, first aid, merch.</td></tr>
+      <tr><th>Pin hues</th><td><b>Category.</b> Food, beer, beverages, restrooms, water, info, stage, kids, first aid, merch. Beer (the mug) and beverages (the cup) are two categories in one amber family, a step apart in lightness.</td></tr>
       <tr><th>Star in a slate square</th><td><b>A featured booth.</b> The festival's own pick (<code>FESTIVAL.featured</code> in <code>src/data/festival.js</code>, by booth number): its square goes solid and carries the star glyph in <code>--icon-on-color</code>, on the phone and on paper, and it says "Featured artist" in its sheet, the area list, both legends and the print index. No colour of its own — coral is "now", navy is selected, the pin hues are categories — so the star is the whole signal and reads at 5.5pt without colour. Any number of booths can be on the list; one is this year.</td></tr>
       <tr><th>Hollow slate square</th><td><b>A spot with no booth number.</b> Cream (<code>--ff-cream</code>) inside a <code>--cat-booth</code> frame: still a booth, plainly not one of the numbered run. Two of them, on the map and on paper.</td></tr>
       <tr><th>The same hue, faded</th><td><b>That category's ground.</b> An area blob is its own marker's hue at 34% and <em>no stroke</em> — area, not outline. A sheet's list bullets are the hue of whatever you opened, so the badge at the top and the bullets below are obviously one place.</td></tr>
@@ -108,7 +113,7 @@
      category, used identically on the map, in chips, and in panel badges.</p>
   <div class="card"><div class="icons" id="icons"></div></div>
   <div class="use"><b>Do:</b> reuse the category glyph everywhere that category appears.</div>
-  <div class="use dont"><b>Don't:</b> introduce a second glyph for the same category, or tint a glyph anything but white.</div>
+  <div class="use dont"><b>Don't:</b> introduce a second glyph for the same category, or tint a glyph anything but white — the two paper-only ops discs (a navy bolt on the generator's yellow, a charcoal trash can on the dumpster's white) are the documented exceptions, in <code>PIN_INK</code>.</div>
 
   <h2>3 · Components</h2>
 
@@ -296,9 +301,10 @@
     }).join('');
   };
   grid('brand', [['--ff-navy','structure, text'],['--ff-cream','on navy'],['--ff-teal','zones'],['--ff-coral','you / now']]);
-  grid('pins', [['--pin-food','food'],['--pin-drinks','drinks'],['--pin-restroom','restrooms'],['--pin-water','water'],
+  grid('pins', [['--pin-food','food'],['--pin-drinks','beer'],['--pin-beverage','beverages'],['--pin-restroom','restrooms'],['--pin-water','water'],
                 ['--pin-info','info'],['--pin-stage','stages'],['--pin-kids','kids'],['--pin-firstaid','first aid'],
                 ['--pin-merch','merch'],['--cat-booth','art market'],['--cat-utility','utility']]);
+  grid('ops', [['--ops-barricade','barricade cones'],['--ops-generator','generator disc, navy bolt'],['--ops-dumpster-fill','dumpster disc'],['--ops-dumpster-ink','dumpster ring + glyph'],['--ops-speed-bump','speed bump bars'],['--ops-ice-truck','ice truck disc, navy glyph'],['--ops-musician-tent',"musicians' tent"]]);
   grid('neutrals', [['--sand-100','dividers'],['--sand-200','control borders'],['--sand-300','chip borders'],
                     ['--slate-500','muted text 5.4:1'],['--slate-700','body text'],['--ground-100','surround']]);
   grid('basemap', [['--map-ground','outside the park'],['--map-park','park footprint'],['--map-lawn','mown lawns'],
@@ -307,11 +313,14 @@
                    ['--map-number','booth numbers']]);
 
   const { ICONS } = await import('/src/assets/icons.js');
-  const map = [['food','--pin-food'],['drinks','--pin-drinks'],['wc','--pin-restroom'],['water','--pin-water'],
+  const map = [['food','--pin-food'],['drinks','--pin-drinks'],['beverage','--pin-beverage'],['wc','--pin-restroom'],['water','--pin-water'],
                ['info','--pin-info'],['stage','--pin-stage'],['kids','--pin-kids'],['firstaid','--pin-firstaid'],
-               ['merch','--pin-merch'],['art','--cat-booth'],['bikevalet','--cat-utility']];
-  document.getElementById('icons').innerHTML = map.map(([n, c]) =>
-    `<div><i style="background:var(${c})"><svg viewBox="0 0 256 256">${ICONS[n]}</svg></i>${n}</div>`).join('');
+               ['merch','--pin-merch'],['art','--cat-booth'],['bikevalet','--cat-utility'],
+               ['pta','--pin-kids'],['generator','--ops-generator','--ff-navy'],['dumpster','--ops-dumpster-fill','--ops-dumpster-ink','--ops-dumpster-ink'],
+               ['iceTruck','--ops-ice-truck','--ff-navy'],['musicianTent','--ops-musician-tent']];
+  // A glyph is white on its disc unless the entry names its own ink (and ring).
+  document.getElementById('icons').innerHTML = map.map(([n, c, ink, ring]) =>
+    `<div><i style="background:var(${c});${ring ? `box-shadow:inset 0 0 0 2px var(${ring})` : ''}"><svg viewBox="0 0 256 256" style="${ink ? `fill:var(${ink})` : ''}">${ICONS[n]}</svg></i>${n}</div>`).join('');
 </script>
 </body>
 </html>
