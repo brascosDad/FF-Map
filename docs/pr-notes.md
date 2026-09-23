@@ -1,4 +1,47 @@
-# PR notes — 9/22 committee feedback, rounds 1 and 2 (PR #12)
+# PR notes — 9/22 committee feedback, rounds 1, 2 and 4 (PR #12)
+
+## Round 4 (Ernest's iPhone check, 9/22)
+
+**Round 3 never reached this session.** Round 4's brief says to finish round 3 first and refers
+to "round 3's moves"; no round-3 brief arrived here and nothing landed on the branch between
+round 2 and round 4. Round 4 is done against the round-2 positions. Send round 3 and it goes on
+this branch. Where lines below were checked against the round-2 positions, none needed changing.
+
+### Location lines written from the map (single items) — Ernest to check
+| Pin | Line |
+|---|---|
+| First aid / EMS (715, 373) | On the lawn below the Main Stage, between the two beverage stations |
+| Info (630, 694) | Just inside the McLendon entrance, east side of the path, above the merch tent |
+| Merch (630, 740) | McLendon entrance, east side of the path |
+| Bike valet (712.4, 730.1) | Off McLendon, east of the park entrance |
+| PTA booth (519, 520) | Inside Kidlandia, at its south-west edge |
+| Main Stage (741.1, 288.5) | North end of the lawn, below the pool |
+| Acoustic Stage (885, 797.9) | On McLendon Ave at Mell Ave, the east end of the McLendon art market |
+| Food Court (859.7, 292.3) | The car path north of the lawn, east of the Main Stage |
+| Kidlandia (550.9, 422.3) | The west lawn, off Candler Park Dr |
+
+Ernest's own lines (restrooms, water, beer, beverage stations, King of Pops) are in `pins.js`
+verbatim, each marked `TODO(Jess): confirm location`. Two of his read oddly against the map but
+were kept as written: the Main Stage King of Pops cart (690, 320) says "On the lawn beside
+Kidlandia" though it sits north of Kidlandia by the Main Stage; the field water (731, 413) says
+"next to the beer stand" though the stand is 59 units south of it.
+
+### Interaction model — decisions taken
+- Turning a chip **on** still goes to the overview (so the whole category is in frame); the
+  spec only fixes what turning it **off** does (map stays). Say if chip-on should also hold.
+- "Zoom only if needed": the tapped pin is always shown at the current stop (it was tappable),
+  so the only zoom is when the overview cannot pan far enough to put the pin above the sheet —
+  then the nearest closer stop that can. The south restroom does this (overview → Detail; the
+  first step still leaves it behind the sheet).
+- One tapped pin wears the ring. A category row in the desktop directory (no one pin) still
+  rings every pin of that category, as before.
+- No pin moved in round 4. No nudges.
+
+### Skipped
+- Vercel preview toolbar: not touched (Ernest).
+- A screen recording: not possible from this container; the Water flow is a four-shot sequence
+  in `docs/pr-shots/flow-water-{1-chip-on,2-pin-tapped,3-sheet-closed,4-empty-map-tapped}.png`.
+
 
 Overwritten each PR. Everything here is a question, an open decision, a skipped item or a pin
 nudge from this PR; the PR description summarises it. Coordinates are map units (1440×900).

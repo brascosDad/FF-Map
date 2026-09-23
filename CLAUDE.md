@@ -365,6 +365,13 @@ Figma workflow), and PR #8 (booth + beta fixes):
   restroom now outranks it at the first step; entrance water (644, 761) and Acoustic water
   (887.5, 750), each edge to edge at Detail and Detail only.
 
+- 9/22 round 4, Ernest's iPhone check (same PR): the **interaction model** above (the tap on a
+  pin no longer clears the chip — that is what made the Kidlandia water pin vanish; `revealAt`
+  pans the pin into the band above the sheet; one tapped pin wears the ring; empty-map taps clear
+  one layer at a time; e2e drives the Water and Restrooms flows at 375); **every pin card has a
+  location line** (`where` on each visitor pin in `pins.js`, shown first on the card). **No
+  round-3 brief reached the Claude Code session** — round 4 was done on the round-2 positions.
+
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
