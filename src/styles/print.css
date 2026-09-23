@@ -28,6 +28,10 @@
      than the legend's rows strictly need so the names get air. */
   --print-lead: var(--space-6);
   --print-lead-gap: var(--space-3);
+  /* The wordmark: 40pt, a tenth under the 44pt it had until 9/23 (Ernest:
+     a little smaller, and the header tighter). Paper points, like the type
+     floor: this is the sheet's own scale, not the phone's --text-brand. */
+  --print-brand-size: 40pt;
   width: 17in;
   height: 11in;
   padding: var(--print-margin);
@@ -52,9 +56,16 @@
 .print-side { display: flex; flex-direction: column; gap: var(--print-section-gap); min-width: 0; height: calc(11in - 2 * var(--print-margin)); overflow: hidden; }
 .print-side h2 { margin: 0 0 var(--print-heading-gap); font-size: 9.5pt; font-weight: 800; color: var(--text-strong); letter-spacing: 0.02em; text-transform: uppercase; }
 
+/* Two gaps that should read the same (Ernest, 9/23): wordmark to date line,
+   date line to the rule. The all-caps wordmark's line box carries ~16px of
+   empty descender air below its ink, so the date line sits on the box with
+   no margin at all -- a --space-2 margin on top of that air read as twice
+   the gap under it. Measured optically (ink to ink): 25px / 15px before,
+   16px / 15px after. The rule gap is --space-3 plus the date line's own 3px
+   of descender. */
 .print-head { border-bottom: 2px solid var(--ff-navy); padding-bottom: var(--space-3); }
-.print-brand { font-family: var(--font-display); font-weight: 900; font-size: 44pt; line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
-.print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: var(--space-2); }
+.print-brand { font-family: var(--font-display); font-weight: 900; font-size: var(--print-brand-size); line-height: 1; text-transform: uppercase; color: var(--ff-navy); letter-spacing: 0.01em; }
+.print-sub { font-size: 12pt; font-weight: 700; color: var(--text-strong); margin-top: 0; }
 
 /* minmax(0, 1fr), not 1fr: a bare 1fr column will not shrink below its
    content, so one long label widened its column and the legend fell off the
