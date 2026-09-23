@@ -114,9 +114,10 @@ for (const [name, w, h] of SIZES) {
       }
       return true;
     })());
-    // Twelve categories, the hollow "no number" square, the featured star.
+    // Eleven categories (the beverage stations are hidden since 9/23), the
+    // hollow "no number" square, the featured star.
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 14,
+      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 13,
       `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
       await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
@@ -1162,7 +1163,7 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
 // sheet: the chip goes off. The Kidlandia water pin is the one that vanished
 // on Ernest's iPhone (the tap used to clear the chip that was showing it).
 // The pin to tap is named by its map spot (Kidlandia water; the south restroom).
-for (const [chip, cat, count, at] of [['Water', 'water', 5, [527, 378]], ['Restrooms', 'wc', 4, [610.8, 661.2]]]) {
+for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restrooms', 'wc', 4, [610.8, 661.2]]]) {
   const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);

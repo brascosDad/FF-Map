@@ -161,9 +161,11 @@ export const PINS = [
   //
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
   // the darker amber.
-  { x: 712.0, y: 395.0, c: 'firstaid', d: 'firstaid', where: 'On the lawn below the Main Stage, between the two beverage stations' },
-  { x: 670.0, y: 391.5, c: 'beverage', d: 'beverage', from: 'detail', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
-  { x: 738.0, y: 390.5, c: 'beverage', d: 'beverage', from: 'detail', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 712.0, y: 395.0, c: 'firstaid', d: 'firstaid', where: 'On the lawn below the Main Stage, beside the King of Pops cart' },
+  // The two beverage stations are not on Jess's markup (9/23): hidden, not
+  // deleted -- delete `hidden` to bring one back.
+  { x: 670.0, y: 391.5, c: 'beverage', d: 'beverage', from: 'detail', hidden: true, where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 738.0, y: 390.5, c: 'beverage', d: 'beverage', from: 'detail', hidden: true, where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
 
   // Water refill stations, per Jess's 2026 site plan (9/21, Ernest 9/22).
   // Water is the lowest priority on the map, so where a station sits close
@@ -180,12 +182,9 @@ export const PINS = [
   // units east (25.5 is touching on a 375px phone; half a unit of air) -- so
   // it too waits for Detail. Ernest's 877 would overlap.
   { x: 888.0, y: 750.0, c: 'water', d: 'water', from: 'detail', where: 'By the Acoustic Stage, next to the beer' }, // TODO(Jess): confirm location
-  // At the Candler Park Dr speed bump, in the break between 94/95 (street
-  // side) and 111/112 (park side), which Jess's plan marks and the 9/22 PR
-  // missed (Ernest). Off the street's east edge (425.6) on the park side:
-  // 438 keeps its Detail target 21.6 units from booths 111 and 112 (17.45 is
-  // touching) and, on paper, the disc off the bar and off their numbers.
-  { x: 438.0, y: 585.0, c: 'water', d: 'water', where: 'Candler Park Dr, at the speed bump by booths 95 and 112' }, // TODO(Jess): confirm location
+  // At the Candler Park Dr speed bump, in the break between 94/95 and
+  // 111/112. Not on Jess's markup (9/23): hidden, not deleted.
+  { x: 438.0, y: 585.0, c: 'water', d: 'water', hidden: true, where: 'Candler Park Dr, at the speed bump by booths 95 and 112' }, // TODO(Jess): confirm location
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
   // entrance tucked against the merch tent's lower-right side, edge to edge
   // at Detail (26.6 units on Ernest's bearing, where 25.5 is touching on a
@@ -208,7 +207,8 @@ export const PINS = [
   // (hidden below). Her (421, 361), one unit north so its Detail target
   // clears booth 131's hit cell.
   { x: 421.0, y: 360.0, c: 'water', d: 'water', where: 'Candler Park Dr, at the north end of the booth run' },
-  { x: 519.0, y: 520.0, c: 'pta', d: 'pta', where: 'Inside Kidlandia, at its south-west edge' },
+  // The PTA booth is not on Jess's markup (9/23): hidden, not deleted.
+  { x: 519.0, y: 520.0, c: 'pta', d: 'pta', hidden: true, where: 'Inside Kidlandia, at its south-west edge' },
 
   // Info booth: directly on top of the merch tent, edge to edge. "The info
   // booth and the merch booth are the same place" (Jess, 9/20). Ernest's
@@ -276,8 +276,10 @@ export const PINS = [
   // the park side -- her plan calls that 106/107 and 128/129 in the old
   // numbering. Its y is the midpoint of that break as build-booths.py lays
   // it (CPD_BUMP); re-check after any re-pull that moves the columns.
-  { x: 411.5, y: 360.0, c: 'speedbump', print: true },
-  { x: 411.5, y: 585.0, c: 'speedbump', print: true },
+  // Neither speed bump is on Jess's markup (9/23; the top one is a water
+  // station in her hand): hidden, not deleted.
+  { x: 411.5, y: 360.0, c: 'speedbump', print: true, hidden: true },
+  { x: 411.5, y: 585.0, c: 'speedbump', print: true, hidden: true },
 ];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
