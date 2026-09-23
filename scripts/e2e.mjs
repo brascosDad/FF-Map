@@ -1307,14 +1307,13 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   // total (never printed anywhere -- it moves with every sheet edit).
   check('print: no artist or booth count anywhere on the sheet',
     !/over 130/i.test(pr.text) && !/\b\d+\s+(artists|booths)\b/i.test(pr.text) && !pr.text.includes('164'));
-  // One plain "Art Market" on the car-path run and nothing under the
-  // Kidlandia column (its numbers sit beside their squares, 9/22); the three
-  // run ranges came off the map 9/20 (the index has every number). Nothing
-  // anywhere still says 142, the 9/17 top number.
-  check('print: one plain "Art Market" label, no Kidlandia range, no run ranges',
-    pr.runLabels.filter((t) => t === 'Art Market').length === 1 && !pr.runLabels.some((t) => /Art Market\s*\d/.test(t))
-      && !pr.runLabels.some((t) => /^K\d/.test(t)) && !pr.text.includes('142'),
-    pr.runLabels.join(' | '));
+  // No run label on the map at all: the "Art Market" label came off the
+  // car path 9/23 (it crowded the numbers), the Kidlandia range 9/22, the
+  // three run ranges 9/20 -- the index has every number and the streets are
+  // named. Nothing anywhere still says 142, the 9/17 top number.
+  check('print: no run label or range on the map',
+    !pr.runLabels.some((t) => /^Art Market/.test(t)) && !pr.runLabels.some((t) => /^K\d/.test(t)) && !pr.text.includes('142'),
+    pr.runLabels.join(' | ') || '(none)');
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: Candler Park Dr numbers sit outward beside their squares, over nothing',
     pr.cpd.n === 58 && pr.cpd.overSquare === 0 && pr.cpd.wrongSide === 0 && pr.cpd.notLevel === 0 && pr.cpd.overLabel === 0,

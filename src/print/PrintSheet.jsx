@@ -194,18 +194,11 @@ function PrintMap() {
       <Squares booths={BOOTHS.kid} color={PIN_COLOR.kids} angle={BOOTH_ANGLE.kid} numberSide={() => 'right'} />
       <Squares booths={UNNUMBERED} color={SLATE} hollow />
 
-      {/* One plain "Art Market" on the car-path run, which has no street name
-          to say what it is; the two street runs are named by their streets
-          and the index carries every number. The ranges came off the map on
-          9/20: 55-81 sat too high, 82-139 in the middle of the street north
-          of its run, 1-54 crowded the park rows. The label sits in the west
-          row's own break at the path bend (between 37 and 38), along the
-          row, so it touches no number. */}
-      <g fontSize={LABEL} fontWeight={800} fill="var(--text-strong)" stroke={HALO} strokeWidth={2.4} paintOrder="stroke">
-        <text x={769.5} y={480} textAnchor="middle" transform="rotate(-63 769.5 480)">Art Market</text>
-        {/* No range under the Kidlandia column: every K number is beside its
-            own square (Ernest, 9/22). */}
-      </g>
+      {/* No "Art Market" label on the car-path run (Ernest, 9/23): set at the
+          path's angle it crowded the booth numbers, and the numbered rows
+          explain themselves -- the index heading says Art Market, the two
+          street runs are named by their streets. The run ranges came off
+          9/20 and the Kidlandia range 9/22 for the same reason. */}
 
       {/* Every pin, the paper-only ones included (print: true in pins.js --
           the EMS / fire-inspector layer the phone skips). A category in
