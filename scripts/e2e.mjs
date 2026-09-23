@@ -1312,7 +1312,7 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   // three run ranges 9/20 -- the index has every number and the streets are
   // named. Nothing anywhere still says 142, the 9/17 top number.
   check('print: no run label or range on the map',
-    !pr.runLabels.some((t) => /^Art Market/.test(t)) && !pr.runLabels.some((t) => /^K\d/.test(t)) && !pr.text.includes('142'),
+    !pr.runLabels.some((t) => t.startsWith('Art Market')) && !pr.runLabels.some((t) => /^K\d/.test(t)) && !pr.text.includes('142'),
     pr.runLabels.join(' | ') || '(none)');
   check('print: no phone chrome on paper', pr.chrome === 0, `${pr.chrome} controls`);
   check('print: Candler Park Dr numbers sit outward beside their squares, over nothing',

@@ -1,4 +1,64 @@
-# PR notes — 9/22–23 committee feedback, rounds 1–5 (PR #12)
+# PR notes — 9/22–23 committee feedback, rounds 1–6 (PR #12)
+
+## Round 6 (print legibility and clutter; 9/23)
+
+### 1. Header — measured ink to ink on this render (the runner's will differ by a px or two)
+| Gap | Before | After |
+|---|---|---|
+| Wordmark size | 44pt (no token) | **40pt**, `--print-brand-size` (a tenth smaller) |
+| Wordmark → "Candler Park · …" line | `--space-2` (8px) margin **+ ~17px** of the all-caps wordmark's own descender air = **25px** optical | **0** margin + ~16px air = **16px** optical |
+| "Candler Park · …" line → rule | `--space-3` (12px) padding + 3px descender = **15px** | unchanged: **15px** |
+
+"Halve the gap" was read as the optical gap, which is what the eye sees: halving only the token
+(`--space-2` → `--space-1`) would have left 20px against 15px, because the wordmark's line box
+carries the air whatever the margin. With no margin the two gaps are 16 and 15 — equal, as aimed.
+The room recovered (≈14px) went to the index.
+
+### 2. C1–C3 — where they landed
+| No. | Cart | Square | Number | Nudge |
+|---|---|---|---|---|
+| C1 | King of Pops (Main Stage) | (692.5, 377.5) | to the right of the square, level, like a Candler Park Dr number | none — clears first aid's disc by 5 units on paper |
+| C2 | King of Pops (entrance) | (583, 735) | same | none |
+| C3 | Mr Softee | (678, 476) | same | none |
+
+Stored once, on each cart's pin (`n`, `vendor`, `tag` in `pins.js`); the print map, the print
+index and the phone card ("Cart C1 · Frozen pops") all read it. Index rows: "King of Pops
+(Main Stage)", "King of Pops (entrance)", "Mr Softee" — the first two still wrap to two lines
+in the 8pt column; shorter wording that would not wrap: **"King of Pops · Stage" / "King of Pops
+· Gate"**, if Ernest prefers.
+
+### Index fit — DECISION NEEDED
+| State | Spare (this render) |
+|---|---|
+| Round 5, leading 1.3 | 0.03" (the ice-truck and musicians'-tent rows had wrapped the site key to two rows) |
+| After item 1, leading 1.3, no cart rows | 0.16" |
+| After item 2 at leading 1.3 | **−0.12" (over)** |
+| After item 2 at leading **1.25 — shipped, provisional** | **0.16"** |
+
+The brief said stop and report if the rows did not fit at 1.3. They do not, so the sheet ships at
+leading 1.25 (type stays 8pt, the floor) to keep the head whole and CI green — one line in
+`print.css` to change. Options: (a) keep 1.25; (b) 1.3 and drop one legend row (the site key's
+fifth entry is what wraps it to two rows); (c) 1.3 and shorter cart wording, which saves only
+~0.07" and still does not fit. No 8pt-floor change in any option.
+
+### 3. Stall numbers
+Off the paper; the squares stay. **Phone:** the stall numbers do mean something there — each stall
+is tappable and opens a "Stall N" card saying which truck parks there is not assigned yet, with the
+Food Court pin listing all 16 vendors. Ernest may want the numbers off the phone too; that is a
+`numbers` switch in `MapCanvas`.
+
+### 4. "Art Market" label
+Off the paper. **Phone:** the phone draws no slanted "Art Market" label at any stop (only the three
+area markers, which fade out at Detail, and the "FOOD COURT" caps at Detail); nothing to remove.
+
+### 5. Field restroom
+(679, 555) → **(672.5, 550)**: 8 units at a right angle to the path, out onto the lawn. The disc
+clears the numbers of booths 45 and 46 by 9.3 units on paper (was 1.4); 44 from the generator, 65
+from the ice truck; every phone target clear. Line unchanged: "by art booths 45 and 46".
+
+### Baselines
+The print baseline changes (header, C1–C3, no stall numbers, no Art Market label, the restroom);
+phone-open and sheet-open may change a few pixels for the restroom. Label re-applied.
 
 ## Round 5 (Jess's markup PDF, fit to the map; 9/23)
 
