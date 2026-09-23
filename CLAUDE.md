@@ -168,9 +168,29 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   targets at the Detail stop. The e2e suite measures every stop on a 375px phone, with each
   filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
   anything else — nudge edge to edge; paper has no zoom to hide behind. e2e checks the paper too.
-- **Filter chips:** when a chip is on, its pins are always shown (whatever the stop) and drawn on
-  top, and dimmed pins **cannot be tapped** while it is on (this replaced "dimmed pins stay
-  tappable", 9/22). A pin hidden at the current stop still appears when its chip is tapped.
+- **Chips, pin taps and the sheet — the standing interaction model** (Ernest, iPhone, 9/22; phone
+  and desktop, every chip):
+  1. **Chip on:** every pin in that category shows, whatever the zoom, highlighted and drawn on
+     top; everything else dims and cannot be tapped (this replaced "dimmed pins stay tappable").
+     Turning a chip on goes to the overview so the whole category is in frame.
+  2. **Tap a highlighted pin:** the map pans so the pin sits centred in the visible map area
+     above the open bottom sheet (left of the docked panel on desktop), never behind it. It
+     zooms in only if needed — the current stop is kept when the pin is shown there, else the
+     nearest closer stop that can bring it into view (`revealAt` in `useMapView`). The pin keeps
+     the navy selected ring and the sheet opens with its card. The tapped pin never disappears:
+     a pin tap never touches the chip.
+  3. **Close the sheet** (close button, swipe down, tap on empty map): the ring clears, the chip
+     stays on, all its pins stay shown, the map stays where it is.
+  4. **Tapping empty map clears one layer at a time:** a sheet open → only the sheet closes; no
+     sheet → the chip turns off.
+  5. **Tapping the active chip again turns it off**, back to normal per-stop visibility; the map
+     stays where it is.
+  6. **A pan or pinch that starts on empty map is never a tap.** Only a genuine tap (no movement
+     past the usual slop) counts for step 4.
+  The same pan-into-view applies to a pin tapped with no chip on: centred above the sheet and
+  selected while the sheet is open. One tapped pin wears the ring; a category row in the
+  directory (no one pin) rings every pin of that category. e2e drives the Water and Restrooms
+  flows at 375px.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
 - **The print sheet's type floor is 8pt** for everything in the side column and every label on the

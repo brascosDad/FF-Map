@@ -267,6 +267,33 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   }, [animateTo]);
 
   /**
+   * Bring a tapped pin into the part of the map you can see: centred in the
+   * band between `top` and `bottom` (CSS px covered by the top bar and the
+   * open bottom sheet), left of the docked panel, at the CURRENT zoom -- and
+   * only if the clamped view cannot put it in that band, at the nearest closer
+   * stop that can (the overview has almost no room to pan). Eased, like a
+   * directory fly-to. The interaction model in CLAUDE.md, step 2.
+   */
+  const revealAt = useCallback((x, y, { top = 0, bottom = 0 } = {}) => {
+    const { px, py } = sizeRef.current;
+    if (!px || !py) return;
+    const base = fitOverview(px, py, insetRef.current, zoomRef.current);
+    for (let idx = levelRef.current; idx < LEVEL_RATIOS.length; idx++) {
+      const nw = base * LEVEL_RATIOS[idx], nh = (nw * py) / px, u = nw / px;
+      const insetMap = (insetRef.current * nw) / px;
+      const bandMid = top + (py - top - bottom) / 2;
+      const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - bandMid * u, w: nw, h: nh }, px, insetRef.current);
+      const sy = (y - to.y) / u;                       // where the pin lands, in px from the top
+      const fits = sy >= top && sy <= py - bottom;
+      if (fits || idx === LEVEL_RATIOS.length - 1) {
+        if (idx !== levelRef.current) setLevelIdx(idx);
+        animateTo(to, FLY_MS);
+        return;
+      }
+    }
+  }, [animateTo]);
+
+  /**
    * Land a free-scaled viewBox (mid-pinch) on the nearest of the three stops.
    *
    * The stops are what the map means -- blobs, squares, numbers -- so a pinch
@@ -480,5 +507,5 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   const levelPos = levelPosition(vb.w / fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current));
   const areaMarkerFade = Math.min(1, Math.max(0, (levelPos - MARKER_FADE_FROM) / (LEVEL_RATIOS.length - 1 - MARKER_FADE_FROM)));
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, resetToOverview };
 }

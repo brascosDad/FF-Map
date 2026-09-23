@@ -137,7 +137,7 @@ function SelectRing({ x, y, r, k }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedPin = null, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   // One size at every level. The overview used to draw pins a step smaller,
@@ -273,7 +273,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
                 <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
                 <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
               </g>
-              {p.d === selectedPoiId && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}
+              {/* The tapped pin wears the ring. With no one pin selected (a
+                  category row in the directory) every pin of the open card
+                  does -- the honest answer to "where are the restrooms". */}
+              {(selectedPin ? p === selectedPin : p.d === selectedPoiId) && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}
             </g>
           );
         })}

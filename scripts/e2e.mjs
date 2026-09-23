@@ -1138,6 +1138,56 @@ for (const [name, w, h] of [['mobile', 390, 844], ['desktop', 1280, 900]]) {
   await p.close();
 }
 
+// ---- chips, pin taps and the sheet: the interaction model (Ernest, 9/22) ----
+// Chip on -> tap one of its pins: the pin stays on the map, wears the ring and
+// sits in the visible band above the sheet. Close the sheet: every pin of the
+// category is still shown and the chip is still on. Tap empty map with no
+// sheet: the chip goes off. The Kidlandia water pin is the one that vanished
+// on Ernest's iPhone (the tap used to clear the chip that was showing it).
+// The pin to tap is named by its map spot (Kidlandia water; the south restroom).
+for (const [chip, cat, count, at] of [['Water', 'water', 5, [527, 378]], ['Restrooms', 'wc', 4, [610.8, 661.2]]]) {
+  const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.ffc-chip', { hasText: chip }).click();
+  await p.waitForTimeout(650);
+  const pinsOn = async () => p.locator(`svg.ff-map g.ffc-pin--${cat}`).evaluateAll((els) => els.map((g) => { const c = g.querySelector(':scope > g circle').getBoundingClientRect(); return { x: c.x + c.width / 2, y: c.y + c.height / 2, ring: g.querySelectorAll(':scope > circle[stroke]').length > 0 }; }));
+  const before = await pinsOn();
+  check(`${chip} chip: every ${cat} pin is on the map at the overview`, before.length === count, `${before.length} pins`);
+  const target = await p.evaluate(([x, y]) => { const pt = new DOMPoint(x, y).matrixTransform(document.querySelector('svg.ff-map').getScreenCTM()); return { x: pt.x, y: pt.y }; }, at);
+  await p.mouse.click(target.x, target.y);
+  await p.waitForTimeout(900);
+  const after = await p.evaluate((cat) => {
+    const sheet = document.querySelector('.sheet.open');
+    const sheetTop = sheet ? sheet.getBoundingClientRect().top : innerHeight;
+    const ringed = [...document.querySelectorAll(`svg.ff-map g.ffc-pin--${cat}`)].filter((g) => g.querySelector(':scope > circle[stroke]'));
+    const c = ringed[0]?.querySelector(':scope > g circle')?.getBoundingClientRect();
+    return { open: !!sheet, sheetTop, ringed: ringed.length, pins: document.querySelectorAll(`svg.ff-map g.ffc-pin--${cat}`).length,
+             y: c ? c.y + c.height / 2 : null, x: c ? c.x + c.width / 2 : null, bottom: c ? c.bottom : null,
+             chip: document.querySelector('.ffc-chip[aria-pressed="true"]')?.textContent.trim() };
+  }, cat);
+  check(`${chip} chip: the tapped pin stays, alone with the ring, and its sheet opens`,
+    after.open && after.pins === count && after.ringed === 1 && after.chip === chip, `open ${after.open}, ${after.pins} pins, ${after.ringed} ringed, chip ${after.chip}`);
+  check(`${chip} chip: the tapped pin sits above the sheet, in the visible map`,
+    after.bottom != null && after.bottom < after.sheetTop - 4 && after.y > 100 && after.x > 0 && after.x < 375,
+    `pin at ${after.x?.toFixed(0)},${after.y?.toFixed(0)} (bottom ${after.bottom?.toFixed(0)}), sheet top ${after.sheetTop.toFixed(0)}`);
+  const vb1 = await p.locator('svg.ff-map').getAttribute('viewBox');
+  await p.locator('.sheet .close').click();
+  await p.waitForTimeout(500);
+  const closed = await pinsOn();
+  const chipOn = await p.locator('.ffc-chip[aria-pressed="true"]').count();
+  check(`${chip} chip: closing the sheet keeps every pin and the chip, clears the ring, holds the map`,
+    closed.length === count && closed.every((c) => !c.ring) && chipOn === 1 && (await p.locator('svg.ff-map').getAttribute('viewBox')) === vb1,
+    `${closed.length} pins, ${closed.filter((c) => c.ring).length} ringed, ${chipOn} chip on`);
+  // A tap on bare map: nothing open, so the chip goes off and the map stays.
+  const bare = await bareMapPoint(p, 375, 667);
+  await p.mouse.click(bare.x, bare.y);
+  await p.waitForTimeout(500);
+  check(`${chip} chip: a tap on empty map turns the chip off and holds the map`,
+    (await p.locator('.ffc-chip[aria-pressed="true"]').count()) === 0 && (await p.locator('svg.ff-map').getAttribute('viewBox')) === vb1);
+  await p.close();
+}
+
 // ---- the sheet's top row never scrolls ----
 // Grip and close stay put while a long sheet -- a stage lineup at 375px --
 // scrolls under them (Ernest, 9/22). Only the body scrolls.
