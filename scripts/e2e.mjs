@@ -632,15 +632,15 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
   await p.close();
 }
 
-// ---- the info booth is a pin, everywhere, just above merch ----
+// ---- the info booth is a pin, everywhere, on top of merch ----
 // Phone, desktop and paper: a circle filled with --pin-info carrying the info
-// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19). And
-// on the desktop overview it sits directly above merch with an 8-16px gap --
-// as close as that allows, since the two are one spot with two jobs (Jess,
-// 9/20); on the phone it arrives at Detail (since 9/22 the south restroom
-// bank sits on the path above it and outranks it at the first step), where
-// the two 44px targets may touch but not overlap; the 375px phone decides.
-for (const [name, w, h, zooms] of [['iPhone SE', 375, 667, 2], ['mobile', 390, 800, 2], ['desktop', 1440, 900, 0]]) {
+// glyph, drawn like every other pin. Never a booth square (Ernest, 9/19). It
+// sits on top of merch, edge to edge -- the two are one spot with two jobs
+// (Jess, 9/20) -- on Ernest's round-3 bearing, a little east of north: on
+// the phone it arrives at Detail, where the two 44px targets may touch but
+// not overlap (the 375px phone decides); on the desktop at the first step,
+// with an 8-16px gap between the 40px pins.
+for (const [name, w, h, zooms] of [['iPhone SE', 375, 667, 2], ['mobile', 390, 800, 2], ['desktop', 1440, 900, 1]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h } });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
@@ -664,8 +664,9 @@ for (const [name, w, h, zooms] of [['iPhone SE', 375, 667, 2], ['mobile', 390, 8
     const i = at('info'), m = at('merch');
     return { dx: Math.abs(i.x - m.x), gap: (m.y - i.y) - i.r - m.r };
   }, w >= 1024);
-  check(`${name}: the info pin sits directly above merch${w >= 1024 ? ', 8-16px clear' : ', targets touching or clear'}`,
-    stack.dx <= 1 && (w >= 1024 ? stack.gap >= 8 && stack.gap <= 16 : stack.gap >= -0.5), `${stack.gap.toFixed(1)}px gap, ${stack.dx.toFixed(1)}px off centre`);
+  // 7 map units east of merch's centre line on his bearing: under 16px at any stop.
+  check(`${name}: the info pin sits on top of merch${w >= 1024 ? ', 8-16px clear' : ', targets touching or clear'}`,
+    stack.dx <= 16 && (w >= 1024 ? stack.gap >= 8 && stack.gap <= 16 : stack.gap >= -0.5), `${stack.gap.toFixed(1)}px gap, ${stack.dx.toFixed(1)}px off centre`);
   await p.close();
 }
 

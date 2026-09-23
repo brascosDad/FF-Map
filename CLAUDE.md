@@ -213,11 +213,11 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   marker keeps no tap target: at Detail the area names are drawn and every booth is its own
   target, and a marker the size of a pin sat on 96–98, 113–115 and 60–62 (Ernest, iPhone 9/20).
   e2e proves those booths take the tap at Detail on phone and desktop.
-- **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): as close as the
-  touch rule allows, 46 units apart — targets touching at the phone's first zoom step on a 375px
-  screen, an 11px gap on the desktop opening view. On the phone info arrives at Detail (9/22: the
-  south restroom bank on the path above it outranks it at the first step); on the desktop it is
-  on the opening view.
+- **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): info sits directly
+  on top of merch, edge to edge — 26.4 units out on Ernest's round-3 bearing (a little east of
+  north), the two 44px targets touching at the phone's Detail stop, which is where info arrives
+  on the phone. On the desktop it arrives at the first step (a 12px gap between the 40px pins),
+  no longer on the opening view, where 44px is 40 units. Don't move it back up.
 - **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the
   streets are named, the index has every number); the index heading is just "Art Market" with no
   count under it; the Food Court list stays out of the side column; legend swatches and index

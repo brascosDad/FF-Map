@@ -188,18 +188,16 @@ export const PINS = [
   { x: 527.0, y: 378.0, c: 'water', d: 'water', where: 'Inside Kidlandia' }, // TODO(Jess): confirm location
   { x: 519.0, y: 520.0, c: 'pta', d: 'pta', where: 'Inside Kidlandia, at its south-west edge' },
 
-  // Info booth: directly north of the merch tent, on the same (east) side of
-  // the entrance path. "The info booth and the merch booth are the same
-  // place" (Jess, 9/20): one spot with two jobs, so the two pins sit as close
-  // as the touch rule allows -- 46 units apart, the 44px targets edge to
-  // edge at the phone's first zoom step on a 375px screen. Ernest's 9/22
-  // endpoint (638, 723) is 19 units from merch, which would overlap at every
-  // stop, so it stays at 46, directly above. On the phone it now arrives at
-  // Detail: the south restroom bank, on the path 38 units above it since
-  // 9/22, outranks it and the two would cross at the first step. On the
-  // desktop it is on the opening view (an 11px gap between the 40px pins)
-  // and at every step. Was the export's (644.3, 733.3).
-  { x: 630.0, y: 694.0, c: 'info', d: 'info', overview: 'docked', from: 'detail', where: 'Just inside the McLendon entrance, east side of the path, above the merch tent' },
+  // Info booth: directly on top of the merch tent, edge to edge. "The info
+  // booth and the merch booth are the same place" (Jess, 9/20). Ernest's
+  // round-3 endpoint is (635, 721), 19.6 units from merch on a bearing a
+  // little east of north; the two 44px targets need 25.5 at the phone's
+  // Detail stop, so info sits at the closest point on that bearing where
+  // they are edge to edge: 26.4 units out. Detail only on the phone, and no
+  // longer on the desktop's opening view (there 44px is 40 units); it arrives
+  // at the desktop's first step, where 44px is 22 units. Was (630, 694), 46
+  // above merch, from 9/20 to 9/22. The export had it at (644.3, 733.3).
+  { x: 637.0, y: 714.5, c: 'info', d: 'info', from: 'detail', where: 'Just inside the McLendon entrance, east side of the path, above the merch tent' },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the
