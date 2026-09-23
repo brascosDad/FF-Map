@@ -1,11 +1,52 @@
-# PR notes — 9/22 committee feedback, rounds 1, 2 and 4 (PR #12)
+# PR notes — 9/22 committee feedback, rounds 1–4 (PR #12)
+
+## Round 3 (Ernest's print-sheet review of round 2; arrived after round 4, applied on top of it)
+
+### Nudges (coordinates in map units)
+| Pin | Ernest's target | Placed | Why |
+|---|---|---|---|
+| First aid / EMS | (712, 395) | **(712, 395)** | anchor of the front row; on the map from the first zoom step |
+| King of Pops, Main Stage cart | (693, 378) | **(692.5, 377.5)** | 25.5 from first aid; half a unit out so the two Detail targets are edge to edge (26.2) |
+| Beverage station (west) | (677, 387) | **(670, 391.5)** | 18.4 from the cart; 7.8 units WSW on its own bearing so it is edge to edge with the cart at Detail (26.5) |
+| Beverage station (east) | (734, 391) | **(738, 390.5)** | 22.4 from first aid; 4 units E so it is edge to edge at Detail (26.4) |
+| Water (field) | (712, 459) | **(707.5, 455.5)** | 20.6 from the beer; 5.7 further out on the same bearing so the two Detail targets are edge to edge (26.3) |
+| Beer (field) | unchanged | **(728, 472)** | — |
+| Info | toward (635, 721) | **(637, 714.5)** | the closest point on that bearing where info and merch are edge to edge at Detail: 26.4 from merch. Also off the desktop's opening view (44px is 40 units there); arrives at the desktop's first step, 12px gap |
+
+On paper all six lawn discs clear each other at Ernest's own spots; the nudges above are the
+phone's, and they are 0.5–7.8 units. Order kept: beverage, King of Pops, first aid, beverage.
+
+### Hidden at a stop (phone, rule 1)
+| Stop | Shown from the lawn group and the entrance | Hidden until a closer stop |
+|---|---|---|
+| Overview | beer stand (with the destinations, merch, bike valet) | everything else |
+| First step | first aid, entrance King of Pops square, merch, restrooms, Kidlandia water, speed-bump water | both beverage stations, the Main Stage King of Pops square, the field water, the entrance water, the Acoustic water, **info** (all `from: 'detail'`) |
+| Detail | everything | — |
+A chip shows its whole category at any stop. The desktop's first step already has room, so
+`from: 'detail'` pins arrive there at the first step.
+
+### Art Market marker
+It moved in round 2 from (774.9, 484.3) to (801, 433) to clear the beer stand's opening-view
+target (81 units is touching). The beer stand is unchanged in round 3, and its old spot is 48.5
+from the stand, so the marker **cannot come back**; it stays at (801, 433).
+
+### King of Pops squares
+Both carts are 8-unit squares in `--pin-food` at full strength, no glyph, with the usual 44px
+tap target; tapping opens the vendor-record card. Legend row "King of Pops" (dark orange square)
+beside "Food stall" on the print sheet. The phone footer legend was not changed: it lists
+categories, and the carts are the food category — say if a row is wanted there too.
+
+### Location lines after the moves (item 4)
+Checked every line against the new positions. **No change needed**: the Main Stage King of Pops
+cart is now on the lawn beside Kidlandia (its line fits), the field water is 26 units from the
+beer stand ("next to the beer stand" fits), first aid is between the two beverage stations, info
+is above the merch tent. The two lines round 4 flagged as odd now match.
 
 ## Round 4 (Ernest's iPhone check, 9/22)
 
-**Round 3 never reached this session.** Round 4's brief says to finish round 3 first and refers
-to "round 3's moves"; no round-3 brief arrived here and nothing landed on the branch between
-round 2 and round 4. Round 4 is done against the round-2 positions. Send round 3 and it goes on
-this branch. Where lines below were checked against the round-2 positions, none needed changing.
+Round 3 arrived after round 4 and was applied on top of it; round 4's interaction model and
+location lines are unchanged by it.
+
 
 ### Location lines written from the map (single items) — Ernest to check
 | Pin | Line |
@@ -21,10 +62,8 @@ this branch. Where lines below were checked against the round-2 positions, none 
 | Kidlandia (550.9, 422.3) | The west lawn, off Candler Park Dr |
 
 Ernest's own lines (restrooms, water, beer, beverage stations, King of Pops) are in `pins.js`
-verbatim, each marked `TODO(Jess): confirm location`. Two of his read oddly against the map but
-were kept as written: the Main Stage King of Pops cart (690, 320) says "On the lawn beside
-Kidlandia" though it sits north of Kidlandia by the Main Stage; the field water (731, 413) says
-"next to the beer stand" though the stand is 59 units south of it.
+verbatim, each marked `TODO(Jess): confirm location`. (Two read oddly before round 3 landed;
+after round 3's moves both fit — see round 3 above.)
 
 ### Interaction model — decisions taken
 - Turning a chip **on** still goes to the overview (so the whole category is in frame); the

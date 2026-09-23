@@ -365,12 +365,23 @@ Figma workflow), and PR #8 (booth + beta fixes):
   restroom now outranks it at the first step; entrance water (644, 761) and Acoustic water
   (887.5, 750), each edge to edge at Detail and Detail only.
 
+- 9/22 round 3, Ernest's print-sheet review of round 2 (same PR; it reached the session after
+  round 4 and sits on top of it): the **lawn beside Kidlandia** is a front row of beverage
+  station (670, 391.5), King of Pops cart (692.5, 377.5), first aid (712, 395), beverage station
+  (738, 390.5), with water (707.5, 455.5) and the beer stand (728, 472) below — Ernest's spots,
+  nudged 0.5–7.8 units so the Detail targets are edge to edge; first aid shows from the first
+  step, the rest of the row and the water wait for Detail. **King of Pops carts are squares**
+  (`shape: 'square'` in `pins.js`): an 8-unit tick in `--pin-food` at full strength, no glyph,
+  44px target, keyed "King of Pops" in the print legend beside "Food stall". **Info is on top of
+  merch, edge to edge** at (637, 714.5) — see Decided. The in-park marker stays at (801, 433):
+  the beer stand did not move, so it cannot come back. Every nudge and every pin hidden at a
+  stop is in `docs/pr-notes.md`.
 - 9/22 round 4, Ernest's iPhone check (same PR): the **interaction model** above (the tap on a
   pin no longer clears the chip — that is what made the Kidlandia water pin vanish; `revealAt`
   pans the pin into the band above the sheet; one tapped pin wears the ring; empty-map taps clear
   one layer at a time; e2e drives the Water and Restrooms flows at 375); **every pin card has a
-  location line** (`where` on each visitor pin in `pins.js`, shown first on the card). **No
-  round-3 brief reached the Claude Code session** — round 4 was done on the round-2 positions.
+  location line** (`where` on each visitor pin in `pins.js`, shown first on the card). Round 3
+  reached the session after round 4 and was applied on top of it.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
