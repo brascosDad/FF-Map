@@ -97,7 +97,7 @@ function MapQr() {
 // landed on the grey of the square (Ernest, 9/20). Each column's numbers go
 // to the far side from the street -- west column left into the green, east
 // column right into the park -- so nothing is printed over a booth.
-function Squares({ booths, color, angle = 0, hollow = false, numberSide }) {
+function Squares({ booths, color, angle = 0, hollow = false, numberSide, numbers = true }) {
   return booths.map((b) => {
     const featured = featuredTitle(b);
     const side = numberSide?.(b);
@@ -114,7 +114,7 @@ function Squares({ booths, color, angle = 0, hollow = false, numberSide }) {
           opacity, as on the screen -- a mark that reads at 5.5pt without
           leaning on colour. */}
       {featured && <IconAt name="star" x={b.x} y={b.y} size={FEATURED_STAR} />}
-      {b.n != null && (
+      {numbers && b.n != null && (
         <text x={nx} y={ny} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
               textAnchor={side === 'left' ? 'end' : side === 'right' ? 'start' : 'middle'} stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{b.n}</text>
       )}
@@ -181,7 +181,11 @@ function PrintMap() {
       <text x={411.5} y={130} fontSize={STREET} fill="var(--map-label)" textAnchor="middle" transform="rotate(-90 411.5 130)">Candler Park Dr</text>
       <text x={1015} y={795} fontSize={STREET} fill="var(--map-label)" textAnchor="start">McLendon Ave</text>
 
-      <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} />
+      {/* The stalls keep their squares but not their numbers on paper: the
+          handout lists nothing for stalls 1-16 (the food list is behind
+          the QR, and the stalls are unassigned), so a number would point
+          at nothing (Ernest, 9/23). The phone still numbers them. */}
+      <Squares booths={BOOTHS.food} color={PIN_COLOR.food} angle={BOOTH_ANGLE.food} numbers={false} />
       {AREAS.map((a) => <Squares key={a.id} booths={a.booths} color={SLATE} angle={BOOTH_ANGLE[a.id]}
                                  numberSide={a.id === 'cpd' ? cpdNumberSide : undefined} />)}
       {/* Kidlandia's numbers sit beside their squares, on the east -- the

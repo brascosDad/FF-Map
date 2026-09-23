@@ -1298,9 +1298,10 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   check('print: the sheet renders at /?print=1', pr.page);
   check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === 'rgb(64, 126, 181)' && pr.infoGlyph && pr.infoRects === 0,
     `${pr.infoPin}, glyph ${pr.infoGlyph}, ${pr.infoRects} rects`);
-  // 58 + 27 + 54 numbered art booths, 11 Kidlandia, 16 food stalls. The two
-  // unnumbered squares print with no number, so they are not counted here.
-  check('print: every booth square carries its number', pr.numbers === 58 + 27 + 54 + 11 + 16, `${pr.numbers} numbers`);
+  // 58 + 27 + 54 numbered art booths, 11 Kidlandia. The two unnumbered
+  // squares print with no number, and since 9/23 neither do the 16 food
+  // stalls (nothing on the sheet lists them), so they are not counted here.
+  check('print: every art booth square carries its number, and no stall does', pr.numbers === 58 + 27 + 54 + 11, `${pr.numbers} numbers`);
   check('print: the two unnumbered artists have a square', pr.unnumbered === 2, `${pr.unnumbered} squares`);
   // No count of any kind on paper: not the public "over 130", not a booth
   // total (never printed anywhere -- it moves with every sheet edit).
