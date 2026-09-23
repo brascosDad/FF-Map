@@ -3,7 +3,7 @@ import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { featuredTitle } from '../data/festival';
-import { CREAM, NAVY, PINS, PIN_COLOR, SLATE } from '../assets/pins';
+import { ACTIVE_PINS, CREAM, NAVY, PIN_COLOR, SLATE } from '../assets/pins';
 import { IconAt } from './Icon';
 
 // Side of one booth / food-truck square, in map units. The export draws its own
@@ -247,7 +247,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
         {/* A filter chip's own pins draw last, so they sit on top of
             everything they might share a spot with; the rest are dimmed and,
             while the chip is on, take no taps (.ffc-dimmed). */}
-        {PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
+        {ACTIVE_PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
           // Paper-only pins (print: true in pins.js -- the EMS / fire
           // inspector layer) never reach the phone.
           if (p.print) return null;

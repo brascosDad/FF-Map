@@ -5,7 +5,7 @@ import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
 import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
-import { PINS } from './assets/pins';
+import { ACTIVE_PINS } from './assets/pins';
 import { FESTIVAL } from './data/festival';
 import './styles/map.css';
 
@@ -189,7 +189,7 @@ export default function App() {
       setSelectedPin(null);              // no one pin: every pin in the category rings
     } else {
       setFilter(null);
-      setSelectedPin(PINS.find((p) => p.d === row.d) || null);
+      setSelectedPin(ACTIVE_PINS.find((p) => p.d === row.d) || null);
       focusOn(row.at[0], row.at[1]);
     }
   }

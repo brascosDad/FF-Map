@@ -45,6 +45,13 @@
 // are the ones with `print: true` below -- barricades, speed bumps,
 // generators, dumpsters; every restroom is on both maps (Ernest, 9/22).
 //
+// `hidden: true` takes a pin off BOTH maps: no mark, no tap target, no
+// directory row, no legend row -- and if every pin of a category is hidden,
+// that category's legend rows and chip go with it. Kept for next year / on
+// request; delete the flag to bring it back (its card copy and its
+// TODO(Jess) stay in place, so that is a one-line change). Round 5, 9/23:
+// what Jess's markup did not ask for is hidden this way, not deleted.
+//
 // `shape: 'square'` draws the pin as a booth-sized square in its category
 // colour, no glyph -- the King of Pops carts, which read like food stalls
 // rather than places (Ernest, round 3). The tap target is still the 44px
@@ -256,6 +263,13 @@ export const PINS = [
 //
 // These resolve as CSS in both places they are used: as an SVG `fill` on the map
 // and as a `background` on the panel badges.
+// The pins that are on a map at all: everything not `hidden`. Every consumer
+// of the list -- both maps, the directory, the legends, the chips -- reads
+// this, so one flag is the whole switch.
+export const ACTIVE_PINS = PINS.filter((p) => !p.hidden);
+/** Whether any pin of a category is on a map (hidden ones do not count). */
+export const hasPins = (c) => ACTIVE_PINS.some((p) => p.c === c);
+
 export const PIN_COLOR = {
   food: 'var(--pin-food)',
   drinks: 'var(--pin-drinks)',

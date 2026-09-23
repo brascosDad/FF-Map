@@ -12,7 +12,7 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
-import { CREAM, PINS, PIN_COLOR, PIN_INK, SLATE } from '../assets/pins';
+import { ACTIVE_PINS, CREAM, PIN_COLOR, PIN_INK, SLATE } from '../assets/pins';
 import { LEGEND, PRINT_SITE_LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import { FESTIVAL, featuredTitle } from '../data/festival';
@@ -206,7 +206,7 @@ function PrintMap() {
       {/* Every pin, the paper-only ones included (print: true in pins.js --
           the EMS / fire-inspector layer the phone skips). A category in
           PRINT_SHAPES is drawn as its own mark rather than a disc. */}
-      {PINS.map((p, i) => (
+      {ACTIVE_PINS.map((p, i) => (
         <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`}>
           {p.shape === 'square'
             ? <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.4} fill={PIN_COLOR[p.c]} />
