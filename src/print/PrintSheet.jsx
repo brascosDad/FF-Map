@@ -209,7 +209,14 @@ function PrintMap() {
       {ACTIVE_PINS.map((p, i) => (
         <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`}>
           {p.shape === 'square'
-            ? <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.4} fill={PIN_COLOR[p.c]} />
+            ? <>
+                <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.4} fill={PIN_COLOR[p.c]} />
+                {/* A cart's number (C1-C3, pins.js) beside its square, level,
+                    set like a Candler Park Dr booth number: to the right, in
+                    the same type and halo, so it points at its index row. */}
+                {p.n && <text x={p.x + TICK / 2 + NUMBER_GAP} y={p.y + NUMBER * 0.36} fontSize={NUMBER} fontWeight={700} fill={NUMBER_FILL}
+                              textAnchor="start" stroke={HALO} strokeWidth={1.6} paintOrder="stroke">{p.n}</text>}
+              </>
             : PRINT_SHAPES[p.c]
             ? PRINT_SHAPES[p.c](p)
             : <>
@@ -271,6 +278,11 @@ function artistIndex() {
     for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n), featured: featuredTitle(b) });
   }
   for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
+  // The food carts, C1-C3, alphabetical with the booths the way the K
+  // booths are: a number on the map has to point at a row (Ernest, 9/23).
+  // The vendor's name from the pin, a tag to tell two carts of one vendor
+  // apart.
+  for (const p of ACTIVE_PINS) if (p.shape === 'square' && p.n) rows.push({ label: `${p.vendor}${p.tag ? ` (${p.tag})` : ''}`, n: p.n });
   return rows.sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
 }
 

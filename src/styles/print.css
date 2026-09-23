@@ -103,13 +103,13 @@
    names start on the legend's label line. Check the PNG after any copy
    change: the list fills most of what the column has.
 
-   Leading 1.3, down from 1.35 on 9/22 when the site/safety key arrived (it
-   went to 1.25 for a day, with the key under a heading; the heading and half
-   the gap under the header's rule then came out and the room went back into
-   the leading). Measure the spare in the PNG after any copy change: the next
-   two rows the chair adds may not fit at this size, and 8pt is the floor. */
+   Leading 1.25 -- PROVISIONAL, 9/23: the three food-cart rows (C1-C3) did
+   not fit at 1.3 even after the header tightened (0.12in over, measured),
+   and 8pt is the floor, so the leading gives instead of the size while
+   Ernest chooses; at 1.3 the sheet fits only without the cart rows or a
+   legend row. Measure the spare in the PNG after any copy change. */
 .print-index { flex: 1; min-height: 0; }
-.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.3; }
+.print-index ul { margin: 0; padding: 0; list-style: none; columns: var(--print-cols); column-gap: var(--print-gutter); font-size: 8pt; line-height: 1.25; }
 .print-index li { display: grid; grid-template-columns: var(--print-lead) 1fr; gap: var(--print-lead-gap); break-inside: avoid; }
 .print-index__n { text-align: right; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 .print-index__who { min-width: 0; }

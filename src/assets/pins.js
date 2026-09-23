@@ -106,14 +106,19 @@ export const PINS = [
   // like the trucks.
   // Both carts draw as SQUARES like the food stalls (shape: 'square'), the
   // same 8-unit tick in --pin-food at full strength, no glyph, with a 44px
-  // tap target on the phone like any pin (Ernest, round 3).
-  { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', shape: 'square', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
-  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', shape: 'square', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
+  // tap target on the phone like any pin (Ernest, round 3). A cart carries
+  // its number `n` (C1-C3: a C prefix, the way Kidlandia uses K, so it
+  // cannot be read as art booth 1-3), its `vendor` (the name in
+  // vendors.json, which is its card) and a short `tag` that tells two carts
+  // of one vendor apart in the print index. The number is stored here and
+  // nowhere else: the print map, the print index and the phone card read it.
+  { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', shape: 'square', n: 'C1', vendor: 'King of Pops', tag: 'Main Stage', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
+  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', shape: 'square', n: 'C2', vendor: 'King of Pops', tag: 'entrance', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
   // Mr Softee: "Add an additional food icon here (this one is Mr Softee)"
   // (Jess's markup, 9/23), a food-cart square like King of Pops, on the lawn
   // south-west of the beer stand. Clear of everything at every stop, so on
   // the map from the first step.
-  { x: 678.0, y: 476.0, c: 'food', d: 'mrsoftee', shape: 'square', where: 'On the lawn beside Kidlandia, south-west of the beer stand' },
+  { x: 678.0, y: 476.0, c: 'food', d: 'mrsoftee', shape: 'square', n: 'C3', vendor: 'Mr Softee', where: 'On the lawn beside Kidlandia, south-west of the beer stand' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of

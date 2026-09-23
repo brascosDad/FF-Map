@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
-import { PIN_COLOR, SLATE } from '../assets/pins';
+import { ACTIVE_PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
 import { span } from '../data/areas';
@@ -167,14 +167,16 @@ function ArtMarketArea({ area, onOpenBooth }) {
   );
 }
 
-// A food cart with its own pins (King of Pops): the card is the vendor's own
-// record in vendors.json, so the list and the pins cannot say different things.
+// A food cart with its own square on the map: the card is the vendor's own
+// record in vendors.json (named by the pin's `vendor`), so the list and the
+// pins cannot say different things; the cart's number (C1-C3, on the pin)
+// leads the subtitle the way a booth card is titled by its number.
 function FoodCart({ name, pin }) {
   const v = vendorsData.vendors.find((x) => x.name === name);
   if (!v) return null;
   return (
     <>
-      <SheetHeader icon="food" color={PIN_COLOR.food} title={v.name} sub={v.offering} />
+      <SheetHeader icon="food" color={PIN_COLOR.food} title={v.name} sub={`${pin?.n ? `Cart ${pin.n} · ` : ''}${v.offering}`} />
       <Where pin={pin} />
       {v.location && <div className="li"><span className="b" />{v.location}</div>}
       <div className="foot">{vendorsData.note}</div>
@@ -182,12 +184,12 @@ function FoodCart({ name, pin }) {
   );
 }
 
-// Food carts with their own square on the map (pins.js), by card id -> the
-// vendor's name in vendors.json.
-const FOOD_CARTS = { kingofpops: 'King of Pops', mrsoftee: 'Mr Softee' };
+// A card id that belongs to a food-cart square: the vendor is on the pin.
+const cartVendor = (id, pin) => pin?.vendor || ACTIVE_PINS.find((p) => p.d === id && p.vendor)?.vendor;
 
 function GenericPoi({ id, pin }) {
-  if (FOOD_CARTS[id]) return <FoodCart name={FOOD_CARTS[id]} pin={pin} />;
+  const vendor = cartVendor(id, pin);
+  if (vendor) return <FoodCart name={vendor} pin={pin} />;
   const d = POI_COPY[id];
   if (!d) return null;
   return (
@@ -332,7 +334,7 @@ function BoothDetail({ booth, onStep }) {
 function accentFor(openId, openArea, openBooth) {
   if (openBooth) return openBooth.area === 'Food Court' ? PIN_COLOR.food : openBooth.area === 'Kidlandia' ? PIN_COLOR.kids : SLATE;
   if (openId === 'stageMain' || openId === 'stageAcoustic') return PIN_COLOR.stage;
-  if (FOOD_CARTS[openId]) return PIN_COLOR.food;
+  if (cartVendor(openId, null)) return PIN_COLOR.food;
   if (openId) return PIN_COLOR[POI_COPY[openId]?.cat] || PIN_COLOR[openId] || SLATE;
   if (openArea) return SLATE;
   return SLATE;
