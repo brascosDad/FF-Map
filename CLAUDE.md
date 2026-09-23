@@ -383,6 +383,18 @@ Figma workflow), and PR #8 (booth + beta fixes):
   location line** (`where` on each visitor pin in `pins.js`, shown first on the card). Round 3
   reached the session after round 4 and was applied on top of it.
 
+- 9/23 round 5, Jess's markup PDF fit to the map (same PR): **`hidden: true`** on a pin takes it
+  off both maps, the directory, the legends and the chips (kept for next year; delete the flag
+  to bring it back) — both beverage stations, the PTA booth, both speed bumps and the speed-bump
+  water are hidden. Added: **Mr Softee** as a food-cart square at (678, 476) (both maps, his
+  vendor card), the **ice truck** (710, 497) and **musicians' tent** (805, 267) as paper-only
+  ops items (`--ops-ice-truck`, `--ops-musician-tent`, Phosphor Truck and Tent), one more
+  generator (708, 524); the generator/dumpster pairs stack above the tent. Moved: water at the
+  top of the CPD run (421, 360, both maps — Jess asked for water there, not a speed bump),
+  Kidlandia water to (552, 461), the field restroom back to her (679, 555), the McLendon-east
+  barricade to (979, 789.9) east of Mell. Print legend: "Food cart" covers both carts. Every
+  nudge and hidden pin is in `docs/pr-notes.md`.
+
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
   Mr Softee "to the right of the beer stand" on the field. Confirm that is the main stand (Jess).
@@ -401,9 +413,8 @@ Figma workflow), and PR #8 (booth + beta fixes):
 - **Ernest's 9/22 endpoints** (round 2) supersede the 9/21 box readings for every pin they name;
   the table is in PR #12's round-2 description. Still verify at setup.
 - Everything from **Jess's 9/21 markup** was read off red boxes on the printed sheet and lands
-  within a few units; where a spot was nudged the reason is in `pins.js` beside it. Verify the
-  barricade at (395, 791) is across McLendon west of Candler Park Dr, not across Candler Park Dr
-  itself — read that way because her four barricades then close every road into the zone.
+  within a few units; where a spot was nudged the reason is in `pins.js` beside it. Her 9/23
+  comment text confirms the barricade at the CPD/McLendon corner is across McLendon.
 - **AWARE Wildlife** square: on the white ground of the entrance path, nestled into the west
   lawn's corner where the path widens out to the booth rows (Ernest, 9/20; Courtney's words
   were "on the grass"). **Achieve with Steve** square: one McLendon pitch east of booth 55. Both

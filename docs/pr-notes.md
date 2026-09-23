@@ -1,4 +1,70 @@
-# PR notes — 9/22 committee feedback, rounds 1–4 (PR #12)
+# PR notes — 9/22–23 committee feedback, rounds 1–5 (PR #12)
+
+## Round 5 (Jess's markup PDF, fit to the map; 9/23)
+
+Ernest's rule: missing → add; wrong spot → move; not asked for → hide (`hidden: true`, never
+delete). Print exact; edge to edge where two would touch; rule 1 on the phone.
+
+### Added
+| Jess | Placed | Maps | Notes |
+|---|---|---|---|
+| "Add an additional food icon here (this one is Mr Softee)" | **(678, 476)**, food-cart square | both | opens Mr Softee's vendor card; `vendors.json` location now points here (Todd's own note had him right of the beer stand). Clear at every stop → shown from the first step |
+| "Please label this 'Ice truck'" | **(710, 497)** | print | new `iceTruck`, Phosphor **Truck**, token **`--ops-ice-truck` #CFEAF5** (ice blue; navy glyph, 9.2:1) — reads on the lawn, no visitor hue (water is a mid teal-blue under white). Legend "Ice truck" |
+| "Add 1 generator icon here" | **(708, 524)** | print | existing generator |
+| "Add Musician's tent" | **(805, 267)** | print | new `musicianTent`, Phosphor **Tent** (it exists), token **`--ops-musician-tent` #6B4A2B** (canvas brown, white glyph 8.1:1). Legend "Musicians' tent" |
+
+Generator/dumpster pairs by the changing rooms moved up edge to edge above the tent, at her x's:
+generators (811, 247) and (811, 227), dumpsters (836, 247) and (836, 227) — the lower discs 20.9
+from the tent, the upper 20 above; Food Court label and stall 4 clear. Print legend: "King of
+Pops" row renamed **"Food cart"** (covers both carts; each card names its vendor).
+
+### Moved
+| Pin | Was | Now | Notes |
+|---|---|---|---|
+| Water, top of the CPD booth run | a speed bump at (411.5, 360) | **(421, 360)**, both maps | her (421, 361); 1 unit north so the Detail target clears booth 131's hit cell (nudge). Line: "Candler Park Dr, at the north end of the booth run" |
+| Water, Kidlandia | (527, 378) | **(552, 461)** | 38.7 from the Kidlandia pin → Detail only on the phone. Line: "Inside Kidlandia, at its south end" |
+| Restroom, field | (680, 526) | **(679, 555)**, her spot exactly | 23 units from booths 45 and 46 (17.45 is touching at Detail): no overlap, no nudge. Line: "On the lawn beside Kidlandia, by art booths 45 and 46" |
+| Barricade, McLendon east | (912, 789.9) | **(979, 789.9)** | east of the Acoustic Stage and of Mell Ave, across McLendon |
+
+Her markup settles the CPD/McLendon corner barricade: across McLendon, as drawn (question removed).
+Optional, not done: the "Acoustic Stage" print label was anchored to run left of its pin only to
+clear the old barricade at 912; it could go back to centred now.
+
+### Hidden (`hidden: true`; delete the flag to bring one back)
+- Beverage station (west) (670, 391.5) and (east) (738, 390.5) — the beverage category has no
+  pin left, so its legend rows, directory row and card are off; `--pin-beverage` and the cup
+  glyph stay defined.
+- PTA booth (519, 520) — its print-legend row goes with it.
+- Speed bumps (411.5, 360) and (411.5, 585) — the "Speed bump" print-key row goes with them.
+- Water at the CPD speed bump (438, 585).
+
+### After hiding
+- First aid's line rewritten: **"On the lawn below the Main Stage, beside the King of Pops
+  cart"** — Ernest to check.
+- `from: 'detail'` pins on the lawn re-checked for an earlier stop: the King of Pops cart is
+  26.2 units from first aid and the field water 26.3 from the beer stand; the first step needs
+  46, so both stay Detail-only. Info (26.4 from merch) too.
+- The beverage-station and PTA questions are withdrawn (hidden items).
+
+### Hidden at a stop (phone, rule 1) — current
+| Stop | Hidden until a closer stop |
+|---|---|
+| Overview | everything but the destinations, the beer stand, merch, bike valet |
+| First step | King of Pops (Main Stage cart), field water, Kidlandia water, entrance water, Acoustic water, info |
+| Detail | nothing |
+
+### Location lines written or rewritten this round (Ernest to check)
+| Pin | Line |
+|---|---|
+| First aid (712, 395) | On the lawn below the Main Stage, beside the King of Pops cart |
+| Mr Softee (678, 476) | On the lawn beside Kidlandia, south-west of the beer stand |
+| Water, CPD north (421, 360) | Candler Park Dr, at the north end of the booth run |
+| Water, Kidlandia (552, 461) | Inside Kidlandia, at its south end |
+| Restroom, field (679, 555) | On the lawn beside Kidlandia, by art booths 45 and 46 |
+
+### Open
+- **Jess:** which PTA runs the booth — moot while it is hidden.
+- **Courtney / setup:** verify every placement against the grounds on 10/2.
 
 ## Round 3 (Ernest's print-sheet review of round 2; arrived after round 4, applied on top of it)
 
@@ -87,13 +153,6 @@ nudge from this PR; the PR description summarises it. Coordinates are map units 
 
 ## Questions for people
 
-- **Jess:** what do the two beverage stations serve? The card says "Beverage station — drinks for
-  sale." until then (`TODO(Jess)` in `directory.js` and `DetailSheet.jsx`).
-- **Jess:** which PTA runs the booth in Kidlandia? Card says "PTA booth." until then.
-- **Jess:** the barricade Ernest's brief put at "Candler Park Dr at McLendon (395, 791)" is drawn
-  across **McLendon just west of Candler Park Dr**, not across Candler Park Dr — read that way
-  because her four barricades then close every road into the zone (CPD north end, Miller Ave
-  mouth, McLendon west, McLendon at Mell). Say if it was meant across CPD.
 - **Courtney / setup:** every 9/21 and 9/22 placement was read off the printed sheet; verify
   against the grounds on 10/2, especially the Kidlandia column (K0 north), AWARE Wildlife and
   Achieve with Steve.
