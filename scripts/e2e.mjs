@@ -1334,9 +1334,12 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   const cover = await p.evaluate(() => {
     const box = (el) => el.getBoundingClientRect();
     const circles = [...document.querySelectorAll('.print-map .print-pin > circle')].map((c) => { const b = box(c); return { kind: 'pin', n: c.parentElement.className.baseVal.replace(/print-pin /, '').replace(/ print-pin--print-only/, ''), x: b.x + b.width / 2, y: b.y + b.height / 2, r: b.width / 2 - 0.6 }; });
-    const marks = [...document.querySelectorAll('.print-map .print-pin')].filter((g) => !g.querySelector(':scope > circle')).map((g) => ({ kind: 'mark', n: g.className.baseVal.replace(/print-pin /, ''), b: box(g) }));
+    // A mark's box is its shapes' box, not its group's: a cart square's own
+    // number sits beside it inside the same group and is checked as a label.
+    const union = (els) => els.map(box).reduce((a, b) => a ? { left: Math.min(a.left, b.left), right: Math.max(a.right, b.right), top: Math.min(a.top, b.top), bottom: Math.max(a.bottom, b.bottom) } : { left: b.left, right: b.right, top: b.top, bottom: b.bottom }, null);
+    const marks = [...document.querySelectorAll('.print-map .print-pin')].filter((g) => !g.querySelector(':scope > circle')).map((g) => ({ kind: 'mark', n: g.className.baseVal.replace(/print-pin /, ''), g, b: union([...g.querySelectorAll('rect, path')]) }));
     const squares = [...document.querySelectorAll('.print-map .print-booth > rect')].map((r) => ({ kind: 'square', n: r.parentElement.querySelector('text')?.textContent || 'unnumbered', b: box(r) }));
-    const texts = [...document.querySelectorAll('.print-map text')].filter((t) => !t.closest('.print-booth')).map((t) => ({ kind: 'label', n: t.textContent.trim().slice(0, 16), b: box(t) }));
+    const texts = [...document.querySelectorAll('.print-map text')].filter((t) => !t.closest('.print-booth')).map((t) => ({ kind: 'label', n: t.textContent.trim().slice(0, 16), own: t.closest('.print-pin'), b: box(t) }));
     const numbers = [...document.querySelectorAll('.print-map .print-booth > text')].map((t) => ({ kind: 'number', n: t.textContent, b: box(t) }));
     const qr = document.querySelector('.print-map .print-qr rect'); const other = qr ? [{ kind: 'qr', n: 'QR', b: box(qr) }] : [];
     const rects = [...marks, ...squares, ...texts, ...numbers, ...other];
@@ -1352,7 +1355,7 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
         if (Math.hypot(circles[i].x - nx, circles[i].y - ny) < circles[i].r - 0.5) out.push(`${circles[i].n} x ${r.kind} ${r.n}`);
       }
     }
-    for (const m of marks) for (const r of rects) if (r !== m && hit(m.b, r.b)) out.push(`${m.n} x ${r.kind} ${r.n}`);
+    for (const m of marks) for (const r of rects) if (r !== m && r.own !== m.g && hit(m.b, r.b)) out.push(`${m.n} x ${r.kind} ${r.n}`);
     return out;
   });
   check('print: nothing covers anything else', cover.length === 0, cover.join(' | '));
