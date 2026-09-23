@@ -143,11 +143,12 @@ export const PINS = [
   // The two banks Jess's plan added (9/21), on both maps since 9/22 (Ernest:
   // every restroom shows everywhere). One symbol for every toilet, ADA units
   // included -- the print key says "Restroom (+ ADA)", the phone card too.
-  //   The field side of the art-market path, back at Jess's own spot
-  //   (9/23; it was lifted to 526 on 9/22). 23 units from booths 45 and 46's
-  //   centres, where a Detail target and a hit cell need 17.45: no overlap,
-  //   so no nudge.
-  { x: 679.0, y: 555.0, c: 'wc', d: 'wc', where: 'On the lawn beside Kidlandia, by art booths 45 and 46' },
+  //   The field side of the art-market path, at Jess's (679, 555) moved 8
+  //   units out onto the lawn, at a right angle to the path away from the
+  //   row (Ernest, 9/23): at her spot the disc sat 1.4 units off the numbers
+  //   of booths 45 and 46 on paper; here it clears them by 9.3. 44 units
+  //   from the generator, 65 from the ice truck.
+  { x: 672.5, y: 550.0, c: 'wc', d: 'wc', where: 'On the lawn beside Kidlandia, by art booths 45 and 46' },
   //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
   { x: 422.0, y: 217.0, c: 'wc', d: 'wc', where: 'Candler Park Dr, at the north path into the park' }, // TODO(Jess): confirm location
 
