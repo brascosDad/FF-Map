@@ -45,19 +45,24 @@
 // are the ones with `print: true` below -- barricades, speed bumps,
 // generators, dumpsters; every restroom is on both maps (Ernest, 9/22).
 //
+// `where` is the card's location line -- how someone confirms which of a
+// category's pins they tapped (Ernest, 9/22). Plain words from the map, one
+// line, on every visitor pin; the lines Ernest wrote carry TODO(Jess):
+// confirm location, the rest are listed in docs/pr-notes.md for him to check.
+//
 // A `barricade` is three cones in a row ACROSS a street, so it carries `axis`:
 // 'x' when the row runs east-west (across a north-south street), 'y' when it
 // runs north-south (across an east-west one).
 export const PINS = [
   // Markers that carry a standing label on the map
-  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true },
-  { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage', overview: true },
+  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true, where: 'The car path north of the lawn, east of the Main Stage' },
+  { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage', overview: true, where: 'North end of the lawn, below the pool' },
   // The Acoustic Stage sits where the export drew it until Mell Ave moved to
   // x 938.5 (Figma, 9/21) -- exactly where the pin was. The east end of
   // McLendon repacked west of Mell's kerb (924.5): barricade ~912, stage 885,
   // Achieve with Steve 858, booth 55 at 840 (Jess, Ernest, 9/22).
-  { x: 885.0, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true },
-  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true },
+  { x: 885.0, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true, where: 'On McLendon Ave at Mell Ave, the east end of the McLendon art market' },
+  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true, where: 'The west lawn, off Candler Park Dr' },
 
   // The beer stand: the main one, on the field below the Main Stage -- the
   // landmark the food chair places Mr Softee against ("to the right of the
@@ -66,15 +71,15 @@ export const PINS = [
   // the phone's opening view, where two targets need 81 units on a 375px
   // screen, so the in-park art market marker moved up the path to 83 units
   // from it (areas.js) rather than the stand leaving its spot.
-  { x: 728.0, y: 472.0, c: 'drinks', d: 'beer', label: 'Beer', overview: true },
+  { x: 728.0, y: 472.0, c: 'drinks', d: 'beer', label: 'Beer', overview: true, where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
   // The other beer stations the export marks
-  { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks' },
-  { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks' },
+  { x: 802.5, y: 308.9, c: 'drinks', d: 'drinks', where: 'By the Main Stage, next to the Food Court' }, // TODO(Jess): confirm location
+  { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks', where: 'West lawn, near the McLendon entrance' }, // TODO(Jess): confirm location
   // ...and the one just north of the Acoustic Stage, which Jess's plan pairs
   // with a water station tight against it (9/21; the water is in the water
   // block below, held to Detail). Was the export's (897.3, 747.3); 53 units
   // from the stage pin, clear of the bike valet.
-  { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks' },
+  { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks', where: 'By the Acoustic Stage' }, // TODO(Jess): confirm location
 
   // King of Pops: two carts (Todd, 9/21), in the food colour, each opening
   // the cart's card. One on the field side near the Main Stage, west of the
@@ -83,8 +88,8 @@ export const PINS = [
   // the park entrance, on the west lawn edge at the path mouth -- 47 units
   // from merch (46 is edge to edge at the first step), clear of the west
   // beer station and booth 69. Cart spots move at load-in like the trucks.
-  { x: 690.0, y: 320.0, c: 'food', d: 'kingofpops' },
-  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops' },
+  { x: 690.0, y: 320.0, c: 'food', d: 'kingofpops', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
+  { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
   // the entrance path (the path mouth is x ~598-622), a little north of
@@ -93,7 +98,7 @@ export const PINS = [
   // every year (Jess, 9/17). Not in the export. The bike valet moved 10 units
   // east so this overview target clears its own (83 units; the floor is 81 on
   // a 375px phone).
-  { x: 630.0, y: 740.0, c: 'merch', d: 'merch', label: 'Merch', overview: true },
+  { x: 630.0, y: 740.0, c: 'merch', d: 'merch', label: 'Merch', overview: true, where: 'McLendon entrance, east side of the path' },
 
   // Restrooms (category key is `wc`, matching icons.js and the filter chips).
   // The southern bank is ON the entrance path between booth 54 and AWARE
@@ -104,16 +109,16 @@ export const PINS = [
   // by 0.7 units (about 1px), and on paper the disc clears both squares. So
   // the square did not need to move down the path. Was the export's
   // (601.6, 665.1), then (582, 658).
-  { x: 934.3, y: 138.3, c: 'wc', d: 'wc' },
-  { x: 610.8, y: 661.2, c: 'wc', d: 'wc' },
+  { x: 934.3, y: 138.3, c: 'wc', d: 'wc', where: 'North end, past the Food Court, by the cul-de-sac' }, // TODO(Jess): confirm location
+  { x: 610.8, y: 661.2, c: 'wc', d: 'wc', where: 'Just inside the McLendon entrance, by art booth 54' }, // TODO(Jess): confirm location
   // The two banks Jess's plan added (9/21), on both maps since 9/22 (Ernest:
   // every restroom shows everywhere). One symbol for every toilet, ADA units
   // included -- the print key says "Restroom (+ ADA)", the phone card too.
   //   The field side of the art-market path, up from Jess's (678, 554) to
   //   where Ernest read it (9/22), clear of booths 43-45.
-  { x: 680.0, y: 526.0, c: 'wc', d: 'wc' },
+  { x: 680.0, y: 526.0, c: 'wc', d: 'wc', where: 'On the lawn beside Kidlandia, near art booths 43–45' }, // TODO(Jess): confirm location
   //   Candler Park Dr, by the north pathway into the park (her ~422, 217).
-  { x: 422.0, y: 217.0, c: 'wc', d: 'wc' },
+  { x: 422.0, y: 217.0, c: 'wc', d: 'wc', where: 'Candler Park Dr, at the north path into the park' }, // TODO(Jess): confirm location
 
   // The field below the Main Stage, per Jess's 2026 plan as Ernest read it
   // against the printed sheet (9/22): EMS is the export's first-aid spot, and
@@ -126,9 +131,9 @@ export const PINS = [
   //
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
   // the darker amber.
-  { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid' },
-  { x: 669.0, y: 370.0, c: 'beverage', d: 'beverage' },
-  { x: 761.0, y: 379.0, c: 'beverage', d: 'beverage' },
+  { x: 715.0, y: 373.0, c: 'firstaid', d: 'firstaid', where: 'On the lawn below the Main Stage, between the two beverage stations' },
+  { x: 669.0, y: 370.0, c: 'beverage', d: 'beverage', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 761.0, y: 379.0, c: 'beverage', d: 'beverage', where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
 
   // Water refill stations, per Jess's 2026 site plan (9/21, Ernest 9/22).
   // Water is the lowest priority on the map, so where a station sits close
@@ -138,24 +143,24 @@ export const PINS = [
   // On the field, exactly at Jess's box, between EMS and the beer stand: 43
   // units from EMS and 30 from the east beverage station, so it arrives at
   // Detail, where a 44px target is 25.5 units and both clear.
-  { x: 731.0, y: 413.0, c: 'water', d: 'water', from: 'detail' },
+  { x: 731.0, y: 413.0, c: 'water', d: 'water', from: 'detail', where: 'On the lawn beside Kidlandia, next to the beer stand' }, // TODO(Jess): confirm location
   // The water half of the beer + water pair north of the Acoustic Stage:
   // tight against the beer at (862, 750) -- edge to edge at Detail, 26
   // units east (25.5 is touching on a 375px phone; half a unit of air) -- so
   // it too waits for Detail. Ernest's 877 would overlap.
-  { x: 888.0, y: 750.0, c: 'water', d: 'water', from: 'detail' },
+  { x: 888.0, y: 750.0, c: 'water', d: 'water', from: 'detail', where: 'By the Acoustic Stage, next to the beer' }, // TODO(Jess): confirm location
   // At the Candler Park Dr speed bump, in the break between 94/95 (street
   // side) and 111/112 (park side), which Jess's plan marks and the 9/22 PR
   // missed (Ernest). Off the street's east edge (425.6) on the park side:
   // 438 keeps its Detail target 21.6 units from booths 111 and 112 (17.45 is
   // touching) and, on paper, the disc off the bar and off their numbers.
-  { x: 438.0, y: 585.0, c: 'water', d: 'water' },
+  { x: 438.0, y: 585.0, c: 'water', d: 'water', where: 'Candler Park Dr, at the speed bump by booths 95 and 112' }, // TODO(Jess): confirm location
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
   // entrance tucked against the merch tent's lower-right side, edge to edge
   // at Detail (26.6 units on Ernest's bearing, where 25.5 is touching on a
   // 375px phone; his (636, 749) was 11 from merch). Hidden at the first zoom
   // step, where it would sit on merch.
-  { x: 645.0, y: 762.0, c: 'water', d: 'water', from: 'detail' },
+  { x: 645.0, y: 762.0, c: 'water', d: 'water', from: 'detail', where: 'McLendon entrance, next to the merch tent' }, // TODO(Jess): confirm location
 
   // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
   // of the lawn -- clear of the Kidlandia pin's target at the first zoom
@@ -163,8 +168,8 @@ export const PINS = [
   // PTA booth inside the shape's south-west, where Ernest read it off her
   // plan (9/22), clear of the generator at (507, 488) on paper. The rocket
   // is her own legend's glyph for it, in the Kidlandia colour.
-  { x: 527.0, y: 378.0, c: 'water', d: 'water' },
-  { x: 519.0, y: 520.0, c: 'pta', d: 'pta' },
+  { x: 527.0, y: 378.0, c: 'water', d: 'water', where: 'Inside Kidlandia' }, // TODO(Jess): confirm location
+  { x: 519.0, y: 520.0, c: 'pta', d: 'pta', where: 'Inside Kidlandia, at its south-west edge' },
 
   // Info booth: directly north of the merch tent, on the same (east) side of
   // the entrance path. "The info booth and the merch booth are the same
@@ -177,13 +182,13 @@ export const PINS = [
   // 9/22, outranks it and the two would cross at the first step. On the
   // desktop it is on the opening view (an 11px gap between the 40px pins)
   // and at every step. Was the export's (644.3, 733.3).
-  { x: 630.0, y: 694.0, c: 'info', d: 'info', overview: 'docked', from: 'detail' },
+  { x: 630.0, y: 694.0, c: 'info', d: 'info', overview: 'docked', from: 'detail', where: 'Just inside the McLendon entrance, east side of the path, above the merch tent' },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the
   // export's spot so its overview target clears the merch tent's on the
   // corner (the McLendon marker moved east with it).
-  { x: 712.4, y: 730.1, c: 'bikevalet', d: 'bikevalet', overview: true },
+  { x: 712.4, y: 730.1, c: 'bikevalet', d: 'bikevalet', overview: true, where: 'Off McLendon, east of the park entrance' },
 
   // ---- PAPER ONLY from here: the EMS / fire-inspector layer (Jess, 9/21) ----
 

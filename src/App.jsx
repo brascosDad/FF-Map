@@ -273,6 +273,7 @@ export default function App() {
             openArea={openArea}
             openBooth={openBooth}
             onStepBooth={stepBooth}
+            selectedPin={selectedPin}
             onSelect={handleDirectorySelect}
             onOpenBooth={handleBoothFromList}
             onClose={closeAll}

@@ -33,6 +33,14 @@ function SheetHeader({ icon, color, title, sub }) {
   );
 }
 
+// The card's location line: the tapped pin's own `where` (assets/pins.js).
+// Every pin card carries one, because several pins share a card and the line
+// is how someone confirms which one they tapped (Ernest, 9/22). A card opened
+// with no one pin -- a category row in the directory -- has no line.
+function Where({ pin }) {
+  return pin?.where ? <div className="li li--where"><span className="b" />{pin.where}</div> : null;
+}
+
 const POI_COPY = {
   kids: { title: 'Kidlandia', sub: 'Family activity zone', icon: 'kids', cat: 'kids',
     // Pumpkin smashing and Trees for Tuition are one stop, not two (9/17).
@@ -69,7 +77,7 @@ const POI_COPY = {
     lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };
 
-function StageSchedule({ stageKey }) {
+function StageSchedule({ stageKey, pin }) {
   const stageId = STAGE_MAP[stageKey];
   const stage = stagesData.stages.find((s) => s.id === stageId);
   if (!stage) return null;
@@ -77,6 +85,7 @@ function StageSchedule({ stageKey }) {
     <>
       <SheetHeader icon="stage" color={PIN_COLOR.stage} title={stage.name}
                    sub={`${stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule`} />
+      <Where pin={pin} />
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
           <div className="day">{day === 'saturday' ? 'Saturday' : 'Sunday'}</div>
@@ -101,11 +110,12 @@ function StageSchedule({ stageKey }) {
 // paraphrased. `location` is null for every truck but one until his placements
 // arrive: a truck with no spot still lists, it just has no second line and
 // nothing on the map points at it.
-function FoodCourt() {
+function FoodCourt({ pin }) {
   return (
     <>
       <SheetHeader icon="food" color={PIN_COLOR.food} title="Food Court"
                    sub={`${vendorsData.vendors.length} food vendors · 2026`} />
+      <Where pin={pin} />
       {vendorsData.vendors.map((v) => (
         <div className="li" key={v.id}>
           <span className="b" />
@@ -159,25 +169,27 @@ function ArtMarketArea({ area, onOpenBooth }) {
 
 // A food cart with its own pins (King of Pops): the card is the vendor's own
 // record in vendors.json, so the list and the pins cannot say different things.
-function FoodCart({ name }) {
+function FoodCart({ name, pin }) {
   const v = vendorsData.vendors.find((x) => x.name === name);
   if (!v) return null;
   return (
     <>
       <SheetHeader icon="food" color={PIN_COLOR.food} title={v.name} sub={v.offering} />
+      <Where pin={pin} />
       {v.location && <div className="li"><span className="b" />{v.location}</div>}
       <div className="foot">{vendorsData.note}</div>
     </>
   );
 }
 
-function GenericPoi({ id }) {
-  if (id === 'kingofpops') return <FoodCart name="King of Pops" />;
+function GenericPoi({ id, pin }) {
+  if (id === 'kingofpops') return <FoodCart name="King of Pops" pin={pin} />;
   const d = POI_COPY[id];
   if (!d) return null;
   return (
     <>
       <SheetHeader icon={d.icon} color={PIN_COLOR[d.cat]} title={d.title} sub={d.sub} />
+      <Where pin={pin} />
       {d.lines.map((line, i) => <div className="li" key={i}><span className="b" />{line}</div>)}
     </>
   );
@@ -337,7 +349,7 @@ const DISMISS_FRACTION = 0.3;
 const FLICK_VELOCITY = 0.5;   // px per ms
 const FLICK_MIN_PX = 40;      // ...and it has to actually travel
 
-export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, onSelect, onOpenBooth, onClose, docked = false, onFocusReturn }) {
+export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
   const wasOpen = useRef(false);
@@ -350,7 +362,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
   // So the sheet renders `shown`, which lags the props by the drop. Opening from
   // closed and closing entirely are not swaps: those already animate, and
   // holding the content back would just delay them.
-  const [shown, setShown] = useState({ openId, openArea, openBooth });
+  const [shown, setShown] = useState({ openId, openArea, openBooth, selectedPin });
   const [swapping, setSwapping] = useState(false);
   const sheetEl = useRef(null);
   const drag = useRef(null);
@@ -367,7 +379,7 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
     // The docked panel never slides, and opening from closed should be
     // immediate -- there is nothing on screen to wait for.
     if (docked || !shownKey || steppingTheSameRow) {
-      setShown({ openId, openArea, openBooth });
+      setShown({ openId, openArea, openBooth, selectedPin });
       setSwapping(false);
       return;
     }
@@ -378,17 +390,17 @@ export default function DetailSheet({ openId, openArea, openBooth, onStepBooth, 
     const wait = nextKey ? SWAP_OUT_MS : CLOSE_MS;
     if (nextKey) setSwapping(true);
     const t = setTimeout(() => {
-      setShown({ openId, openArea, openBooth });
+      setShown({ openId, openArea, openBooth, selectedPin });
       setSwapping(false);
     }, wait);
     return () => clearTimeout(t);
-  }, [nextKey, shownKey, docked, openId, openArea, openBooth, shown.openBooth]);
+  }, [nextKey, shownKey, docked, openId, openArea, openBooth, selectedPin, shown.openBooth]);
 
   let body = null;
   if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} onStep={onStepBooth} />;
-  else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} />;
-  else if (shown.openId === 'food') body = <FoodCourt />;
-  else if (shown.openId) body = <GenericPoi id={shown.openId} />;
+  else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} />;
+  else if (shown.openId === 'food') body = <FoodCourt pin={shown.selectedPin} />;
+  else if (shown.openId) body = <GenericPoi id={shown.openId} pin={shown.selectedPin} />;
   else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} onOpenBooth={onOpenBooth} />;
   else if (docked) body = <PanelDirectory onSelect={onSelect} />;
 
