@@ -269,12 +269,13 @@ function SiteSwatch({ cat }) {
 
 // Every named booth, alphabetical by what the sign will say -- the business,
 // which is what a visitor is looking for; the artist behind it is on the phone
-// map. Sponsor booths have no name to list; the two unnumbered artists list
-// with a dash and where to find them.
+// map. A sponsor booth (no name on the chair's sheet) lists as "Sponsor", so
+// its number on the map points at a row like every other (Ernest, 9/24); the
+// two unnumbered artists list with a dash and where to find them.
 function artistIndex() {
   const rows = [];
   for (const key of ['spine', 'mcl', 'cpd', 'kid']) {
-    for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n), featured: featuredTitle(b) });
+    for (const b of BOOTHS[key]) rows.push({ label: b.biz || 'Sponsor', n: String(b.n), featured: featuredTitle(b) });
   }
   for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
   // The food carts, C1-C3, alphabetical with the booths the way the K

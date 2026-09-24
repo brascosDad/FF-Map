@@ -84,9 +84,10 @@ Courtney's answers, 9/17 evening (supersede anything earlier, including PR #7's 
   Janet Gonzales.)
 - 67–68 (Tarik Berbey) and 130–131 (Michael Taylor, was 132–133 before the renumber) are the two
   double booths.
-- Anything marked Sponsor/open on the sheet prints as "Sponsor". As of the 9/21 read there are
-  **none**: 138 (Kenyaita Hodge, Elaine Monet Candle Co) and 139 (Renzo Iglesias, L'Harmonie
-  Creative Jewelry) were added 9/18 after that morning's pull — Courtney flagged them 9/20.
+- Anything marked Sponsor/open on the sheet prints as "Sponsor", on the phone and as its own row
+  in the print index. As of the **9/24 read there is one: 57** (McLendon; was Ashley Flack /
+  Flack Injury Law — Courtney wrote "Sponsor" in both columns, which `pull-sheet.py` now reads as
+  a sponsor booth). 138 (Kenyaita Hodge) and 139 (Renzo Iglesias) are artists, added 9/18.
 - **Featured artist: Madison O'Brien, booth 11** (Courtney, 9/20). Listed in `FESTIVAL.featured`
   in `src/data/festival.js` by booth number — a committee fact, not a sheet fact — and drawn as a
   star in the booth's own square (see Decided). Re-check the number after any re-pull.
