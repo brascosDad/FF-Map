@@ -158,6 +158,12 @@ Two things worth knowing if you touch this:
   "failed to fetch". The e2e suite opens the map offline in a fresh tab
   specifically to catch that.
 
+## Analytics
+
+Cookie-free visit counts on Umami Cloud, loaded by `src/analytics.js`; the key is in
+`src/data/analytics.js` (empty it to turn analytics off). CLAUDE.md, "Analytics", has the events
+and what the `?s=` link tags (`qr`, `social`, `email`, `web`) mean.
+
 ## Checks
 
 ```bash

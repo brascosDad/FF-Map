@@ -23,8 +23,9 @@ What the sheet looks like (columns, in order):
   - A row with a name but no number is an artist with a spot and no booth
     number (AWARE Wildlife). The Acoustic Stage booth has the words "Acoustic
     Stage booth" where its number would be. Both land in `unnumbered`.
-  - "SPONSOR" in the name column with no business is a sponsor booth: it
-    keeps its number and gets no name.
+  - "SPONSOR" in the name column, with no business or "Sponsor" again in the
+    business column, is a sponsor booth: it keeps its number and gets no
+    name.
   - Kidlandia booths are numbered K0, K1, ... and count separately from the
     1-N run.
 
@@ -146,7 +147,9 @@ def parse(text):
         if label:
             zone_label[zid] = label
 
-        if name.upper() == 'SPONSOR' and not biz:
+        # "Sponsor" in the name column, with the business blank or "Sponsor"
+        # too (9/24: booth 57 reads "Sponsor, Sponsor") -- a sponsor booth.
+        if name.upper() == 'SPONSOR' and (biz or '').upper() in ('', 'SPONSOR'):
             name = biz = None
             status = 'sponsor_or_open'
         else:

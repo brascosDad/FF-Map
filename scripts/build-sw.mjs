@@ -77,9 +77,15 @@ self.addEventListener('fetch', (e) => {
   const { request } = e;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
+  // Other origins are not ours to cache or answer for -- the analytics script
+  // and its sends (cloud.umami.is, src/analytics.js) go straight to the network
+  // and simply fail offline, which the map does not notice.
   if (url.origin !== self.location.origin) return;
 
   // The page itself: try the network briefly, fall back to the cached shell.
+  // Every navigation is the one page, whatever its query -- /, /?s=qr off the
+  // printed QR, /?print=1 -- so the query is ignored and the shell is the
+  // answer to all of them. The app reads the query itself once it boots.
   // Network-first here is what lets a new deploy be seen at all; the timeout is
   // what stops one bar of signal from hanging the map on the festival green.
   if (request.mode === 'navigate') {

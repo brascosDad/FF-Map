@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMapView } from './hooks/useMapView';
 import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
@@ -7,6 +7,7 @@ import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
 import { ACTIVE_PINS } from './assets/pins';
 import { FESTIVAL } from './data/festival';
+import { startAnalytics, track } from './analytics';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
@@ -21,6 +22,25 @@ const GAP = 20;       // --ff-gap / --space-5
 // Phone screens get the map drawn ~10% larger at the overview. The festival
 // still fits, but only just -- about 10 map units (~6px) of margin either side.
 const MOBILE_OVERVIEW_ZOOM = 1.1;
+
+// What an opened thing is called in analytics (CLAUDE.md, "Analytics"), in the
+// map's own vocabulary. A pin's category is its `c` key -- the chips' and
+// pins.js's keys. Its id is its card (`d`); where several pins share a card
+// (every restroom is 'wc') the id adds the cart number or the pin's place in
+// pins.js order, 'wc-2'. A booth is 'art' or 'food' by its area and its id is
+// the booth's own ('mcl-057'); an art-market area is 'art' and its id.
+function pinEvent(pin) {
+  const same = ACTIVE_PINS.filter((p) => p.d === pin.d);
+  const pin_id = pin.n ? `${pin.d}-${pin.n}` : same.length > 1 ? `${pin.d}-${same.indexOf(pin) + 1}` : pin.d;
+  return { category: pin.c, pin_id };
+}
+const boothEvent = (booth) => ({ category: booth.id.startsWith('food-') ? 'food' : 'art', pin_id: booth.id });
+// The stage sheets are the lineup: opening one is a schedule_open too.
+const STAGE_SHEETS = ['stageMain', 'stageAcoustic'];
+function trackOpen(props, d) {
+  track('pin_open', props);
+  if (STAGE_SHEETS.includes(d)) track('schedule_open', { stage: d });
+}
 
 // The brand lockup links back to the festival site (confirmed by Ernest 9/11);
 // the address lives with the festival's other facts in data/festival.js.
@@ -44,6 +64,23 @@ export default function App() {
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
   const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
+
+  // Analytics loads after the map has drawn, never before (src/analytics.js).
+  // Once per load (startAnalytics ignores a second call): the viewport is
+  // what it was when the map opened.
+  useEffect(() => {
+    const t = setTimeout(() => startAnalytics({ viewport: docked ? 'desktop' : 'phone' }), 0);
+    return () => clearTimeout(t);
+  }, [docked]);
+
+  // A new zoom stop, once the view has settled on it: 1 overview, 2, 3 Detail.
+  // Not the stop the map opens on.
+  const firstLevel = useRef(true);
+  useEffect(() => {
+    if (firstLevel.current) { firstLevel.current = false; return; }
+    track('zoom_stop', { level: levelIdx + 1 });
+  }, [levelIdx]);
+
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
@@ -75,6 +112,7 @@ export default function App() {
     setOpenBooth(null);
     setOpenId(pin.d);
     setSelectedPin(pin);
+    trackOpen(pinEvent(pin), pin.d);
     setReveal({ x: pin.x, y: pin.y, n: (reveal?.n || 0) + 1 });
   }
 
@@ -102,6 +140,7 @@ export default function App() {
     setOpenId(null);
     setOpenBooth(null);
     setOpenArea(cluster);
+    track('pin_open', { category: 'art', pin_id: cluster.id });
   }
 
   /**
@@ -150,6 +189,7 @@ export default function App() {
     setOpenId(null);
     setOpenArea(null);
     setOpenBooth(booth);
+    track('pin_open', boothEvent(booth));
   }
 
   /**
@@ -161,6 +201,7 @@ export default function App() {
     setOpenId(null);
     setOpenArea(null);
     setOpenBooth(booth);
+    track('pin_open', boothEvent(booth));
     focusOn(booth.x, booth.y, 2);
   }
 
@@ -179,6 +220,7 @@ export default function App() {
       setFilter(null);
       setOpenId(null);
       setOpenArea(row.area);
+      track('pin_open', { category: 'art', pin_id: row.area.id });
       focusOn(row.at[0], row.at[1]);
       return;
     }
@@ -187,9 +229,12 @@ export default function App() {
     if (row.kind === 'cat') {
       setFilter(row.filter);
       setSelectedPin(null);              // no one pin: every pin in the category rings
+      trackOpen({ category: row.cat, pin_id: row.d }, row.d);
     } else {
       setFilter(null);
-      setSelectedPin(ACTIVE_PINS.find((p) => p.d === row.d) || null);
+      const pin = ACTIVE_PINS.find((p) => p.d === row.d) || null;
+      setSelectedPin(pin);
+      trackOpen(pin ? pinEvent(pin) : { category: row.cat, pin_id: row.d }, row.d);
       focusOn(row.at[0], row.at[1]);
     }
   }
@@ -201,7 +246,10 @@ export default function App() {
     const turningOff = filter === catId;
     setFilter(turningOff ? null : catId);
     closeAll();
-    if (!turningOff) resetToOverview();
+    if (!turningOff) {
+      resetToOverview();
+      track('chip_on', { category: catId });
+    }
   }
 
   function handleBack() {
