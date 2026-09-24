@@ -61,14 +61,16 @@ const QR_AT = { x: VIEW.x + VIEW.w - QR_EDGE - QR_BOX, y: VIEW.y + VIEW.h / 2 - 
 const QR_CAPTION = ['Scan for the music', 'schedule, food trucks', 'and every artist —', 'always up to date.'];
 
 /**
- * The map's own URL as a scannable, vector QR code with a caption.
+ * The map's URL, tagged `?s=qr` (FESTIVAL.qrUrl), as a scannable, vector QR
+ * code with a caption.
  *
- * Error correction M: the URL is short (version 3, 29 modules), so each module
+ * Error correction M: the URL is short (version 3, 29 modules, with or
+ * without the tag), so each module
  * is ~1mm at this size, and M survives the smudges a poster collects. The
  * modules are one path so the PDF carries one object, not 500.
  */
 function MapQr() {
-  const qr = QRCode.create(FESTIVAL.mapUrl, { errorCorrectionLevel: 'M' });
+  const qr = QRCode.create(FESTIVAL.qrUrl, { errorCorrectionLevel: 'M' });
   const n = qr.modules.size;
   const cell = QR_BOX / (n + QR_QUIET * 2);
   const x0 = QR_AT.x + QR_QUIET * cell, y0 = QR_AT.y + QR_QUIET * cell;
@@ -77,7 +79,7 @@ function MapQr() {
     if (qr.modules.get(r, c)) d += `M${(x0 + c * cell).toFixed(2)} ${(y0 + r * cell).toFixed(2)}h${cell.toFixed(2)}v${cell.toFixed(2)}h-${cell.toFixed(2)}z`;
   }
   return (
-    <g className="print-qr" data-url={FESTIVAL.mapUrl}>
+    <g className="print-qr" data-url={FESTIVAL.qrUrl}>
       <rect x={QR_AT.x} y={QR_AT.y} width={QR_BOX} height={QR_BOX} rx={3} fill="var(--ff-white)" />
       <path d={d} fill="var(--ff-navy)" shapeRendering="crispEdges" />
       <text x={QR_AT.x + QR_BOX / 2} y={QR_AT.y + QR_BOX + LABEL * 1.6} fontSize={LABEL} fontWeight={800}
