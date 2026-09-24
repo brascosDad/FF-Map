@@ -7,6 +7,7 @@ import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
 import { ACTIVE_PINS } from './assets/pins';
 import { FESTIVAL } from './data/festival';
+import { startAnalytics } from './analytics';
 import './styles/map.css';
 
 // Three breakpoints. Mobile keeps the bottom sheet; tablet and desktop dock the
@@ -44,6 +45,15 @@ export default function App() {
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
   const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
+
+  // Analytics loads after the map has drawn, never before (src/analytics.js).
+  // Once per load (startAnalytics ignores a second call): the viewport is
+  // what it was when the map opened.
+  useEffect(() => {
+    const t = setTimeout(() => startAnalytics({ viewport: docked ? 'desktop' : 'phone' }), 0);
+    return () => clearTimeout(t);
+  }, [docked]);
+
   const [filter, setFilter] = useState(null);
   const [openId, setOpenId] = useState(null);
   const [openArea, setOpenArea] = useState(null);
