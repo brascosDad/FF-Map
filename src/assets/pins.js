@@ -71,8 +71,9 @@ export const PINS = [
   { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage', overview: true, where: 'North end of the lawn, below the pool' },
   // The Acoustic Stage sits where the export drew it until Mell Ave moved to
   // x 938.5 (Figma, 9/21) -- exactly where the pin was. The east end of
-  // McLendon repacked west of Mell's kerb (924.5): barricade ~912, stage 885,
-  // Achieve with Steve 858, booth 55 at 840 (Jess, Ernest, 9/22).
+  // McLendon repacked west of Mell's kerb (924.5): barricade 912, stage 885,
+  // Achieve with Steve 858, booth 55 at 840 (Jess, Ernest, 9/22). The
+  // barricade is between the stage and Mell; Mell itself stays open (9/24).
   { x: 885.0, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true, where: 'On McLendon Ave at Mell Ave, the east end of the McLendon art market' },
   { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true, where: 'The west lawn, off Candler Park Dr' },
 
@@ -247,9 +248,11 @@ export const PINS = [
   { x: 395.0, y: 480.7, c: 'barricade', print: true, axis: 'y' },
   //   McLendon just west of Candler Park Dr (her ~395, 791).
   { x: 395.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
-  //   McLendon east of the Acoustic Stage AND east of Mell Ave (her box,
-  //   9/23; Mell is at x 938.5 and its kerb at 952.5), across McLendon.
-  { x: 979.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
+  //   Across McLendon just east of the Acoustic Stage and WEST of Mell Ave,
+  //   which stays open: "the little street behind it is not blocked" (Jess,
+  //   9/24 sign-off). Mell's centreline is x 938.5, its west kerb 924.5; the
+  //   cones span 909-915, clear of the kerb and 13 units off the stage disc.
+  { x: 912.0, y: 789.9, c: 'barricade', print: true, axis: 'y' },
 
   // Generators (Phosphor lightning) and dumpsters (trash), where Jess's plan
   // puts them. By the changing rooms north of the Main Stage: the musicians'
