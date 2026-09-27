@@ -1,5 +1,34 @@
 # PR notes: 9/24, analytics + tagged QR + booth 57
 
+## Visual checks: all three fail on CI. Where each difference comes from
+
+**Merged `main` (1d1aee2) into this branch 9/27.** Two conflicts, and this branch's version kept for both:
+`docs/pr-notes.md` and `docs/pr-shots/after-print.png`. Everything else merged cleanly, including #14's
+barricade move in `pins.js` and `PrintSheet.jsx`. **Behaviour tests: 342/342 pass** (locally; CI
+numbers are in the PR). **All three visual checks are expected to fail.** The baselines in
+`tests/visual/` are stale: they were last committed in `0a70cdc`, partway through PR #12, and `main`'s
+CI has been red on them since #12 merged (run 31, 9/23: phone-open 0.978%, sheet-open 11.724%,
+print 6.208%).
+
+Method: the three cases rendered on this one machine at four commits, then diffed pairwise. That
+takes out the machine-vs-runner text difference, which is 1.35% / 2.93% / 4.41% between this
+machine and the committed PNGs even at the same commit.
+
+| Case | PR #12 (0a70cdc → 542dc9b) | PR #14, barricade (542dc9b → 1d1aee2) | This PR, #13 (1d1aee2 → this merge) |
+|---|---|---|---|
+| **phone-open** | 0 px | 0 px | 0 px |
+| **sheet-open** | **11.18%**: the Kidlandia card gained its location line ("The west lawn, off Candler Park Dr"), so the sheet is taller, and the map pans Kidlandia into view above it (round 4's `revealAt`) | 0 px | 0 px |
+| **print** | **6.07%**: header (smaller wordmark, tighter date line); legend (food cart, King of Pops, ops rows, musicians' tent, ice truck); map (lawn pins by Kidlandia, C1–C3 carts, food-stall numbers off, "Art Market" off the car path, generators, ice truck, the east barricade moved to 979, and so on); index (no heading, C1–C3 rows, leading 1.3) | **0.007%** (136 px): only the three cones, from x 979 to x 912. Nothing else on the sheet | **1.86%**: the QR (new modules for `?s=qr`) and the index reflow from the F's on (Flack Injury Law out, "57 Sponsor" in at the end). Booth 57's square on the map is unchanged. Nothing else |
+
+- **phone-open is the odd one.** The phone at open renders **identically** at every commit from
+  `0a70cdc` to this merge, yet CI fails it by 0.978%. So that failure is not any PR's content. The
+  committed `phone-open.png` doesn't match what today's runner draws for the same page, most likely
+  because of how that PNG was produced (a Claude session committed it in `0a70cdc`, not the
+  `Update visual baselines` Action) or because the runner's Chromium has changed since. The label
+  re-renders it on the runner either way.
+- **What the label will do:** re-render all three on the runner and commit them. After that,
+  CI should be green for #12's, #14's and this PR's changes together. No label added, as you asked.
+
 One commit per item, in the order below. Nothing here blocks the merge.
 
 ## 1. `?s=` source tag, and the QR carries `?s=qr`
@@ -103,7 +132,7 @@ now skips `cloud.umami.is`, which is supposed to fail there.
   Sponsor joined the S's). Compared to `main` 542dc9b rendered on this same machine, the diff sits only
   in the QR box and the index columns. **Needs the `update-visual-baselines` label.**
 - **phone-open, sheet-open:** **0 pixels differ from `main`** on this machine. Analytics draws nothing.
-  CI's local diff against the runner's baselines is only how this machine draws text.
+  They still fail on CI, because the baselines are stale from PR #12 (see the table at the top).
 
 ## For Ernest
 
