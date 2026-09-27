@@ -127,7 +127,7 @@ function Squares({ booths, color, angle = 0, hollow = false, numberSide, numbers
 // none lands on a booth row: the food court's goes above, the stages' beside.
 // The Acoustic Stage's runs above and to the LEFT of its pin (anchored just
 // past the pin's centre): centred, it reached the barricade across McLendon
-// at Mell Ave, 27 units east of the pin since the 9/22 repack.
+// 27 units east of the pin, between the stage and Mell Ave.
 const LABEL_AT = {
   food: { dx: 0, dy: -PIN_R - 5, anchor: 'middle' },
   stageMain: { dx: -PIN_R - 4, dy: 3, anchor: 'end' },
