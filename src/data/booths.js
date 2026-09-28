@@ -5,7 +5,7 @@
 //
 // HONEST ABOUT WHAT IS AND ISN'T REAL:
 //   - Art-market numbers and names are the artist market chair's 2026
-//     assignments, sheet read 2026-09-21: 1-54 in the park, 55-81 on McLendon,
+//     assignments, sheet read 2026-09-24: 1-54 in the park, 55-81 on McLendon,
 //     82-139 on Candler Park Dr, K0-K10 in Kidlandia. Each group is in number
 //     order, so stepping follows the numbers -- which on Candler Park Dr
 //     means south to north, and in Kidlandia north to south.
@@ -82,7 +82,7 @@ export const BOOTHS = {
   mcl: [
     { id: 'mcl-055', n: 55, area: 'McLendon Ave', x: 840.0, y: 797.7, name: 'Anna Freeman', biz: 'The Printables' },
     { id: 'mcl-056', n: 56, area: 'McLendon Ave', x: 824.2, y: 797.7, name: 'Kelly Cook', biz: 'Pink Jean Art Agency' },
-    { id: 'mcl-057', n: 57, area: 'McLendon Ave', x: 808.4, y: 797.7, name: 'Ashley Flack', biz: 'Flack Injury Law' },
+    { id: 'mcl-057', n: 57, area: 'McLendon Ave', x: 808.4, y: 797.7, name: null, biz: null },
     { id: 'mcl-058', n: 58, area: 'McLendon Ave', x: 792.6, y: 797.7, name: 'Duo-Wei Yang', biz: 'Merry Artisan' },
     { id: 'mcl-059', n: 59, area: 'McLendon Ave', x: 776.8, y: 797.7, name: 'Neighborhood Church', biz: 'Neighborhood Church' },
     { id: 'mcl-060', n: 60, area: 'McLendon Ave', x: 761.0, y: 797.7, name: 'John Lundy', biz: 'John Lundy Sculpture' },

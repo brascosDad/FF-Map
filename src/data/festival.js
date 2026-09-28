@@ -5,11 +5,19 @@
 //
 // `mapUrl` is LOCKED: every printed QR code points at it (see CLAUDE.md), so it
 // does not change after the posters print.
+//
+// `qrUrl` is what the handout's QR code encodes: the same locked address with
+// `?s=qr` on it, so a scan from paper is counted as one (src/analytics.js reads
+// the tag and strips it from the address bar). The page it opens is the same
+// page. Posters printed before 9/24 carry the bare `mapUrl`; they still work and
+// count as `direct`. The other tags are `social` and `web` -- CLAUDE.md,
+// "Analytics", has the table.
 export const FESTIVAL = {
   name: 'Candler Park Fall Fest',
   dates: 'October 3–4, 2026',
   siteUrl: 'https://fallfest.candlerpark.org/',
   mapUrl: 'https://fall-fest-map.vercel.app',
+  qrUrl: 'https://fall-fest-map.vercel.app/?s=qr',
   // Booths the festival singles out, by booth number as the market chair
   // speaks of them -- a committee decision, not a fact of the sheet, which
   // is why it lives here and not in booth-numbering-2026.json. A booth on

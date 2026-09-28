@@ -61,14 +61,16 @@ const QR_AT = { x: VIEW.x + VIEW.w - QR_EDGE - QR_BOX, y: VIEW.y + VIEW.h / 2 - 
 const QR_CAPTION = ['Scan for the music', 'schedule, food trucks', 'and every artist —', 'always up to date.'];
 
 /**
- * The map's own URL as a scannable, vector QR code with a caption.
+ * The map's URL, tagged `?s=qr` (FESTIVAL.qrUrl), as a scannable, vector QR
+ * code with a caption.
  *
- * Error correction M: the URL is short (version 3, 29 modules), so each module
+ * Error correction M: the URL is short (version 3, 29 modules, with or
+ * without the tag), so each module
  * is ~1mm at this size, and M survives the smudges a poster collects. The
  * modules are one path so the PDF carries one object, not 500.
  */
 function MapQr() {
-  const qr = QRCode.create(FESTIVAL.mapUrl, { errorCorrectionLevel: 'M' });
+  const qr = QRCode.create(FESTIVAL.qrUrl, { errorCorrectionLevel: 'M' });
   const n = qr.modules.size;
   const cell = QR_BOX / (n + QR_QUIET * 2);
   const x0 = QR_AT.x + QR_QUIET * cell, y0 = QR_AT.y + QR_QUIET * cell;
@@ -77,7 +79,7 @@ function MapQr() {
     if (qr.modules.get(r, c)) d += `M${(x0 + c * cell).toFixed(2)} ${(y0 + r * cell).toFixed(2)}h${cell.toFixed(2)}v${cell.toFixed(2)}h-${cell.toFixed(2)}z`;
   }
   return (
-    <g className="print-qr" data-url={FESTIVAL.mapUrl}>
+    <g className="print-qr" data-url={FESTIVAL.qrUrl}>
       <rect x={QR_AT.x} y={QR_AT.y} width={QR_BOX} height={QR_BOX} rx={3} fill="var(--ff-white)" />
       <path d={d} fill="var(--ff-navy)" shapeRendering="crispEdges" />
       <text x={QR_AT.x + QR_BOX / 2} y={QR_AT.y + QR_BOX + LABEL * 1.6} fontSize={LABEL} fontWeight={800}
@@ -267,12 +269,13 @@ function SiteSwatch({ cat }) {
 
 // Every named booth, alphabetical by what the sign will say -- the business,
 // which is what a visitor is looking for; the artist behind it is on the phone
-// map. Sponsor booths have no name to list; the two unnumbered artists list
-// with a dash and where to find them.
+// map. A sponsor booth (no name on the chair's sheet) lists as "Sponsor", so
+// its number on the map points at a row like every other (Ernest, 9/24); the
+// two unnumbered artists list with a dash and where to find them.
 function artistIndex() {
   const rows = [];
   for (const key of ['spine', 'mcl', 'cpd', 'kid']) {
-    for (const b of BOOTHS[key]) if (b.biz) rows.push({ label: b.biz, n: String(b.n), featured: featuredTitle(b) });
+    for (const b of BOOTHS[key]) rows.push({ label: b.biz || 'Sponsor', n: String(b.n), featured: featuredTitle(b) });
   }
   for (const u of UNNUMBERED) rows.push({ label: `${u.biz} (${u.where})`, n: '—' });
   // The food carts, C1-C3, alphabetical with the booths the way the K

@@ -1406,7 +1406,10 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   check('offline: the chrome draws', off.chips === 3, `${off.chips} chips`);
   check('offline: the real fonts are there, not fallbacks', off.brice && off.manrope,
     `Brice ${off.brice ? 'loaded' : 'MISSING'}, Manrope ${off.manrope ? 'loaded' : 'MISSING'}`);
-  check('offline: nothing failed to load', failed.length === 0, failed.join(' | '));
+  // The analytics script is the one thing that is SUPPOSED to fail offline:
+  // it is another origin, never cached, and the map does not need it.
+  const failedOurs = failed.filter((u) => !u.includes('cloud.umami.is'));
+  check('offline: nothing failed to load', failedOurs.length === 0, failedOurs.join(' | '));
 
   // and it is still usable, not just visible
   const bb = await p.locator('g.ffc-pin--kids').first().boundingBox();
@@ -1420,8 +1423,160 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   await p.locator('.zoomctl button').first().click();
   await p.waitForTimeout(700);
   check('offline: zoom still works', (await p.locator('svg.ff-map').getAttribute('viewBox')) !== before);
+
+  // The printed QR opens /?s=qr -- someone scanning the handout at the gate
+  // with no signal gets the cached map, and the tag still leaves the address.
+  const q = await ctx.newPage();
+  await q.goto(`${BASE}/?s=qr`, { waitUntil: 'load' }).catch(() => {});
+  await q.waitForTimeout(1500);
+  const offQr = await q.evaluate(() => ({
+    markers: document.querySelectorAll('svg.ff-map g.ff-pin, svg.ff-map g.ff-area').length,
+    search: location.search,
+  }));
+  check('offline: /?s=qr draws the map from the cache', offQr.markers >= 6, `${offQr.markers} markers`);
+  check('offline: ?s=qr is gone from the address bar', offQr.search === '', offQr.search || '(clean)');
   await ctx.close();
 }
+
+// ---------------------------------------------------------------------------
+// Analytics (src/analytics.js; CLAUDE.md, "Analytics"). Every browser these
+// scripts launch resolves cloud.umami.is to nowhere (scripts/lib/browser.mjs),
+// so the rest of this suite runs as a visitor with a content blocker would.
+// These checks answer the tracker's URL with page.route instead.
+const UMAMI = 'https://cloud.umami.is/';
+const umamiRequests = (p) => { const seen = []; p.on('request', (r) => { if (r.url().startsWith(UMAMI)) seen.push(r.url()); }); return seen; };
+async function tapFirst(p, sel) {
+  const bb = await p.locator(sel).first().boundingBox();
+  await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+  await p.waitForTimeout(700);
+}
+
+// ?s= is read and stripped, online, without touching ?print=1.
+await safe('?s= online', async () => {
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.goto(`${BASE}/?s=qr`, { waitUntil: 'load' });
+  await p.waitForTimeout(600);
+  check('?s=qr: the map draws', (await p.locator('svg.ff-map g.ff-pin').count()) >= 6);
+  check('?s=qr: gone from the address bar', new URL(p.url()).search === '', p.url());
+  await p.goto(`${BASE}/?print=1&s=qr#x`, { waitUntil: 'load' });
+  await p.waitForTimeout(600);
+  const u = new URL(p.url());
+  check('?print=1&s=qr: the tag goes, print and the hash stay', u.search === '?print=1' && u.hash === '#x', p.url());
+  await p.close();
+});
+
+// With the website ID empty, nothing loads and nothing is sent. The built
+// bundle carries the real ID, so the check empties it on the way in: the same
+// code, with the one config value a volunteer would clear.
+await safe('analytics: key empty', async () => {
+  const { ANALYTICS } = await import('../src/data/analytics.js');
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  const seen = umamiRequests(p);
+  let emptied = 0;
+  await p.route(/\/assets\/.*\.js$/, async (route) => {
+    const res = await route.fetch();
+    const body = await res.text();
+    if (body.includes(ANALYTICS.websiteId)) emptied++;
+    await route.fulfill({ response: res, body: body.split(ANALYTICS.websiteId).join('') });
+  });
+  await p.goto(`${BASE}/?s=qr`, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(500);
+  await tapFirst(p, 'g.ffc-pin--kids');
+  const opened = (await p.locator('.sheet .hd h3').first().textContent()) === 'Kidlandia';
+  await p.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
+  await p.waitForTimeout(300);
+  check('analytics off: the ID was emptied in the bundle', emptied > 0, `${emptied} chunk(s)`);
+  check('analytics off: no request to cloud.umami.is', seen.length === 0, seen.join(' | '));
+  check('analytics off: no tracker script on the page', (await p.locator('script[data-website-id]').count()) === 0);
+  check('analytics off: the map works', opened && errs.length === 0, errs.join(' | '));
+  await p.close();
+});
+
+// A content blocker (or no signal) kills the script: the map is unchanged.
+await safe('analytics: blocked', async () => {
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  let aborted = 0;
+  await p.route(`${UMAMI}**`, (r) => { aborted++; return r.abort('blockedbyclient'); });
+  await p.goto(`${BASE}/?s=qr`, { waitUntil: 'load' });
+  await p.waitForTimeout(800);
+  check('analytics blocked: the script was asked for and refused', aborted > 0, `${aborted}`);
+  check('analytics blocked: the map draws', (await p.locator('svg.ff-map g.ff-pin').count()) >= 6);
+  await tapFirst(p, 'g.ffc-pin--kids');
+  check('analytics blocked: a pin still opens', (await p.locator('.sheet .hd h3').first().textContent()) === 'Kidlandia');
+  await p.locator('.sheet .close').click();
+  await p.waitForTimeout(400);
+  await p.locator('.ffc-chip').first().click();
+  await p.waitForTimeout(400);
+  check('analytics blocked: a chip still turns on', (await p.locator('.ffc-chip[aria-pressed="true"]').count()) === 1);
+  await p.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
+  check('analytics blocked: no page errors', errs.length === 0, errs.join(' | '));
+  await p.close();
+});
+
+// The events themselves, against a stand-in tracker that records its calls:
+// what each sends, in what order, and the script's attributes.
+await safe('analytics: events', async () => {
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.route(`${UMAMI}**`, (r) => r.fulfill({ contentType: 'text/javascript',
+    body: 'window.__umami = []; window.umami = { track: (...a) => window.__umami.push(a) };' }));
+  await p.goto(`${BASE}/?s=email`, { waitUntil: 'load' });
+  await p.waitForTimeout(800);
+  const attrs = await p.evaluate(() => {
+    const el = document.querySelector('script[data-website-id]');
+    return el && { src: el.src, domains: el.dataset.domains, auto: el.dataset.autoTrack, id: el.dataset.websiteId, inHead: el.parentElement === document.head };
+  });
+  check('analytics: the tracker loads with our attributes',
+    attrs && attrs.src === `${UMAMI}script.js` && attrs.domains === 'fall-fest-map.vercel.app' && attrs.auto === 'false' && !!attrs.id,
+    JSON.stringify(attrs));
+  await tapFirst(p, 'g.ffc-pin--stage');
+  await p.locator('.sheet .close').click();
+  await p.waitForTimeout(500);
+  await p.locator('.ffc-chip').first().click();
+  await p.waitForTimeout(500);
+  await tapFirst(p, 'g.ffc-pin--wc');
+  await p.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('pagehide'));      // the second must not send again
+  });
+  const calls = await p.evaluate(() => window.__umami);
+  const ev = (n) => calls.filter((c) => c[0] === n).map((c) => c[1]);
+  check('analytics: a pageview first, with no ?s= on the address', calls[0]?.length === 0 && new URL(p.url()).search === '', JSON.stringify(calls[0]));
+  check('analytics: map_open once, source and viewport', ev('map_open').length === 1 && ev('map_open')[0].source === 'email' && ev('map_open')[0].viewport === 'phone',
+    JSON.stringify(ev('map_open')));
+  check('analytics: pin_open carries the category and pin id', ev('pin_open').some((e) => e.category === 'stage' && e.pin_id === 'stageMain')
+    && ev('pin_open').some((e) => e.category === 'wc' && /^wc-\d$/.test(e.pin_id)), JSON.stringify(ev('pin_open')));
+  check('analytics: a stage sheet is a schedule_open', ev('schedule_open').length === 1 && ev('schedule_open')[0].stage === 'stageMain', JSON.stringify(ev('schedule_open')));
+  check('analytics: chip_on names the chip', ev('chip_on').length === 1 && ev('chip_on')[0].category === 'wc', JSON.stringify(ev('chip_on')));
+  check('analytics: zoom_stop is a level 1-3', ev('zoom_stop').length > 0 && ev('zoom_stop').every((e) => [1, 2, 3].includes(e.level)), JSON.stringify(ev('zoom_stop')));
+  const sum = ev('visit_summary');
+  check('analytics: one visit_summary, flat, with the totals',
+    sum.length === 1 && sum[0].source === 'email' && sum[0].pins_opened === 2 && sum[0].categories === 'stage,wc'
+    && sum[0].categories_touched === 2 && sum[0].engaged === true && [1, 2, 3].includes(sum[0].max_zoom) && Number.isInteger(sum[0].seconds)
+    && Object.values(sum[0]).every((v) => ['string', 'number', 'boolean'].includes(typeof v)),
+    JSON.stringify(sum));
+  await p.close();
+});
+
+// A visit that only pans is not engaged.
+await safe('analytics: a pan is not engagement', async () => {
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.route(`${UMAMI}**`, (r) => r.fulfill({ contentType: 'text/javascript',
+    body: 'window.__umami = []; window.umami = { track: (...a) => window.__umami.push(a) };' }));
+  await p.goto(BASE, { waitUntil: 'load' });
+  await p.waitForTimeout(800);
+  await drag(p, 40, 60);
+  await p.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
+  const calls = await p.evaluate(() => window.__umami);
+  const open = calls.find((c) => c[0] === 'map_open')?.[1];
+  const sum = calls.find((c) => c[0] === 'visit_summary')?.[1];
+  check('analytics: no tag is direct', open?.source === 'direct', JSON.stringify(open));
+  check('analytics: pan only -> engaged false, nothing opened', sum && sum.engaged === false && sum.pins_opened === 0 && sum.categories === '',
+    JSON.stringify(sum));
+  await p.close();
+});
 
 check('no uncaught page errors', pageErrors.length === 0, pageErrors.join(' | '));
 
