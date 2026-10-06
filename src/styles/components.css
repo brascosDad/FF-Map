@@ -232,6 +232,32 @@
   box-shadow: var(--shadow-panel);
 }
 
+/* ===== Panel navigation: list -> detail inside ONE sheet (B1) ===============
+   An area's booth list and a booth opened from it are two levels of one stack
+   in one sheet. Crossing between them plays a short horizontal slide (in from
+   the right going deeper, from the left coming back); the sheet itself never
+   closes and reopens. The back row names the level you came from. Reduced
+   motion: a crossfade, no slide.
+========================================================================== */
+.ffc-panel__view { --view-slide: var(--space-6); }
+.ffc-panel__view[data-dir='forward'] { animation: ffc-view-in-forward var(--motion-panel) var(--ease) both; }
+.ffc-panel__view[data-dir='back'] { animation: ffc-view-in-back var(--motion-panel) var(--ease) both; }
+@keyframes ffc-view-in-forward { from { opacity: 0; transform: translateX(var(--view-slide)); } to { opacity: 1; transform: none; } }
+@keyframes ffc-view-in-back { from { opacity: 0; transform: translateX(calc(var(--view-slide) * -1)); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ffc-panel__view[data-dir='forward'], .ffc-panel__view[data-dir='back'] { animation: ffc-view-fade 120ms linear both; }
+  @keyframes ffc-view-fade { from { opacity: 0; } to { opacity: 1; } }
+}
+.ffc-panel__back {
+  display: flex; align-items: center; gap: var(--space-2);
+  min-height: var(--tap-min); margin: 0 calc(var(--space-1) * -1); padding: 0 var(--space-1);
+  border: 0; background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--text-muted);
+}
+.ffc-panel__back span { font-size: 20px; line-height: 1; }
+.ffc-panel__back:active { color: var(--text-strong); }
+:where(.ffc-panel__back):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
 /* ===== Panel content blocks =============================================== */
 .ffc-dayheading { margin: var(--space-4) 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.2 var(--font-ui); color: var(--text-strong); }
 .ffc-schedulerow { display: flex; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--sand-100); }

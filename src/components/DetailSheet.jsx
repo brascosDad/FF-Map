@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { ACTIVE_PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
@@ -270,7 +270,7 @@ function Legend() {
   );
 }
 
-function BoothDetail({ booth, onStep }) {
+function BoothDetail({ booth, onStep, back }) {
   const isFood = booth.area === 'Food Court';
   const isKid = booth.area === 'Kidlandia';
   // A spot with no number is not in any row, so there is nothing to step
@@ -281,6 +281,7 @@ function BoothDetail({ booth, onStep }) {
   const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
     <>
+      {back}
       {/* Above the title, not below it. The stepper is where you ARE in the row;
           the title is what you are looking at. The map is too dense to tap a
           specific booth reliably, so this is the real way through a row -- and
@@ -355,7 +356,7 @@ const DISMISS_FRACTION = 0.3;
 const FLICK_VELOCITY = 0.5;   // px per ms
 const FLICK_MIN_PX = 40;      // ...and it has to actually travel
 
-export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onClose, docked = false, onFocusReturn }) {
+export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onBack, onClose, docked = false, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
   const wasOpen = useRef(false);
@@ -372,6 +373,29 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   const [swapping, setSwapping] = useState(false);
   const sheetEl = useRef(null);
   const drag = useRef(null);
+  // The sheet is a small navigation stack, one level deep (B1): an area's booth
+  // list, and a booth opened from it. 'detail' with a list under it has a way
+  // back. Where the list is, and how far it was scrolled, is remembered so
+  // back lands exactly where you left.
+  const scrollEl = useRef(null);
+  const listScroll = useRef(0);
+  const prevKind = useRef(null);
+  const kind = shown.openBooth ? 'detail' : shown.openArea ? 'list' : 'other';
+  const viewDir = prevKind.current === 'list' && kind === 'detail' ? 'forward'
+    : prevKind.current === 'detail' && kind === 'list' ? 'back' : null;
+  const canGoBack = kind === 'detail' && !!shown.openArea;
+  useLayoutEffect(() => {
+    const el = scrollEl.current;
+    if (el && prevKind.current !== kind) {
+      if (kind === 'detail') el.scrollTop = 0;
+      else if (kind === 'list' && prevKind.current === 'detail') el.scrollTop = listScroll.current;
+    }
+    prevKind.current = kind;
+  }, [kind]);
+  const openFromList = (booth) => {
+    listScroll.current = scrollEl.current?.scrollTop || 0;
+    onOpenBooth(booth);
+  };
   const nextKey = keyOf(openId, openArea, openBooth);
   const shownKey = keyOf(shown.openId, shown.openArea, shown.openBooth);
 
@@ -381,7 +405,10 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     // open, not opening something else, so the content changes in place. The
     // sheet dropping and rising on every press of the caret made a walk down a
     // row feel like fifteen separate openings.
-    const steppingTheSameRow = !!shown.openBooth && !!openBooth;
+    // The same goes for a list and the booth opened from it (B1): ONE sheet, its
+    // content changes in place -- a short slide, not a close and a new sheet.
+    const sameArea = !!shown.openArea && !!openArea && shown.openArea.id === openArea.id;
+    const steppingTheSameRow = (!!shown.openBooth && !!openBooth) || sameArea;
     // The docked panel never slides, and opening from closed should be
     // immediate -- there is nothing on screen to wait for.
     if (docked || !shownKey || steppingTheSameRow) {
@@ -403,11 +430,16 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   }, [nextKey, shownKey, docked, openId, openArea, openBooth, selectedPin, shown.openBooth]);
 
   let body = null;
-  if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} onStep={onStepBooth} />;
+  const backBtn = canGoBack && !docked ? (
+    <button className="ffc-panel__back" onClick={onBack}>
+      <span aria-hidden="true">‹</span> {shown.openArea.name}
+    </button>
+  ) : null;
+  if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} onStep={onStepBooth} back={backBtn} />;
   else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} />;
   else if (shown.openId === 'food') body = <FoodCourt pin={shown.selectedPin} />;
   else if (shown.openId) body = <GenericPoi id={shown.openId} pin={shown.selectedPin} />;
-  else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} onOpenBooth={onOpenBooth} />;
+  else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} onOpenBooth={openFromList} />;
   else if (docked) body = <PanelDirectory onSelect={onSelect} />;
 
   // Focus moves into the sheet when it opens and goes back to the map when it
@@ -512,11 +544,16 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
         </div>
       )}
       {docked && isOpen && (
-        <button className="panel-back" onClick={onClose}>
-          <span aria-hidden="true">‹</span> All locations
+        <button className="panel-back" onClick={canGoBack ? onBack : onClose}>
+          <span aria-hidden="true">‹</span> {canGoBack ? shown.openArea.name : 'All locations'}
         </button>
       )}
-      <div className="panel-scroll" style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>{body}</div>
+      <div className="panel-scroll" ref={scrollEl} style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>
+        {/* Keyed by what the sheet is showing (list or detail), so crossing
+            between the two plays the slide and nothing else does -- stepping
+            booth to booth swaps in place, no motion. */}
+        <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>{body}</div>
+      </div>
 
       {docked && !isOpen && <div className="panel-foot"><Legend /></div>}
     </div>

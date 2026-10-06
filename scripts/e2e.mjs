@@ -1206,6 +1206,61 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   await p.close();
 }
 
+// ---- B1: one sheet, content changes in place ----
+// Area sheet -> tap a booth row in the list: the sheet never closes and
+// reopens; its content slides to the booth, a back arrow names the list, and
+// back returns to the list at the same scroll position (Ernest, 10/6 #2).
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  let opened = false;
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n && !opened; i++) {
+    const bb = await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).boundingBox().catch(() => null);
+    if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
+    await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+    await p.waitForTimeout(500);
+    opened = (await p.locator('.boothrow').count()) > 0;
+  }
+  check(`${name}: B1 an area sheet is open`, opened);
+  if (opened) {
+    // Watch the sheet for the whole interaction: it must never lose `.open`.
+    await p.evaluate(() => {
+      window.__closed = 0;
+      const sheet = document.querySelector('.sheet:not(.docked)');
+      new MutationObserver(() => { if (!sheet.classList.contains('open')) window.__closed++; }).observe(sheet, { attributes: true, attributeFilter: ['class'] });
+    });
+    const listTitle = await p.locator('.sheet .hd h3').textContent();
+    // Scroll the list, then tap a row well down it.
+    const scrolled = await p.evaluate(() => { const b = document.querySelector('.sheet .panel-scroll'); b.scrollTop = 400; return b.scrollTop; });
+    await p.waitForTimeout(150);
+    const row = p.locator('button.boothrow').filter({ has: p.locator('.n') });
+    const idx = await p.evaluate(() => {
+      const b = document.querySelector('.sheet .panel-scroll').getBoundingClientRect();
+      const rows = [...document.querySelectorAll('button.boothrow')];
+      return rows.findIndex((r) => { const q = r.getBoundingClientRect(); return q.top > b.top + 60 && q.bottom < b.bottom - 20; });
+    });
+    const num = (await row.nth(idx).locator('.n').textContent()).trim();
+    await row.nth(idx).click();
+    await p.waitForTimeout(700);
+    const d = await p.evaluate(() => ({
+      title: document.querySelector('.sheet .hd h3')?.textContent,
+      back: document.querySelector('.sheet .ffc-panel__back')?.textContent.trim(),
+      open: document.querySelector('.sheet:not(.docked)').classList.contains('open'),
+      closedEver: window.__closed,
+    }));
+    check(`${name}: B1 tapping a list row keeps the sheet open and shows the booth`, d.title === `Booth ${num}` && d.open && d.closedEver === 0, `${d.title} for row ${num}; open ${d.open}; closed ${d.closedEver}x`);
+    check(`${name}: B1 a back arrow names the list`, !!d.back && d.back.includes('‹') && d.back.includes(listTitle), d.back || '(none)');
+    await p.locator('.sheet .ffc-panel__back').click();
+    await p.waitForTimeout(600);
+    const back = await p.evaluate(() => ({ title: document.querySelector('.sheet .hd h3')?.textContent, scroll: document.querySelector('.sheet .panel-scroll').scrollTop, open: document.querySelector('.sheet:not(.docked)').classList.contains('open'), closedEver: window.__closed }));
+    check(`${name}: B1 back returns to the list at the same scroll position`, back.title === listTitle && Math.abs(back.scroll - scrolled) <= 2 && back.open && back.closedEver === 0,
+      `${back.title}; scroll ${back.scroll} (was ${scrolled}); closed ${back.closedEver}x`);
+  }
+  await p.close();
+}
+
 // ---- A2: the map safe area ----
 // Every pan that targets a pin centres it between the header + chip row and
 // the top of the open sheet, and the pan limits run far enough past the

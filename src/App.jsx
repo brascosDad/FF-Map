@@ -196,17 +196,23 @@ export default function App() {
   }
 
   /**
-   * A row in an area's booth list. Opens that booth and flies to it at the
-   * booth zoom, so the number you just tapped is the one lit up on the map.
+   * A row in an area's booth list. Opens that booth INSIDE the same sheet: the
+   * area stays underneath (`openArea` is not cleared), so the sheet shows the
+   * booth with a way back to the list (B1). The map pans to the booth at the
+   * booth zoom at least, centred in the safe area.
    */
   function handleBoothFromList(booth) {
     setFilter(null);
     setOpenId(null);
-    setOpenArea(null);
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));
-    // Booth zoom at least, centred in the safe area above the sheet.
     setReveal({ x: booth.x, y: booth.y, minLevel: 2, n: (reveal?.n || 0) + 1 });
+  }
+
+  // Back from a booth to the list it was opened from. The way you step in is
+  // the way you step out; paging with the ItemPager never adds a step.
+  function handleSheetBack() {
+    setOpenBooth(null);
   }
 
   /**
@@ -328,6 +334,7 @@ export default function App() {
             selectedPin={selectedPin}
             onSelect={handleDirectorySelect}
             onOpenBooth={handleBoothFromList}
+            onBack={handleSheetBack}
             onClose={closeAll}
             onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
           />
