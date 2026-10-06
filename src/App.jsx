@@ -167,7 +167,6 @@ export default function App() {
 
   function handleAreaClick(cluster) {
     if (suppressClickRef.current) return;
-    setFilter(null);
     setOpenId(null);
     setOpenBooth(null);
     setOpenArea(cluster);
@@ -195,7 +194,6 @@ export default function App() {
 
   function handleBoothClick(booth) {
     if (suppressClickRef.current) return;
-    setFilter(null);
     setOpenId(null);
     setOpenArea(null);
     setOpenBooth(booth);
@@ -209,7 +207,6 @@ export default function App() {
    * booth zoom at least, centred in the safe area.
    */
   function handleBoothFromList(booth) {
-    setFilter(null);
     setOpenId(null);
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));

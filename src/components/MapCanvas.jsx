@@ -160,6 +160,9 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
   // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
   // that says how far "not what you asked for" fades, and it lives in one file.
   const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
+  // Every booth square is dimmed -- and takes no tap -- while a chip is on: none
+  // of them is in a chip's category (round 2, item 4.3). A tap on one falls
+  // through to the map, exactly like a tap on a dimmed pin.
   const clusterDim = filter ? ' ffc-dimmed' : '';
 
   return (
@@ -200,7 +203,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
 
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color={PIN_COLOR.food} />
-          : boxes(BOOTHS.food, PIN_COLOR.food, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.food })}
+          : <g className={`ff-foodbooths${clusterDim}`}>{boxes(BOOTHS.food, PIN_COLOR.food, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.food })}</g>}
         {detail && (
           <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill={FOOD_LABEL} textAnchor="middle" stroke={MAP_HALO} strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
         )}
@@ -231,7 +234,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
             number) draw HOLLOW -- cream inside a slate frame -- so they cannot
             be mistaken for a numbered booth whose number is too small to read. */}
         {!showBlobs && (
-          <g className="ff-area" data-area="kid">
+          <g className={`ff-area${clusterDim}`} data-area="kid">
             {/* Numbers beside the squares, on the east -- the side facing
                 away from the Kidlandia shape's interior, since the column
                 runs along its east edge. */}
@@ -239,7 +242,7 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
           </g>
         )}
         {!showBlobs && (
-          <g className="ff-area" data-area="unnumbered">
+          <g className={`ff-area${clusterDim}`} data-area="unnumbered">
             {boxes(UNNUMBERED, SLATE, { onTap: onBoothClick, k, selectedId: selectedBoothId, hollow: true })}
           </g>
         )}

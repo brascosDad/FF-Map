@@ -1538,6 +1538,57 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- Booth squares with a chip on (round 2, item 4.3) ----
+// Every booth square is dimmed and takes no tap while a chip is on (none is in a
+// chip's category): food stalls, Kidlandia and the unnumbered squares included.
+// A tap on one falls through to the map exactly like a tap on a dimmed pin: it
+// never opens the booth, and no booth handler clears the chip.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click(); await p.waitForTimeout(650);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+  const groups = await p.evaluate(() => {
+    const out = {};
+    for (const g of document.querySelectorAll('svg.ff-map g.ff-booth')) {
+      const k = g.dataset.booth.split('-')[0];
+      const cs = getComputedStyle(g.parentElement);
+      (out[k] ||= []).push(cs.pointerEvents === 'none' && +cs.opacity < 1);
+    }
+    return out;
+  });
+  const kinds = Object.keys(groups);
+  check('chip on: every kind of booth square is dimmed and takes no tap (food, Kidlandia, unnumbered, the three runs)',
+    ['food', 'kid', 'unnumbered', 'spine', 'mcl', 'cpd'].every((k) => groups[k]?.length && groups[k].every(Boolean)), kinds.map((k) => `${k} ${groups[k].filter(Boolean).length}/${groups[k].length}`).join(', '));
+  // A real tap on a visible square, with no sheet open: falls through, chip off, nothing opens.
+  const visibleSquare = (sheetTop) => p.evaluate((sheetTop) => {
+    for (const g of document.querySelectorAll('svg.ff-map g.ff-booth')) {
+      const r = g.querySelector('rect').getBoundingClientRect();
+      const x = r.x + r.width / 2, y = r.y + r.height / 2;
+      if (y > 140 && y < sheetTop - 20 && x > 20 && x < innerWidth - 20 && document.elementFromPoint(x, y)?.closest('svg.ff-map')) return { x, y, id: g.dataset.booth };
+    }
+    return null;
+  }, sheetTop);
+  const sq = await visibleSquare(800);
+  await p.mouse.click(sq.x, sq.y); await p.waitForTimeout(500);
+  check('chip on, no sheet: tapping a dimmed square opens nothing (it is a tap on empty map)', (await p.locator('.sheet.open').count()) === 0, sq.id);
+  // With a sheet open: the sheet closes, the chip stays on.
+  await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click(); await p.waitForTimeout(650);   // back to the overview...
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);                // ...so zoom in again for squares
+  await p.locator('svg.ff-map g.ffc-pin--wc').first().dispatchEvent('click'); await p.waitForTimeout(1100);
+  const sheetTop = await p.evaluate(() => document.querySelector('.sheet.open').getBoundingClientRect().top);
+  let sq2 = await visibleSquare(sheetTop);
+  // The pin tap centred a restroom, not a booth: pan until a square is under the open map.
+  for (const [dx, dy] of [[0, 160], [0, 160], [160, 0], [-320, 0], [0, -320], [0, -160]]) { if (sq2) break; await drag(p, dx, dy); sq2 = await visibleSquare(sheetTop); }
+  if (sq2) {
+    await p.mouse.click(sq2.x, sq2.y); await p.waitForTimeout(500);
+    check('chip on, sheet open: tapping a dimmed square closes the sheet and the chip stays on', (await p.locator('.sheet.open').count()) === 0 && (await p.locator('.ffc-chip[aria-pressed="true"]').count()) === 1, sq2.id);
+  } else check('chip on, sheet open: a visible square was found to tap', false);
+  await p.close();
+}
+
 // ---- Push and pop inside one sheet: height held, slide from / to the right ----
 // Sampled every frame, in the page: the sheet's height never changes during a
 // push or a pop; both layers exist for the length of the transition; the
