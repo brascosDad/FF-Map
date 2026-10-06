@@ -55,11 +55,11 @@ const POI_COPY = {
   // landmark people navigate by. The other stations share the generic entry.
   // No line describes the interface ("zoom in to see them") or repeats the
   // subtitle (C4, 10/6): a card says what the place is and where it is, once.
-  beer: { title: 'Beer Stand', sub: 'The main beer stand', icon: 'drinks', cat: 'drinks',
-    lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy'] },
+  beer: { title: 'Beer Stand', sub: 'The main one', icon: 'drinks', cat: 'drinks',
+    lines: ['21+ with ID — check with volunteers for wristband policy'] },
   // The mug is beer and only beer since the cup (beverages) arrived, 9/22.
-  drinks: { title: 'Beer', sub: 'Beer stands', icon: 'drinks', cat: 'drinks',
-    lines: ['Beer stands around the grounds — the main one is on the field below the Main Stage', '21+ with ID — check with volunteers for wristband policy'] },
+  drinks: { title: 'Beer', sub: 'Beer stands around the grounds', icon: 'drinks', cat: 'drinks',
+    lines: ['21+ with ID — check with volunteers for wristband policy'] },
   // Beverage stations are not beer: Jess's 2026 plan draws them apart from
   // the beer stands. TODO(Jess): what the stations serve -- Ernest has asked;
   // until then one neutral line that invents nothing (9/22).
@@ -84,7 +84,7 @@ const POI_COPY = {
   pta: { title: 'PTA booth', sub: 'In Kidlandia', icon: 'pta', cat: 'pta',
     lines: ['PTA booth.'] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
-    lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
+    lines: ['Roll up and a volunteer tags and racks your bike'] },
 };
 
 function StageSchedule({ stageKey, pin, part }) {
@@ -348,14 +348,11 @@ function BoothDetail({ booth, part }) {
   return (
     <>
 
-      {/* One line, and it is the honest one. The old body ran a generic bullet,
-          a "photos go here" note that told a festival-goer nothing, and the
-          full three-clause caveat -- 79px of footer repeating what the subtitle
-          above it already said. On a phone that sheet stood 387px tall and ate
-          the map. Each booth type now says the single thing that is actually
-          uncertain about it; the sheet carries no source line. */}
+      {/* One line at most, and it is the honest one: who is in the booth. The
+          sheet carries no source line, and a food stall says nothing about which
+          truck parks there -- none is assigned, and a line saying so went stale. */}
       {isFood
-        ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
+        ? null   /* no truck is assigned to a stall, and a line saying so goes stale: the Food Court card lists the trucks */
         : booth.name || booth.biz
           ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" /><ArtistLine booth={booth} quiet={unnumbered} /></div>
           : <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Sponsor booth.</div>}

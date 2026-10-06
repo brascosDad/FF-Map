@@ -1404,6 +1404,15 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
   check('C4: no card describes the interface', ![wc, water, aid].some((c) => INTERFACE.test(c.head + c.body)), [wc, water, aid].map((c) => (c.head + c.body).match(INTERFACE)?.[0]).filter(Boolean).join(', '));
   check('C4: the water card says "free" once', ((water.head + water.body).match(/free/gi) || []).length === 1, (water.head + water.body).replace(/\s+/g, ' '));
   check('C4: the first-aid card says "on-site" at most once', ((aid.head + aid.body).match(/on-site/gi) || []).length <= 1, (aid.head + aid.body).replace(/\s+/g, ' '));
+  // Beer and Bike valet say each thing once too (round 2, item 9); no stale food-stall line.
+  const direct = async (sel) => { await p.locator(sel).first().dispatchEvent('click'); await p.waitForTimeout(800); const t = await p.evaluate(() => document.querySelector('.sheet .ffc-panel__header')?.textContent + ' | ' + document.querySelector('.sheet .ffc-panel__body')?.textContent); await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(450); return t; };
+  const beer = await direct('svg.ff-map g.ffc-pin--drinks'), bike = await direct('svg.ff-map g.ffc-pin--bikevalet');
+  check('item 9: the beer card has no location line of its own (the pin\'s says where) and says "beer stand" once', !/below the Main Stage/i.test(beer) && (beer.match(/beer stand/gi) || []).length <= 1, beer.replace(/\s+/g, ' '));
+  check('item 9: the bike valet card says "free" once and says where only through the pin', (bike.match(/free/gi) || []).length === 1 && !/just off McLendon/i.test(bike), bike.replace(/\s+/g, ' '));
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+  await p.locator('svg.ff-map g.ff-booth[data-booth^="food-"]').first().dispatchEvent('click'); await p.waitForTimeout(800);
+  const stall = await p.evaluate(() => document.querySelector('.sheet .ffc-panel__body')?.textContent || '');
+  check('item 9: a food stall no longer says placements arrive "later this week"', !/later this week|not assigned yet/i.test(stall), stall.replace(/\s+/g, ' ') || '(empty)');
   await p.close();
 }
 
