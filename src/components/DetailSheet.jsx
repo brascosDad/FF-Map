@@ -41,6 +41,13 @@ function Where({ pin }) {
   return pin?.where ? <div className="li li--where"><span className="b" />{pin.where}</div> : null;
 }
 
+// The sheet renders each thing it can show TWICE, once per half: the head (badge,
+// title, subtitle; pinned, with the close ×, outside the scrolling body) and the
+// body (what scrolls). One component per thing keeps the data that fills both
+// halves in one place; `part` says which half this call draws.
+const HEAD = 'head';
+const BODY = 'body';
+
 const POI_COPY = {
   kids: { title: 'Kidlandia', sub: 'Family activity zone', icon: 'kids', cat: 'kids',
     // Pumpkin smashing and Trees for Tuition are one stop, not two (9/17).
@@ -77,14 +84,16 @@ const POI_COPY = {
     lines: ['Free valet bike parking — roll up, a volunteer tags and racks it for you', 'Look for it just off McLendon, east of the park entrance'] },
 };
 
-function StageSchedule({ stageKey, pin }) {
+function StageSchedule({ stageKey, pin, part }) {
   const stageId = STAGE_MAP[stageKey];
   const stage = stagesData.stages.find((s) => s.id === stageId);
   if (!stage) return null;
+  if (part === HEAD) {
+    return <SheetHeader icon="stage" color={PIN_COLOR.stage} title={stage.name}
+                        sub={`${stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule`} />;
+  }
   return (
     <>
-      <SheetHeader icon="stage" color={PIN_COLOR.stage} title={stage.name}
-                   sub={`${stage.sponsor ? `${stage.sponsor} · ` : ''}Confirmed 2026 schedule`} />
       <Where pin={pin} />
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
@@ -110,11 +119,13 @@ function StageSchedule({ stageKey, pin }) {
 // paraphrased. `location` is null for every truck but one until his placements
 // arrive: a truck with no spot still lists, it just has no second line and
 // nothing on the map points at it.
-function FoodCourt({ pin }) {
+function FoodCourt({ pin, part }) {
+  if (part === HEAD) {
+    return <SheetHeader icon="food" color={PIN_COLOR.food} title="Food Court"
+                        sub={`${vendorsData.vendors.length} food vendors · 2026`} />;
+  }
   return (
     <>
-      <SheetHeader icon="food" color={PIN_COLOR.food} title="Food Court"
-                   sub={`${vendorsData.vendors.length} food vendors · 2026`} />
       <Where pin={pin} />
       {vendorsData.vendors.map((v) => (
         <div className="li" key={v.id}>
@@ -153,12 +164,12 @@ function BoothRow({ booth, onOpen }) {
 // one. The two artists the sheet names but gives no number sit last, under the
 // run they belong to, with a dash for a number; they have a square on the map
 // like any other booth, so tapping the row flies to it.
-function ArtMarketArea({ area, onOpenBooth }) {
+function ArtMarketArea({ area, onOpenBooth, part }) {
   const booths = area.id === 'spine' ? [...area.booths, ...BOOTHS.kid] : area.booths;
   const unnumbered = UNNUMBERED.filter((u) => u.group === area.id);
+  if (part === HEAD) return <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />;
   return (
     <>
-      <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />
       <div className="boothlist">
         {[...booths, ...unnumbered].map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
       </div>
@@ -171,12 +182,12 @@ function ArtMarketArea({ area, onOpenBooth }) {
 // record in vendors.json (named by the pin's `vendor`), so the list and the
 // pins cannot say different things; the cart's number (C1-C3, on the pin)
 // leads the subtitle the way a booth card is titled by its number.
-function FoodCart({ name, pin }) {
+function FoodCart({ name, pin, part }) {
   const v = vendorsData.vendors.find((x) => x.name === name);
   if (!v) return null;
+  if (part === HEAD) return <SheetHeader icon="food" color={PIN_COLOR.food} title={v.name} sub={`${pin?.n ? `Cart ${pin.n} · ` : ''}${v.offering}`} />;
   return (
     <>
-      <SheetHeader icon="food" color={PIN_COLOR.food} title={v.name} sub={`${pin?.n ? `Cart ${pin.n} · ` : ''}${v.offering}`} />
       <Where pin={pin} />
       {v.location && <div className="li"><span className="b" />{v.location}</div>}
       <div className="foot">{vendorsData.note}</div>
@@ -187,14 +198,14 @@ function FoodCart({ name, pin }) {
 // A card id that belongs to a food-cart square: the vendor is on the pin.
 const cartVendor = (id, pin) => pin?.vendor || ACTIVE_PINS.find((p) => p.d === id && p.vendor)?.vendor;
 
-function GenericPoi({ id, pin }) {
+function GenericPoi({ id, pin, part }) {
   const vendor = cartVendor(id, pin);
-  if (vendor) return <FoodCart name={vendor} pin={pin} />;
+  if (vendor) return <FoodCart name={vendor} pin={pin} part={part} />;
   const d = POI_COPY[id];
   if (!d) return null;
+  if (part === HEAD) return <SheetHeader icon={d.icon} color={PIN_COLOR[d.cat]} title={d.title} sub={d.sub} />;
   return (
     <>
-      <SheetHeader icon={d.icon} color={PIN_COLOR[d.cat]} title={d.title} sub={d.sub} />
       <Where pin={pin} />
       {d.lines.map((line, i) => <div className="li" key={i}><span className="b" />{line}</div>)}
     </>
@@ -300,24 +311,26 @@ function ItemPager({ pos, total, onStep }) {
   );
 }
 
-function BoothDetail({ booth, back }) {
+function BoothDetail({ booth, part }) {
   const isFood = booth.area === 'Food Court';
   const isKid = booth.area === 'Kidlandia';
   // A spot with no number is not in any row, so there is nothing to page
   // through: the sheet is titled by the business instead of "Booth —".
   const unnumbered = booth.n == null;
   const featured = featuredTitle(booth);
-  return (
-    <>
-      {back}
-
-      {/* A Kidlandia booth wears the Kidlandia colour, like its square on the
-          map; every other art booth wears the market slate. */}
+  // A Kidlandia booth wears the Kidlandia colour, like its square on the map;
+  // every other art booth wears the market slate.
+  if (part === HEAD) {
+    return (
       <SheetHeader
         icon={isFood ? 'food' : isKid ? 'kids' : 'art'}
         color={isFood ? PIN_COLOR.food : isKid ? PIN_COLOR.kids : SLATE}
         title={unnumbered ? booth.biz : `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
         sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}${featured ? ` · ★ ${featured}` : ''}`} />
+    );
+  }
+  return (
+    <>
 
       {/* One line, and it is the honest one. The old body ran a generic bullet,
           a "photos go here" note that told a festival-goer nothing, and the
@@ -465,21 +478,28 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     return () => clearTimeout(t);
   }, [nextKey, shownKey, docked, openId, openArea, openBooth, selectedPin, shown.openBooth]);
 
-  const pager = shown.openBooth ? boothPosition(shown.openBooth) : null;
-  // At peek there is no room for the footer: the pager shows at full height.
-  const showPager = pager && !(peekable && detent === 'peek');
-  let body = null;
+  // The head stays while the sheet slides away on close (`shown` holds the
+  // content until it has gone), not only while `isOpen`.
+  const shownOpen = !!(shown.openId || shown.openArea || shown.openBooth);
+  // The back row names the level you came from (B1). The docked panel has its
+  // own back row above the header; the bottom sheet carries it in the head.
   const backBtn = canGoBack && !docked ? (
     <button className="ffc-panel__back" onClick={onBack}>
       <span aria-hidden="true">‹</span> {shown.openArea.name}
     </button>
   ) : null;
-  if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} back={backBtn} />;
-  else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} />;
-  else if (shown.openId === 'food') body = <FoodCourt pin={shown.selectedPin} />;
-  else if (shown.openId) body = <GenericPoi id={shown.openId} pin={shown.selectedPin} />;
-  else if (shown.openArea) body = <ArtMarketArea area={shown.openArea} onOpenBooth={openFromList} />;
-  else if (docked) body = <PanelDirectory onSelect={onSelect} />;
+  const pager = shown.openBooth ? boothPosition(shown.openBooth) : null;
+  // At peek there is no room for the footer: the pager shows at full height.
+  const showPager = pager && !(peekable && detent === 'peek');
+  const renderThing = (part) => {
+    if (shown.openBooth) return <BoothDetail booth={shown.openBooth} part={part} />;
+    if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') return <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} part={part} />;
+    if (shown.openId === 'food') return <FoodCourt pin={shown.selectedPin} part={part} />;
+    if (shown.openId) return <GenericPoi id={shown.openId} pin={shown.selectedPin} part={part} />;
+    if (shown.openArea) return <ArtMarketArea area={shown.openArea} onOpenBooth={openFromList} part={part} />;
+    if (docked && part === BODY) return <PanelDirectory onSelect={onSelect} />;
+    return null;
+  };
 
   // Focus moves into the sheet when it opens and goes back to the map when it
   // closes, so a keyboard user is never dropped on <body> with no landmark.
@@ -508,6 +528,9 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // and screen-reader activation arrive as a click with no pointer (detail 0).
   function onGripDown(e) {
     if (docked) return;
+    // The ×, the back row and the handle's own button take their taps; a drag
+    // that starts on the title row or the handle pulls the sheet.
+    if (e.target.closest?.('.close, .ffc-panel__back')) return;
     const el = sheetEl.current;
     if (!el) return;
     // Capture on the handle itself, not the sheet: capturing on an ancestor
@@ -540,18 +563,18 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     const dy = d.dy || 0;
     if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) { onClose(); return; }
     if (peekable && detent === 'peek' && d.raw < -PULL_UP_PX) { setDetentTo('full'); return; }
-    if (peekable && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
+    if (e.currentTarget.classList.contains('griparea') && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
   }
 
   function toggleDetent() {
     if (peekable) setDetentTo(detent === 'peek' ? 'full' : 'peek');
   }
 
-  const gripHandlers = docked ? {} : {
+  const dragHandlers = docked ? {} : {
     onPointerDown: onGripDown, onPointerMove: onGripMove,
     onPointerUp: onGripUp, onPointerCancel: onGripUp,
-    onClick: (e) => { if (e.detail === 0) toggleDetent(); },
   };
+  const gripHandlers = docked ? {} : { ...dragHandlers, onClick: (e) => { if (e.detail === 0) toggleDetent(); } };
 
   const handleLabel = peekable
     ? (detent === 'peek' ? 'Expand the sheet' : 'Collapse the sheet')
@@ -573,45 +596,56 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       data-peekable={peekable ? 'true' : undefined}
       data-footer={showPager ? 'true' : undefined}
     >
-      {/* One top row for the sheet's own controls: the grip centred, the close on
-          the right, both in the same 44px band. The close used to float over the
-          content on its own coordinates, which is how it ended up level with the
-          title and crowding the stepper -- the sheet's chrome and the sheet's
-          contents were laying themselves out independently. */}
+      {/* The handle: a thin strip at the top, kept for resizing and for screen
+          readers (Apple's HIG and Material both keep a grabber). It is a 44px
+          band with a 4px bar in it. The close does NOT live here any more: it is
+          on the title line, below (B4). */}
       {!docked && (
         <div className="sheettop">
           <button type="button" className="griparea" {...gripHandlers} aria-label={handleLabel}
                   aria-expanded={peekable ? detent === 'full' : undefined}>
             <span className="grip" />
           </button>
-          {isOpen && (
-            <button className="close" ref={closeRef} onClick={onClose} aria-label="Close detail">
-              <Icon name="close" size={20} />
-            </button>
-          )}
         </div>
       )}
 
       {/* Docked, the panel keeps its own header and a back row instead of an X:
           closing a detail here does not dismiss anything, it returns you to the
-          list. The bottom sheet still gets a close button -- it really does go
-          away. */}
+          list. The bottom sheet gets a close button -- it really does go away. */}
       {docked && !isOpen && (
         <div className="panel-head">
           <h3>{FESTIVAL.name}</h3>
           <p>{FESTIVAL.dates}</p>
         </div>
       )}
-      {docked && isOpen && (
+      {docked && shownOpen && (
         <button className="panel-back" onClick={canGoBack ? onBack : onClose}>
           <span aria-hidden="true">‹</span> {canGoBack ? shown.openArea.name : 'All locations'}
         </button>
+      )}
+
+      {/* The head: the back row (when there is a list to go back to), then the
+          title line -- badge, title, and on the bottom sheet the close ×,
+          right-aligned, at least --tap-min. Pinned: only the body scrolls. A
+          drag that starts on it pulls the sheet, like the handle. */}
+      {shownOpen && (
+        <div className="ffc-panel__head" data-back={backBtn ? 'true' : undefined} {...dragHandlers}>
+          <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>
+            {backBtn}
+            {renderThing(HEAD)}
+          </div>
+          {!docked && (
+            <button className="close ffc-panel__close" ref={closeRef} onClick={onClose} aria-label="Close detail">
+              <Icon name="close" size={20} />
+            </button>
+          )}
+        </div>
       )}
       <div className="panel-scroll" ref={scrollEl} style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>
         {/* Keyed by what the sheet is showing (list or detail), so crossing
             between the two plays the slide and nothing else does -- stepping
             booth to booth swaps in place, no motion. */}
-        <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>{body}</div>
+        <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>{renderThing(BODY)}</div>
       </div>
 
       {/* The ItemPager's footer: pinned to the bottom of the sheet, above the

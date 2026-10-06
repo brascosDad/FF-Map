@@ -109,7 +109,7 @@
 
    The grip is a real handle: drag it down to dismiss. touch-action: none so the
    gesture is ours rather than the browser's scroll. */
-.sheet .sheettop { position: relative; flex: none; height: var(--tap-min); margin-top: var(--space-2); }
+.sheet .sheettop { position: relative; flex: none; height: var(--tap-min); }
 .sheet .griparea {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -122,12 +122,10 @@
    find it): strip the browser's button look. */
 .sheet button.griparea { border: 0; background: none; padding: 0; margin: 0; font: inherit; }
 .sheet button.griparea:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; border-radius: var(--radius-lg); }
-.sheet .hd { display: flex; align-items: center; gap: var(--space-3); margin: 0 0 2px; }
+.sheet .hd { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); margin: 0 0 2px; }
 .sheet .hd .dot { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
 .sheet h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--text-strong); }
 .sheet .sub { font-size: var(--text-xs); color: var(--text-muted); margin: 2px 0 var(--space-3); padding-left: 44px; }
-.sheet .close { position: absolute; top: 0; right: var(--space-2); z-index: 1; width: var(--tap-min); height: var(--tap-min); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 0; }
-.sheet .close:active { color: var(--text-strong); }
 
 /* Day headings are sentence case, not uppercase-tracked. */
 .day { font-size: var(--text-md); font-weight: var(--weight-black); color: var(--text-strong); margin: var(--space-4) 0 var(--space-1); }

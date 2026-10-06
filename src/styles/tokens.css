@@ -211,7 +211,7 @@
   /* The short detent (B3): about the title row plus one or two lines. A sheet
      that opens while a filter chip is on opens this tall, so the map stays
      visible; the handle (drag up, or tap) takes it to --sheet-max-height. */
-  --sheet-peek-height: 176px;
+  --sheet-peek-height: 208px;
   /* A booth's detail sheet never gets shorter than this, whatever the booth's
      text: stepping through a run must not change the sheet's height, or the
      pager's buttons move under the thumb (B2). Sized so the longest booth

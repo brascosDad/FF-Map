@@ -258,6 +258,28 @@
 .ffc-panel__back:active { color: var(--text-strong); }
 :where(.ffc-panel__back):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
+/* ===== Panel head (B4) ====================================================
+   Back row (when there is a list to go back to), then the TITLE LINE: badge,
+   title and -- on the bottom sheet -- the close x, right-aligned, --tap-min.
+   The x used to share a row with the handle, ~120px above the title; it is on
+   the title line now. The handle stays a thin strip at the very top. The head
+   is pinned (only the body scrolls) and a drag that starts on it pulls the
+   sheet like the handle does, so touch-action: none.
+========================================================================== */
+.ffc-panel__head { --close-top: 0px; position: relative; flex: none; padding: 0 var(--space-4); touch-action: none; }
+/* With a back row above the title, the close drops to the title line. */
+.ffc-panel__head[data-back='true'] { --close-top: var(--tap-min); }
+.ffc-panel--bottom .ffc-panel__head .hd { padding-right: var(--tap-min); }
+.ffc-panel__close {
+  position: absolute; top: var(--close-top); right: var(--space-2); z-index: 1;
+  width: var(--tap-min); height: var(--tap-min);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  color: var(--text-muted);
+}
+.ffc-panel__close:active { color: var(--text-strong); }
+:where(.ffc-panel__close):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; border-radius: var(--radius-pill); }
+
 /* ===== Panel content blocks =============================================== */
 .ffc-dayheading { margin: var(--space-4) 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.2 var(--font-ui); color: var(--text-strong); }
 .ffc-schedulerow { display: flex; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--sand-100); }

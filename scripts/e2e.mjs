@@ -1369,6 +1369,39 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- B4: the sheet's top row, merged ----
+// The x sits on the TITLE line, right-aligned, at least --tap-min; the handle
+// stays as a thin strip at the top; swipe down still closes (from the handle
+// or from the title row).
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const b = await p.locator('g.ffc-pin--stage').first().boundingBox();
+  await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await p.waitForTimeout(700);
+  const r = await p.evaluate(() => {
+    const q = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+    const sheet = q('.sheet'), close = q('.sheet .close'), hd = q('.sheet .hd'), title = q('.sheet .hd h3'), grip = q('.sheet .grip'), strip = q('.sheet .griparea');
+    return { sheet, close, hd, title, grip, strip,
+             hasHandle: !!document.querySelector('.sheet .griparea')?.getAttribute('aria-label'),
+             inHead: !!document.querySelector('.sheet .ffc-panel__head .close'), onSheetTop: !!document.querySelector('.sheet .sheettop .close') };
+  });
+  const mid = (x) => (x.top + x.bottom) / 2;
+  check(`${name}: B4 the x is on the title line`, r.close && Math.abs(mid(r.close) - mid(r.hd)) <= 2 && r.inHead && !r.onSheetTop, `x centre ${mid(r.close).toFixed(0)}, title row centre ${mid(r.hd).toFixed(0)}`);
+  check(`${name}: B4 the x is right-aligned and at least --tap-min`, r.close.width >= 44 && r.close.height >= 44 && r.sheet.right - r.close.right <= 12, `${r.close.width}x${r.close.height}, ${(r.sheet.right - r.close.right).toFixed(0)}px from the edge`);
+  check(`${name}: B4 the x does not sit on the title`, r.title.right <= r.close.left + 1, `title ends ${r.title.right.toFixed(0)}, x starts ${r.close.left.toFixed(0)}`);
+  check(`${name}: B4 the title is close to the top (no 120px row above it)`, r.title.top - r.sheet.top <= 72, `${(r.title.top - r.sheet.top).toFixed(0)}px from the sheet's top`);
+  check(`${name}: B4 the handle is kept, thin, with an accessible name`, r.hasHandle && r.grip.height <= 6 && r.strip.height >= 44, `bar ${r.grip.height}px in a ${r.strip.height}px target`);
+  // Swipe down on the TITLE row closes.
+  const t = await p.locator('.sheet .hd h3').boundingBox();
+  await p.mouse.move(t.x + t.width / 2, t.y + t.height / 2); await p.mouse.down();
+  for (const dy of [30, 90, 180, 260]) await p.mouse.move(t.x + t.width / 2, t.y + t.height / 2 + dy);
+  await p.mouse.up(); await p.waitForTimeout(600);
+  check(`${name}: B4 swiping down from the title row closes the sheet`, (await p.locator('.sheet.open').count()) === 0);
+  await p.close();
+}
+
 // ---- A2: the map safe area ----
 // Every pan that targets a pin centres it between the header + chip row and
 // the top of the open sheet, and the pan limits run far enough past the
