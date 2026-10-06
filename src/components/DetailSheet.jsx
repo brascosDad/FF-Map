@@ -635,7 +635,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
           right-aligned, at least --tap-min. Pinned: only the body scrolls. A
           drag that starts on it pulls the sheet, like the handle. */}
       {shownOpen && (
-        <div className="ffc-panel__header" data-back={backBtn ? 'true' : undefined} {...dragHandlers}>
+        <div className="ffc-panel__header" {...dragHandlers}>
           <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>
             {backBtn}
             {renderThing(HEAD)}

@@ -352,20 +352,23 @@
 .ffc-panel__back:active { color: var(--panel-title); }
 :where(.ffc-panel__back):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
-/* ---- Header: the back row, then the TITLE LINE (B4) ----------------------
-   Badge, title and -- on the bottom sheet -- the close x, right-aligned,
-   --tap-min. The x used to share a row with the handle, ~120px above the
-   title; it is on the title line now. The header is pinned (only the body
-   scrolls) and a drag that starts on it pulls the sheet like the handle does,
-   so touch-action: none. */
-.ffc-panel__header { --close-top: 0px; position: relative; flex: none; padding: 0 var(--panel-pad); touch-action: none; }
-/* With a back row above the title, the close drops to the title line. */
-.ffc-panel__header[data-back='true'] { --close-top: var(--tap-min); }
+/* ---- Header: ONE fixed layout for every state (B4, round 2) -----------------
+   Handle strip, then the header row directly under it. The close x is ALWAYS
+   top-right on that first row, in every sheet state: a control does not move
+   when the content does. Apple's HIG puts the dismiss control in the sheet's
+   top-trailing corner and navigation (back) in the top-leading corner, on the
+   same row; this is that. What the first row holds changes:
+     top-level sheet   the title line (badge, title) at the left, close at the right
+     pushed detail     "< back" at the left, close at the right; the booth's own
+                       title line sits on the row below
+   The header is pinned (only the body scrolls) and a drag that starts on it
+   pulls the sheet like the handle does, so touch-action: none. */
+.ffc-panel__header { position: relative; flex: none; padding: 0 var(--panel-pad); touch-action: none; }
 .ffc-panel--bottom .ffc-panel__header .ffc-panel__titleline { padding-right: var(--tap-min); }
 /* Docked: the header sits directly under the back row, so it needs its own air. */
 .ffc-panel--right .ffc-panel__header { padding-top: var(--space-3); }
 .ffc-panel__close {
-  position: absolute; top: var(--close-top); right: var(--space-2); z-index: 1;
+  position: absolute; top: 0; right: var(--space-2); z-index: 1;
   width: var(--tap-min); height: var(--tap-min);
   display: flex; align-items: center; justify-content: center;
   padding: 0; border: 0; background: none; cursor: pointer;

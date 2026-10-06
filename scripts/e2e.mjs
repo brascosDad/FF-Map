@@ -1532,6 +1532,41 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- Header: Close is always top-right, on the first row under the handle ----
+// The x never moves vertically between sheet states: a pin card, a stage, an
+// area list, a booth pushed from a list (back at the left, x at the right, the
+// booth's title on the row below) and a booth opened from its square.
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const read = (label) => p.evaluate((label) => {
+    const sheet = document.querySelector('.sheet:not(.docked).open')?.getBoundingClientRect();
+    const x = document.querySelector('.sheet:not(.docked) .ffc-panel__close')?.getBoundingClientRect();
+    const handle = document.querySelector('.sheet:not(.docked) .ffc-panel__handle')?.getBoundingClientRect();
+    const back = document.querySelector('.sheet:not(.docked) .ffc-panel__back')?.getBoundingClientRect();
+    const title = document.querySelector('.sheet:not(.docked) .ffc-panel__titleline')?.getBoundingClientRect();
+    return sheet && x ? { label, below: Math.round(x.top - handle.bottom), fromTop: Math.round(x.top - sheet.top), fromRight: Math.round(sheet.right - x.right),
+      back: back ? { cy: (back.top + back.bottom) / 2, left: back.left - sheet.left } : null, xcy: (x.top + x.bottom) / 2, titleTop: title ? title.top : null, backBottom: back ? back.bottom : null } : null;
+  }, label);
+  const states = [];
+  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(800); states.push(await read('stage lineup'));
+  await p.locator('g.ffc-pin--kids').first().dispatchEvent('click'); await p.waitForTimeout(900); states.push(await read('pin card'));
+  await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(450);
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n; i++) { await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click'); await p.waitForTimeout(600); if (await p.locator('button.ffc-boothrow').count()) break; }
+  states.push(await read('area list'));
+  await p.locator('button.ffc-boothrow').nth(4).click(); await p.waitForTimeout(900);
+  const pushed = await read('booth pushed from a list'); states.push(pushed);
+  await p.locator('.sheet .ffc-panel__back').click(); await p.waitForTimeout(700);
+  states.push(await read('list again, after back'));
+  const f = states.filter(Boolean);
+  check(`${name}: the x is on the first row under the handle in all ${f.length} states`, f.length === 5 && f.every((s) => s.below === 0 && Math.abs(s.fromTop - f[0].fromTop) <= 1), f.map((s) => `${s.label}: ${s.fromTop}px`).join(' | '));
+  check(`${name}: the x holds one right edge in every state`, f.every((s) => Math.abs(s.fromRight - f[0].fromRight) <= 1), f.map((s) => s.fromRight).join(','));
+  check(`${name}: a pushed booth has back at the left on the x's row, the title on the row below`, !!pushed.back && Math.abs(pushed.back.cy - pushed.xcy) <= 2 && pushed.titleTop >= pushed.backBottom - 1, JSON.stringify({ backCy: pushed.back?.cy, xCy: pushed.xcy, titleTop: pushed.titleTop, backBottom: pushed.backBottom }));
+  await p.close();
+}
+
 // ---- A2: the map safe area ----
 // Every pan that targets a pin centres it between the header + chip row and
 // the top of the open sheet, and the pan limits run far enough past the
