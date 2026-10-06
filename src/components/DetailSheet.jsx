@@ -391,7 +391,7 @@ const PULL_UP_PX = 30;        // a pull up this far from peek opens to full
 const TAP_SLOP_PX = 8;        // a press that moves less than this, quickly, is a tap
 const TAP_MS = 400;
 
-export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onBack, onClose, docked = false, chipOn = false, onDetentChange, onFocusReturn }) {
+export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onBack, onClose, docked = false, chipOn = false, capPeek = false, onDetentChange, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
 
@@ -403,14 +403,17 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // the sheet has the one detent and the handle only drags down to close.
   // Chips cannot change while a sheet is open (a chip tap closes it), so
   // `peekable` is fixed for the sheet's life.
-  const [detent, setDetent] = useState('full');
+  const [detentState, setDetent] = useState('full');
   const wasOpenDetent = useRef(false);
-  const peekable = !docked && chipOn;
+  // capPeek: a phone on its side. The header plus a 72% sheet leave no map, so
+  // the sheet is held at peek and cannot be expanded (round 2, item 4.2).
+  const peekable = !docked && (chipOn || capPeek);
+  const detent = capPeek ? 'peek' : detentState;
   useEffect(() => {
     if (docked) return;
-    if (isOpen && !wasOpenDetent.current) setDetent(chipOn ? 'peek' : 'full');
+    if (isOpen && !wasOpenDetent.current) setDetent(chipOn || capPeek ? 'peek' : 'full');
     wasOpenDetent.current = isOpen;
-  }, [isOpen, docked, chipOn]);
+  }, [isOpen, docked, chipOn, capPeek]);
   const setDetentTo = (d) => { setDetent(d); onDetentChange?.(d); };
 
   // Swapping one open sheet for another is a move, not a cut: the sheet drops
@@ -628,16 +631,16 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       // One layer at a time, like everything else: from FULL with a chip on the
       // first swipe steps down to peek; a swipe from peek (or from a sheet with
       // no peek) closes.
-      if (peekable && detent === 'full') setDetentTo('peek');
+      if (peekable && !capPeek && detent === 'full') setDetentTo('peek');
       else onClose();
       return;
     }
-    if (peekable && detent === 'peek' && d.raw < -PULL_UP_PX) { setDetentTo('full'); return; }
+    if (peekable && !capPeek && detent === 'peek' && d.raw < -PULL_UP_PX) { setDetentTo('full'); return; }
     if (e.currentTarget.classList.contains('ffc-panel__handle') && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
   }
 
   function toggleDetent() {
-    if (peekable) setDetentTo(detent === 'peek' ? 'full' : 'peek');
+    if (peekable && !capPeek) setDetentTo(detent === 'peek' ? 'full' : 'peek');
   }
 
   const dragHandlers = docked ? {} : {
@@ -646,7 +649,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   };
   const handleProps = docked ? {} : { ...dragHandlers, onClick: (e) => { if (e.detail === 0) toggleDetent(); } };
 
-  const handleLabel = peekable
+  const handleLabel = peekable && !capPeek
     ? (detent === 'peek' ? 'Expand the sheet' : 'Collapse the sheet')
     : 'Sheet handle: drag down to close';
 
@@ -673,7 +676,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
           on the title line, below (B4). */}
       {!docked && (
         <button type="button" className="ffc-panel__handle" {...handleProps} aria-label={handleLabel}
-                aria-expanded={peekable ? detent === 'full' : undefined}>
+                aria-expanded={peekable && !capPeek ? detent === 'full' : undefined}>
           <span className="ffc-panel__handle-bar" />
         </button>
       )}

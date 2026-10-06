@@ -172,6 +172,10 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
 
   const [vb, setVb] = useState(() => homeFor(390, 800, insetRight, overviewZoom));
   const [levelIdx, setLevelIdx] = useState(0);
+  // Bumped when the view has SETTLED after something that moved it without a
+  // tap: a pinch landing on its stop, a resize (rotation). App uses it to re-run
+  // the safe-area pan for whatever is selected (round 2, item 4.2).
+  const [settleTick, setSettleTick] = useState(0);
   const mapRef = useRef(null);
   const wrapRef = useRef(null);
   const suppressClickRef = useRef(false);
@@ -250,6 +254,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
    *  that is not the user's own finger: the directory fly-to and the pinch
    *  settling onto a stop. */
   const flyRef = useRef(0);
+  const resizeSettle = useRef(0);
   const animateTo = useCallback((to, dur) => {
     const from = vbRef.current;
     cancelAnimationFrame(flyRef.current);
@@ -335,6 +340,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const to = clampPan({ x: p.x - (p.x - cur.x) * af, y: p.y - (p.y - cur.y) * af, w: nw, h: (nw * py) / px }, px, insetRef.current, safeRef.current);
     setLevelIdx(idx);
     animateTo(to, SNAP_MS);
+    setTimeout(() => setSettleTick((t) => t + 1), SNAP_MS + 60);
   }, [toSvg, animateTo]);
   const resetToOverview = useCallback(() => {
     const { px, py } = sizeRef.current;
@@ -354,6 +360,8 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       const prevSize = sizeRef.current;
       if (Math.abs(px - prevSize.px) < 1 && Math.abs(py - prevSize.py) < 1) return;
       sizeRef.current = { px, py };
+      clearTimeout(resizeSettle.current);
+      resizeSettle.current = setTimeout(() => setSettleTick((t) => t + 1), 320);
       // At the overview, re-home properly: homeFor re-applies the panel-aware
       // offset that keeps the festival clear of the docked panel. Preserving the
       // previous centre here (as this used to) silently discarded that offset on
@@ -526,5 +534,5 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   const levelPos = levelPosition(vb.w / fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current));
   const areaMarkerFade = Math.min(1, Math.max(0, (levelPos - MARKER_FADE_FROM) / (LEVEL_RATIOS.length - 1 - MARKER_FADE_FROM)));
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview };
 }

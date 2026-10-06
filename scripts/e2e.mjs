@@ -1538,6 +1538,68 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- Pinch and rotate with a sheet open (item 4.2) ----
+// After a pinch settles and after a rotation the safe-area pan runs again, so the
+// selected booth is not left under the sheet; a phone on its side opens and caps
+// the sheet at peek height.
+{
+  const peekPxOf = (p) => p.evaluate(() => { const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--sheet-peek-height)'; document.body.appendChild(probe); const v = probe.getBoundingClientRect().height; probe.remove(); return Math.round(v); });
+  const inBand = (p) => p.evaluate(() => {
+    const g = [...document.querySelectorAll('svg.ff-map g.ff-booth')].find((q) => q.querySelector('rect[fill*="navy" i], rect[fill="#23385B"], rect[fill="var(--ff-navy)"]'));
+    const r = g?.querySelector('rect').getBoundingClientRect();
+    return r ? { top: r.top, bottom: r.bottom, left: r.left, right: r.right, barBottom: document.querySelector('.topbar').getBoundingClientRect().bottom, sheetTop: document.querySelector('.sheet.open')?.getBoundingClientRect().top, vw: innerWidth } : null;
+  });
+  // A pinch with a booth sheet open.
+  {
+    const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(700);
+    await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+    await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+    await p.locator('svg.ff-map g.ff-booth[data-booth^="spine-"]').nth(20).dispatchEvent('click'); await p.waitForTimeout(1200);
+    const cdp = await p.context().newCDPSession(p);
+    const two = (sp) => [{ x: 80 - sp / 2, y: 160, id: 1 }, { x: 80 + sp / 2, y: 160, id: 2 }];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: two(150) });
+    for (const sp of [140, 125, 110, 98, 88]) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: two(sp) }); await p.waitForTimeout(40); }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await p.waitForTimeout(1400);
+    const r = await inBand(p);
+    check('item 4.2: after a pinch settles with a booth sheet open, the booth is in the safe area, above the sheet', !!r && r.top >= r.barBottom && r.bottom <= r.sheetTop, JSON.stringify(r));
+    await p.close();
+  }
+  // Rotate with a booth sheet open.
+  {
+    const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(700);
+    await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+    await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+    await p.locator('svg.ff-map g.ff-booth[data-booth^="spine-"]').nth(20).dispatchEvent('click'); await p.waitForTimeout(1200);
+    const peekPx = await peekPxOf(p);
+    await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(1600);
+    const sheetH = await p.evaluate(() => Math.round(document.querySelector('.sheet.open').getBoundingClientRect().height));
+    const r = await inBand(p);
+    check('item 4.2: rotating to landscape with a sheet open caps it at peek height', sheetH <= peekPx + 4, `${sheetH}px (peek ${peekPx}px)`);
+    check('item 4.2: after the rotation the selected booth is in the safe area, above the sheet', !!r && r.top >= r.barBottom - 1 && r.bottom <= r.sheetTop + 1 && r.left > 0 && r.right < r.vw, JSON.stringify(r));
+    await p.close();
+  }
+  // Open in landscape: peek, no expanding.
+  {
+    const p = await browser.newPage({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(800);
+    const peekPx = await peekPxOf(p);
+    await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(900);
+    const h = await p.evaluate(() => Math.round(document.querySelector('.sheet.open').getBoundingClientRect().height));
+    const label = await p.locator('.sheet .ffc-panel__handle').getAttribute('aria-label');
+    check('item 4.2: in landscape a sheet opens at peek height and the handle does not claim to expand', h <= peekPx + 4 && /close/i.test(label || ''), `${h}px (peek ${peekPx}px); "${label}"`);
+    const g = await p.locator('.sheet .ffc-panel__handle').boundingBox();
+    await p.mouse.click(g.x + g.width / 2, g.y + g.height / 2); await p.waitForTimeout(600);
+    check('item 4.2: tapping the handle in landscape does not expand it', Math.abs((await p.evaluate(() => Math.round(document.querySelector('.sheet.open').getBoundingClientRect().height))) - h) <= 2);
+    await p.close();
+  }
+}
+
 // ---- A booth square tapped while an area's list is open (item 4.5) ----
 // Same area: the list stays under the booth and the back row stays. A different
 // area (or a food stall): the list is dropped, no back row.

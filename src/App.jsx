@@ -18,6 +18,7 @@ import './styles/map.css';
 // width on a phone, 560 max and centred on a tablet); at and above it the panel
 // docks to the right. Tablet portrait is too narrow to give up 360px.
 const PANEL_AT = '(min-width: 1024px)';
+const LANDSCAPE_PHONE = '(orientation: landscape) and (max-height: 500px)';
 const PANEL_W = 360;  // --panel-width
 const GAP = 20;       // --ff-gap / --space-5
 // Phone screens get the map drawn ~10% larger at the overview. The festival
@@ -60,10 +61,13 @@ function useMedia(query) {
 
 export default function App() {
   const docked = useMedia(PANEL_AT);
+  // A phone on its side: header + a 72% sheet leave no map at all, so the sheet
+  // opens at, and is capped at, peek height (round 2, item 4.2).
+  const landscapePhone = useMedia(LANDSCAPE_PHONE);
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, setSafeInsets, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
 
   // Analytics loads after the map has drawn, never before (src/analytics.js).
@@ -165,6 +169,18 @@ export default function App() {
   function handleDetentChange() {
     setReveal((r) => (r ? { ...r, n: r.n + 1, minLevel: 0 } : r));
   }
+
+  // Re-run the safe-area pan after a pinch has settled and after a resize or a
+  // rotation (round 2, item 4.2), so the selected pin or booth does not end up
+  // under the sheet. Same routine as a tap: it stays at the stop the visitor is
+  // at and steps in only if the pan alone cannot bring it into the band.
+  const latest = useRef({});
+  latest.current = { isOpen, selected: !!(selectedPin || openBooth), reveal };
+  useEffect(() => {
+    if (!settleTick) return;
+    const { isOpen: open, selected, reveal: r } = latest.current;
+    if (open && selected && r) revealAt(r.x, r.y);
+  }, [settleTick, revealAt]);
 
   function handleAreaClick(cluster) {
     if (suppressClickRef.current) return;
@@ -346,6 +362,7 @@ export default function App() {
             onOpenBooth={handleBoothFromList}
             onBack={handleSheetBack}
             chipOn={!!filter}
+            capPeek={landscapePhone}
             onDetentChange={handleDetentChange}
             onClose={closeAll}
             onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
