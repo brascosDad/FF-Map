@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMapView } from './hooks/useMapView';
+import { useLayerHistory } from './hooks/useLayerHistory';
 import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
@@ -169,6 +170,15 @@ export default function App() {
   function handleDetentChange() {
     setReveal((r) => (r ? { ...r, n: r.n + 1, minLevel: 0 } : r));
   }
+
+  // Back (the phone's back gesture, the browser's button) closes the sheet first,
+  // then clears the chip, then leaves the page: one layer per history entry
+  // (round 2, item 4.1), the same rule as a tap on empty map.
+  useLayerHistory((filter ? 1 : 0) + (isOpen ? 1 : 0), (n) => {
+    let left = n;
+    if (left > 0 && isOpen) { closeAll(); left -= 1; }
+    if (left > 0 && filter) setFilter(null);
+  });
 
   // Re-run the safe-area pan after a pinch has settled and after a resize or a
   // rotation (round 2, item 4.2), so the selected pin or booth does not end up

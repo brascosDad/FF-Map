@@ -1538,6 +1538,51 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- Back closes the sheet, then clears the chip, then leaves the page (item 4.1) ----
+// One history entry per layer; a layer that goes off any other way takes its
+// entry with it, so the stack of entries is as deep as the stack of layers.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(800);
+  const st = () => p.evaluate(() => ({ sheet: !!document.querySelector('.sheet.open'), chip: document.querySelector('.ffc-chip[aria-pressed="true"]')?.textContent.trim() || null, depth: history.state?.ffLayer ?? 0 }));
+  const back = async () => { await p.goBack().catch(() => null); await p.waitForTimeout(700); };
+  const onMap = () => p.url().startsWith(BASE);
+  // Sheet alone.
+  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(800);
+  const a = await st();
+  await back();
+  const b = await st();
+  check('item 4.1: back with a sheet open closes the sheet and stays on the map', a.sheet && a.depth === 1 && !b.sheet && onMap(), JSON.stringify({ a, b, url: p.url() }));
+  // Chip, then a sheet on top of it: two layers, two entries, closed in order.
+  await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click(); await p.waitForTimeout(700);
+  await p.locator('svg.ff-map g.ffc-pin--wc').first().dispatchEvent('click'); await p.waitForTimeout(900);
+  const c = await st();
+  await back();
+  const d = await st();
+  check('item 4.1: back with a chip and a sheet closes the sheet first; the chip stays', c.sheet && c.chip === 'Restrooms' && c.depth === 2 && !d.sheet && d.chip === 'Restrooms' && onMap(), JSON.stringify({ c, d }));
+  await back();
+  const e = await st();
+  check('item 4.1: back again clears the chip, still on the map', !e.sheet && e.chip === null && onMap(), JSON.stringify(e));
+  // A layer that goes off by a tap takes its entry with it: one back then leaves.
+  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(800);
+  await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(800);
+  const f = await st();
+  check('item 4.1: closing the sheet with the close leaves no stale entry', !f.sheet && f.depth === 0, JSON.stringify(f));
+  // Rapid: open, close, open again; back closes it (the new entry is not under a pending traversal).
+  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(500);
+  await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(60);
+  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(1200);
+  const g = await st();
+  await back();
+  const h = await st();
+  check('item 4.1: open, close, open again quickly: back closes that sheet', g.sheet && g.depth === 1 && !h.sheet && onMap(), JSON.stringify({ g, h }));
+  // Nothing on screen: back leaves the page.
+  await back();
+  check('item 4.1: with nothing open, back leaves the map', !onMap(), p.url());
+  await p.close();
+}
+
 // ---- Pinch and rotate with a sheet open (item 4.2) ----
 // After a pinch settles and after a rotation the safe-area pan runs again, so the
 // selected booth is not left under the sheet; a phone on its side opens and caps
@@ -1799,6 +1844,8 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   const f = states.filter(Boolean);
   check(`${name}: the x is on the first row under the handle in all ${f.length} states`, f.length === 5 && f.every((s) => s.below === 0 && Math.abs(s.fromTop - f[0].fromTop) <= 1), f.map((s) => `${s.label}: ${s.fromTop}px`).join(' | '));
   check(`${name}: the x holds one right edge in every state`, f.every((s) => Math.abs(s.fromRight - f[0].fromRight) <= 1), f.map((s) => s.fromRight).join(','));
+  await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(700);
+  check(`${name}: a real tap on the x closes the sheet (the header's drag handling does not swallow it)`, (await p.locator('.sheet.open').count()) === 0);
   check(`${name}: a pushed booth has back at the left on the x's row, the title on the row below`, !!pushed.back && Math.abs(pushed.back.cy - pushed.xcy) <= 2 && pushed.titleTop >= pushed.backBottom - 1, JSON.stringify({ backCy: pushed.back?.cy, xCy: pushed.xcy, titleTop: pushed.titleTop, backBottom: pushed.backBottom }));
   await p.close();
 }

@@ -596,7 +596,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     if (docked) return;
     // The ×, the back row and the handle's own button take their taps; a drag
     // that starts on the title row or the handle pulls the sheet.
-    if (e.target.closest?.('.close, .ffc-panel__back')) return;
+    if (e.target.closest?.('.ffc-panel__close, .ffc-panel__back')) return;
     const el = sheetEl.current;
     if (!el) return;
     // Capture on the handle itself, not the sheet: capturing on an ancestor
