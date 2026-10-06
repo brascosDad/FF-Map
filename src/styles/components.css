@@ -177,110 +177,258 @@
 
 /* ===== Panel ==============================================================
    One component, two variants, chosen by viewport. Shared anatomy:
-   header (32px category badge · title · subtitle · close/back) → scrolling
-   body → optional footer.
 
-     bottom  below 1024px  full width on phone, 560 max centred on tablet, grip
-     right   1024px and up floating, 20px inset, persistent
+     handle (bottom only) -> back row -> title line (badge · title · close)
+       -> scrolling body -> optional footer (the ItemPager)
+
+     bottom  below 1024px  full width on phone, 560 max centred on tablet
+     right   1024px and up floating beside the map, persistent
 
    The bottom variant is role="dialog": hidden (not merely translated) when
    closed so it leaves the tab order, Esc closes it, focus returns to the pin.
+   useMapView is told how much of the right edge the docked panel covers, so
+   the festival is fitted into what remains and nothing hides behind it.
+
+   Tokens: every colour, space and motion value below is a component token
+   defined on .ffc-panel and pointing at a semantic one -- the same shape as
+   the chip and the buttons. Retune the sheet here, not at its call sites.
+   The hook classes (.hd .li .evt .boothrow .griparea ...) are what the
+   markup in DetailSheet.jsx and the e2e suite name; the styling is all here.
 ========================================================================== */
 .ffc-panel {
   --panel-bg: var(--surface-chrome-solid);
+  --panel-fg: var(--text-body);
+  --panel-title: var(--text-strong);
+  --panel-muted: var(--text-muted);
+  --panel-rule: var(--sand-100);
   --panel-radius: var(--radius-lg);
+  --panel-shadow: var(--shadow-sheet);
+  --panel-pad: var(--space-4);
+  --panel-motion: var(--motion-panel);
+  --panel-accent: var(--cat-booth);   /* bullets, unless the body names the colour of what you opened (--sheet-accent) */
   display: flex; flex-direction: column;
   background: var(--panel-bg);
-  color: var(--text-body);
+  color: var(--panel-fg);
   font: var(--weight-medium) var(--text-lg)/1.45 var(--font-ui);
 }
-.ffc-panel__grip { width: 38px; height: 4px; border-radius: 3px; background: var(--border-subtle); margin: var(--space-1) auto var(--space-3); }
-.ffc-panel__head { display: flex; align-items: flex-start; gap: var(--space-3); padding: 0 var(--space-4); }
-.ffc-panel__badge { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
-.ffc-panel__title { margin: 0; font: var(--weight-black) var(--text-2xl)/1.2 var(--font-ui); color: var(--text-strong); }
-.ffc-panel__sub { margin: 2px 0 0; font-size: var(--text-xs); color: var(--text-muted); }
-.ffc-panel__body { flex: 1; overflow-y: auto; padding: var(--space-3) var(--space-4) var(--space-5); }
-.ffc-panel__foot { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--sand-100); font-size: var(--text-xs); color: var(--text-muted); }
 
+/* ---- Anatomy classes (documented in design-system.html) ------------------- */
+.ffc-panel__grip { width: 38px; height: 4px; border-radius: 3px; background: var(--border-subtle); margin: var(--space-1) auto var(--space-3); }
+.ffc-panel__badge { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
+.ffc-panel__title { margin: 0; font: var(--weight-black) var(--text-2xl)/1.2 var(--font-ui); color: var(--panel-title); }
+.ffc-panel__sub { margin: 2px 0 0; font-size: var(--text-xs); color: var(--panel-muted); }
+.ffc-panel__head { display: flex; align-items: flex-start; gap: var(--space-3); padding: 0 var(--panel-pad); }
+.ffc-panel__body { flex: 1; overflow-y: auto; padding: var(--space-3) var(--panel-pad) var(--space-5); }
+.ffc-panel__foot { padding: var(--space-3) var(--panel-pad); border-top: 1px solid var(--panel-rule); font-size: var(--text-xs); color: var(--panel-muted); }
+
+/* ---- Bottom variant ------------------------------------------------------- */
 .ffc-panel--bottom {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
   max-height: var(--sheet-max-height);
+  padding: 0;
   border-radius: var(--panel-radius) var(--panel-radius) 0 0;
-  box-shadow: var(--shadow-sheet);
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
   transform: translateY(100%);
-  transition: transform var(--motion-panel) var(--ease);
+  /* Closed means GONE, not merely pushed off-screen: visibility flips after
+     the slide finishes, so the animation still plays and a keyboard user
+     never tabs into an invisible dialog. max-height is animated for the
+     peek <-> full detent change (B3). */
+  visibility: hidden;
+  transition: transform var(--panel-motion) var(--ease), max-height var(--panel-motion) var(--ease), visibility 0s var(--panel-motion);
 }
-.ffc-panel--bottom[data-open='true'] { transform: translateY(0); }
-/* Only the body scrolls. The sheet's own top row -- grip and close -- stays
-   where it is while a long sheet (a stage lineup, the food list) scrolls
-   under it; it used to scroll away with the content (Ernest, 9/22). The
-   sheet is a column flex box, so the body takes the height that is left and
-   scrolls inside it; min-height: 0 is what lets a flex child shrink below
-   its content. Every sheet built on .ffc-panel--bottom gets this. */
-.ffc-panel--bottom { overflow: hidden; }
-.ffc-panel--bottom .panel-scroll, .ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.ffc-panel--bottom[data-open='true'] {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform var(--panel-motion) var(--ease), max-height var(--panel-motion) var(--ease), visibility 0s;
+}
+/* Mid-swap: drop out of the way so the next sheet can rise in its place. The
+   content changes while this is off screen (see DetailSheet). Accelerating
+   out, the standard ease back in -- about 0.39s door to door. */
+.ffc-panel--bottom[data-open='true'][data-phase='out'] {
+  transform: translateY(100%);
+  transition: transform var(--motion-sheet-out) var(--ease-in);
+}
 .ffc-panel--bottom[hidden] { display: none; }        /* out of the tab order when closed */
+/* Tablet: still a sheet, but capped and centred rather than spanning a 1023px
+   screen edge to edge. */
 @media (min-width: 768px) {
   .ffc-panel--bottom { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }
   .ffc-panel--bottom[data-open='true'] { transform: translate(-50%, 0); }
-}
-.ffc-panel--right {
-  position: absolute; top: var(--space-5); right: var(--space-5); bottom: var(--space-5);
-  width: var(--panel-width); z-index: 6;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-panel);
+  .ffc-panel--bottom[data-open='true'][data-phase='out'] { transform: translate(-50%, 100%); }
 }
 
-/* ===== Panel navigation: list -> detail inside ONE sheet (B1) ===============
+/* Only the body scrolls. The handle, the title line (with the close) and the
+   footer stay where they are while a long sheet -- a stage lineup, the food
+   list -- scrolls under them (Ernest, 9/22). The sheet is a column flex box,
+   so the body takes the height that is left and scrolls inside it;
+   min-height: 0 is what lets a flex child shrink below its content. The sheet
+   has no padding of its own: the body pads itself, so the footer can run edge
+   to edge. With a footer the body needs no home-bar clearance (the footer has
+   it); without one it carries it. */
+.ffc-panel--bottom .panel-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--space-2) var(--panel-pad) max(var(--space-5), env(safe-area-inset-bottom)); }
+.ffc-panel--bottom[data-footer='true'] .panel-scroll { padding-bottom: var(--space-4); }
+/* A booth's detail never gets shorter than --sheet-detail-min-height (B2), so
+   the footer does not move while paging. */
+.ffc-panel--bottom[data-view='detail']:not([data-detent='peek']) { min-height: var(--sheet-detail-min-height); }
+/* Peek (B3): the title row plus a line or two. max-height, not height: the
+   sheet still sizes to its content, a peek is just a lower ceiling. */
+.ffc-panel--bottom[data-detent='peek'][data-peekable='true'] { max-height: calc(var(--sheet-peek-height) + env(safe-area-inset-bottom)); }
+
+/* The handle: a thin strip at the top, kept for resizing and for screen
+   readers. A 44px band (--tap-min, it is a control) holding a 4px bar. It is a
+   button -- tap cycles peek <-> full -- so the browser's button look goes.
+   touch-action: none so a drag is ours rather than the browser's scroll. */
+.ffc-panel .sheettop { position: relative; flex: none; height: var(--tap-min); }
+.ffc-panel .griparea {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; background: none; padding: 0; margin: 0; font: inherit;
+  touch-action: none; cursor: grab;
+}
+.ffc-panel .griparea:active { cursor: grabbing; }
+.ffc-panel .grip { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; }
+.ffc-panel .griparea:active .grip { background: var(--panel-muted); }
+.ffc-panel .griparea:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; border-radius: var(--panel-radius); }
+
+/* ---- Docked (right) variant ----------------------------------------------
+   The host is positioned over the full-bleed map; the panel fills it. Header
+   and legend are pinned; only the middle scrolls -- a directory this long
+   would otherwise carry its own key off the bottom of the screen. */
+.ff-screen.docked .sheetwrap {
+  position: absolute; top: var(--space-5); right: var(--space-5); bottom: var(--space-5);
+  width: var(--panel-width); z-index: 6;
+}
+.ffc-panel--right {
+  --panel-radius: var(--radius-md);
+  --panel-shadow: var(--shadow-panel);
+  position: static; height: 100%;
+  border: 1px solid var(--border-control);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
+}
+.ffc-panel--right .panel-scroll { flex: 1; overflow-y: auto; padding: var(--panel-pad); }
+.ffc-panel--right .panel-head { padding: var(--panel-pad) var(--panel-pad) var(--space-3); border-bottom: 1px solid var(--panel-rule); }
+.ffc-panel--right .panel-head h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--panel-title); }
+.ffc-panel--right .panel-head p { margin: 2px 0 0; font-size: var(--text-xs); color: var(--panel-muted); }
+/* The key is pinned while the directory scrolls under it, so it needs to read
+   as a layer on top rather than as the last row of the list. Shadow casts
+   upward, against the scroll. */
+.ffc-panel--right .panel-foot {
+  padding: var(--space-3) var(--panel-pad);
+  border-top: 1px solid var(--border-control);
+  box-shadow: var(--shadow-foot);
+  background: var(--panel-bg);
+  position: relative; z-index: 1;
+}
+/* Back, not close. The docked panel is furniture -- there is nothing to
+   dismiss, only a list to return to. */
+.ffc-panel--right .panel-back {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: var(--tap-min);
+  padding: 0 var(--panel-pad);
+  border: 0; border-bottom: 1px solid var(--panel-rule);
+  background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--panel-muted);
+}
+.ffc-panel--right .panel-back:hover { color: var(--panel-title); }
+.ffc-panel--right .panel-back:active { background: var(--surface-pressed); }
+.ffc-panel--right .panel-back span { font-size: 20px; line-height: 1; }
+
+/* ---- Navigation: list -> detail inside ONE sheet (B1) ----------------------
    An area's booth list and a booth opened from it are two levels of one stack
    in one sheet. Crossing between them plays a short horizontal slide (in from
    the right going deeper, from the left coming back); the sheet itself never
    closes and reopens. The back row names the level you came from. Reduced
-   motion: a crossfade, no slide.
-========================================================================== */
+   motion: a crossfade, no slide. */
 .ffc-panel__view { --view-slide: var(--space-6); }
-.ffc-panel__view[data-dir='forward'] { animation: ffc-view-in-forward var(--motion-panel) var(--ease) both; }
-.ffc-panel__view[data-dir='back'] { animation: ffc-view-in-back var(--motion-panel) var(--ease) both; }
+.ffc-panel__view[data-dir='forward'] { animation: ffc-view-in-forward var(--panel-motion) var(--ease) both; }
+.ffc-panel__view[data-dir='back'] { animation: ffc-view-in-back var(--panel-motion) var(--ease) both; }
 @keyframes ffc-view-in-forward { from { opacity: 0; transform: translateX(var(--view-slide)); } to { opacity: 1; transform: none; } }
 @keyframes ffc-view-in-back { from { opacity: 0; transform: translateX(calc(var(--view-slide) * -1)); } to { opacity: 1; transform: none; } }
+@keyframes ffc-view-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .ffc-panel__view[data-dir='forward'], .ffc-panel__view[data-dir='back'] { animation: ffc-view-fade 120ms linear both; }
-  @keyframes ffc-view-fade { from { opacity: 0; } to { opacity: 1; } }
 }
 .ffc-panel__back {
   display: flex; align-items: center; gap: var(--space-2);
   min-height: var(--tap-min); margin: 0 calc(var(--space-1) * -1); padding: 0 var(--space-1);
   border: 0; background: none; cursor: pointer; text-align: left;
-  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--text-muted);
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--panel-muted);
 }
 .ffc-panel__back span { font-size: 20px; line-height: 1; }
-.ffc-panel__back:active { color: var(--text-strong); }
+.ffc-panel__back:active { color: var(--panel-title); }
 :where(.ffc-panel__back):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
-/* ===== Panel head (B4) ====================================================
-   Back row (when there is a list to go back to), then the TITLE LINE: badge,
-   title and -- on the bottom sheet -- the close x, right-aligned, --tap-min.
-   The x used to share a row with the handle, ~120px above the title; it is on
-   the title line now. The handle stays a thin strip at the very top. The head
-   is pinned (only the body scrolls) and a drag that starts on it pulls the
-   sheet like the handle does, so touch-action: none.
-========================================================================== */
-.ffc-panel__head { --close-top: 0px; position: relative; flex: none; padding: 0 var(--space-4); touch-action: none; }
+/* ---- Heading: the back row, then the TITLE LINE (B4) ----------------------
+   Badge, title and -- on the bottom sheet -- the close x, right-aligned,
+   --tap-min. The x used to share a row with the handle, ~120px above the
+   title; it is on the title line now. The heading is pinned (only the body
+   scrolls) and a drag that starts on it pulls the sheet like the handle does,
+   so touch-action: none. */
+.ffc-panel__heading { --close-top: 0px; position: relative; flex: none; padding: 0 var(--panel-pad); touch-action: none; }
 /* With a back row above the title, the close drops to the title line. */
-.ffc-panel__head[data-back='true'] { --close-top: var(--tap-min); }
-.ffc-panel--bottom .ffc-panel__head .hd { padding-right: var(--tap-min); }
+.ffc-panel__heading[data-back='true'] { --close-top: var(--tap-min); }
+.ffc-panel--bottom .ffc-panel__heading .hd { padding-right: var(--tap-min); }
 .ffc-panel__close {
   position: absolute; top: var(--close-top); right: var(--space-2); z-index: 1;
   width: var(--tap-min); height: var(--tap-min);
   display: flex; align-items: center; justify-content: center;
   padding: 0; border: 0; background: none; cursor: pointer;
-  color: var(--text-muted);
+  color: var(--panel-muted);
 }
-.ffc-panel__close:active { color: var(--text-strong); }
+.ffc-panel__close:active { color: var(--panel-title); }
 :where(.ffc-panel__close):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; border-radius: var(--radius-pill); }
+.ffc-panel .hd { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); margin: 0 0 2px; }
+.ffc-panel .hd .dot { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
+.ffc-panel h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--panel-title); }
+.ffc-panel .sub { font-size: var(--text-xs); color: var(--panel-muted); margin: 2px 0 var(--space-3); padding-left: 44px; }
 
-/* ===== Panel content blocks =============================================== */
+/* ---- Footer: pinned, above the home bar ------------------------------------ */
+.ffc-panel__footer {
+  --footer-pad: var(--space-3);
+  flex: none;
+  padding: var(--footer-pad) var(--panel-pad) calc(var(--footer-pad) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--panel-rule);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-foot);
+  position: relative; z-index: 1;
+}
+
+/* ---- Content blocks -------------------------------------------------------- */
+/* Day headings are sentence case, not uppercase-tracked. */
+.ffc-panel .day { font-size: var(--text-md); font-weight: var(--weight-black); color: var(--panel-title); margin: var(--space-4) 0 var(--space-1); }
+.ffc-panel .evt { display: flex; gap: var(--space-3); padding: var(--space-2) var(--space-1); border-bottom: 1px solid var(--panel-rule); font-size: var(--text-md); }
+.ffc-panel .evt:last-child { border-bottom: none; }
+.ffc-panel .evt .t { flex: 0 0 72px; color: var(--panel-muted); font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
+.ffc-panel .evt .a { color: var(--panel-fg); }
+.ffc-panel .li { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2) var(--space-1); font-size: var(--text-md); color: var(--panel-fg); line-height: 1.45; }
+/* Bullets take the colour of the thing you opened -- see accentFor() in
+   DetailSheet. Teal for everything read as a fourth brand colour rather than as
+   part of the place you tapped. */
+.ffc-panel .li .b { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--sheet-accent, var(--panel-accent)); margin-top: 7px; }
+.ffc-panel .foot { font-size: var(--text-xs); color: var(--panel-muted); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--panel-rule); }
+
+/* An area's booth list: number, then who is in it. Each row is a real button
+   that opens the booth, sized to the tap minimum -- 64 of them on the park
+   sheet is a long scroll, but it is the only way to find an artist by name. */
+.ffc-panel .boothlist { margin-top: var(--space-1); }
+.ffc-panel .boothrow { display: flex; align-items: baseline; gap: var(--space-3); width: 100%; min-height: var(--tap-min); padding: var(--space-2) var(--space-1); border: 0; border-bottom: 1px solid var(--panel-rule); background: none; text-align: left; cursor: pointer; font: inherit; color: var(--panel-fg); }
+.ffc-panel .boothrow:last-child { border-bottom: none; }
+.ffc-panel .boothrow:active { background: var(--surface-pressed); }
+.ffc-panel .boothrow--static { cursor: default; }
+.ffc-panel .boothrow .n { flex: 0 0 36px; font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--panel-title); font-variant-numeric: tabular-nums; }
+.ffc-panel .boothrow .who { flex: 1; min-width: 0; font-size: var(--text-md); line-height: 1.3; }
+.ffc-panel .boothrow__star { flex: 0 0 auto; align-self: center; }
+.ffc-panel .boothrow .who em { display: block; font-style: normal; font-size: var(--text-xs); color: var(--panel-muted); }
+
+/* ---- Directory (the docked panel's resting state) -------------------------- */
+.dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }
+.dir-title { margin: 0 0 var(--space-1); font: var(--weight-black) var(--text-xs)/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.ffc-poirow .dot { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
+
+/* ===== Panel content blocks (design-system anatomy) ======================== */
 .ffc-dayheading { margin: var(--space-4) 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.2 var(--font-ui); color: var(--text-strong); }
 .ffc-schedulerow { display: flex; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--sand-100); }
 .ffc-schedulerow__time { flex: 0 0 72px; font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-muted); }
@@ -309,20 +457,6 @@
 .ffc-pager button { position: relative; width: var(--tap-min); height: var(--tap-min); flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
 .ffc-pager button:active { background: var(--surface-pressed); }
 .ffc-pager__pos { flex: 1; text-align: center; font: var(--weight-bold) var(--text-md)/1.3 var(--font-ui); color: var(--text-strong); font-variant-numeric: tabular-nums; }
-
-/* The footer bar. Pinned: the sheet is a column flex box and the body takes
-   the height that is left, so this sits at the bottom whatever the body holds.
-   It clears the iPhone home bar and Safari's bottom toolbar -- never flush to
-   the edge: env(safe-area-inset-bottom) plus --space-3. */
-.ffc-panel__footer {
-  --footer-pad: var(--space-3);
-  flex: none;
-  padding: var(--footer-pad) var(--space-4) calc(var(--footer-pad) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--sand-100);
-  background: var(--panel-bg, var(--surface-chrome-solid));
-  box-shadow: var(--shadow-foot);
-  position: relative; z-index: 1;
-}
 
 /* ===== Legend + scale bar (desktop) ======================================= */
 .ffc-legend { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--surface-chrome); border: 1px solid var(--border-control); border-radius: var(--radius-md); box-shadow: var(--shadow-control); }

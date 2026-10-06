@@ -390,7 +390,6 @@ const TAP_MS = 400;
 export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onBack, onClose, docked = false, chipOn = false, onDetentChange, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
-  const wasOpen = useRef(false);
 
   // Two detents (B3): 'full', as the sheet has always opened, and 'peek', the
   // title row plus a line or two, so the map stays visible. A sheet that opens
@@ -504,15 +503,23 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // Focus moves into the sheet when it opens and goes back to the map when it
   // closes, so a keyboard user is never dropped on <body> with no landmark.
   // Only the bottom variant does this: the docked panel is always present and
-  // stealing focus on every map tap would be hostile.
+  // stealing focus on every map tap would be hostile. The close button exists
+  // once `shown` has caught up with the props (it renders the head), so the
+  // focus move waits for that, not just for `isOpen`.
+  const focusedIn = useRef(false);
   useEffect(() => {
     if (docked) return;
     // preventScroll: focusing a control inside a fixed sheet must not ask the
     // browser to scroll it into view -- on iOS that drags the whole page down.
-    if (isOpen && !wasOpen.current) closeRef.current?.focus({ preventScroll: true });
-    if (!isOpen && wasOpen.current) onFocusReturn?.();
-    wasOpen.current = isOpen;
-  }, [isOpen, docked, onFocusReturn]);
+    if (isOpen && shownOpen && !focusedIn.current) {
+      focusedIn.current = true;
+      closeRef.current?.focus({ preventScroll: true });
+    }
+    if (!isOpen && focusedIn.current) {
+      focusedIn.current = false;
+      onFocusReturn?.();
+    }
+  }, [isOpen, shownOpen, docked, onFocusReturn]);
 
   useEffect(() => {
     if (!isOpen || docked) return;
@@ -629,7 +636,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
           right-aligned, at least --tap-min. Pinned: only the body scrolls. A
           drag that starts on it pulls the sheet, like the handle. */}
       {shownOpen && (
-        <div className="ffc-panel__head" data-back={backBtn ? 'true' : undefined} {...dragHandlers}>
+        <div className="ffc-panel__heading" data-back={backBtn ? 'true' : undefined} {...dragHandlers}>
           <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>
             {backBtn}
             {renderThing(HEAD)}

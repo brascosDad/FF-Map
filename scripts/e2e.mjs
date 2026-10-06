@@ -212,18 +212,23 @@ for (const [name, w, h] of SIZES) {
   // ---- pan clamping, every level ----
   for (let lvl = 0; lvl < 3; lvl++) {
     if (lvl) await zoomIn(p);
-    let eH = 0, eV = 0, uW = 0, vH = 0;
+    let eH = 0, eV = 0, uW = 0, vH = 0, topPad = 0;
+    // The safe area (A2) lets the view run past the festival's top edge by the
+    // header + chip row's height, and nowhere else: the pan limits are the
+    // festival plus exactly the chrome that covers it.
+    const insetTop = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.ff-screen')).getPropertyValue('--map-inset-top')) || 0);
     for (const [dx, dy] of [[3000, 0], [-3000, 0], [0, 3000], [0, -3000], [2500, 2500], [-2500, -2500]]) {
       await drag(p, dx, dy);
       const vb = await viewBox(p);
       uW = vb[2] - (reserve * vb[2]) / w;
       vH = vb[3];
       if (uW < R.x1 - R.x0) eH = Math.max(eH, R.x0 - vb[0], vb[0] + uW - R.x1);
-      if (vH < R.y1 - R.y0) eV = Math.max(eV, R.y0 - vb[1], vb[1] + vb[3] - R.y1);
+      topPad = (insetTop * vb[3]) / h;
+      if (vH < R.y1 - R.y0) eV = Math.max(eV, R.y0 - topPad - vb[1], vb[1] + vb[3] - R.y1);
     }
     const locked = uW >= R.x1 - R.x0 && vH >= R.y1 - R.y0;
     check(`${name}: level ${lvl} cannot pan off the festival`, eH <= 1 && eV <= 1,
-      locked ? 'viewport larger than festival — locked' : `escape ${eH.toFixed(1)}u / ${eV.toFixed(1)}u`);
+      locked ? 'viewport larger than festival — locked' : `escape ${eH.toFixed(1)}u / ${eV.toFixed(1)}u (top may pass by ${topPad.toFixed(1)}u: the header + chips)`);
   }
   check(`${name}: zoom-in disabled at closest level`,
     (await p.locator('.zoomctl button').first().getAttribute('aria-disabled')) === 'true');
@@ -1385,7 +1390,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     const sheet = q('.sheet'), close = q('.sheet .close'), hd = q('.sheet .hd'), title = q('.sheet .hd h3'), grip = q('.sheet .grip'), strip = q('.sheet .griparea');
     return { sheet, close, hd, title, grip, strip,
              hasHandle: !!document.querySelector('.sheet .griparea')?.getAttribute('aria-label'),
-             inHead: !!document.querySelector('.sheet .ffc-panel__head .close'), onSheetTop: !!document.querySelector('.sheet .sheettop .close') };
+             inHead: !!document.querySelector('.sheet .ffc-panel__heading .close'), onSheetTop: !!document.querySelector('.sheet .sheettop .close') };
   });
   const mid = (x) => (x.top + x.bottom) / 2;
   check(`${name}: B4 the x is on the title line`, r.close && Math.abs(mid(r.close) - mid(r.hd)) <= 2 && r.inHead && !r.onSheetTop, `x centre ${mid(r.close).toFixed(0)}, title row centre ${mid(r.hd).toFixed(0)}`);
