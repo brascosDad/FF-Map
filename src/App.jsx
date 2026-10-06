@@ -7,6 +7,7 @@ import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
 import { ACTIVE_PINS } from './assets/pins';
 import { FESTIVAL } from './data/festival';
+import { boothInArea } from './data/areas';
 import { startAnalytics, track } from './analytics';
 import './styles/map.css';
 
@@ -195,7 +196,9 @@ export default function App() {
   function handleBoothClick(booth) {
     if (suppressClickRef.current) return;
     setOpenId(null);
-    setOpenArea(null);
+    // A square in the SAME area as the open list keeps that list under it, so
+    // the back row stays (item 4.5); a square in another area drops the list.
+    setOpenArea((area) => (area && boothInArea(booth, area) ? area : null));
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));
     // The same safe-area pan as a pin tap (round 2, item 4.4): centred above

@@ -12,7 +12,7 @@
 // The K stack counts toward the in-park run but sits in its own stack by
 // Kidlandia, drawn by MapCanvas outside these areas.
 import { BLOBS } from '../assets/basemapBlobs';
-import { BOOTHS } from './booths';
+import { BOOTHS, UNNUMBERED } from './booths';
 
 /** "82–139" for a run: its booths are in number order, so first and last. */
 export const span = (booths) => `${booths[0].n}–${booths[booths.length - 1].n}`;
@@ -51,3 +51,16 @@ export const AREAS = [
  * markets line straight streets, so their squares are already square to them.
  */
 export const BOOTH_ANGLE = { cpd: 0, mcl: 0, spine: 36, kid: 0, food: 21 };
+
+/**
+ * Is this booth one of the area's own list rows? The area's numbered booths, the
+ * Kidlandia stack (it counts toward the in-park run) and the unnumbered spots
+ * grouped under it. A booth tapped on the map keeps the area's list under it
+ * (a back row to it) only when it is in the open area (round 2, item 4.5).
+ */
+export function boothInArea(booth, area) {
+  if (!booth || !area) return false;
+  if (area.booths.some((b) => b.id === booth.id)) return true;
+  if (area.id === 'spine' && BOOTHS.kid.some((b) => b.id === booth.id)) return true;
+  return UNNUMBERED.some((u) => u.id === booth.id && u.group === area.id);
+}

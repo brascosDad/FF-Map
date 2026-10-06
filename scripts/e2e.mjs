@@ -1538,6 +1538,37 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- A booth square tapped while an area's list is open (item 4.5) ----
+// Same area: the list stays under the booth and the back row stays. A different
+// area (or a food stall): the list is dropped, no back row.
+{
+  const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);   // squares, markers still drawn
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  let opened = false;
+  for (let i = 0; i < n && !opened; i++) {
+    await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click'); await p.waitForTimeout(600);
+    opened = (await p.locator('button.ffc-boothrow .ffc-boothrow__number', { hasText: /^K/ }).count()) > 0;   // the In the Park list
+  }
+  check('item 4.5: the In the Park list opened', opened);
+  const state = () => p.evaluate(() => ({ title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent, back: document.querySelector('.sheet .ffc-panel__back')?.textContent.trim() || null, rows: document.querySelectorAll('.sheet button.ffc-boothrow').length }));
+  await p.locator('svg.ff-map g.ff-booth[data-booth^="spine-"]').nth(4).dispatchEvent('click'); await p.waitForTimeout(900);
+  const same = await state();
+  check('item 4.5: a square in the same area keeps the list under it, the back row stays', /^Booth \d+$/.test(same.title || '') && !!same.back && /In the Park/.test(same.back), JSON.stringify(same));
+  await p.locator('.sheet .ffc-panel__back').click(); await p.waitForTimeout(700);
+  const backToList = await state();
+  check('item 4.5: back returns to that list', backToList.rows > 20 && /In the Park/.test(backToList.title || ''), JSON.stringify(backToList));
+  await p.locator('svg.ff-map g.ff-booth[data-booth^="spine-"]').nth(7).dispatchEvent('click'); await p.waitForTimeout(900);
+  await p.locator('svg.ff-map g.ff-booth[data-booth^="mcl-"]').nth(3).dispatchEvent('click'); await p.waitForTimeout(1000);
+  const other = await state();
+  check('item 4.5: a square in a different area drops the list, no back row', /^Booth \d+$/.test(other.title || '') && other.back === null, JSON.stringify(other));
+  await p.locator('svg.ff-map g.ff-booth[data-booth^="spine-"]').nth(2).dispatchEvent('click'); await p.waitForTimeout(900);
+  check('item 4.5: a booth opened from a square with no list open has no back row', (await state()).back === null);
+  await p.close();
+}
+
 // ---- A booth square tapped on the map pans through the safe-area pan (item 4.4) ----
 // A square low on the screen would end up under the sheet that just opened; it
 // is brought into the band between the header + chips and the sheet, like a pin.
