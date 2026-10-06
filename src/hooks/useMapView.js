@@ -45,6 +45,14 @@ const CY = FESTIVAL.y + FESTIVAL.h / 2;
 // to move while a close one can roam the whole festival. A per-level table would
 // restate the same thing and drift out of sync with LEVEL_RATIOS.
 const PAN_SLACK = 30;
+// The map safe area, in CSS px: the bottom edge of the header + chip row, and
+// the height of the open bottom sheet (0 when closed). Measured from the real
+// layout by App and handed in through setSafeInsets; also exposed as the CSS
+// variables --map-inset-top / --map-inset-bottom (tokens.css).
+const NO_SAFE = { top: 0, bottom: 0 };
+// Air kept around a pin inside the safe area: one pin radius plus a little, so
+// the marker is whole rather than half under the chips or the sheet.
+const SAFE_CLEARANCE = 24;
 const REGION = {
   x0: FESTIVAL.x - PAN_SLACK,
   y0: FESTIVAL.y - PAN_SLACK,
@@ -99,7 +107,7 @@ const PINCH_OVERSHOOT = 1.15;
  * Because the viewBox aspect is kept equal to the container aspect, the viewBox
  * and the visible area are the same rectangle, so this can clamp vb directly.
  */
-function clampPan(vb, px = 1, insetRight = 0) {
+function clampPan(vb, px = 1, insetRight = 0, safe = NO_SAFE) {
   const insetMap = px > 0 ? (insetRight * vb.w) / px : 0;
   const usableW = Math.max(vb.w - insetMap, 1);
   const regionW = REGION.x1 - REGION.x0;
@@ -109,9 +117,16 @@ function clampPan(vb, px = 1, insetRight = 0) {
     ? REGION.x0 - (usableW - regionW) / 2
     : Math.min(Math.max(vb.x, REGION.x0), REGION.x1 - usableW);
 
+  // The safe area (A2): the viewport may run past the region by the height of
+  // the chrome over it, so the region's top and bottom edges can be panned
+  // into the visible band between the insets. Without this the north-most
+  // restroom could sit under the chip row and never get clear of it. Only
+  // reachable once the view can pan at all; the overview's centring, and so
+  // the view the map opens on, is unchanged.
+  const u = px > 0 ? vb.w / px : 0;                 // map units per CSS pixel
   vb.y = vb.h >= regionH
     ? REGION.y0 - (vb.h - regionH) / 2
-    : Math.min(Math.max(vb.y, REGION.y0), REGION.y1 - vb.h);
+    : Math.min(Math.max(vb.y, REGION.y0 - safe.top * u), REGION.y1 - vb.h + safe.bottom * u);
 
   return vb;
 }
@@ -152,6 +167,8 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   useEffect(() => { insetRef.current = insetRight; }, [insetRight]);
   const zoomRef = useRef(overviewZoom);
   useEffect(() => { zoomRef.current = overviewZoom; }, [overviewZoom]);
+  const safeRef = useRef(NO_SAFE);
+  const setSafeInsets = useCallback((s) => { safeRef.current = s; }, []);
 
   const [vb, setVb] = useState(() => homeFor(390, 800, insetRight, overviewZoom));
   const [levelIdx, setLevelIdx] = useState(0);
@@ -180,7 +197,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       const af = nw / prev.w;
       const p = (cx != null && cy != null) ? toSvg(cx, cy) : { x: prev.x + prev.w / 2, y: prev.y + prev.h / 2 };
       const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: (nw * py) / px };
-      return clampPan(next, px, insetRef.current);
+      return clampPan(next, px, insetRef.current, safeRef.current);
     });
     setLevelIdx(idx);
   }, [toSvg]);
@@ -196,39 +213,37 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const { px } = sizeRef.current;
     setVb((prev) => {
       const insetMap = px > 0 ? (insetRef.current * prev.w) / px : 0;
-      return clampPan({ ...prev, x: x - (prev.w - insetMap) / 2, y: y - prev.h / 2 }, px, insetRef.current);
+      return clampPan({ ...prev, x: x - (prev.w - insetMap) / 2, y: y - prev.h / 2 }, px, insetRef.current, safeRef.current);
     });
   }, []);
   /**
-   * Centre on a point ONLY if it is not already comfortably on screen.
+   * Centre on a point ONLY if it is not already inside the safe area.
    *
    * Stepping through a booth row used to recentre on every press, so the map
-   * lurched under you while you read a row you could already see. Now it holds
-   * still until the next booth would actually be out of sight -- then it moves
-   * once, and the row carries on scrolling past.
-   *
-   * Margins are in CSS pixels. They describe the band the point has to land in
-   * -- caller's choice what counts as cover. App.jsx counts the fixed top bar,
-   * which you cannot move, and nothing else: a booth under the open sheet is
-   * still on screen, and moving the map for it is the lurch this exists to
-   * prevent.
+   * lurched under you while you read a row you could already see. It still
+   * holds still while the next booth is in view -- but "in view" now means the
+   * SAFE AREA (A2): the map between the header + chip row and the top of the
+   * open sheet, not the whole screen. A booth under the sheet is not in view,
+   * it is behind a panel. Out of the safe area, it moves once and centres
+   * there, and the row carries on scrolling past.
    *
    * Returns true if it moved.
    */
-  const ensureVisible = useCallback((x, y, { top = 24, right = 24, bottom = 24, left = 24 } = {}) => {
+  const ensureVisible = useCallback((x, y) => {
     const { px, py } = sizeRef.current;
     const vb = vbRef.current;
     if (!px || !py) return false;
     const u = vb.w / px;                                   // map units per CSS pixel
     const insetMap = (insetRef.current * vb.w) / px;       // the docked panel
-    const x0 = vb.x + left * u;
-    const x1 = vb.x + vb.w - insetMap - right * u;
-    const y0 = vb.y + top * u;
-    const y1 = vb.y + vb.h - bottom * u;
+    const { top, bottom } = safeRef.current;
+    const x0 = vb.x + SAFE_CLEARANCE * u;
+    const x1 = vb.x + vb.w - insetMap - SAFE_CLEARANCE * u;
+    const y0 = vb.y + (top + SAFE_CLEARANCE) * u;
+    const y1 = vb.y + vb.h - (bottom + SAFE_CLEARANCE) * u;
     if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return false;
-    centerOn(x, y);
+    revealAtRef.current(x, y, { minLevel: levelRef.current });
     return true;
-  }, [centerOn]);
+  }, []);
 
   /** Ease the viewBox from where it is to `to` over `dur` ms. Snaps instead
    *  when the user has asked for reduced motion. One animator for every move
@@ -261,28 +276,30 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const nw = idx === levelRef.current ? from.w : fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[idx];
     const nh = px > 0 ? (nw * py) / px : from.h;
     const insetMap = px > 0 ? (insetRef.current * nw) / px : 0;
-    const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - nh / 2, w: nw, h: nh }, px, insetRef.current);
+    const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - nh / 2, w: nw, h: nh }, px, insetRef.current, safeRef.current);
     setLevelIdx(idx);
     animateTo(to, FLY_MS);
   }, [animateTo]);
 
   /**
-   * Bring a tapped pin into the part of the map you can see: centred in the
-   * band between `top` and `bottom` (CSS px covered by the top bar and the
-   * open bottom sheet), left of the docked panel, at the CURRENT zoom -- and
-   * only if the clamped view cannot put it in that band, at the nearest closer
-   * stop that can (the overview has almost no room to pan). Eased, like a
-   * directory fly-to. The interaction model in CLAUDE.md, step 2.
+   * Bring a pin into the SAFE AREA (A2): centred between the bottom edge of the
+   * header + chip row and the top of the open bottom sheet, left of the docked
+   * panel. At the CURRENT zoom (or `minLevel`, if closer) -- and only if the
+   * clamped view cannot put it there, at the nearest closer stop that can (the
+   * overview has almost no room to pan). Eased, like a directory fly-to. The
+   * one routine behind every pan that targets a pin: pin tap, stage tap, list
+   * row, ItemPager step. The interaction model in CLAUDE.md, step 2.
    */
-  const revealAt = useCallback((x, y, { top = 0, bottom = 0 } = {}) => {
+  const revealAt = useCallback((x, y, { minLevel = 0 } = {}) => {
     const { px, py } = sizeRef.current;
     if (!px || !py) return;
+    const top = safeRef.current.top + SAFE_CLEARANCE, bottom = safeRef.current.bottom + SAFE_CLEARANCE;
     const base = fitOverview(px, py, insetRef.current, zoomRef.current);
-    for (let idx = levelRef.current; idx < LEVEL_RATIOS.length; idx++) {
+    for (let idx = Math.max(levelRef.current, minLevel); idx < LEVEL_RATIOS.length; idx++) {
       const nw = base * LEVEL_RATIOS[idx], nh = (nw * py) / px, u = nw / px;
       const insetMap = (insetRef.current * nw) / px;
       const bandMid = top + (py - top - bottom) / 2;
-      const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - bandMid * u, w: nw, h: nh }, px, insetRef.current);
+      const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - bandMid * u, w: nw, h: nh }, px, insetRef.current, safeRef.current);
       const sy = (y - to.y) / u;                       // where the pin lands, in px from the top
       const fits = sy >= top && sy <= py - bottom;
       if (fits || idx === LEVEL_RATIOS.length - 1) {
@@ -292,6 +309,8 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       }
     }
   }, [animateTo]);
+  const revealAtRef = useRef(revealAt);
+  useEffect(() => { revealAtRef.current = revealAt; }, [revealAt]);
 
   /**
    * Land a free-scaled viewBox (mid-pinch) on the nearest of the three stops.
@@ -313,7 +332,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const nw = base * LEVEL_RATIOS[idx];
     const p = toSvg(cx, cy);
     const af = nw / cur.w;
-    const to = clampPan({ x: p.x - (p.x - cur.x) * af, y: p.y - (p.y - cur.y) * af, w: nw, h: (nw * py) / px }, px, insetRef.current);
+    const to = clampPan({ x: p.x - (p.x - cur.x) * af, y: p.y - (p.y - cur.y) * af, w: nw, h: (nw * py) / px }, px, insetRef.current, safeRef.current);
     setLevelIdx(idx);
     animateTo(to, SNAP_MS);
   }, [toSvg, animateTo]);
@@ -348,7 +367,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       setVb((prev) => {
         const w = fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[levelRef.current];
         const h = (w * py) / px;
-        return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h }, px, insetRef.current);
+        return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h }, px, insetRef.current, safeRef.current);
       });
     });
     ro.observe(wrap);
@@ -391,7 +410,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         const scale = Math.max(r.width / vbRef.current.w, r.height / vbRef.current.h);
         const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
         if (Math.abs(dx) + Math.abs(dy) > 2) dragMoved = true;
-        setVb((cur) => clampPan({ ...cur, x: cur.x - dx / scale, y: cur.y - dy / scale }, sizeRef.current.px, insetRef.current));
+        setVb((cur) => clampPan({ ...cur, x: cur.x - dx / scale, y: cur.y - dy / scale }, sizeRef.current.px, insetRef.current, safeRef.current));
       } else if (pointers.size === 2) {
         const pts = [...pointers.values()];
         const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
@@ -413,7 +432,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         // Keep the map point that was under the fingers under the fingers.
         const scale = r.width / nw;
         const next = { x: pinch.at.x - (mx - r.left) / scale, y: pinch.at.y - (my - r.top) / scale, w: nw, h: nh };
-        setVb(clampPan(next, px, insetRef.current));
+        setVb(clampPan(next, px, insetRef.current, safeRef.current));
       }
     }
     function onUp(e) {
@@ -507,5 +526,5 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   const levelPos = levelPosition(vb.w / fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current));
   const areaMarkerFade = Math.min(1, Math.max(0, (levelPos - MARKER_FADE_FROM) / (LEVEL_RATIOS.length - 1 - MARKER_FADE_FROM)));
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, resetToOverview };
 }

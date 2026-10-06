@@ -208,6 +208,14 @@
   --pin-size: 40px;
   --panel-width: 360px;
   --sheet-max-height: 72%;
+  /* The map safe area (A2): what is left of the map between the header + chip
+     row and the open sheet. Both are SET AT RUNTIME on .ff-screen by App, from
+     the real layout (the topbar's bottom edge; the sheet's height while it is
+     open, 0 when closed) -- these are only the first-paint defaults. Every pan
+     or zoom that targets a pin centres it between the two, and the map's pan
+     limits run past the festival by the same amounts so any pin can get there. */
+  --map-inset-top: 0px;
+  --map-inset-bottom: 0px;
 }
 
 /* The masthead is a quarter smaller on a phone. At 48 it took the top eighth of

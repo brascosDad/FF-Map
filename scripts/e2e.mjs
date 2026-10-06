@@ -1206,6 +1206,51 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   await p.close();
 }
 
+// ---- A2: the map safe area ----
+// Every pan that targets a pin centres it between the header + chip row and
+// the top of the open sheet, and the pan limits run far enough past the
+// festival that ANY pin can get there. Ernest's repro (10/6): Restrooms chip
+// on, tap the north-most restroom -- it used to sit under the "First aid"
+// chip and could not be panned clear.
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click();
+  await p.waitForTimeout(650);
+  // The north-most restroom: smallest map y among the chip's pins.
+  const north = await p.locator('svg.ff-map g.ffc-pin--wc').evaluateAll((els) => {
+    const cs = els.map((g, i) => { const c = g.querySelector(':scope > circle').getBoundingClientRect(); return { i, x: c.x + c.width / 2, y: c.y + c.height / 2 }; });
+    return cs.sort((a, b) => a.y - b.y)[0];
+  });
+  // Tap it as a finger would; if a chip is over it (the very repro), the tap
+  // is delivered to the pin the way React sees it, so the test still reaches
+  // the pan.
+  const hit = await p.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('svg.ff-map'), north);
+  if (hit) await p.mouse.click(north.x, north.y);
+  else await p.locator('svg.ff-map g.ffc-pin--wc').nth(north.i).dispatchEvent('click');
+  await p.waitForTimeout(1000);
+  const r = await p.evaluate(() => {
+    const screen = document.querySelector('.ff-screen');
+    const sheet = document.querySelector('.sheet.open');
+    const ringed = [...document.querySelectorAll('svg.ff-map g.ffc-pin--wc')].find((g) => g.querySelector(':scope > circle[stroke]'));
+    const c = ringed?.querySelector(':scope > g circle')?.getBoundingClientRect();
+    const bar = document.querySelector('.topbar .chips').getBoundingClientRect();
+    const sheetTop = sheet ? sheet.getBoundingClientRect().top : innerHeight;
+    const cs = getComputedStyle(screen);
+    return { y: c ? c.y + c.height / 2 : null, top: c?.top, bottom: c?.bottom, barBottom: bar.bottom, sheetTop,
+             insetTop: parseFloat(cs.getPropertyValue('--map-inset-top')), insetBottom: parseFloat(cs.getPropertyValue('--map-inset-bottom')),
+             sheetH: sheet ? sheet.offsetHeight : 0, vh: innerHeight };
+  });
+  check(`${name}: the north-most restroom ends inside the safe area, clear of the chips and the sheet`,
+    r.y != null && r.top >= r.barBottom && r.bottom <= r.sheetTop,
+    `pin ${r.top?.toFixed(0)}-${r.bottom?.toFixed(0)}, chips end ${r.barBottom.toFixed(0)}, sheet top ${r.sheetTop.toFixed(0)}`);
+  check(`${name}: the safe-area tokens are measured from the real layout`,
+    Math.abs(r.insetTop - r.barBottom) <= 12 && Math.abs(r.insetBottom - r.sheetH) <= 1,
+    `--map-inset-top ${r.insetTop}, chips end ${r.barBottom.toFixed(0)}; --map-inset-bottom ${r.insetBottom}, sheet ${r.sheetH}`);
+  await p.close();
+}
+
 // ---- the sheet's top row never scrolls ----
 // Grip and close stay put while a long sheet -- a stage lineup at 375px --
 // scrolls under them (Ernest, 9/22). Only the body scrolls.

@@ -62,7 +62,7 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, setSafeInsets, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
 
   // Analytics loads after the map has drawn, never before (src/analytics.js).
@@ -116,23 +116,47 @@ export default function App() {
     setReveal({ x: pin.x, y: pin.y, n: (reveal?.n || 0) + 1 });
   }
 
-  // Bring the selected pin into the band above the open sheet. Measured after
-  // the sheet has rendered its content, and once more after a swap (the sheet
-  // holds the old content for --motion-sheet-out before the new card rises),
-  // since the band's bottom is the sheet's own height.
+  // The map safe area (A2): the visible map between the bottom edge of the
+  // header + chip row and the top of the open bottom sheet. Measured from the
+  // real layout, written to --map-inset-top / --map-inset-bottom on the screen
+  // (tokens.css) and handed to the map, which uses it for every pan that
+  // targets a pin and for the pan limits. Re-measured whenever either piece
+  // changes size: the sheet changes height with its content (peek, full, a
+  // booth after a list), the bar with the breakpoint.
+  const screenRef = useRef(null);
+  const isOpen = !!(openId || openArea || openBooth);
+  useEffect(() => {
+    const screen = screenRef.current;
+    if (!screen) return;
+    const measure = () => {
+      const bar = screen.querySelector('.topbar');
+      const sheet = docked ? null : screen.querySelector('.sheet:not(.docked)');
+      const top = bar ? Math.round(bar.getBoundingClientRect().bottom) : 0;
+      // offsetHeight, not the bounding box: the sheet slides on a transform,
+      // and its height is what it will cover once it has arrived.
+      const bottom = sheet && isOpen ? sheet.offsetHeight : 0;
+      screen.style.setProperty('--map-inset-top', `${top}px`);
+      screen.style.setProperty('--map-inset-bottom', `${bottom}px`);
+      setSafeInsets({ top, bottom });
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    screen.querySelectorAll('.topbar, .sheet:not(.docked)').forEach((el) => ro.observe(el));
+    return () => ro.disconnect();
+  }, [docked, isOpen, setSafeInsets]);
+
+  // Bring the selected pin into the safe area once its sheet has rendered, and
+  // once more after a swap (the sheet holds the old content for
+  // --motion-sheet-out before the new card rises), since the band's bottom is
+  // the sheet's own height.
   useEffect(() => {
     if (!reveal) return;
-    const go = () => {
-      const bar = wrapRef.current?.querySelector('.topbar');
-      const sheet = document.querySelector('.sheet:not(.docked)');
-      const top = (bar ? Math.round(bar.getBoundingClientRect().bottom) : 96) + 24;
-      const bottom = (sheet ? Math.round(sheet.getBoundingClientRect().height) : 0) + 24;
-      revealAt(reveal.x, reveal.y, { top, bottom });
-    };
+    const go = () => revealAt(reveal.x, reveal.y, { minLevel: reveal.minLevel });
     const a = requestAnimationFrame(() => requestAnimationFrame(go));
     const b = setTimeout(go, 220);
     return () => { cancelAnimationFrame(a); clearTimeout(b); };
-  }, [reveal, revealAt, wrapRef]);
+  }, [reveal, revealAt]);
 
   function handleAreaClick(cluster) {
     if (suppressClickRef.current) return;
@@ -156,31 +180,10 @@ export default function App() {
     const i = group.findIndex((b) => b.id === openBooth.id);
     const next = group[(i + dir + group.length) % group.length];
     setOpenBooth(next);
-    // Hold the map still while the next booth is already on screen -- it just
-    // lights up. Only when the row walks off the edge does the view move, and
-    // then it moves once.
-    ensureVisible(next.x, next.y, coveredEdges());
-  }
-
-  /**
-   * How much room a booth needs around it to count as "in view", in CSS pixels.
-   *
-   * Deliberately NOT the sheet. Counting the open sheet as cover meant the
-   * visible band on a 844px phone was 327px, so a row stepping diagonally left
-   * it after two or three presses and the map lurched -- which is exactly the
-   * lurch the stepper is supposed to avoid. A booth under the sheet is still on
-   * screen: the sheet is a few hundred ms of drag away, and the selection ring
-   * is waiting there when you dismiss it.
-   *
-   * The top bar is the one exception, because it is fixed and you cannot get it
-   * out of the way. Measure it rather than guess -- it has three different
-   * heights across the breakpoints. The 24px on the other three sides is one
-   * pin radius, so the marker is whole rather than half off the edge.
-   */
-  function coveredEdges() {
-    const bar = wrapRef.current?.querySelector('.topbar');
-    const top = bar ? Math.round(bar.getBoundingClientRect().bottom) + 12 : 96;
-    return { top, right: 24, bottom: 24, left: 24 };
+    // Hold the map still while the next booth is already inside the safe area
+    // -- it just lights up. Only when the row walks out of it does the view
+    // move, and then it centres the booth there, once.
+    ensureVisible(next.x, next.y);
   }
 
   function handleBoothClick(booth) {
@@ -202,7 +205,8 @@ export default function App() {
     setOpenArea(null);
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));
-    focusOn(booth.x, booth.y, 2);
+    // Booth zoom at least, centred in the safe area above the sheet.
+    setReveal({ x: booth.x, y: booth.y, minLevel: 2, n: (reveal?.n || 0) + 1 });
   }
 
   /**
@@ -270,7 +274,7 @@ export default function App() {
 
   return (
     <div className="ff-app">
-      <div className={`ff-screen${docked ? ' docked' : ''}`} onClick={handleBackgroundClick}>
+      <div ref={screenRef} className={`ff-screen${docked ? ' docked' : ''}`} onClick={handleBackgroundClick}>
         <div className="mapstage">
         <MapCanvas
           mapRef={mapRef}
