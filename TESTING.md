@@ -122,6 +122,17 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
       Worth a real-device check: it does not reproduce in a desktop emulator.)*
 - [ ] **Sheet bullets match what you opened** — Kidlandia's are Kidlandia pink,
       the food court's are food orange. Never one shared teal.
+- [ ] **Peek (10/6, on a real iPhone).** Restrooms chip on → tap a restroom: the sheet opens short
+      with the map above it, and no ItemPager. Tap the handle: full height. Tap it again: back to peek.
+      Drag it up: full. With no chip on, a sheet opens full and the handle only drags down.
+- [ ] **One sheet, with a way back.** Art market → tap a booth in the list: the sheet stays, slides to
+      the booth, and `‹ <area>` returns to the list at the same scroll position. Page with ‹ › in the
+      footer a few times: `‹ <area>` still goes straight back to the list.
+- [ ] **The north-most restroom** (Restrooms chip on, Safari with its bars showing): tap it and it
+      ends clear of the chips, centred in the map above the sheet.
+- [ ] **Swipe down** on the handle or the title row closes the sheet; the chip stays on.
+- [ ] **Stage times** are on one line; no sheet has a "source" or "position from the official map"
+      footer.
 - [ ] **The ItemPager is a footer, pinned to the bottom of the booth sheet**, clear of the home bar.
       Page through five booths: the ‹ and › buttons must not move under your thumb.
 - [ ] **Step through a row on a phone and watch the map.** Press next eight or

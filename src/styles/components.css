@@ -371,6 +371,8 @@
 /* With a back row above the title, the close drops to the title line. */
 .ffc-panel__heading[data-back='true'] { --close-top: var(--tap-min); }
 .ffc-panel--bottom .ffc-panel__heading .hd { padding-right: var(--tap-min); }
+/* Docked: the heading sits directly under the back row, so it needs its own air. */
+.ffc-panel--right .ffc-panel__heading { padding-top: var(--space-3); }
 .ffc-panel__close {
   position: absolute; top: var(--close-top); right: var(--space-2); z-index: 1;
   width: var(--tap-min); height: var(--tap-min);
