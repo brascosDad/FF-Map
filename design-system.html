@@ -396,7 +396,7 @@
   </div>
 
   <h2>6 · Interaction states</h2>
-  <p class="lede">How the map behaves, as built after the 10/6 interaction PR. Cells tagged <span class="open-tag">OPEN</span> are undefined or inconsistent today: each is a decision for Ernest, none has been changed. The same content is in <code>docs/interaction-states.md</code>.</p>
+  <p class="lede">How the map behaves, as built after the 10/6 interaction PR. Cells tagged <span class="open-tag">OPEN</span> are still undefined or inconsistent; round 1's six were decided by Ernest on 10/6 and are built. The same content is in <code>docs/interaction-states.md</code>.</p>
   <h3>States</h3><div class="card"><table>
     <tr><th>S1</th><td><b>Map only</b> — No chip, no sheet.</td></tr>
     <tr><th>S2</th><td><b>Chip on</b> — A filter chip is on, no sheet. The chip's pins are bright and on top; everything else is dimmed and takes no taps.</td></tr>
@@ -451,7 +451,7 @@
 <path d="M200 256 L330 370" class="edge" marker-end="url(#arr)"/>
 <text x="318" y="318" text-anchor="start" class="edgetext">tap a booth square</text>
 </svg>
-    <p style="font-size:var(--text-xs);color:var(--text-muted);margin:var(--space-2) 0 0">Layers clear from the top: the sheet first, then the chip. S5 closes like S4. S6 and S7 close with ×, swipe down or a tap on empty map (to S1); S7 also opens from a booth square in S1. Not drawn: reset (to S1 from anywhere) and a pin tap while a sheet is open (swaps the card). The Mermaid source is in <code>docs/interaction-states.md</code>.</p></div>
+    <p style="font-size:var(--text-xs);color:var(--text-muted);margin:var(--space-2) 0 0">Layers clear from the top: the sheet first, then the chip. S5 closes like S4. S6 and S7 close with ×, swipe down, back or a tap on empty map (to S1); S7 also opens from a booth square in S1. The browser back button follows the same layers: sheet first, then chip. Not drawn: reset (to S1 from anywhere) and a pin tap while a sheet is open (swaps the card). The Mermaid source is in <code>docs/interaction-states.md</code>.</p></div>
   <h3>Transition table</h3><p>One table per state: each action, what it does, and where it leaves you (→). An action that does not exist in a state is left out.</p>
   <div class="card states"><h4>S1 · Map only</h4><table>
     <tr><th>Tap a live pin</th><td>Opens the pin's card at full height; the pin wears the navy ring; the map pans so the pin sits centred in the safe area, zooming in only if it has to. <span class="next">→ S3</span></td></tr>
@@ -461,24 +461,24 @@
     <tr><th>Pinch zoom</th><td>Follows the fingers, settles on the nearest of the three stops.</td></tr>
     <tr><th>Pan</th><td>Pans, inside the pan limits (festival + the header and chip row).</td></tr>
     <tr><th>Tap an art-market marker</th><td>Opens the area's booth list at full height. <span class="next">→ S3</span></td></tr>
-    <tr><th>Tap a booth square on the map</th><td><span class="open-tag">OPEN</span> Opens that booth's sheet (no list behind it). The map does NOT pan to it, so with the sheet open the booth can be behind the sheet; a pin tap does pan. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>Opens that booth's sheet (no list behind it) and pans through the safe-area pan, like a pin. <span class="next">→ S7</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>Changes the stop. No layer changes.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>Already clean: goes to the overview.</td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map for whatever page came before. No history entry exists for the map's own states.</td></tr>
+    <tr><th>Browser / Android back</th><td>Leaves the map for the page before. Nothing is on screen to close, so no history entry was pushed.</td></tr>
     <tr><th>Rotate the phone</th><td>The map refits at the same stop and centre.</td></tr>
   </table></div>
   <div class="card states"><h4>S2 · Chip on</h4><table>
     <tr><th>Tap a live pin</th><td>Opens the pin's card at PEEK height; ring; the pin pans into the safe area above the sheet. The chip stays on: a pin tap never touches it. <span class="next">→ S4</span></td></tr>
-    <tr><th>Tap a dimmed pin</th><td>A dimmed pin has pointer-events: none, so the tap falls through to the map and counts as a tap on empty map: the chip turns off. (Tested 10/6.) <span class="next">→ S1</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>A dimmed pin has pointer-events: none, so the tap falls through to the map and counts as a tap on empty map: the chip turns off. <span class="next">→ S1</span></td></tr>
     <tr><th>Tap a chip</th><td>Same chip: off, the map stays where it is. Another chip: switches, back to the overview. <span class="next">→ S1 / S2</span></td></tr>
     <tr><th>Tap empty map</th><td>The chip turns off. The map stays. <span class="next">→ S1</span></td></tr>
     <tr><th>Pinch zoom</th><td>As S1. The chip's pins show at every stop.</td></tr>
     <tr><th>Pan</th><td>As S1.</td></tr>
     <tr><th>Tap an art-market marker</th><td>Art-market markers are dimmed, so this is a tap on empty map: the chip turns off. <span class="next">→ S1</span></td></tr>
-    <tr><th>Tap a booth square on the map</th><td><span class="open-tag">OPEN</span> Art squares are dimmed (tap on empty map: chip off). Food stalls, Kidlandia and the two unnumbered squares are NOT dimmed: tapping one opens its booth AND clears the chip, which a pin tap never does. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>Every booth square is dimmed (art, food stalls, Kidlandia, the unnumbered two): none is in a chip's category. A tap falls through like a tap on a dimmed pin: it opens nothing, and no booth handler touches the chip. <span class="next">→ S1</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>The chip turns off and the map goes to the overview. <span class="next">→ S1</span></td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map. Same gap as S1.</td></tr>
+    <tr><th>Browser / Android back</th><td>Back clears the chip (one history entry per layer). <span class="next">→ S1</span></td></tr>
     <tr><th>Rotate the phone</th><td>As S1.</td></tr>
   </table></div>
   <div class="card states"><h4>S3 · Sheet open · full</h4><table>
@@ -487,34 +487,34 @@
     <tr><th>Tap a chip</th><td>The sheet closes, the chip comes on, the map goes to the overview. <span class="next">→ S2</span></td></tr>
     <tr><th>Tap empty map</th><td>The sheet closes. The map stays. <span class="next">→ S1</span></td></tr>
     <tr><th>Close × / Esc</th><td>Closes the sheet. <span class="next">→ S1</span></td></tr>
-    <tr><th>Swipe the sheet down</th><td>Closes if dragged past 30% of the sheet's height, or flicked (over 0.5 px/ms and over 40px). Let go short of that and it springs back. (Tested 10/6: 25% springs back, 35% closes.) <span class="next">→ S1</span></td></tr>
-    <tr><th>Drag the handle up / tap the handle</th><td>Nothing: with no chip on there is no peek, so no second detent. The handle still drags down.</td></tr>
-    <tr><th>Pinch zoom</th><td><span class="open-tag">OPEN</span> The map zooms under the sheet; the sheet stays. The selected pin is not re-centred, so it can end up under the sheet. (Tested 10/6.)</td></tr>
+    <tr><th>Swipe the sheet down</th><td>Closes if dragged past 30% of the sheet's height, or flicked (over 0.5 px/ms and over 40px). Let go short of that and it springs back. <span class="next">→ S1</span></td></tr>
+    <tr><th>Drag the handle up / tap the handle</th><td>Nothing: with no chip on there is no peek, so no second detent. The handle still drags down. (On a phone on its side the sheet is capped at peek and the handle does not expand it.)</td></tr>
+    <tr><th>Pinch zoom</th><td>The map zooms under the sheet; the sheet stays. When the pinch settles the selected pin is re-centred in the safe area: the same routine as a tap, at the stop the visitor is at, stepping in only if the pan alone cannot reach.</td></tr>
     <tr><th>Pan</th><td>Pans in the visible band above the sheet. The sheet stays.</td></tr>
-    <tr><th>Tap a booth row in a list</th><td>On an area list: the booth slides in inside the same sheet; the map pans to it. <span class="next">→ S6</span></td></tr>
-    <tr><th>Tap an art-market marker</th><td>Swaps in that area's list (or the same list, if it is already open). Clears any chip. <span class="next">→ S3</span></td></tr>
-    <tr><th>Tap a booth square on the map</th><td><span class="open-tag">OPEN</span> The sheet swaps to that booth (drops and rises); no list behind it. The map does not pan to it. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap a booth row in a list</th><td>On an area list: the booth PUSHES in from the right inside the same sheet; the map pans to it. <span class="next">→ S6</span></td></tr>
+    <tr><th>Tap an art-market marker</th><td>Swaps in that area's list (or the same list, if it is already open). <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>On an area list, a square in the SAME area pushes that booth with the list kept under it (the back row stays); a square in another area, or any square while a pin card is open, swaps the sheet to the booth with no list. The map pans through the safe-area pan. <span class="next">→ S6 / S7</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>As S1. The sheet stays.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, chip off, overview. <span class="next">→ S1</span></td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map; the sheet is not a history state.</td></tr>
-    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> The sheet stays open. On a phone in landscape the sheet (72% of the height) plus the header leave no visible map, and the selected pin is not re-centred (it ended 68px above the screen in the 10/6 test).</td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td>The sheet stays open. On a phone in landscape (max-height 500px) it is capped at peek height (208px) and cannot expand; the map refits and the selected pin is re-centred in the safe area.</td></tr>
   </table></div>
   <div class="card states"><h4>S4 · Chip on + sheet · peek</h4><table>
     <tr><th>Tap a live pin</th><td>The sheet swaps to the new card, stays at peek; the ring moves; the pin pans into the safe area above the peek sheet. <span class="next">→ S4</span></td></tr>
-    <tr><th>Tap a dimmed pin</th><td>Falls through to the map: a tap on empty map. With a sheet open that closes the sheet and leaves the chip on. (Tested 10/6.) <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>Falls through to the map: a tap on empty map. With a sheet open that closes the sheet and leaves the chip on. <span class="next">→ S2</span></td></tr>
     <tr><th>Tap a chip</th><td>Same chip: sheet closes, chip off. Another chip: sheet closes, switches, overview. <span class="next">→ S1 / S2</span></td></tr>
     <tr><th>Tap empty map</th><td>The sheet closes. The chip stays on, all its pins stay, the map stays. <span class="next">→ S2</span></td></tr>
     <tr><th>Close × / Esc</th><td>Closes the sheet. The chip stays on. <span class="next">→ S2</span></td></tr>
     <tr><th>Swipe the sheet down</th><td>As S3 (30% or a flick closes; shorter springs back). The chip stays on. <span class="next">→ S2</span></td></tr>
     <tr><th>Drag the handle up / tap the handle</th><td>Tap the handle, or pull it up 30px: full height. The map re-centres the pin in the new safe area (it can take one zoom stop in if it must). <span class="next">→ S5</span></td></tr>
-    <tr><th>Pinch zoom</th><td><span class="open-tag">OPEN</span> As S3: the selected pin can end under the sheet.</td></tr>
+    <tr><th>Pinch zoom</th><td>As S3: the selected pin is re-centred once the pinch settles.</td></tr>
     <tr><th>Pan</th><td>As S3.</td></tr>
-    <tr><th>Tap an art-market marker</th><td>Art-market markers are dimmed: a tap on empty map (closes the sheet).</td></tr>
-    <tr><th>Tap a booth square on the map</th><td><span class="open-tag">OPEN</span> Art squares are dimmed (tap on empty map). Food stalls and the other undimmed squares open their booth and clear the chip, as in S2. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap an art-market marker</th><td>Art-market markers are dimmed: a tap on empty map (closes the sheet). <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>Every booth square is dimmed: a tap falls through, which closes the sheet and leaves the chip on. <span class="next">→ S2</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, chip off, overview. <span class="next">→ S1</span></td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map.</td></tr>
-    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S3: the peek sheet is 208px, and in landscape on a 390px-tall phone the header and sheet still crowd the map.</td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet; the chip stays. <span class="next">→ S2</span></td></tr>
+    <tr><th>Rotate the phone</th><td>As S3: peek is also the landscape cap.</td></tr>
   </table></div>
   <div class="card states"><h4>S5 · Chip on + sheet · full</h4><table>
     <tr><th>Tap a live pin</th><td>Swaps to the new card; the sheet stays FULL (the detent persists across swaps within one open). <span class="next">→ S5</span></td></tr>
@@ -522,16 +522,16 @@
     <tr><th>Tap a chip</th><td>As S4. <span class="next">→ S1 / S2</span></td></tr>
     <tr><th>Tap empty map</th><td>As S4. <span class="next">→ S2</span></td></tr>
     <tr><th>Close × / Esc</th><td>As S4. <span class="next">→ S2</span></td></tr>
-    <tr><th>Swipe the sheet down</th><td><span class="open-tag">OPEN</span> Closes (it does not step down to peek first). Whether one swipe from full should stop at peek is for Ernest. <span class="next">→ S2</span></td></tr>
+    <tr><th>Swipe the sheet down</th><td>The first swipe steps down to PEEK; a second swipe closes (one layer at a time, like a tap on empty map). <span class="next">→ S4</span></td></tr>
     <tr><th>Drag the handle up / tap the handle</th><td>Tap the handle: back to peek. Drag up: nothing (already full). <span class="next">→ S4</span></td></tr>
-    <tr><th>Pinch zoom</th><td><span class="open-tag">OPEN</span> As S3.</td></tr>
+    <tr><th>Pinch zoom</th><td>As S3.</td></tr>
     <tr><th>Pan</th><td>As S3.</td></tr>
-    <tr><th>Tap an art-market marker</th><td>As S4.</td></tr>
-    <tr><th>Tap a booth square on the map</th><td><span class="open-tag">OPEN</span> As S4. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap an art-market marker</th><td>As S4. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>As S4. <span class="next">→ S2</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>As S4. <span class="next">→ S1</span></td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map.</td></tr>
-    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S3.</td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet; the chip stays. <span class="next">→ S2</span></td></tr>
+    <tr><th>Rotate the phone</th><td>Rotating to landscape caps the sheet at peek. <span class="next">→ S4</span></td></tr>
   </table></div>
   <div class="card states"><h4>S6 · List → booth (inside the sheet)</h4><table>
     <tr><th>Tap a live pin</th><td>The sheet swaps to the pin's card. The list context is dropped: no back row. <span class="next">→ S3</span></td></tr>
@@ -541,16 +541,16 @@
     <tr><th>Close × / Esc</th><td>Closes the sheet, all the way. Does not step back to the list. <span class="next">→ S1</span></td></tr>
     <tr><th>Swipe the sheet down</th><td>Closes the sheet, all the way. <span class="next">→ S1</span></td></tr>
     <tr><th>Drag the handle up / tap the handle</th><td>Nothing (no peek).</td></tr>
-    <tr><th>Pinch zoom</th><td><span class="open-tag">OPEN</span> As S3: the selected booth can end under the sheet.</td></tr>
+    <tr><th>Pinch zoom</th><td>As S3: the selected booth is re-centred once the pinch settles.</td></tr>
     <tr><th>Pan</th><td>Pans. The booth stays selected (navy square).</td></tr>
-    <tr><th>ItemPager ‹ ›</th><td>Pages to the previous / next booth in this area (wraps inside it). The content changes in place; the pager does not move; the map holds still while the booth is inside the safe area and centres it once if not. The back row is unchanged: paging never adds a back step. <span class="next">→ S6</span></td></tr>
-    <tr><th>Back arrow (‹ list)</th><td>The list slides back in (from the left) at the scroll position you left it; the map stays; the booth is deselected. <span class="next">→ S3</span></td></tr>
+    <tr><th>ItemPager ‹ ›</th><td>Pages to the previous / next booth in this area (wraps inside it). The content changes in place; the ItemPager does not move; the map holds still while the booth is inside the safe area and centres it once if not. The back row is unchanged: paging never adds a back step. <span class="next">→ S6</span></td></tr>
+    <tr><th>Back arrow (‹ list)</th><td>POPS: the booth slides out to the right and the list returns at the scroll position you left it; the sheet's height does not change; the booth is deselected. <span class="next">→ S3</span></td></tr>
     <tr><th>Tap an art-market marker</th><td>Swaps in that area's list. <span class="next">→ S3</span></td></tr>
-    <tr><th>Tap a booth square on the map</th><td><span class="open-tag">OPEN</span> The booth swaps in place and the back row disappears, because the list is dropped. You stepped in through the list but the sheet no longer offers a way back to it. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>A square in the SAME area: the booth swaps in place, the list stays under it, the back row stays. A square in another area (or a food stall): the list is dropped, no back row. The map pans through the safe-area pan. <span class="next">→ S6 / S7</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, chip off, overview. <span class="next">→ S1</span></td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map.</td></tr>
-    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S3.</td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet (not back to the list: one layer per entry). <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S3: capped at peek in landscape. The ItemPager is not shown at peek, so on a phone on its side booths cannot be paged.</td></tr>
   </table></div>
   <div class="card states"><h4>S7 · Booth opened from the map</h4><table>
     <tr><th>Tap a live pin</th><td>The sheet swaps to the pin's card. <span class="next">→ S3</span></td></tr>
@@ -560,34 +560,45 @@
     <tr><th>Close × / Esc</th><td>Closes the sheet. <span class="next">→ S1</span></td></tr>
     <tr><th>Swipe the sheet down</th><td>Closes the sheet. <span class="next">→ S1</span></td></tr>
     <tr><th>Drag the handle up / tap the handle</th><td>Nothing (no peek).</td></tr>
-    <tr><th>Pinch zoom</th><td><span class="open-tag">OPEN</span> As S3.</td></tr>
+    <tr><th>Pinch zoom</th><td>As S3.</td></tr>
     <tr><th>Pan</th><td>Pans.</td></tr>
-    <tr><th>ItemPager ‹ ›</th><td>As S6: pages within the area, in place, pager fixed.</td></tr>
+    <tr><th>ItemPager ‹ ›</th><td>As S6: pages within the area, in place, ItemPager fixed.</td></tr>
     <tr><th>Tap an art-market marker</th><td>Swaps in that area's list. <span class="next">→ S3</span></td></tr>
-    <tr><th>Tap a booth square on the map</th><td>The booth swaps in place. <span class="next">→ S7</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>The booth swaps in place (no list to keep); the map pans through the safe-area pan. <span class="next">→ S7</span></td></tr>
     <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
     <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, overview. <span class="next">→ S1</span></td></tr>
-    <tr><th>Browser / Android back</th><td><span class="open-tag">OPEN</span> Leaves the map.</td></tr>
-    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S3.</td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S6: capped at peek in landscape, and the ItemPager is hidden there.</td></tr>
   </table></div>
   <h3>The agreed rules</h3><div class="card"><ol class="rules">
-    <li><b>Chip on → its pins stay bright and everything else dims.</b> Dimmed pins take no taps.</li>
+    <li><b>Chip on → its pins stay bright and everything else dims.</b> Dimmed pins and every booth square take no taps.</li>
     <li><b>Closing the sheet keeps the chip on.</b> × , swipe down and Esc close the sheet only.</li>
-    <li><b>A tap on empty map clears one layer at a time:</b> first the sheet, then the chip.</li>
+    <li><b>A tap on empty map clears one layer at a time:</b> first the sheet, then the chip. So does the back button.</li>
     <li><b>Tapping the chip again turns it off.</b> The map stays where it is.</li>
-    <li><b>The way you step in is the way you step out.</b> A booth opened from a list has a back arrow to that list; paging with the ItemPager never adds a step.</li>
+    <li><b>Close is always top-right, on the first row under the handle.</b> In every sheet state; it never moves when the content does.</li>
+    <li><b>The way you step in is the way you step out.</b> A booth opened from a list pushes in from the right and ‹ back pops it to the right; the sheet's height is held; paging with the ItemPager never adds a step.</li>
     <li><b>A control you tap repeatedly never moves.</b> The ItemPager is pinned to the bottom of the sheet, above the home bar.</li>
     <li><b>No tap target overlaps another,</b> at any zoom stop, on either map, or on paper. Pins have a 44px hit area (<code>--pin-hit</code>), controls are at least <code>--tap-min</code>.</li>
     <li><b>Times are always readable on one line.</b> A set time is a fixed-width column that never wraps; the artist wraps instead.</li>
     <li><b>A pan or a pinch is never a tap.</b> Only a genuine tap clears a layer.</li>
-    <li><b>Every pan that targets a pin centres it in the map safe area:</b> the visible map between the header + chip row and the top of the sheet.</li>
+    <li><b>Every pan that targets a pin or a booth centres it in the map safe area,</b> and runs again after a pinch settles and after a resize.</li>
+    <li><b>Swipe down from a full chip sheet stops at peek;</b> the second swipe closes. On a phone on its side the sheet is capped at peek.</li>
   </ol></div>
   <h3>Tested explicitly (10/6)</h3><div class="card"><table>
-    <tr><th>Tap a dimmed pin while a chip is on</th><td>Nothing special happens to the pin: it has pointer-events: none, so the tap reaches the map. No sheet open: the chip turns off (390×844, Restrooms on, tapped the Main Stage pin → chip off). Sheet open: the sheet closes and the chip stays on. Consistent with the "one layer at a time" rule; no change made.</td></tr>
-    <tr><th>Pinch-zoom while the sheet is open</th><td>The map zooms and settles on the nearest stop (pinched in from Detail to the overview) and the sheet stays open at 608px. The selected pin is not re-centred in the safe area, so after a zoom it can sit under the sheet. Flagged OPEN.</td></tr>
-    <tr><th>Android / browser back, sheet open or chip on</th><td>The map pushes no history entries, so back leaves the app: the sheet and the chip are not history states. (history.length was unchanged by opening a sheet; going back left the page.) Flagged OPEN: closing the sheet or clearing the chip on back is a decision, not a bug fix.</td></tr>
-    <tr><th>Rotate the phone with the sheet open</th><td>The sheet stays open and the map refits at the same stop. In landscape (844×390) the sheet is 72% of the height (281px) and the header is 120px tall, so the visible map has no height at all and the selected pin ended 68px above the top of the screen: it was not re-centred. Flagged OPEN.</td></tr>
-    <tr><th>Swipe the sheet down partway, then let go</th><td>Dragging the handle (or the title row) slowly: 15% and 25% of the sheet's height spring back; 35% and 50% close it. The threshold is 30%, or a flick faster than 0.5 px/ms that travels at least 40px. Matches the existing behaviour; no change.</td></tr>
+    <tr><th>Tap a dimmed pin while a chip is on</th><td>The pin has pointer-events: none, so the tap reaches the map. No sheet open: the chip turns off (390×844, Restrooms on, tapped the Main Stage pin). Sheet open: the sheet closes and the chip stays on. Every booth square now behaves the same way (round 2): e2e taps one for real with and without a sheet.</td></tr>
+    <tr><th>Pinch-zoom while the sheet is open</th><td>The map zooms and settles on the nearest stop and the sheet stays open. When it settles the selected booth is re-centred above the sheet (390×844, pinched from Detail to the Booths stop with a booth sheet open; that stop has no vertical pan on a tall phone, so it stepped in one stop to reach). Round 1 left the booth under the sheet.</td></tr>
+    <tr><th>Android / browser back, sheet open or chip on</th><td>One history entry per layer. Back with a sheet open closes the sheet and stays on the map; with a chip and a sheet it closes the sheet, then clears the chip; with nothing open it leaves. A layer closed by × or a tap takes its entry with it (no stale entry), and open / close / open in quick succession still closes the new sheet on back.</td></tr>
+    <tr><th>Rotate the phone with the sheet open</th><td>390×844 → 844×390 with a booth sheet open: the sheet is capped at 184px (peek is 208px), the map refits and the booth ends at y 154–172 with the header ending at 120 and the sheet starting at 206. In round 1 the sheet was 281px and the booth ended 68px above the screen.</td></tr>
+    <tr><th>Swipe the sheet down partway, then let go</th><td>Dragging the handle (or the header) slowly: 15% and 25% of the sheet's height spring back; 35% and 50% close it. The threshold is 30%, or a flick faster than 0.5 px/ms that travels at least 40px. From a full sheet with a chip on, the first swipe steps down to peek and the second closes.</td></tr>
+  </table></div>
+  <h3>Decisions (Ernest, 10/6) and what is still OPEN</h3><div class="card"><table>
+    <tr><th>Browser / Android back</th><td>Closes the sheet first, then clears the chip, then leaves the page: one history entry per layer. <span class="next">4.1 · <code>useLayerHistory</code></span></td></tr>
+    <tr><th>Pinch or rotate with a sheet open</th><td>The safe-area pan re-runs after a pinch settles and after a resize. On a phone in landscape the sheet opens at and is capped at peek height. <span class="next">4.2</span></td></tr>
+    <tr><th>Booth squares with a chip on</th><td>Every booth square is dimmed (food, Kidlandia, unnumbered included). A tap behaves like a tap on a dimmed pin; no booth handler clears the chip. <span class="next">4.3</span></td></tr>
+    <tr><th>Booth square tap on the map</th><td>Pans through the same safe-area pan as a pin. <span class="next">4.4</span></td></tr>
+    <tr><th>Booth square tapped while a booth-from-list is open</th><td>Same area: the list stays under it and the back row stays. Different area: the list is dropped. <span class="next">4.5 · <code>boothInArea</code></span></td></tr>
+    <tr><th>Swipe down from a full sheet with a chip on</th><td>The first swipe stops at peek, the second closes. <span class="next">4.6</span></td></tr>
+    <tr><th><span class="open-tag">OPEN</span> The ItemPager on a phone on its side</th><td>Landscape caps the sheet at peek height and the ItemPager is not shown at peek, so booths cannot be paged in landscape. Show it at peek in landscape only, or leave paging to portrait?</td></tr>
   </table></div>
 </div>
 

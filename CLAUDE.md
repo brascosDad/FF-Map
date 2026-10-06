@@ -51,6 +51,12 @@ nudge goes into `docs/pr-notes.md` on the branch, overwritten each PR — the PR
 summarise it, the file is the record. If an answer is needed before work can continue, the chat
 reply ends with a line starting `BLOCKED:`.
 
+**6. One name per component, used the same way everywhere** (Ernest, 10/6, round 2): in the code,
+the CSS (`.ffc-<name>`), the tests, the docs and the design-system page. The **Names** table at the top
+of `design-system.html` §3 is the list (ItemPager, Handle, Header, BoothRow, ArtistLine, ScheduleRow …);
+check it before adding a class or a word for something, and fix a stray old name when you see one.
+The component is **ItemPager** — never "pager", "stepper" or "booth nav".
+
 **4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
 phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
 any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
@@ -199,18 +205,24 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
      stays where it is.
   6. **A pan or pinch that starts on empty map is never a tap.** Only a genuine tap (no movement
      past the usual slop) counts for step 4.
-  **10/6 additions** (Ernest, iPhone walkthrough; full spec in `docs/interaction-states.md` and
-  `design-system.html` §6): a sheet that opens **while a chip is on opens at peek height**
-  (`--sheet-peek-height`) so the map stays visible — drag the handle up or tap it for full, tap again
-  for peek; no chip, no peek. **One sheet, a stack one level deep:** a booth opened from a row in an
-  area's list slides in inside the same sheet with a back row (`‹ <area>`) to the list at the same
-  scroll position; the ItemPager pages sideways and never adds a back step ("the way you step in is
-  the way you step out"). **The ItemPager is a footer pinned to the bottom of the sheet** and a
-  booth's detail holds `--sheet-detail-min-height`: a control you tap repeatedly never moves. **Every
-  pan that targets a pin centres it in the map safe area** (`--map-inset-top` / `--map-inset-bottom`,
-  measured at runtime) and the pan limits run past the festival by the same amounts. Set times never
-  wrap. The close × is on the title line; the handle stays a thin strip. Sheets carry no provenance
-  line (see Data).
+  **10/6 additions** (Ernest, iPhone walkthrough, rounds 1 and 2; full spec in
+  `docs/interaction-states.md` and `design-system.html` §6): a sheet that opens **while a chip is on
+  opens at peek height** (`--sheet-peek-height`) so the map stays visible — drag the handle up or tap
+  it for full, tap again for peek; no chip, no peek; **on a phone on its side the sheet is capped at
+  peek**. A swipe down from a full chip sheet **stops at peek; the second closes**. **Close is always
+  top-right, on the first row under the handle**, in every sheet state (a top-level sheet's first row
+  is its title line; a pushed detail's is `‹ back`, the booth's own title the row below). **One sheet,
+  a stack one level deep, push from the right / pop to the right, height held**: a booth opened from
+  a row in an area's list (or a square in the same area on the map) slides in from the right inside
+  the same sheet at the list's height; `‹ back` slides it out to the right and the list returns at
+  its scroll position; the ItemPager pages sideways and never adds a step ("the way you step in is the
+  way you step out"). **The ItemPager is a footer pinned to the bottom of the sheet.** **Every pan
+  that targets a pin or a booth centres it in the map safe area** (`--map-inset-top` /
+  `--map-inset-bottom`, measured at runtime), the pan limits run past the festival by the same
+  amounts, and the pan runs again after a pinch settles and after a resize. **Every booth square is
+  dimmed with a chip on** and a tap on one falls through like a dimmed pin. **Back (the phone's back
+  gesture) closes the sheet first, then clears the chip, then leaves the page**: one history entry per
+  layer (`useLayerHistory`). Set times never wrap. Sheets carry no provenance line (see Data).
   The same pan-into-view applies to a pin tapped with no chip on: centred above the sheet and
   selected while the sheet is open. One tapped pin wears the ring; a category row in the
   directory (no one pin) rings every pin of that category. e2e drives the Water and Restrooms
@@ -432,14 +444,21 @@ Figma workflow), and PR #8 (booth + beta fixes):
   for every control and `--pin-hit` for every pin (nothing waits longer than before: pin hit areas
   were already 44); the **map safe area** and pan limits (the north-most restroom can reach it —
   reproduced on short phones, 390×550 and 375×560, where it sat under the header); **one sheet,
-  list → booth inside it with a back row**; the **ItemPager** in a pinned footer;
-  **peek** when a chip is on; the close × on the title line; sheet/panel styles moved from `map.css`
-  into `components.css`; the art list leads with the artist; set times never wrap; no provenance
-  footer; restroom / water / first-aid copy. **`docs/interaction-states.md` lists every state,
-  action and transition; the cells marked OPEN are Ernest's to decide** (browser back, pinch and
-  rotate with a sheet open, a food-stall tap clearing a chip, a booth-square tap not panning, swipe
-  down from a full chip sheet). No swipe-to-page on the ItemPager: a horizontal swipe on the body
-  fights the vertical scroll and the drag-to-dismiss, and the brief said only if clean.
+  list → booth inside it with a back row**; the **ItemPager** in a pinned footer; **peek** when a
+  chip is on; sheet/panel styles moved from `map.css` into `components.css`; the art list leads
+  with the artist; set times never wrap; no provenance footer; restroom / water / first-aid copy;
+  `docs/interaction-states.md` lists every state, action and transition.
+- 10/6 round 2 (same PR): **one name per component** (a Names table in the design system; classes
+  renamed to match: `.ffc-itempager`, `.ffc-panel__handle`, `__header`, `__titleline`, `__body`,
+  `__footer`, `.ffc-boothrow`, `.ffc-artistline` …); **Close fixed top-right on the first row**;
+  **push / pop with the height held**; **ArtistLine** in the booth detail too; the six OPEN cells
+  decided and built (back per layer, re-pan after pinch/rotate + landscape peek cap, every booth
+  square dimmed with a chip, booth squares pan, same-area list kept, swipe → peek); copy pass (the
+  stale "placements arrive later this week" line gone; Beer and Bike valet say each thing once);
+  the design-system Panel demo is the live anatomy. **Still OPEN:** the ItemPager is hidden at peek,
+  so booths cannot be paged on a phone on its side. `vendors.json`'s own `note` still says "later this
+  week" — Cowork's file, no sheet shows it. No swipe-to-page on the ItemPager: a horizontal swipe
+  fights the body's scroll and the drag-to-dismiss.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts

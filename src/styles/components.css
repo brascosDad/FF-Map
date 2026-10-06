@@ -502,8 +502,7 @@
 
 /* ===== ItemPager ==========================================================
    Previous / "11 of 139" / next, in the sheet's footer. It pages BETWEEN items
-   (booths in a run), so it is not a Stepper -- in Apple's HIG a stepper is a
-   -/+ value control. The map is too dense to tap a booth reliably, so this is
+   (booths in a run); it is not a -/+ value control. The map is too dense to tap a booth reliably, so this is
    the primary way through a row; both buttons are full --tap-min targets.
    The rule it carries: a control you tap repeatedly never moves. So it lives
    in .ffc-panel__footer, pinned to the bottom of the sheet above the home

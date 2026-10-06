@@ -125,9 +125,15 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
 - [ ] **Peek (10/6, on a real iPhone).** Restrooms chip on → tap a restroom: the sheet opens short
       with the map above it, and no ItemPager. Tap the handle: full height. Tap it again: back to peek.
       Drag it up: full. With no chip on, a sheet opens full and the handle only drags down.
-- [ ] **One sheet, with a way back.** Art market → tap a booth in the list: the sheet stays, slides to
-      the booth, and `‹ <area>` returns to the list at the same scroll position. Page with ‹ › in the
-      footer a few times: `‹ <area>` still goes straight back to the list.
+- [ ] **One sheet, push and pop.** Art market → tap a booth in the list: the booth slides in from the
+      RIGHT, the sheet does not change height, `‹ back` is top-left and × top-right. Tap ‹: the booth
+      slides out to the right and the list is back at the same scroll position. Page with ‹ › in the
+      footer a few times: `‹ back` still goes straight back to the list.
+- [ ] **The × never moves.** Open a pin card, a stage, a list, a booth from the list: the × is in the
+      same top-right spot every time.
+- [ ] **Back.** Restrooms chip on, tap a restroom, use the phone's back gesture: the sheet closes,
+      the chip stays. Back again: the chip clears. Back again: you leave the map.
+- [ ] **Swipe down twice** from a full chip sheet: the first stops at peek, the second closes.
 - [ ] **The north-most restroom** (Restrooms chip on, Safari with its bars showing): tap it and it
       ends clear of the chips, centred in the map above the sheet.
 - [ ] **Swipe down** on the handle or the title row closes the sheet; the chip stays on.

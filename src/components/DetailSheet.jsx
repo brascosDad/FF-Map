@@ -309,8 +309,7 @@ function boothPosition(booth) {
 
 /**
  * ItemPager: previous / "11 of 139" / next. It pages between items (booths in
- * a run), which is why it is not called a Stepper -- in Apple's HIG a stepper
- * is a -/+ value control. It lives in the sheet's FOOTER, pinned to the
+ * a run); it is not a -/+ value control. It lives in the sheet's FOOTER, pinned to the
  * bottom, so it never moves while you tap it: a control you tap repeatedly
  * never moves (B2). The map is too dense to tap a booth reliably, so this is
  * the real way through a row; it wraps inside this area only, so running off

@@ -71,7 +71,7 @@
   --ff-white: #FFFFFF;
   --sand-100: #F0EDE4;   /* dividers, pressed fills */
   --sand-200: #E0DCCB;   /* control borders */
-  --sand-300: #D7D2C2;   /* chip borders, sheet grip */
+  --sand-300: #D7D2C2;   /* chip borders, the sheet handle */
   --slate-500: #636B7B;  /* muted text — 5.4:1 on white */
   --slate-600: #5C6570;  /* street names on the map */
   --slate-700: #4A5262;  /* body text */
@@ -193,7 +193,7 @@
      minimum).
        --tap-min  the floor for every CONTROL: chips, the sheet's close, the zoom
                   buttons, the ItemPager's buttons. It replaces the 40px floor
-                  the zoom stack and the stepper used to sit on.
+                  the zoom stack and the ItemPager used to sit on.
        --pin-hit  the invisible hit area centred on every map pin. The visible
                   marker (--pin-size) is unchanged; MapCanvas draws this circle
                   and the e2e no-overlap rule measures it, at every stop. */
@@ -215,7 +215,7 @@
   --sheet-peek-height: 208px;
   /* A booth's detail sheet never gets shorter than this, whatever the booth's
      text: stepping through a run must not change the sheet's height, or the
-     pager's buttons move under the thumb (B2). Sized so the longest booth
+     ItemPager's buttons move under the thumb (B2). Sized so the longest booth
      entry at 375px fits above the footer without scrolling. */
   --sheet-detail-min-height: 300px;
   /* The map safe area (A2): what is left of the map between the header + chip
