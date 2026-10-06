@@ -585,8 +585,8 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   }, [isOpen, docked, onClose]);
 
   // The handle is a real handle. Pull it down past a third of the sheet's
-  // height, or flick it, and the sheet closes; let go short of that and it
-  // springs back. Pull it UP from peek and the sheet opens to full. A press that
+  // height, or flick it, and the sheet closes (from full with a chip on: steps
+  // down to peek first); let go short of that and it springs back. Pull it UP from peek and the sheet opens to full. A press that
   // barely moves is a tap: it cycles peek <-> full where a peek exists. Keyboard
   // and screen-reader activation arrive as a click with no pointer (detail 0).
   function onHandleDown(e) {
@@ -624,7 +624,14 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     // A flick still has to travel: an abrupt 15px twitch is a fast pointer, not
     // an intent to dismiss, and treating it as one made the sheet feel jumpy.
     const dy = d.dy || 0;
-    if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) { onClose(); return; }
+    if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) {
+      // One layer at a time, like everything else: from FULL with a chip on the
+      // first swipe steps down to peek; a swipe from peek (or from a sheet with
+      // no peek) closes.
+      if (peekable && detent === 'full') setDetentTo('peek');
+      else onClose();
+      return;
+    }
     if (peekable && detent === 'peek' && d.raw < -PULL_UP_PX) { setDetentTo('full'); return; }
     if (e.currentTarget.classList.contains('ffc-panel__handle') && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
   }

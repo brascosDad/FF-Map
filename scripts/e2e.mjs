@@ -1490,12 +1490,18 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     return c ? { top: c.top, bottom: c.bottom, sheetTop: document.querySelector('.sheet.open').getBoundingClientRect().top } : null;
   });
   check(`${name}: B3 after the sheet grows the pin is still above it`, inView && inView.bottom <= inView.sheetTop, JSON.stringify(inView));
-  // Swipe down from full closes.
-  const g3 = await p.locator('.sheet .ffc-panel__handle').boundingBox();
-  await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2); await p.mouse.down();
-  for (const dy of [30, 90, 180, 260]) await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2 + dy);
-  await p.mouse.up(); await p.waitForTimeout(600);
-  check(`${name}: B3 swiping the handle down closes the sheet, the chip stays on`, (await p.locator('.sheet.open').count()) === 0 && (await p.locator('.ffc-chip[aria-pressed="true"]').count()) === 1);
+  // Swipe down from FULL steps down to peek (the first layer); a second swipe closes.
+  const swipeDown = async () => {
+    const g3 = await p.locator('.sheet .ffc-panel__handle').boundingBox();
+    await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2); await p.mouse.down();
+    for (const dy of [30, 90, 180, 260]) await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2 + dy);
+    await p.mouse.up(); await p.waitForTimeout(650);
+  };
+  await swipeDown();
+  const stepped = await sheetH();
+  check(`${name}: B3 the first swipe down from full stops at peek`, (await p.locator('.sheet.open').count()) === 1 && Math.abs(stepped - peek) <= 4, `${dragged} -> ${stepped}px (peek ${peek}px)`);
+  await swipeDown();
+  check(`${name}: B3 the second swipe down closes the sheet, the chip stays on`, (await p.locator('.sheet.open').count()) === 0 && (await p.locator('.ffc-chip[aria-pressed="true"]').count()) === 1);
   await p.close();
 }
 
