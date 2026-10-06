@@ -418,7 +418,7 @@
    The header is pinned (only the body scrolls) and a drag that starts on it
    pulls the sheet like the handle does, so touch-action: none. */
 .ffc-panel__header { position: relative; flex: none; padding: 0 var(--panel-pad); touch-action: none; }
-.ffc-panel--bottom .ffc-panel__header .ffc-panel__titleline { padding-right: var(--tap-min); }
+.ffc-panel:not(.ffc-panel--right) .ffc-panel__header .ffc-panel__titleline { padding-right: var(--tap-min); }
 /* Docked: the header sits directly under the back row, so it needs its own air. */
 .ffc-panel--right .ffc-panel__header { padding-top: var(--space-3); }
 .ffc-panel__close {

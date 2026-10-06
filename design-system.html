@@ -28,6 +28,10 @@
   code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--sand-100); padding: 1px 5px; border-radius: 5px; }
   .use { border-left: 3px solid var(--ff-teal); padding-left: var(--space-3); margin: var(--space-3) 0; }
   .use b { color: var(--text-strong); }
+  .demo { position: relative; width: 100%; max-width: 375px; border: 1px solid var(--border-control); border-radius: var(--radius-lg); overflow: hidden; }
+  .demo-grid { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-start; }
+  .demo-fig { margin: 0; flex: 0 1 375px; min-width: 0; }
+  .demo-fig figcaption { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-2); }
   .open-tag { display: inline-block; font: var(--weight-black) 10px/1 var(--font-ui); letter-spacing: .06em; padding: 3px 6px; border-radius: var(--radius-pill); background: var(--ff-coral); color: var(--ff-navy); vertical-align: 1px; }
   .states h4 { margin: 0 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.3 var(--font-ui); color: var(--text-strong); }
   .states th { width: 28%; }
@@ -133,6 +137,23 @@
 
   <h2>3 · Components</h2>
 
+  <h3>Names</h3>
+  <div class="card">
+    <p style="margin-top:0"><b>One name per component, used the same way everywhere:</b> in the code, the CSS (<code>.ffc-&lt;name&gt;</code>), the tests, the docs and this page. Before adding a class or a word for something, check this table.</p>
+    <table>
+      <tr><th>FilterChip</th><td>The category filter pill in the header.</td></tr>
+      <tr><th>IconButton</th><td>Round, square and ghost icon buttons.</td></tr>
+      <tr><th>ZoomControl</th><td>The in / out / reset stack.</td></tr>
+      <tr><th>MapPin</th><td>A category pin on the map.</td></tr>
+      <tr><th>Panel</th><td>The sheet and the docked panel. Parts: <b>Handle</b> · <b>Header</b> (back row, title line, close) · <b>Body</b> · <b>Footer</b>. Variants: <b>bottom sheet</b>, <b>docked panel</b>.</td></tr>
+      <tr><th>ItemPager</th><td>Previous / "11 of 139" / next, in the Panel's footer. Pages between items. Nothing else is called a pager, stepper or booth nav.</td></tr>
+      <tr><th>BoothRow · ArtistLine</th><td>A row in an area's booth list; the artist-first name hierarchy inside it and in a booth's detail.</td></tr>
+      <tr><th>ScheduleRow · DayHeading · ListRow</th><td>Rows in a stage lineup, its day headings, and a bulleted line.</td></tr>
+      <tr><th>PoiRow</th><td>A row in the docked directory.</td></tr>
+      <tr><th>Legend</th><td>The colour key.</td></tr>
+    </table>
+  </div>
+
   <h3>FilterChip</h3>
   <div class="card">
     <div class="row">
@@ -178,11 +199,11 @@
     </p>
   </div>
 
-  <h3>Directory row</h3>
+  <h3>PoiRow</h3>
   <div class="card">
     <div style="max-width:340px">
       <button class="ffc-poirow">
-        <span class="dot" style="width:28px;height:28px;flex:0 0 28px;border-radius:var(--radius-pill);background:var(--pin-stage)"></span>
+        <span class="ffc-poirow__badge" style="background:var(--pin-stage)"></span>
         <span class="ffc-poirow__text"><b>Main Stage</b><em>Music both days</em></span>
         <span class="ffc-poirow__go">›</span>
       </button>
@@ -212,37 +233,107 @@
       <tr><th>Sizes</th><td>‹ and › are <code>--tap-min</code> (44px). The count is centred and says only where you are: "11 of 139".</td></tr>
       <tr><th>The rule</th><td><b>A control you tap repeatedly never moves.</b> The footer is pinned and a booth's detail holds <code>--sheet-detail-min-height</code>, so a short entry cannot change the sheet's height under your thumb. Longer content scrolls inside the body, above the footer.</td></tr>
       <tr><th>Wraps</th><td>Inside one area — running off the end of the car-path market returns to its start rather than spilling into the food trucks.</td></tr>
-      <tr><th>Not here</th><td>The back arrow (‹ Art Market) is a different control, at the top of the sheet: it returns to the list. Paging never adds a back step.</td></tr>
+      <tr><th>Not here</th><td>The back arrow is a different control: <b>‹ back</b> sits at the left of the Panel's header row and returns to the list. Paging with the ItemPager never adds a back step.</td></tr>
     </table>
   </div>
 
   <h3>Panel</h3>
   <div class="card">
-    <table>
-      <tr><th>bottom</th><td>below 1024px — full width on phone, 560 max centred on tablet (768–1023), with a handle. <code>role="dialog"</code>, <code>hidden</code> when closed so it leaves the tab order, Esc closes, focus returns to the pin. Two detents: <b>full</b> and <b>peek</b> (see below).</td></tr>
-      <tr><th>right</th><td>1024px and up — floating, 20px inset, persistent list of all locations with the legend in its footer. Tapping a pin or row swaps to detail with a back button.</td></tr>
-      <tr><th>Anatomy</th><td>handle (a thin strip, <code>--tap-min</code> tall, 4px bar — kept for resizing and for screen readers) → back row (only when there is a list to go back to) → <b>title line</b>: 32px badge · title · <b>close ×</b> right-aligned, <code>--tap-min</code> → subtitle → scrolling body → optional footer (the ItemPager). Only the body scrolls.</td></tr>
-      <tr><th>Navigation</th><td><b>One sheet, a stack one level deep.</b> An area's booth list and a booth opened from it are two levels of the same sheet: tapping a row slides the content to the booth (a short horizontal slide; reduced motion is a crossfade) and a back row (<code>‹ Candler Park Dr · Art Market</code>) returns to the list at the same scroll position. The sheet never closes and reopens. <b>The way you step in is the way you step out</b>; the ItemPager pages sideways and never adds a back step. A booth opened from its square on the map has no list behind it, so no back row — close it.</td></tr>
-      <tr><th>Detents</th><td><b>Full</b> (<code>--sheet-max-height</code>) is how a sheet opens. <b>Peek</b> (<code>--sheet-peek-height</code>: the title line plus a line or two) is how it opens while a filter chip is on, so the map stays visible. Drag the handle up, or tap it, for full; tap again for peek. Swipe down closes from either. The ItemPager shows at full height only.</td></tr>
-      <tr><th>Tokens</th><td><code>--sheet-max-height</code> · <code>--sheet-peek-height</code> · <code>--sheet-detail-min-height</code> (a booth's detail never gets shorter, so the footer never moves) · <code>--map-inset-top</code> / <code>--map-inset-bottom</code> (the map safe area, measured at runtime). Component tokens on <code>.ffc-panel</code>: <code>--panel-bg</code> <code>--panel-fg</code> <code>--panel-title</code> <code>--panel-muted</code> <code>--panel-rule</code> <code>--panel-radius</code> <code>--panel-shadow</code> <code>--panel-pad</code> <code>--panel-motion</code> <code>--panel-accent</code>, each pointing at a semantic token. No sheet styling lives in <code>map.css</code>.</td></tr>
-      <tr><th>Safe area</th><td>Every pan or zoom that targets a pin (pin tap, stage tap, list row, ItemPager step) centres the pin in the <b>visible map between the two insets</b>: the bottom edge of the header + chip row, and the top of the sheet at its current height (0 when closed). The pan limits run past the festival by the same amounts so any pin can reach it.</td></tr>
+    <p style="margin-top:0">One component, two variants, chosen by viewport. The <b>bottom sheet</b> (below 1024px: full width on a phone, 560 max centred on a tablet) and the <b>docked panel</b> (1024px and up: floating beside the map, persistent, the directory is its resting state). In the code and the tests <code>.sheet</code> is the hook for the bottom variant; the component is the Panel.</p>
+    <div class="demo-grid">
+      <figure class="demo-fig">
+        <div class="ffc-panel demo">
+          <button class="ffc-panel__handle" aria-label="Sheet handle"><span class="ffc-panel__handle-bar"></span></button>
+          <div class="ffc-panel__header">
+            <div class="ffc-panel__stage"><div class="ffc-panel__layer">
+              <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--pin-stage)"></span><h3 class="ffc-panel__title">Main Stage</h3></div>
+              <div class="ffc-panel__sub">ANNA K Intown / SweetWater · Confirmed 2026 schedule</div>
+            </div></div>
+            <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
+          </div>
+          <div class="ffc-panel__body">
+            <div class="ffc-listrow" style="--sheet-accent:var(--pin-stage)"><span class="ffc-listrow__bullet"></span>North end of the lawn, below the pool</div>
+            <div class="ffc-dayheading">Saturday</div>
+            <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">10:30–11:30</span><span class="ffc-schedulerow__act">Atlanta Irish Dance</span></div>
+            <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">Noon–1:00</span><span class="ffc-schedulerow__act">Peet Midnite &amp; The Back Taxes</span></div>
+          </div>
+        </div>
+        <figcaption><b>Top-level, full.</b> Handle, then the header row: title line at the left, close at the right.</figcaption>
+      </figure>
+      <figure class="demo-fig">
+        <div class="ffc-panel demo">
+          <button class="ffc-panel__handle" aria-label="Sheet handle"><span class="ffc-panel__handle-bar"></span></button>
+          <div class="ffc-panel__header">
+            <div class="ffc-panel__stage"><div class="ffc-panel__layer">
+              <button class="ffc-panel__back"><span aria-hidden="true">‹</span> Candler Park Dr · Art Market</button>
+              <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--cat-booth)"></span><h3 class="ffc-panel__title">Booth 87</h3></div>
+              <div class="ffc-panel__sub">Candler Park Dr · Art Market</div>
+            </div></div>
+            <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
+          </div>
+          <div class="ffc-panel__body" style="min-height:96px">
+            <div class="ffc-artistline"><span class="ffc-artistline__name">Dan Vogel</span><em class="ffc-artistline__sub">Dan Vogel Art</em></div>
+          </div>
+          <div class="ffc-panel__footer"><div class="ffc-itempager"><button aria-label="Previous booth">‹</button><span class="ffc-itempager__pos">6 of 58</span><button aria-label="Next booth">›</button></div></div>
+        </div>
+        <figcaption><b>Pushed detail.</b> The header row holds <b>‹ back</b> at the left and the same close at the right; the booth's own title line is the row below. ItemPager in the footer.</figcaption>
+      </figure>
+      <figure class="demo-fig">
+        <div class="ffc-panel demo" style="height:208px">
+          <button class="ffc-panel__handle" aria-label="Expand the sheet"><span class="ffc-panel__handle-bar"></span></button>
+          <div class="ffc-panel__header">
+            <div class="ffc-panel__stage"><div class="ffc-panel__layer">
+              <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--pin-restroom)"></span><h3 class="ffc-panel__title">Restrooms</h3></div>
+              <div class="ffc-panel__sub">Five-toilet banks</div>
+            </div></div>
+            <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
+          </div>
+          <div class="ffc-panel__body">
+            <div class="ffc-listrow" style="--sheet-accent:var(--pin-restroom)"><span class="ffc-listrow__bullet"></span>Just inside the McLendon entrance, by art booth 54</div>
+          </div>
+        </div>
+        <figcaption><b>Peek.</b> <code>--sheet-peek-height</code>: the title line plus a line or two, so the map stays visible. No ItemPager at peek.</figcaption>
+      </figure>
+    </div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>Rule · close</th><td><b>Close is always top-right, on the first row under the handle.</b> In every sheet state, so it never moves when the content does. (Apple's HIG puts the dismiss control in a sheet's top-trailing corner and navigation in the top-leading corner, on the same row.) It is not part of either layer, so it does not animate when you push or pop.</td></tr>
+      <tr><th>Anatomy</th><td><code>.ffc-panel__handle</code> (a <code>--tap-min</code> band holding a 4px <code>__handle-bar</code>; a button with an accessible name) → <code>.ffc-panel__header</code> (the stage holding the back row and/or the <code>__titleline</code>: <code>__badge</code>, <code>__title</code>, then <code>__sub</code>; plus <code>__close</code>) → <code>.ffc-panel__body</code> (the only thing that scrolls) → <code>.ffc-panel__footer</code>. The docked variant adds <code>__masthead</code> (the resting header) and a <code>__back</code> row.</td></tr>
+      <tr><th>Navigation</th><td><b>One sheet, a stack one level deep: push from the right, pop to the right, height held.</b> Tapping a booth in an area's list <i>pushes</i>: the booth slides in from the right while the list shifts a little left underneath it. <b>‹ back</b> <i>pops</i>: the booth slides out to the right and the list returns at its previous scroll position. The sheet's height does not change (<code>data-stack</code> holds it at the list's height; the booth's content scrolls if it must) and the header eases between its two lengths. ItemPager steps pan sideways and never add a back step. <b>The way you step in is the way you step out.</b> Reduced motion: a crossfade, no slide.</td></tr>
+      <tr><th>Detents</th><td><b>Full</b> (<code>--sheet-max-height</code>) is how a sheet opens. <b>Peek</b> (<code>--sheet-peek-height</code>) is how it opens while a filter chip is on. Drag the handle up, or tap it, for full; tap again for peek. A swipe down closes (from peek) or steps down to peek (from full, with a chip on).</td></tr>
+      <tr><th>Tokens</th><td>Sheet: <code>--sheet-max-height</code> <code>--sheet-peek-height</code> <code>--sheet-detail-min-height</code> (a booth opened from the map never gets shorter, so the footer never moves) <code>--shadow-push</code>. Map safe area (measured at runtime): <code>--map-inset-top</code> <code>--map-inset-bottom</code>. On <code>.ffc-panel</code>, each pointing at a semantic token: <code>--panel-bg</code> <code>--panel-fg</code> <code>--panel-title</code> <code>--panel-muted</code> <code>--panel-rule</code> <code>--panel-radius</code> <code>--panel-shadow</code> <code>--panel-pad</code> <code>--panel-motion</code> <code>--panel-accent</code> <code>--panel-push-shift</code>.</td></tr>
+      <tr><th>Safe area</th><td>Every pan or zoom that targets a pin or a booth (a pin tap, a booth square, a list row, an ItemPager step) centres it in the <b>visible map between the two insets</b>: the bottom edge of the header + chip row, and the top of the sheet at its current height (0 when closed). The pan limits run past the festival by the same amounts so any pin can reach it.</td></tr>
     </table>
-    <div class="stage" style="margin-top:var(--space-3)">
-      <div class="ffc-panel" style="border:1px solid var(--border-control);border-radius:var(--radius-md)">
-        <div class="ffc-panel__grip"></div>
-        <div class="ffc-panel__head">
-          <span class="ffc-panel__badge" style="background:var(--pin-stage)"></span>
-          <div><h4 class="ffc-panel__title">Main Stage</h4><p class="ffc-panel__sub">Saturday · 10:30–11:30</p></div>
-        </div>
-        <div class="ffc-panel__body">
-          <div class="ffc-dayheading">Saturday</div>
-          <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">10:30 AM</span><span class="ffc-schedulerow__act">Opening set</span></div>
-          <div class="ffc-schedulerow ffc-schedulerow--open"><span class="ffc-schedulerow__time">11:30 AM</span><span class="ffc-schedulerow__act">Not yet announced</span></div>
-          <div class="ffc-listrow"><span class="ffc-listrow__bullet" style="--bullet:var(--pin-stage)"></span><span>Bring a chair — no seating provided.</span></div>
-        </div>
-        <div class="ffc-panel__foot">2025 list, kept as a structural placeholder.</div>
+  </div>
+
+  <h3>BoothRow and ArtistLine</h3>
+  <div class="card">
+    <div class="ffc-panel demo" style="--sheet-accent:var(--cat-booth)">
+      <div class="ffc-boothlist" style="padding:0 var(--space-4)">
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">17</span><span class="ffc-boothrow__who"><span class="ffc-artistline"><span class="ffc-artistline__name">Amy Clark</span><em class="ffc-artistline__sub">Clark Ceramics</em></span></span></button>
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">18</span><span class="ffc-boothrow__who"><span class="ffc-artistline"><span class="ffc-artistline__name">Sergey Cherep</span></span></span></button>
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">11</span><span class="ffc-boothrow__star" aria-hidden="true">★</span><span class="ffc-boothrow__who"><span class="ffc-artistline"><span class="ffc-artistline__name">Madison O'Brien</span><em class="ffc-artistline__sub">Madison O'Brien Art</em></span></span></button>
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">57</span><span class="ffc-boothrow__who"><em>Sponsor</em></span></button>
       </div>
     </div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>BoothRow</th><td>A row in an area's booth list: number, then who is in it. A real button, <code>--tap-min</code> tall. <code>.ffc-boothrow</code> › <code>__number</code> · <code>__who</code> · <code>__star</code> (a featured booth).</td></tr>
+      <tr><th>ArtistLine</th><td><b>The artist leads; the business is secondary.</b> The same component is used in a booth's detail, so the list and the detail never disagree. <code>.ffc-artistline</code> › <code>__name</code> (primary) · <code>__sub</code> (secondary). When the artist and the business are the same there is one line.</td></tr>
+      <tr><th>Tokens</th><td><code>--artist-name-size</code> (<code>--text-lg</code>) · <code>--artist-name-weight</code> (<code>--weight-bold</code>) · <code>--artist-name-color</code> (<code>--text-strong</code>) · <code>--artist-sub-size</code> (<code>--text-sm</code>) · <code>--artist-sub-weight</code> (<code>--weight-medium</code>) · <code>--artist-sub-color</code> (<code>--text-muted</code>). No new type step: the scale already had both.</td></tr>
+      <tr><th>Don't</th><td>Lead with the business, or style a name locally in one list. A long name may wrap; that is allowed.</td></tr>
+    </table>
+  </div>
+
+  <h3>ScheduleRow, DayHeading and ListRow</h3>
+  <div class="card">
+    <div class="ffc-panel demo"><div class="ffc-panel__body">
+      <div class="ffc-dayheading" style="margin-top:0">Sunday</div>
+      <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">11:30–12:30</span><span class="ffc-schedulerow__act">An artist with a rather long name that has to wrap onto a second line</span></div>
+      <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">Noon–1:00</span><span class="ffc-schedulerow__act">Peet Midnite &amp; The Back Taxes</span></div>
+    </div></div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>Rule</th><td><b>Times are always readable on one line.</b> The time is a fixed-width column (<code>--time-col</code>, <code>6.5em</code>, sized to the longest range in the lineup) that never wraps: <code>white-space: nowrap</code>, tabular numerals. The artist takes the width that is left and wraps if it has to.</td></tr>
+      <tr><th>Components</th><td><code>.ffc-dayheading</code> (sentence case, never uppercase-tracked) · <code>.ffc-schedulerow</code> › <code>__time</code> · <code>__act</code> · <code>--open</code> · <code>.ffc-listrow</code> › <code>__bullet</code> (the colour of what you opened, <code>--sheet-accent</code>) · <code>--where</code> (a pin's location line).</td></tr>
+    </table>
   </div>
 
   <h3>Legend · scale · brand</h3>
