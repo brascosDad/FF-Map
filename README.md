@@ -19,6 +19,11 @@ npm run preview   # serve the production build locally
 
 ## What's real vs. placeholder
 
+Where each fact came from is recorded here and in the data files, **not on the sheets**: a sheet
+carries no "source" or "position from the official map" line (10/6). `stages.json` keeps `source`,
+`vendors.json` keeps `note`, `booth-numbering-2026.json` keeps `sheet_url` and `read_date`; the
+Data section of `CLAUDE.md` has the owners and the re-read steps.
+
 - **Stage schedule** (`src/data/stages.json`) — the confirmed 2026 Main Stage +
   Acoustic Stage lineup, pulled from the committee's "Schedule is Complete!" thread.
   Real data, ready to ship. Saturday's 3:00–4:00 Main Stage act stays a

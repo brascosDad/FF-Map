@@ -414,7 +414,6 @@
    DetailSheet. Teal for everything read as a fourth brand colour rather than as
    part of the place you tapped. */
 .ffc-panel .li .b { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--sheet-accent, var(--panel-accent)); margin-top: 7px; }
-.ffc-panel .foot { font-size: var(--text-xs); color: var(--panel-muted); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--panel-rule); }
 
 /* An area's booth list: number, then who is in it. Each row is a real button
    that opens the booth, sized to the tap minimum -- 64 of them on the park

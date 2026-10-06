@@ -985,9 +985,6 @@ for (const [name, vp, box] of [
   await p.waitForTimeout(450);
   const h = await p.evaluate(() => Math.round(document.querySelector('.sheet.open').getBoundingClientRect().height));
   check('mobile: a booth sheet leaves most of the phone as map', h <= 320, `sheet ${h}px of 844`);
-  const foot = await p.locator('.sheet .foot').textContent();
-  check('mobile: the booth footer says where the position came from',
-    /official map/.test(foot || ''), foot || '(none)');
   await p.close();
 }
 
@@ -1321,6 +1318,45 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
     }
     await p.close();
   }
+}
+
+// ---- C3: no provenance footer on any sheet ----
+// Not on a stage, a booth, a Kidlandia booth, an unnumbered spot, an area list,
+// the food court or a pin card. Where a fact came from lives in the data files
+// and CLAUDE.md, not on the sheet.
+{
+  const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const PROVENANCE = /Source:|from the 2026 list|official map|chair'?s? 2026|2026 list from|Position approximate|position approximate|committee thread/;
+  const audit = async (what) => {
+    const r = await p.evaluate(() => ({ foot: document.querySelectorAll('.sheet .foot').length, text: document.querySelector('.sheet .panel-scroll')?.textContent || '' }));
+    check(`C3: ${what} has no provenance footer`, r.foot === 0 && !PROVENANCE.test(r.text), `${r.foot} .foot; ${(r.text.match(PROVENANCE) || [''])[0]}`);
+  };
+  const tap = async (sel, i = 0) => { await p.locator(sel).nth(i).dispatchEvent('click'); await p.waitForTimeout(800); };
+  await tap('svg.ff-map g.ffc-pin--stage'); await audit('a stage lineup');
+  await tap('svg.ff-map g.ffc-pin--food'); await audit('the Food Court card');
+  await tap('svg.ff-map g.ffc-pin--kids'); await audit('a pin card (Kidlandia)');
+  await p.locator('.sheet .close').click(); await p.waitForTimeout(450);
+  // An area list, then a booth from it, a Kidlandia booth and an unnumbered spot.
+  let opened = false;
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n && !opened; i++) {
+    await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click'); await p.waitForTimeout(600);
+    opened = (await p.locator('button.boothrow .n', { hasText: /^K/ }).count()) > 0;
+  }
+  check('C3: the In the Park list opened', opened);
+  if (opened) {
+    await audit('an area list');
+    await p.locator('button.boothrow').filter({ has: p.locator('.n', { hasText: /^\d/ }) }).first().click(); await p.waitForTimeout(700); await audit('a numbered booth');
+    await p.locator('.sheet .ffc-panel__back').click(); await p.waitForTimeout(500);
+    await p.locator('button.boothrow').filter({ has: p.locator('.n', { hasText: /^K/ }) }).first().click(); await p.waitForTimeout(700); await audit('a Kidlandia booth');
+    await p.locator('.sheet .ffc-panel__back').click(); await p.waitForTimeout(500);
+    await p.locator('button.boothrow').filter({ has: p.locator('.n', { hasText: /^—$/ }) }).first().click(); await p.waitForTimeout(700); await audit('an unnumbered spot');
+    const where = (await p.locator('.sheet .li').allTextContents()).join(' | ');
+    check('C3: an unnumbered spot still says where it is', /entrance path|Acoustic Stage/i.test(where || ''), where || '(none)');
+  }
+  await p.close();
 }
 
 // ---- B1: one sheet, content changes in place ----

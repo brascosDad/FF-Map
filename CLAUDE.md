@@ -72,6 +72,14 @@ snapshot, and record the read date when you do.
 | Stage schedule | `stages.json` — final, both stages both days | Thomas Helland / Hallie Meushaw |
 | Site layout / amenity placement | 2026 site plan PDF (Operations) | Jess Richards / Van Jensen |
 
+**Sheets carry no provenance line** (Ernest, 10/6 — it was noise to a visitor): the "Artists from the
+2026 list · positions from the official map" footer on a booth sheet, the "Source: …" line under a
+stage lineup, and the food list's note are gone from every sheet on phone and desktop. Where a fact
+came from lives here and in the data files: `stages.json` has `source` (the committee thread and the
+confirm date), `vendors.json` has `note`, `booth-numbering-2026.json` has `sheet_url` and
+`read_date`, and a booth's position is the Figma basemap plus the official site plan (see the table
+above). Don't put a source line back on a sheet; add it to the data file instead.
+
 Artist numbering, **as of the 9/21 sheet read: 1–54 park, 55–81 McLendon, 82–139 Candler Park Dr,
 K0–K10 Kidlandia.** The top number moves every time Courtney edits — it was 142 on 9/17 and 139
 on 9/18, because she inserted 112–114 and renumbered everything after them down by three. Never

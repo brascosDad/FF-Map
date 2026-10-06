@@ -3,7 +3,6 @@ import Icon from './Icon';
 import { ACTIVE_PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
-import { span } from '../data/areas';
 import { FESTIVAL, featuredTitle } from '../data/festival';
 import stagesData from '../data/stages.json';
 import vendorsData from '../data/vendors.json';
@@ -109,7 +108,6 @@ function StageSchedule({ stageKey, pin, part }) {
           ))}
         </div>
       ))}
-      <div className="foot">Source: {stagesData.source}</div>
     </>
   );
 }
@@ -136,7 +134,6 @@ function FoodCourt({ pin, part }) {
           </span>
         </div>
       ))}
-      <div className="foot">{vendorsData.note}</div>
     </>
   );
 }
@@ -178,7 +175,6 @@ function ArtMarketArea({ area, onOpenBooth, part }) {
       <div className="boothlist">
         {[...booths, ...unnumbered].map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
       </div>
-      <div className="foot">Booth numbers and artists from the market chair's 2026 assignments.</div>
     </>
   );
 }
@@ -195,7 +191,6 @@ function FoodCart({ name, pin, part }) {
     <>
       <Where pin={pin} />
       {v.location && <div className="li"><span className="b" />{v.location}</div>}
-      <div className="foot">{vendorsData.note}</div>
     </>
   );
 }
@@ -342,20 +337,17 @@ function BoothDetail({ booth, part }) {
           full three-clause caveat -- 79px of footer repeating what the subtitle
           above it already said. On a phone that sheet stood 387px tall and ate
           the map. Each booth type now says the single thing that is actually
-          uncertain about it; the shared provenance line stays in the footer. */}
+          uncertain about it; the sheet carries no source line. */}
       {isFood
         ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
         : booth.biz
           ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
           : <div className="li"><span className="b" />Sponsor booth.</div>}
-      {/* One bullet, one footer line: the phone sheet has a 320px budget and a
-          second bullet or a wrapped footer blows it. The Kidlandia caveat is
-          the footer on a K booth, since the position is the uncertain thing;
-          the unnumbered pair say where the chair put them. */}
-      <div className="foot">{isFood ? 'Position from the official map.'
-        : isKid ? `Artist from the 2026 list; the ${span(BOOTHS.kid)} column runs north to south inside Kidlandia, position approximate until the layout is confirmed.`
-        : unnumbered ? `On the 2026 list with a spot but no number: ${booth.where}. Position approximate.`
-        : 'Artist from the 2026 list; position from the official map.'}</div>
+      {/* No provenance line on any sheet (C3): where a booth's name and position
+          came from is a data-section fact (README, CLAUDE.md), not something to
+          tell a visitor. The one thing worth keeping is WHERE the two unnumbered
+          spots are, which is location, so it is a body line. */}
+      {unnumbered && booth.where && <div className="li"><span className="b" />{booth.where[0].toUpperCase() + booth.where.slice(1)}</div>}
     </>
   );
 }
