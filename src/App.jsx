@@ -198,6 +198,9 @@ export default function App() {
     setOpenArea(null);
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));
+    // The same safe-area pan as a pin tap (round 2, item 4.4): centred above
+    // the sheet, at the current stop unless it has to step in to get there.
+    setReveal({ x: booth.x, y: booth.y, n: (reveal?.n || 0) + 1 });
   }
 
   /**

@@ -1538,6 +1538,33 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- A booth square tapped on the map pans through the safe-area pan (item 4.4) ----
+// A square low on the screen would end up under the sheet that just opened; it
+// is brought into the band between the header + chips and the sheet, like a pin.
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+  await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650);
+  const sq = await p.evaluate((h) => {
+    for (const g of document.querySelectorAll('svg.ff-map g.ff-booth')) {
+      const r = g.querySelector('rect').getBoundingClientRect();
+      const x = r.x + r.width / 2, y = r.y + r.height / 2;
+      if (y > h * 0.62 && y < h * 0.82 && x > 30 && x < innerWidth - 30 && document.elementFromPoint(x, y)?.closest('g.ff-booth')) return { x, y, id: g.dataset.booth };
+    }
+    return null;
+  }, h);
+  if (!sq) { check(`${name}: item 4.4 a square low on the screen was found`, false); await p.close(); continue; }
+  await p.mouse.click(sq.x, sq.y); await p.waitForTimeout(1100);
+  const r = await p.evaluate((id) => {
+    const rect = document.querySelector(`svg.ff-map g.ff-booth[data-booth="${id}"] rect`).getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom, barBottom: document.querySelector('.topbar').getBoundingClientRect().bottom, sheetTop: document.querySelector('.sheet.open')?.getBoundingClientRect().top };
+  }, sq.id);
+  check(`${name}: item 4.4 a booth square tapped low on the map ends in the safe area, above the sheet`, r.sheetTop != null && r.top >= r.barBottom && r.bottom <= r.sheetTop, `${sq.id}: was at y ${sq.y.toFixed(0)}; now ${r.top.toFixed(0)}-${r.bottom.toFixed(0)}, header ends ${r.barBottom.toFixed(0)}, sheet top ${r.sheetTop?.toFixed(0)}`);
+  await p.close();
+}
+
 // ---- Booth squares with a chip on (round 2, item 4.3) ----
 // Every booth square is dimmed and takes no tap while a chip is on (none is in a
 // chip's category): food stalls, Kidlandia and the unnumbered squares included.
