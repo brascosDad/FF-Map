@@ -1359,6 +1359,31 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
   await p.close();
 }
 
+// ---- C4: copy that helps the visitor ----
+// A restroom card keeps its location line and ONE ADA line; no card describes
+// the interface ("selecting restrooms rings...", "zoom in to see them") or says
+// the same thing in its subtitle and its body.
+{
+  const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const card = async (cat, chip) => {
+    await p.locator('.ffc-chip', { hasText: chip }).click(); await p.waitForTimeout(650);   // its pins show at the overview
+    await p.locator(`svg.ff-map g.ffc-pin--${cat}`).first().dispatchEvent('click'); await p.waitForTimeout(800);
+    const r = await p.evaluate(() => ({ head: document.querySelector('.sheet .ffc-panel__heading')?.textContent || '', body: document.querySelector('.sheet .panel-scroll')?.textContent || '', where: !!document.querySelector('.sheet .li--where') }));
+    await p.locator('.sheet .close').click(); await p.waitForTimeout(450);
+    await p.locator('.ffc-chip', { hasText: chip }).click(); await p.waitForTimeout(400);
+    return r;
+  };
+  const INTERFACE = /selecting|rings every|zoom in|tap |pinned around/i;
+  const wc = await card('wc', 'Restrooms'), water = await card('water', 'Water'), aid = await card('firstaid', 'First aid');
+  check('C4: the restroom card has its location line and exactly one ADA mention', wc.where && ((wc.head + wc.body).match(/ADA/g) || []).length === 1, `${((wc.head + wc.body).match(/ADA/g) || []).length} ADA; location line ${wc.where}`);
+  check('C4: no card describes the interface', ![wc, water, aid].some((c) => INTERFACE.test(c.head + c.body)), [wc, water, aid].map((c) => (c.head + c.body).match(INTERFACE)?.[0]).filter(Boolean).join(', '));
+  check('C4: the water card says "free" once', ((water.head + water.body).match(/free/gi) || []).length === 1, (water.head + water.body).replace(/\s+/g, ' '));
+  check('C4: the first-aid card says "on-site" at most once', ((aid.head + aid.body).match(/on-site/gi) || []).length <= 1, (aid.head + aid.body).replace(/\s+/g, ' '));
+  await p.close();
+}
+
 // ---- B1: one sheet, content changes in place ----
 // Area sheet -> tap a booth row in the list: the sheet never closes and
 // reopens; its content slides to the booth, a back arrow names the list, and

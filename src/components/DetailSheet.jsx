@@ -53,8 +53,10 @@ const POI_COPY = {
     lines: ['Flag football, dodgeball, and GaGa ball', 'Bounce houses — Frozen Castle, Basketball, Baseball, Slide, Millennium Falcon', 'Pumpkin smashing with Trees for Tuition'] },
   // The beer stand is its own pin: the main one, on the field, and the
   // landmark people navigate by. The other stations share the generic entry.
-  beer: { title: 'Beer Stand', sub: 'The main beer stand, on the field', icon: 'drinks', cat: 'drinks',
-    lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy', 'Three more drink stations are pinned around the grounds — zoom in to see them'] },
+  // No line describes the interface ("zoom in to see them") or repeats the
+  // subtitle (C4, 10/6): a card says what the place is and where it is, once.
+  beer: { title: 'Beer Stand', sub: 'The main beer stand', icon: 'drinks', cat: 'drinks',
+    lines: ['On the field, below the Main Stage', '21+ with ID — check with volunteers for wristband policy'] },
   // The mug is beer and only beer since the cup (beverages) arrived, 9/22.
   drinks: { title: 'Beer', sub: 'Beer stands', icon: 'drinks', cat: 'drinks',
     lines: ['Beer stands around the grounds — the main one is on the field below the Main Stage', '21+ with ID — check with volunteers for wristband policy'] },
@@ -67,12 +69,14 @@ const POI_COPY = {
     lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
   // "Restroom (+ ADA)" is the print key's wording (Jess, 9/21); one symbol
   // for every toilet, ADA units included.
-  wc: { title: 'Restrooms', sub: 'Restroom (+ ADA) — five-toilet banks with ADA units', icon: 'wc', cat: 'wc',
-    lines: ['Every bank is five toilets plus ADA-accessible units', 'Selecting restrooms rings every one of them on the map'] },
+  // One ADA line, and the location line (`where`, from the pin) -- nothing that
+  // describes the interface (C4).
+  wc: { title: 'Restrooms', sub: 'Five-toilet banks', icon: 'wc', cat: 'wc',
+    lines: ['Every bank includes ADA-accessible units'] },
   firstaid: { title: 'First Aid / EMS', sub: 'On-site medical support', icon: 'firstaid', cat: 'firstaid',
-    lines: ['EMS staffed on-site for the duration of the festival', 'Dial 911 for emergencies'] },
+    lines: ['Staffed by EMS for the whole festival', 'Dial 911 for emergencies'] },
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',
-    lines: ['Free water stations — bring a bottle to refill'] },
+    lines: ['Bring a bottle to refill'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
     lines: ['At the park entrance off McLendon Ave, on the east side of the path just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
   // TODO(Jess): which PTA runs the booth -- Ernest has asked; one neutral
