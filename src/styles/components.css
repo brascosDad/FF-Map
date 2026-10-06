@@ -20,7 +20,7 @@
    them must not win the touch. */
 .ffc-dimmed { opacity: var(--opacity-dimmed); pointer-events: none; }
 
-:where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-step button):focus-visible {
+:where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-pager button):focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -273,14 +273,34 @@
 .ffc-poirow__text em { display: block; font-style: normal; font-size: var(--text-xs); color: var(--text-muted); margin-top: 1px; }
 .ffc-poirow__go { flex: 0 0 auto; font-size: 18px; line-height: 1; color: var(--text-muted); }
 
-/* ===== Stepper ============================================================
-   Prev / position / next. The map is too dense to tap a booth reliably, so this
-   is the primary way through a row; the carets are full touch targets.
+/* ===== ItemPager ==========================================================
+   Previous / "11 of 139" / next, in the sheet's footer. It pages BETWEEN items
+   (booths in a run), so it is not a Stepper -- in Apple's HIG a stepper is a
+   -/+ value control. The map is too dense to tap a booth reliably, so this is
+   the primary way through a row; both buttons are full --tap-min targets.
+   The rule it carries: a control you tap repeatedly never moves. So it lives
+   in .ffc-panel__footer, pinned to the bottom of the sheet above the home
+   bar, and the sheet holds --sheet-detail-min-height so short entries do not
+   change the sheet's height under your thumb.
 ========================================================================== */
-.ffc-step { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-1); background: var(--sand-100); border-radius: var(--radius-md); }
-.ffc-step button { position: relative; width: var(--tap-min); height: var(--tap-min); flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
-.ffc-step button:active { background: var(--surface-pressed); }
-.ffc-step__pos { flex: 1; text-align: center; font: var(--weight-bold) var(--text-xs)/1.3 var(--font-ui); color: var(--text-muted); }
+.ffc-pager { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.ffc-pager button { position: relative; width: var(--tap-min); height: var(--tap-min); flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.ffc-pager button:active { background: var(--surface-pressed); }
+.ffc-pager__pos { flex: 1; text-align: center; font: var(--weight-bold) var(--text-md)/1.3 var(--font-ui); color: var(--text-strong); font-variant-numeric: tabular-nums; }
+
+/* The footer bar. Pinned: the sheet is a column flex box and the body takes
+   the height that is left, so this sits at the bottom whatever the body holds.
+   It clears the iPhone home bar and Safari's bottom toolbar -- never flush to
+   the edge: env(safe-area-inset-bottom) plus --space-3. */
+.ffc-panel__footer {
+  --footer-pad: var(--space-3);
+  flex: none;
+  padding: var(--footer-pad) var(--space-4) calc(var(--footer-pad) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--sand-100);
+  background: var(--panel-bg, var(--surface-chrome-solid));
+  box-shadow: var(--shadow-foot);
+  position: relative; z-index: 1;
+}
 
 /* ===== Legend + scale bar (desktop) ======================================= */
 .ffc-legend { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--surface-chrome); border: 1px solid var(--border-control); border-radius: var(--radius-md); box-shadow: var(--shadow-control); }

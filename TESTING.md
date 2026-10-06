@@ -122,7 +122,8 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
       Worth a real-device check: it does not reproduce in a desktop emulator.)*
 - [ ] **Sheet bullets match what you opened** — Kidlandia's are Kidlandia pink,
       the food court's are food orange. Never one shared teal.
-- [ ] **The booth stepper sits above the title**, not below it.
+- [ ] **The ItemPager is a footer, pinned to the bottom of the booth sheet**, clear of the home bar.
+      Page through five booths: the ‹ and › buttons must not move under your thumb.
 - [ ] **Step through a row on a phone and watch the map.** Press next eight or
       ten times: the map should sit still and the selection ring should just
       walk along the row. It only recentres when the ring would leave the

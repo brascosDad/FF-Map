@@ -183,19 +183,21 @@
     </p>
   </div>
 
-  <h3>Stepper</h3>
+  <h3>ItemPager</h3>
   <div class="card">
-    <div class="ffc-step">
+    <div class="ffc-pager">
       <button aria-label="Previous">‹</button>
-      <span class="ffc-step__pos">12 of 62 · In the Park</span>
+      <span class="ffc-pager__pos">12 of 62</span>
       <button aria-label="Next">›</button>
     </div>
-    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
-      Sits <b>above</b> the title: where you are in the row, then what you are looking at.
-      Booth pitch is ~9 map units, so tapping a specific booth is unreliable even zoomed in.
-      This is the primary way through a row. It wraps <b>inside one area</b> — running off the
-      end of the car-path market returns to its start rather than spilling into the food trucks.
-    </p>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>What it is</th><td>Pages between items (booths in a run). Not called a Stepper: in Apple's HIG a stepper is a −/+ value control.</td></tr>
+      <tr><th>Where</th><td>The sheet's <b>footer</b>, <code>.ffc-panel__footer</code>, pinned to the bottom above <code>env(safe-area-inset-bottom)</code> plus <code>--space-3</code> — never flush to the edge, so it clears the iPhone home bar and Safari's toolbar.</td></tr>
+      <tr><th>Sizes</th><td>‹ and › are <code>--tap-min</code> (44px). The count is centred and says only where you are: "11 of 139".</td></tr>
+      <tr><th>The rule</th><td><b>A control you tap repeatedly never moves.</b> The footer is pinned and a booth's detail holds <code>--sheet-detail-min-height</code>, so a short entry cannot change the sheet's height under your thumb. Longer content scrolls inside the body, above the footer.</td></tr>
+      <tr><th>Wraps</th><td>Inside one area — running off the end of the car-path market returns to its start rather than spilling into the food trucks.</td></tr>
+      <tr><th>Not here</th><td>The back arrow (‹ Art Market) is a different control, at the top of the sheet: it returns to the list. Paging never adds a back step.</td></tr>
+    </table>
   </div>
 
   <h3>Panel</h3>

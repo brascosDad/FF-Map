@@ -321,8 +321,8 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: no "undefined" rendered anywhere`, !bad);
   });
 
-  // ---- booth stepper: wraps inside its own area, never leaks ----
-  await safe(`${name}: booth stepper`, async () => {
+  // ---- ItemPager: wraps inside its own area, never leaks ----
+  await safe(`${name}: ItemPager`, async () => {
     await p.reload({ waitUntil: 'networkidle' });
     await p.waitForTimeout(800);
     await zoomIn(p); await zoomIn(p);           // squares + numbers
@@ -335,24 +335,26 @@ for (const [name, w, h] of SIZES) {
       if (bb.x < 4 || bb.y < 4 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
       await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
       await p.waitForTimeout(400);
-      opened = (await p.locator('.boothnav').count()) > 0;
+      opened = (await p.locator('.ffc-pager').count()) > 0;
     }
-    check(`${name}: tapping a booth square opens the stepper`, opened);
+    check(`${name}: tapping a booth square opens the ItemPager`, opened);
     if (!opened) return;
 
     const readPos = async () => {
-      const t = await p.locator('.ffc-step__pos').textContent();
-      const m = t.match(/^(\d+) of (\d+) · (.+)$/);
-      return m ? { i: +m[1], total: +m[2], area: m[3] } : null;
+      const t = await p.locator('.ffc-pager__pos').textContent();
+      const m = t.match(/^(\d+) of (\d+)$/);
+      // The area is in the sheet's subtitle now; the pager says only "11 of 139".
+      const area = ((await p.locator('.sheet .sub').first().textContent()) || '').split(' · ')[0];
+      return m ? { i: +m[1], total: +m[2], area } : null;
     };
     const start = await readPos();
-    check(`${name}: stepper reports position within the area`, !!start,
+    check(`${name}: ItemPager reports position within the area`, !!start,
       start ? `${start.i} of ${start.total} in ${start.area}` : 'unparsed');
     if (!start) return;
 
     // Wrap is checked in one click rather than by walking the whole area --
     // stepping 60+ booths three times over is what made this suite crawl.
-    await p.locator('.ffc-step button').first().click();   // previous
+    await p.locator('.ffc-pager button').first().click();   // previous
     await p.waitForTimeout(150);
     const back = await readPos();
     const expected = start.i === 1 ? start.total : start.i - 1;
@@ -364,18 +366,21 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: total matches the area, not all booths`,
       [58, 27, 54, 11, 16].includes(start.total), `${start.total} in ${start.area}`);
 
-    await p.locator('.ffc-step button').last().click();    // forward again
+    await p.locator('.ffc-pager button').last().click();    // forward again
     await p.waitForTimeout(150);
     const fwd = await readPos();
     check(`${name}: forward caret returns`, fwd && fwd.i === start.i, fwd ? `${back?.i} -> ${fwd.i}` : 'unparsed');
 
-    const btn = await p.locator('.ffc-step button').first().boundingBox();
-    const stepGap = await p.evaluate(() => {
-      const s = document.querySelector('.boothnav').getBoundingClientRect();
-      const h = document.querySelector('.sheet .hd').getBoundingClientRect();
-      return Math.round(h.top - s.bottom);
+    const btn = await p.locator('.ffc-pager button').first().boundingBox();
+    // The pager is the sheet's footer: it sits under the body, inside the sheet,
+    // above the bottom edge -- not above the title where the old stepper was.
+    const fp = await p.evaluate(() => {
+      const f = document.querySelector('.sheet .ffc-panel__footer').getBoundingClientRect();
+      const sc = document.querySelector('.sheet .panel-scroll').getBoundingClientRect();
+      const sh = document.querySelector('.sheet').getBoundingClientRect();
+      return { belowBody: f.top >= sc.bottom - 1, insideSheet: f.bottom <= sh.bottom + 1, gap: Math.round(sh.bottom - f.bottom) };
     });
-    check(`${name}: stepper has air between it and the title`, stepGap >= 16, `${stepGap}px`);
+    check(`${name}: the ItemPager is a footer pinned to the bottom of the sheet`, fp.belowBody && fp.insideSheet, JSON.stringify(fp));
     check(`${name}: caret is a real touch target`, btn && btn.width >= 43.5 && btn.height >= 43.5,
       btn ? `${btn.width}x${btn.height}` : 'none');
   });
@@ -418,7 +423,7 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: tapping a row opens that booth`, title === `Booth ${num}`, `${title} for row ${num}`);
     const who = await p.locator('.sheet .li b').first().textContent().catch(() => null);
     check(`${name}: the booth sheet names the business`, !!who && who.trim().length > 0, who || '(none)');
-    check(`${name}: the map is at the booth zoom`, (await p.locator('.boothnav').count()) > 0);
+    check(`${name}: the map is at the booth zoom`, (await p.locator('.ffc-panel__back').count()) > 0 || (await p.locator('.sheet .hd h3').textContent()).startsWith('Booth'));
   });
 
   // ---- Esc closes, focus returns to the map ----
@@ -941,7 +946,7 @@ for (const [name, vp, box] of [
   let held = 0, moved = 0, lost = 0;
   for (let i = 0; i < steps; i++) {
     const before = await vbOf();
-    await p.locator('.boothnav button').nth(1).click();
+    await p.locator('.ffc-pager button').nth(1).click();
     await p.waitForTimeout(300);
     if (await vbOf() === before) held++; else moved++;
     const s = await selPos();
@@ -958,7 +963,7 @@ for (const [name, vp, box] of [
 }
 
 // The open sheet does NOT count as covering the map for that hold: a booth
-// behind it is still on screen, and moving for it is the lurch the stepper
+// behind it is still on screen, and moving for it is the lurch the ItemPager
 // exists to avoid. So the phone has to keep most of its screen as live map.
 {
   const p = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
@@ -1206,6 +1211,49 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
   await p.close();
 }
 
+// ---- B2: a control you tap repeatedly never moves ----
+// Page through five booths at 375px: the ItemPager's bounding box is identical
+// every time, whatever the booth's text does to the sheet.
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  let opened = false;
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n && !opened; i++) {
+    const bb = await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).boundingBox().catch(() => null);
+    if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
+    await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+    await p.waitForTimeout(500);
+    opened = (await p.locator('.boothrow').count()) > 0;
+  }
+  if (opened) {
+    await p.locator('button.boothrow').nth(3).click();
+    await p.waitForTimeout(700);
+    const boxes = [], heights = [];
+    for (let i = 0; i < 5; i++) {
+      boxes.push(await p.locator('.sheet .ffc-pager').boundingBox());
+      heights.push(await p.evaluate(() => Math.round(document.querySelector('.sheet').getBoundingClientRect().height)));
+      await p.locator('.sheet .ffc-pager button').nth(1).click();
+      await p.waitForTimeout(350);
+    }
+    const same = boxes.every((b) => b && Math.abs(b.x - boxes[0].x) < 0.5 && Math.abs(b.y - boxes[0].y) < 0.5 && Math.abs(b.width - boxes[0].width) < 0.5 && Math.abs(b.height - boxes[0].height) < 0.5);
+    check(`${name}: B2 the ItemPager does not move across five pages`, same, boxes.map((b) => `${b?.x.toFixed(0)},${b?.y.toFixed(0)}`).join(' | '));
+    check(`${name}: B2 the sheet holds one height across five pages`, heights.every((x) => x === heights[0]), heights.join(' / '));
+    const geo = await p.evaluate(() => {
+      const f = document.querySelector('.sheet .ffc-panel__footer').getBoundingClientRect();
+      const bs = [...document.querySelectorAll('.sheet .ffc-pager button')].map((b) => b.getBoundingClientRect());
+      const pos = document.querySelector('.sheet .ffc-pager__pos').getBoundingClientRect();
+      const sh = document.querySelector('.sheet').getBoundingClientRect();
+      return { btn: bs.map((b) => `${b.width.toFixed(0)}x${b.height.toFixed(0)}`), centred: Math.abs((pos.left + pos.right) / 2 - (sh.left + sh.right) / 2) <= 1,
+               footerPad: parseFloat(getComputedStyle(document.querySelector('.sheet .ffc-panel__footer')).paddingBottom), footerBottom: f.bottom, sheetBottom: sh.bottom };
+    });
+    check(`${name}: B2 both pager buttons are --tap-min and the count is centred`, geo.btn.every((x) => x === '44x44') && geo.centred, `${geo.btn.join(', ')}; centred ${geo.centred}`);
+    check(`${name}: B2 the footer clears the bottom edge`, geo.footerPad >= 12, `padding-bottom ${geo.footerPad}px`);
+  } else check(`${name}: B2 an area sheet opened`, false);
+  await p.close();
+}
+
 // ---- B1: one sheet, content changes in place ----
 // Area sheet -> tap a booth row in the list: the sheet never closes and
 // reopens; its content slides to the booth, a back arrow names the list, and
@@ -1267,7 +1315,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
 // festival that ANY pin can get there. Ernest's repro (10/6): Restrooms chip
 // on, tap the north-most restroom -- it used to sit under the "First aid"
 // chip and could not be panned clear.
-for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['short phone (Safari bars)', 390, 550], ['short SE', 375, 560]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
@@ -1290,7 +1338,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
     const sheet = document.querySelector('.sheet.open');
     const ringed = [...document.querySelectorAll('svg.ff-map g.ffc-pin--wc')].find((g) => g.querySelector(':scope > circle[stroke]'));
     const c = ringed?.querySelector(':scope > g circle')?.getBoundingClientRect();
-    const bar = document.querySelector('.topbar .chips').getBoundingClientRect();
+    const bar = document.querySelector('.topbar').getBoundingClientRect();   // the whole header + chip row
     const sheetTop = sheet ? sheet.getBoundingClientRect().top : innerHeight;
     const cs = getComputedStyle(screen);
     return { y: c ? c.y + c.height / 2 : null, top: c?.top, bottom: c?.bottom, barBottom: bar.bottom, sheetTop,
@@ -1299,9 +1347,9 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
   });
   check(`${name}: the north-most restroom ends inside the safe area, clear of the chips and the sheet`,
     r.y != null && r.top >= r.barBottom && r.bottom <= r.sheetTop,
-    `pin ${r.top?.toFixed(0)}-${r.bottom?.toFixed(0)}, chips end ${r.barBottom.toFixed(0)}, sheet top ${r.sheetTop.toFixed(0)}`);
+    `pin ${r.top?.toFixed(0)}-${r.bottom?.toFixed(0)}, header + chips end ${r.barBottom.toFixed(0)}, sheet top ${r.sheetTop.toFixed(0)}`);
   check(`${name}: the safe-area tokens are measured from the real layout`,
-    Math.abs(r.insetTop - r.barBottom) <= 12 && Math.abs(r.insetBottom - r.sheetH) <= 1,
+    Math.abs(r.insetTop - r.barBottom) <= 1 && Math.abs(r.insetBottom - r.sheetH) <= 1,
     `--map-inset-top ${r.insetTop}, chips end ${r.barBottom.toFixed(0)}; --map-inset-bottom ${r.insetBottom}, sheet ${r.sheetH}`);
   await p.close();
 }
@@ -1338,7 +1386,6 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
   await p.waitForTimeout(400);
   const bullet = await p.locator('.li .b').first().evaluate((e) => getComputedStyle(e).backgroundColor);
   check('mobile: sheet bullets match the pin you opened', bullet === 'rgb(194, 91, 126)', `${bullet} (want --pin-kids)`);
-  // The stepper belongs above the title: where you are, then what you are looking at.
   await p.close();
 }
 

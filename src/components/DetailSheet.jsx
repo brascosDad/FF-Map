@@ -270,31 +270,46 @@ function Legend() {
   );
 }
 
-function BoothDetail({ booth, onStep, back }) {
+/**
+ * Where a booth is in its run, for the ItemPager: "11 of 139". Null for the
+ * unnumbered spots (no row to page through).
+ */
+function boothPosition(booth) {
+  if (booth.n == null) return null;
+  const group = BOOTHS[booth.id.split('-')[0]] || [];
+  return { pos: group.findIndex((b) => b.id === booth.id) + 1, total: group.length };
+}
+
+/**
+ * ItemPager: previous / "11 of 139" / next. It pages between items (booths in
+ * a run), which is why it is not called a Stepper -- in Apple's HIG a stepper
+ * is a -/+ value control. It lives in the sheet's FOOTER, pinned to the
+ * bottom, so it never moves while you tap it: a control you tap repeatedly
+ * never moves (B2). The map is too dense to tap a booth reliably, so this is
+ * the real way through a row; it wraps inside this area only, so running off
+ * the end of the car-path market returns you to its start rather than dumping
+ * you into the food trucks.
+ */
+function ItemPager({ pos, total, onStep }) {
+  return (
+    <div className="ffc-pager" role="group" aria-label="Page through booths">
+      <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
+      <span className="ffc-pager__pos" aria-live="polite">{pos} of {total}</span>
+      <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
+    </div>
+  );
+}
+
+function BoothDetail({ booth, back }) {
   const isFood = booth.area === 'Food Court';
   const isKid = booth.area === 'Kidlandia';
-  // A spot with no number is not in any row, so there is nothing to step
+  // A spot with no number is not in any row, so there is nothing to page
   // through: the sheet is titled by the business instead of "Booth —".
   const unnumbered = booth.n == null;
   const featured = featuredTitle(booth);
-  const group = BOOTHS[booth.id.split('-')[0]] || [];
-  const pos = group.findIndex((b) => b.id === booth.id) + 1;
   return (
     <>
       {back}
-      {/* Above the title, not below it. The stepper is where you ARE in the row;
-          the title is what you are looking at. The map is too dense to tap a
-          specific booth reliably, so this is the real way through a row -- and
-          it wraps inside this area only, so running off the end of the car-path
-          market returns you to its start rather than dumping you into the food
-          trucks. */}
-      {!unnumbered && (
-        <div className="boothnav ffc-step">
-          <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
-          <span className="ffc-step__pos">{pos} of {group.length} · {booth.area}</span>
-          <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
-        </div>
-      )}
 
       {/* A Kidlandia booth wears the Kidlandia colour, like its square on the
           map; every other art booth wears the market slate. */}
@@ -429,13 +444,14 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     return () => clearTimeout(t);
   }, [nextKey, shownKey, docked, openId, openArea, openBooth, selectedPin, shown.openBooth]);
 
+  const pager = shown.openBooth ? boothPosition(shown.openBooth) : null;
   let body = null;
   const backBtn = canGoBack && !docked ? (
     <button className="ffc-panel__back" onClick={onBack}>
       <span aria-hidden="true">‹</span> {shown.openArea.name}
     </button>
   ) : null;
-  if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} onStep={onStepBooth} back={backBtn} />;
+  if (shown.openBooth) body = <BoothDetail booth={shown.openBooth} back={backBtn} />;
   else if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') body = <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} />;
   else if (shown.openId === 'food') body = <FoodCourt pin={shown.selectedPin} />;
   else if (shown.openId) body = <GenericPoi id={shown.openId} pin={shown.selectedPin} />;
@@ -516,6 +532,8 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       aria-label={docked ? undefined : 'Location detail'}
       data-open={isOpen ? 'true' : 'false'}
       data-phase={swapping ? 'out' : undefined}
+      data-view={kind}
+      data-footer={pager ? 'true' : undefined}
     >
       {/* One top row for the sheet's own controls: the grip centred, the close on
           the right, both in the same 44px band. The close used to float over the
@@ -554,6 +572,15 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
             booth to booth swaps in place, no motion. */}
         <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>{body}</div>
       </div>
+
+      {/* The ItemPager's footer: pinned to the bottom of the sheet, above the
+          home bar, so the buttons are where the thumb left them whatever the
+          booth's text does to the body above. */}
+      {pager && (
+        <div className="ffc-panel__footer">
+          <ItemPager pos={pager.pos} total={pager.total} onStep={onStepBooth} />
+        </div>
+      )}
 
       {docked && !isOpen && <div className="panel-foot"><Legend /></div>}
     </div>

@@ -26,7 +26,6 @@
    the controls must not, so the floating chrome is pushed clear of them. */
 .topbar { padding-left: max(var(--space-3), env(safe-area-inset-left)); padding-right: max(var(--space-3), env(safe-area-inset-right)); }
 .zoomctl { right: max(var(--space-3), env(safe-area-inset-right)); bottom: max(var(--space-4), env(safe-area-inset-bottom)); }
-.sheet:not(.docked) { padding-bottom: max(var(--space-5), env(safe-area-inset-bottom)); }
 
 .mapstage { position: absolute; inset: 0; }
 .mapwrap { position: absolute; inset: 0; touch-action: none; overflow: hidden; }
@@ -82,7 +81,7 @@
   background: var(--surface-chrome-solid);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-sheet);
-  padding: var(--space-2) var(--space-4) var(--space-5);
+  padding: 0;
   max-height: var(--sheet-max-height);
   transform: translateY(100%);
   transition: transform var(--motion-panel) var(--ease);
@@ -110,7 +109,7 @@
 
    The grip is a real handle: drag it down to dismiss. touch-action: none so the
    gesture is ours rather than the browser's scroll. */
-.sheet .sheettop { position: relative; flex: none; height: var(--tap-min); }
+.sheet .sheettop { position: relative; flex: none; height: var(--tap-min); margin-top: var(--space-2); }
 .sheet .griparea {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -221,21 +220,13 @@
    underneath the panel and cannot be clicked at all. */
 .ff-screen.docked .zoomctl { right: calc(var(--ff-gap) + var(--ff-panel-w) + var(--ff-gap)); }
 
-/* ===== Booth stepper ======================================================
-   Position only — appearance is .ffc-step in components.css.
-
-   Two knobs, because this one is worth nudging by eye: --stepper-offset moves
-   the whole control up or down (negative is up), --stepper-gap is the air below
-   it before the title. It sat too low and too close to what followed, so it
-   reads as belonging to the booth name rather than sitting above it.
+/* ===== Sheet body (bottom sheet) =========================================
+   The sheet has no padding of its own: the top row, the scrolling body and the
+   ItemPager's footer each pad themselves, so the footer can run edge to edge.
+   A booth's detail holds --sheet-detail-min-height so the footer never moves
+   while paging. With a footer the body needs no home-bar clearance (the footer
+   has it); without one it carries it.
 ========================================================================== */
-:root {
-  --stepper-offset: -4px;
-  --stepper-gap: var(--space-5);
-}
-.boothnav { margin: var(--stepper-offset) 0 var(--stepper-gap); }
-/* In the bottom sheet the stepper follows the sheet's own top row, so it needs
-   air above it rather than the pull-up the docked panel wants. */
-.sheet:not(.docked) .boothnav { margin-top: var(--space-3); }
-/* Clear the top row before any content starts. */
-.sheet:not(.docked) .panel-scroll { padding-top: var(--space-2); }
+.sheet:not(.docked) .panel-scroll { padding: var(--space-2) var(--space-4) max(var(--space-5), env(safe-area-inset-bottom)); }
+.sheet:not(.docked)[data-footer='true'] .panel-scroll { padding-bottom: var(--space-4); }
+.sheet:not(.docked)[data-view='detail'] { min-height: var(--sheet-detail-min-height); }
