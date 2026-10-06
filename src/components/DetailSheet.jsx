@@ -370,11 +370,32 @@ const CLOSE_MS = 250;
 const DISMISS_FRACTION = 0.3;
 const FLICK_VELOCITY = 0.5;   // px per ms
 const FLICK_MIN_PX = 40;      // ...and it has to actually travel
+const PULL_UP_PX = 30;        // a pull up this far from peek opens to full
+const TAP_SLOP_PX = 8;        // a press that moves less than this, quickly, is a tap
+const TAP_MS = 400;
 
-export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onBack, onClose, docked = false, onFocusReturn }) {
+export default function DetailSheet({ openId, openArea, openBooth, selectedPin = null, onStepBooth, onSelect, onOpenBooth, onBack, onClose, docked = false, chipOn = false, onDetentChange, onFocusReturn }) {
   const isOpen = !!(openId || openArea || openBooth);
   const closeRef = useRef(null);
   const wasOpen = useRef(false);
+
+  // Two detents (B3): 'full', as the sheet has always opened, and 'peek', the
+  // title row plus a line or two, so the map stays visible. A sheet that opens
+  // while a filter chip is on opens at peek -- the chip's pins are what you
+  // are looking at, and the sheet should not bury them. Dragging the handle up,
+  // or tapping it, goes to full; tapping again comes back down. With no chip on
+  // the sheet has the one detent and the handle only drags down to close.
+  // Chips cannot change while a sheet is open (a chip tap closes it), so
+  // `peekable` is fixed for the sheet's life.
+  const [detent, setDetent] = useState('full');
+  const wasOpenDetent = useRef(false);
+  const peekable = !docked && chipOn;
+  useEffect(() => {
+    if (docked) return;
+    if (isOpen && !wasOpenDetent.current) setDetent(chipOn ? 'peek' : 'full');
+    wasOpenDetent.current = isOpen;
+  }, [isOpen, docked, chipOn]);
+  const setDetentTo = (d) => { setDetent(d); onDetentChange?.(d); };
 
   // Swapping one open sheet for another is a move, not a cut: the sheet drops
   // away, the content changes while it is off screen, and the new one rises.
@@ -445,6 +466,8 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   }, [nextKey, shownKey, docked, openId, openArea, openBooth, selectedPin, shown.openBooth]);
 
   const pager = shown.openBooth ? boothPosition(shown.openBooth) : null;
+  // At peek there is no room for the footer: the pager shows at full height.
+  const showPager = pager && !(peekable && detent === 'peek');
   let body = null;
   const backBtn = canGoBack && !docked ? (
     <button className="ffc-panel__back" onClick={onBack}>
@@ -478,26 +501,28 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, docked, onClose]);
 
-  // Grabbing the grip pulls the sheet down. It looked like a handle and was not
-  // one, which is its own kind of broken: an affordance that lies. Pull it past
-  // a third of the sheet's height, or flick it, and the sheet goes; let go short
-  // of that and it springs back to where it was.
+  // The handle is a real handle. Pull it down past a third of the sheet's
+  // height, or flick it, and the sheet closes; let go short of that and it
+  // springs back. Pull it UP from peek and the sheet opens to full. A press that
+  // barely moves is a tap: it cycles peek <-> full where a peek exists. Keyboard
+  // and screen-reader activation arrive as a click with no pointer (detail 0).
   function onGripDown(e) {
     if (docked) return;
     const el = sheetEl.current;
     if (!el) return;
-    // Capture on the grip itself, not the sheet: capturing on an ancestor
+    // Capture on the handle itself, not the sheet: capturing on an ancestor
     // retargets the move events to that ancestor, and they never reach this
     // handler at all.
     e.currentTarget.setPointerCapture?.(e.pointerId);
-    drag.current = { y0: e.clientY, y: e.clientY, t: performance.now(), h: el.getBoundingClientRect().height };
+    drag.current = { y0: e.clientY, y: e.clientY, t0: performance.now(), t: performance.now(), h: el.getBoundingClientRect().height, dy: 0, raw: 0 };
     el.style.transition = 'none';
   }
 
   function onGripMove(e) {
     const d = drag.current, el = sheetEl.current;
     if (!d || !el) return;
-    d.dy = Math.max(0, e.clientY - d.y0);     // down only; the sheet is already at its top
+    d.raw = e.clientY - d.y0;
+    d.dy = Math.max(0, d.raw);                // the sheet only follows a pull DOWN
     d.v = (e.clientY - d.y) / Math.max(1, performance.now() - d.t);
     d.y = e.clientY; d.t = performance.now();
     el.style.transform = `translateY(${d.dy}px)`;
@@ -513,13 +538,24 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     // A flick still has to travel: an abrupt 15px twitch is a fast pointer, not
     // an intent to dismiss, and treating it as one made the sheet feel jumpy.
     const dy = d.dy || 0;
-    if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) onClose();
+    if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) { onClose(); return; }
+    if (peekable && detent === 'peek' && d.raw < -PULL_UP_PX) { setDetentTo('full'); return; }
+    if (peekable && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
+  }
+
+  function toggleDetent() {
+    if (peekable) setDetentTo(detent === 'peek' ? 'full' : 'peek');
   }
 
   const gripHandlers = docked ? {} : {
     onPointerDown: onGripDown, onPointerMove: onGripMove,
     onPointerUp: onGripUp, onPointerCancel: onGripUp,
+    onClick: (e) => { if (e.detail === 0) toggleDetent(); },
   };
+
+  const handleLabel = peekable
+    ? (detent === 'peek' ? 'Expand the sheet' : 'Collapse the sheet')
+    : 'Sheet handle: drag down to close';
 
   return (
     <div
@@ -533,7 +569,9 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       data-open={isOpen ? 'true' : 'false'}
       data-phase={swapping ? 'out' : undefined}
       data-view={kind}
-      data-footer={pager ? 'true' : undefined}
+      data-detent={detent}
+      data-peekable={peekable ? 'true' : undefined}
+      data-footer={showPager ? 'true' : undefined}
     >
       {/* One top row for the sheet's own controls: the grip centred, the close on
           the right, both in the same 44px band. The close used to float over the
@@ -542,7 +580,10 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
           contents were laying themselves out independently. */}
       {!docked && (
         <div className="sheettop">
-          <div className="griparea" {...gripHandlers} aria-hidden="true"><div className="grip" /></div>
+          <button type="button" className="griparea" {...gripHandlers} aria-label={handleLabel}
+                  aria-expanded={peekable ? detent === 'full' : undefined}>
+            <span className="grip" />
+          </button>
           {isOpen && (
             <button className="close" ref={closeRef} onClick={onClose} aria-label="Close detail">
               <Icon name="close" size={20} />
@@ -576,7 +617,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       {/* The ItemPager's footer: pinned to the bottom of the sheet, above the
           home bar, so the buttons are where the thumb left them whatever the
           booth's text does to the body above. */}
-      {pager && (
+      {showPager && (
         <div className="ffc-panel__footer">
           <ItemPager pos={pager.pos} total={pager.total} onStep={onStepBooth} />
         </div>

@@ -1309,6 +1309,66 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
   await p.close();
 }
 
+// ---- B3: a shorter sheet when a chip is on ----
+// Opened while a chip is on, a sheet opens at PEEK (--sheet-peek-height): the
+// map stays visible. Tap the handle, or drag it up, for full height; tap it
+// again to come back down. With no chip on, sheets open as they always did.
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const sheetH = () => p.evaluate(() => Math.round(document.querySelector('.sheet.open')?.getBoundingClientRect().height || 0));
+  const peekPx = await p.evaluate(() => { const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--sheet-peek-height)'; document.body.appendChild(probe); const v = probe.getBoundingClientRect().height; probe.remove(); return Math.round(v); });
+  const tapPin = async (cat) => {
+    const c = await p.locator(`svg.ff-map g.ffc-pin--${cat}`).first().evaluate((g) => { const r = g.querySelector(':scope > circle').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+    await p.mouse.click(c.x, c.y); await p.waitForTimeout(700);
+  };
+  // No chip: today's behaviour. A stage is on the opening view.
+  await tapPin('stage');
+  const full = await sheetH();
+  check(`${name}: B3 with no chip on, a sheet opens at full height`, full > peekPx + 20, `${full}px (peek is ${peekPx}px)`);
+  check(`${name}: B3 with no chip, the handle does not claim to resize`, /close/i.test(await p.locator('.sheet .griparea').getAttribute('aria-label')), await p.locator('.sheet .griparea').getAttribute('aria-label'));
+  await p.locator('.sheet .close').click(); await p.waitForTimeout(500);
+  // Chip on: peek.
+  await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click(); await p.waitForTimeout(650);
+  await tapPin('wc');
+  const peek = await sheetH();
+  check(`${name}: B3 with a chip on, the sheet opens at peek height`, peek <= peekPx + 24 && peek >= 100, `${peek}px (token ${peekPx}px; full was ${full}px)`);
+  const label1 = await p.locator('.sheet .griparea').getAttribute('aria-label');
+  // Tap the handle: full.
+  const g = await p.locator('.sheet .griparea').boundingBox();
+  await p.mouse.click(g.x + g.width / 2, g.y + g.height / 2); await p.waitForTimeout(600);
+  const up = await sheetH();
+  const label2 = await p.locator('.sheet .griparea').getAttribute('aria-label');   // at full
+  check(`${name}: B3 tapping the handle goes to full height`, up > peek + 20, `${peek} -> ${up}px`);
+  const g1b = await p.locator('.sheet .griparea').boundingBox();   // the handle moved up with the sheet
+  await p.mouse.click(g1b.x + g1b.width / 2, g1b.y + g1b.height / 2); await p.waitForTimeout(600);
+  const down = await sheetH();
+  check(`${name}: B3 tapping the handle again comes back to peek`, Math.abs(down - peek) <= 4, `${up} -> ${down}px`);
+  check(`${name}: B3 the handle has an accessible name that says what it will do`, /expand/i.test(label1 || '') && label1 !== label2, `${label1} / ${label2}`);
+  // Drag up: full.
+  const g2 = await p.locator('.sheet .griparea').boundingBox();
+  await p.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2); await p.mouse.down();
+  for (const dy of [-10, -30, -60]) await p.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2 + dy);
+  await p.mouse.up(); await p.waitForTimeout(600);
+  const dragged = await sheetH();
+  check(`${name}: B3 dragging the handle up goes to full height`, dragged > peek + 20, `${peek} -> ${dragged}px`);
+  // The pin is still inside the safe area after the sheet grew.
+  const inView = await p.evaluate(() => {
+    const ringed = [...document.querySelectorAll('svg.ff-map g.ffc-pin--wc')].find((q) => q.querySelector(':scope > circle[stroke]'));
+    const c = ringed?.querySelector(':scope > g circle')?.getBoundingClientRect();
+    return c ? { top: c.top, bottom: c.bottom, sheetTop: document.querySelector('.sheet.open').getBoundingClientRect().top } : null;
+  });
+  check(`${name}: B3 after the sheet grows the pin is still above it`, inView && inView.bottom <= inView.sheetTop, JSON.stringify(inView));
+  // Swipe down from full closes.
+  const g3 = await p.locator('.sheet .griparea').boundingBox();
+  await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2); await p.mouse.down();
+  for (const dy of [30, 90, 180, 260]) await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2 + dy);
+  await p.mouse.up(); await p.waitForTimeout(600);
+  check(`${name}: B3 swiping the handle down closes the sheet, the chip stays on`, (await p.locator('.sheet.open').count()) === 0 && (await p.locator('.ffc-chip[aria-pressed="true"]').count()) === 1);
+  await p.close();
+}
+
 // ---- A2: the map safe area ----
 // Every pan that targets a pin centres it between the header + chip row and
 // the top of the open sheet, and the pan limits run far enough past the

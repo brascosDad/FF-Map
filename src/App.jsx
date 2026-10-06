@@ -155,8 +155,15 @@ export default function App() {
     const go = () => revealAt(reveal.x, reveal.y, { minLevel: reveal.minLevel });
     const a = requestAnimationFrame(() => requestAnimationFrame(go));
     const b = setTimeout(go, 220);
-    return () => { cancelAnimationFrame(a); clearTimeout(b); };
+    const c = setTimeout(go, 320);   // after a peek <-> full resize has settled
+    return () => { cancelAnimationFrame(a); clearTimeout(b); clearTimeout(c); };
   }, [reveal, revealAt]);
+
+  // The sheet changed height (peek <-> full): bring the pin into the new safe
+  // area again, once the sheet has finished growing or shrinking.
+  function handleDetentChange() {
+    setReveal((r) => (r ? { ...r, n: r.n + 1, minLevel: 0 } : r));
+  }
 
   function handleAreaClick(cluster) {
     if (suppressClickRef.current) return;
@@ -335,6 +342,8 @@ export default function App() {
             onSelect={handleDirectorySelect}
             onOpenBooth={handleBoothFromList}
             onBack={handleSheetBack}
+            chipOn={!!filter}
+            onDetentChange={handleDetentChange}
             onClose={closeAll}
             onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
           />
