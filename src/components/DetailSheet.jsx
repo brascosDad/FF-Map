@@ -381,6 +381,9 @@ const SWAP_OUT_MS = 140;
 const CLOSE_MS = 250;
 // Drag the sheet down past this share of its own height and it closes; let go
 // short of it and it springs back. A flick beats the distance either way.
+// How long a push or pop takes -- --motion-panel (250ms) plus a frame, so the
+// leaving layer is only removed once its animation has finished.
+const TRANSITION_MS = 270;
 const DISMISS_FRACTION = 0.3;
 const FLICK_VELOCITY = 0.5;   // px per ms
 const FLICK_MIN_PX = 40;      // ...and it has to actually travel
@@ -427,20 +430,15 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // back. Where the list is, and how far it was scrolled, is remembered so
   // back lands exactly where you left.
   const scrollEl = useRef(null);
+  const outScrollEl = useRef(null);
+  const stageEl = useRef(null);
   const listScroll = useRef(0);
   const prevKind = useRef(null);
+  const lastLayers = useRef(null);
+  const headerH = useRef(0);
+  const [transition, setTransition] = useState(null);
   const kind = shown.openBooth ? 'detail' : shown.openArea ? 'list' : 'other';
-  const viewDir = prevKind.current === 'list' && kind === 'detail' ? 'forward'
-    : prevKind.current === 'detail' && kind === 'list' ? 'back' : null;
   const canGoBack = kind === 'detail' && !!shown.openArea;
-  useLayoutEffect(() => {
-    const el = scrollEl.current;
-    if (el && prevKind.current !== kind) {
-      if (kind === 'detail') el.scrollTop = 0;
-      else if (kind === 'list' && prevKind.current === 'detail') el.scrollTop = listScroll.current;
-    }
-    prevKind.current = kind;
-  }, [kind]);
   const openFromList = (booth) => {
     listScroll.current = scrollEl.current?.scrollTop || 0;
     onOpenBooth(booth);
@@ -500,6 +498,63 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     if (docked && part === BODY) return <PanelDirectory onSelect={onSelect} />;
     return null;
   };
+
+  // The two layers of what is on screen: the header (back row, title line) and
+  // the body. Kept so that crossing between a list and a booth can show the
+  // layer that is LEAVING while the one that is arriving slides in.
+  const headerLayer = <>{backBtn}{renderThing(HEAD)}</>;
+  const bodyLayer = renderThing(BODY);
+  const accent = accentFor(shown.openId, shown.openArea, shown.openBooth);
+
+  // Push and pop (round 2, item 2): a standard navigation transition inside ONE
+  // sheet. Push (list -> booth): the booth slides in from the right while the
+  // list shifts slightly left underneath it. Pop (back): the booth slides out to
+  // the right and the list returns at its previous scroll position. The sheet's
+  // height does not change (CSS holds it while there is a stack), the close does
+  // not move (it is not in either layer), and the header's own height eases
+  // between its two lengths. Reduced motion: a crossfade, no slide.
+  useLayoutEffect(() => {
+    const was = prevKind.current;
+    prevKind.current = kind;
+    const crossing = was && was !== kind && (was === 'list' || was === 'detail') && (kind === 'list' || kind === 'detail');
+    if (!crossing) { setTransition(null); return; }
+    const dir = kind === 'detail' ? 'forward' : 'back';
+    const last = lastLayers.current;
+    if (!last) return;
+    setTransition({ dir, header: last.header, body: last.body, accent: last.accent, itemPager: last.itemPager, listScroll: listScroll.current });
+    // The header changes length between the two levels (a back row appears or
+    // goes): ease its height instead of snapping the body down by a row.
+    const stage = stageEl.current;
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (stage && !reduce) {
+      const h1 = stage.offsetHeight, h0 = headerH.current;
+      if (h0 && h0 !== h1) {
+        stage.style.height = `${h0}px`;
+        void stage.offsetHeight;
+        stage.style.transition = 'height var(--panel-motion) var(--ease)';
+        stage.style.height = `${h1}px`;
+      }
+    }
+    const t = setTimeout(() => {
+      setTransition(null);
+      if (stage) { stage.style.height = ''; stage.style.transition = ''; }
+    }, TRANSITION_MS);
+    return () => clearTimeout(t);
+  }, [kind]);
+  // Scroll positions: a booth opens at the top; a list returns where you left it.
+  useLayoutEffect(() => {
+    const el = scrollEl.current;
+    if (el) {
+      if (kind === 'detail' && transition?.dir === 'forward') el.scrollTop = 0;
+      else if (kind === 'list' && transition?.dir === 'back') el.scrollTop = listScroll.current;
+    }
+    if (outScrollEl.current && transition?.dir === 'forward') outScrollEl.current.scrollTop = transition.listScroll;
+  }, [kind, transition]);
+  // Remember what was drawn, for the next crossing.
+  useLayoutEffect(() => {
+    lastLayers.current = { header: headerLayer, body: bodyLayer, accent, itemPager: showItemPager ? itemPager : null };
+    headerH.current = stageEl.current ? stageEl.current.offsetHeight : 0;
+  });
 
   // Focus moves into the sheet when it opens and goes back to the map when it
   // closes, so a keyboard user is never dropped on <body> with no landmark.
@@ -603,6 +658,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       data-detent={detent}
       data-peekable={peekable ? 'true' : undefined}
       data-footer={showItemPager ? 'true' : undefined}
+      data-stack={shown.openArea ? 'true' : undefined}
     >
       {/* The handle: a thin strip at the top, kept for resizing and for screen
           readers (Apple's HIG and Material both keep a grabber). It is a 44px
@@ -630,15 +686,18 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
         </button>
       )}
 
-      {/* The head: the back row (when there is a list to go back to), then the
-          title line -- badge, title, and on the bottom sheet the close ×,
-          right-aligned, at least --tap-min. Pinned: only the body scrolls. A
-          drag that starts on it pulls the sheet, like the handle. */}
+      {/* The header: ONE fixed layout for every state. The close is always
+          top-right on its first row and is NOT part of either layer, so it never
+          moves or animates while the content crosses between a list and a
+          booth. The layers inside the stage are the back row (when there is a
+          list to go back to) and the title line; the leaving layer, if any, is
+          drawn over/under the arriving one for the length of the transition. A
+          drag that starts on the header pulls the sheet, like the handle. */}
       {shownOpen && (
         <div className="ffc-panel__header" {...dragHandlers}>
-          <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>
-            {backBtn}
-            {renderThing(HEAD)}
+          <div className="ffc-panel__stage" ref={stageEl}>
+            <div className="ffc-panel__layer" key={kind} data-dir={transition?.dir}>{headerLayer}</div>
+            {transition && <div className="ffc-panel__layer ffc-panel__layer--out" data-dir={transition.dir} aria-hidden="true" inert>{transition.header}</div>}
           </div>
           {!docked && (
             <button className="ffc-panel__close" ref={closeRef} onClick={onClose} aria-label="Close detail">
@@ -647,19 +706,26 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
           )}
         </div>
       )}
-      <div className="ffc-panel__body" ref={scrollEl} style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>
-        {/* Keyed by what the sheet is showing (list or detail), so crossing
-            between the two plays the slide and nothing else does -- stepping
-            booth to booth swaps in place, no motion. */}
-        <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>{renderThing(BODY)}</div>
+      {/* The body: the arriving layer scrolls; the leaving one is a still copy
+          at the scroll position it had. Keyed by what the sheet is showing (list
+          or detail), so crossing between the two plays the push or pop and
+          nothing else does -- paging booth to booth swaps in place, no motion. */}
+      <div className="ffc-panel__bodystage">
+        <div className="ffc-panel__body ffc-panel__layer" ref={scrollEl} key={kind} data-dir={transition?.dir}
+             onScroll={(e) => { if (kind === 'list') listScroll.current = e.currentTarget.scrollTop; }}
+             style={{ '--sheet-accent': accent }}>{bodyLayer}</div>
+        {transition && (
+          <div className="ffc-panel__body ffc-panel__layer ffc-panel__layer--out" ref={outScrollEl} data-dir={transition.dir}
+               aria-hidden="true" inert style={{ '--sheet-accent': transition.accent }}>{transition.body}</div>
+        )}
       </div>
 
       {/* The ItemPager's footer: pinned to the bottom of the sheet, above the
           home bar, so the buttons are where the thumb left them whatever the
-          booth's text does to the body above. */}
-      {showItemPager && (
-        <div className="ffc-panel__footer">
-          <ItemPager pos={itemPager.pos} total={itemPager.total} onStep={onStepBooth} />
+          booth's text does to the body above. It fades with the push and pop. */}
+      {(showItemPager || transition?.itemPager) && (
+        <div className="ffc-panel__footer" data-leaving={!showItemPager ? 'true' : undefined}>
+          <ItemPager pos={(itemPager || transition.itemPager).pos} total={(itemPager || transition.itemPager).total} onStep={onStepBooth} />
         </div>
       )}
 

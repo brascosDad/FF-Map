@@ -1532,6 +1532,65 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- Push and pop inside one sheet: height held, slide from / to the right ----
+// Sampled every frame, in the page: the sheet's height never changes during a
+// push or a pop; both layers exist for the length of the transition; the
+// arriving booth comes in from the RIGHT (translateX positive and falling) and on
+// pop the leaving booth goes out to the RIGHT (translateX positive and rising);
+// the close does not move. Reduced motion: no transform, a crossfade.
+for (const [name, w, h, reduce] of [['iPhone SE', 375, 667, false], ['iPhone 16', 393, 852, false], ['reduced motion', 375, 667, true]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true, reducedMotion: reduce ? 'reduce' : 'no-preference' });
+  const p = await ctx.newPage();
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n; i++) { await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click'); await p.waitForTimeout(600); if (await p.locator('button.ffc-boothrow').count()) break; }
+  // Run `act` in the page and sample every frame for 500ms.
+  const sample = (act) => p.evaluate(async (act) => {
+    const frames = [];
+    const sheet = document.querySelector('.sheet:not(.docked)');
+    const read = (t0) => {
+      const bodies = [...sheet.querySelectorAll('.ffc-panel__bodystage > .ffc-panel__body')];
+      const x = (el) => { const m = new DOMMatrix(getComputedStyle(el).transform); return m.m41; };
+      const inc = bodies.find((b) => !b.classList.contains('ffc-panel__layer--out')), out = bodies.find((b) => b.classList.contains('ffc-panel__layer--out'));
+      return { t: Math.round(performance.now() - t0), h: Math.round(sheet.getBoundingClientRect().height), n: bodies.length,
+               inX: inc ? Math.round(x(inc)) : null, outX: out ? Math.round(x(out)) : null,
+               inAnim: inc ? getComputedStyle(inc).animationName : null, closeTop: Math.round(sheet.querySelector('.ffc-panel__close').getBoundingClientRect().top) };
+    };
+    const t0 = performance.now();
+    frames.push(read(t0));
+    document.querySelector(act.sel === 'row' ? 'button.ffc-boothrow:nth-of-type(6)' : '.ffc-panel__back').click();
+    await new Promise((res) => { const tick = () => { frames.push(read(t0)); if (performance.now() - t0 < 520) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); });
+    return frames;
+  }, act);
+  const hList = await p.evaluate(() => Math.round(document.querySelector('.sheet:not(.docked)').getBoundingClientRect().height));
+  const scrolled = await p.evaluate(() => { const b = document.querySelector('.sheet .ffc-panel__body'); b.scrollTop = 300; return b.scrollTop; });
+  const push = await sample({ sel: 'row' });
+  const mid = push.filter((f) => f.n === 2);
+  check(`${name}: push: the sheet's height never changes (${hList}px)`, push.every((f) => Math.abs(f.h - hList) <= 1), `heights ${[...new Set(push.map((f) => f.h))].join(',')}`);
+  check(`${name}: push: both layers are on screen during the transition, one after`, mid.length >= (reduce ? 2 : 6) && push[push.length - 1].n === 1, `${mid.length} frames with two layers; final ${push[push.length - 1].n}`);
+  if (!reduce) {
+    const xs = mid.map((f) => f.inX).filter((v) => v != null);
+    check(`${name}: push: the booth comes in from the right`, xs.length >= 4 && xs[0] > 100 && xs[xs.length - 1] < xs[0] && xs.every((v, i) => i === 0 || v <= xs[i - 1] + 1), `translateX ${xs.join(' ')}`);
+    const un = mid.map((f) => f.outX).filter((v) => v != null);
+    check(`${name}: push: the list shifts left underneath`, un.length >= 4 && un[un.length - 1] < -20, `translateX ${un.join(' ')}`);
+  } else {
+    check(`${name}: reduced motion: no slide, a crossfade`, mid.every((f) => f.inX === 0 && f.outX === 0) && mid.some((f) => /fade-in/.test(f.inAnim || '')), `inAnim ${mid[0]?.inAnim}; inX ${[...new Set(mid.map((f) => f.inX))]}`);
+  }
+  check(`${name}: push: the close does not move`, new Set(push.map((f) => f.closeTop)).size === 1, [...new Set(push.map((f) => f.closeTop))].join(','));
+  const pop = await sample({ sel: 'back' });
+  const pm = pop.filter((f) => f.n === 2);
+  check(`${name}: pop: the sheet's height never changes`, pop.every((f) => Math.abs(f.h - hList) <= 1), `heights ${[...new Set(pop.map((f) => f.h))].join(',')}`);
+  if (!reduce) {
+    const ox = pm.map((f) => f.outX).filter((v) => v != null);
+    check(`${name}: pop: the booth goes out to the right`, ox.length >= 4 && ox[ox.length - 1] > 100 && ox.every((v, i) => i === 0 || v >= ox[i - 1] - 1), `translateX ${ox.join(' ')}`);
+  }
+  check(`${name}: pop: the close does not move`, new Set(pop.map((f) => f.closeTop)).size === 1);
+  const back = await p.evaluate(() => ({ scroll: document.querySelector('.sheet .ffc-panel__body').scrollTop, layers: document.querySelectorAll('.sheet .ffc-panel__bodystage > .ffc-panel__body').length }));
+  check(`${name}: pop: the list is back at its scroll position, one layer`, Math.abs(back.scroll - scrolled) <= 2 && back.layers === 1, `scroll ${back.scroll} (was ${scrolled}); ${back.layers} layer(s)`);
+  await ctx.close();
+}
+
 // ---- Header: Close is always top-right, on the first row under the handle ----
 // The x never moves vertically between sheet states: a pin card, a stage, an
 // area list, a booth pushed from a list (back at the left, x at the right, the

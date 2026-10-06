@@ -265,11 +265,14 @@
    has no padding of its own: the body pads itself, so the footer can run edge
    to edge. With a footer the body needs no home-bar clearance (the footer has
    it); without one it carries it. */
-.ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--space-2) var(--panel-pad) max(var(--space-5), env(safe-area-inset-bottom)); }
+.ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; width: 100%; padding: var(--space-2) var(--panel-pad) max(var(--space-5), env(safe-area-inset-bottom)); }
 .ffc-panel--bottom[data-footer='true'] .ffc-panel__body { padding-bottom: var(--space-4); }
 /* A booth's detail never gets shorter than --sheet-detail-min-height (B2), so
    the footer does not move while paging. */
 .ffc-panel--bottom[data-view='detail']:not([data-detent='peek']) { min-height: var(--sheet-detail-min-height); }
+/* While there is a stack (an area's list, or a booth pushed from it) the sheet is
+   one fixed frame: the height of the list, whichever level you are on. */
+.ffc-panel--bottom[data-stack='true'] { height: var(--sheet-max-height); }
 /* Peek (B3): the title row plus a line or two. max-height, not height: the
    sheet still sizes to its content, a peek is just a lower ceiling. */
 .ffc-panel--bottom[data-detent='peek'][data-peekable='true'] { max-height: calc(var(--sheet-peek-height) + env(safe-area-inset-bottom)); }
@@ -316,6 +319,57 @@
 /* Back, not close. The docked panel is furniture -- there is nothing to
    dismiss, only a list to return to. */
 .ffc-panel--right .ffc-panel__back {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: var(--tap-min);
+  padding: 0 var(--panel-pad);
+  border: 0; border-bottom: 1px solid var(--panel-rule);
+  background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--panel-muted);
+}
+.ffc-panel--right .ffc-panel__back:hover { color: var(--panel-title); }
+.ffc-panel--right .ffc-panel__back:active { background: var(--surface-pressed); }
+.ffc-panel--right .ffc-panel__back span { font-size: 20px; line-height: 1; }
+
+/* ---- Navigation: push and pop inside ONE sheet (B1, round 2) --------------
+   An area's booth list and a booth opened from it are two levels of one stack
+   in one sheet; the sheet never closes and reopens, and its HEIGHT does not
+   change while there is a stack (data-stack holds it at --sheet-max-height, the
+   list's own height; the booth's content scrolls if it must).
+     push  (list -> booth)  the booth slides in from the RIGHT; the list shifts
+                            a little left underneath it
+     pop   (back)           the booth slides out to the RIGHT; the list returns
+                            at its previous scroll position
+   Both layers are on screen for one --panel-motion: the arriving layer is in the
+   flow, the leaving one is a still copy laid over it. The close, the handle and
+   the footer are not layers, so they stay put. Reduced motion: a crossfade, no
+   slide. The header's own height eases between its two lengths (JS). */
+.ffc-panel { --panel-push-shift: 30%; }
+.ffc-panel__stage { position: relative; overflow: hidden; }
+.ffc-panel__bodystage { flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.ffc-panel__layer { background: var(--panel-bg); }
+.ffc-panel__layer--out { position: absolute; inset: 0; pointer-events: none; }
+.ffc-panel__body.ffc-panel__layer--out { overflow: hidden; }
+.ffc-panel__layer[data-dir] { position: relative; }
+.ffc-panel__layer--out[data-dir] { position: absolute; }
+.ffc-panel__layer[data-dir='forward']:not(.ffc-panel__layer--out) { z-index: 2; box-shadow: var(--shadow-push); animation: ffc-push-in var(--panel-motion) var(--ease) both; }
+.ffc-panel__layer--out[data-dir='forward'] { z-index: 1; animation: ffc-push-under var(--panel-motion) var(--ease) both; }
+.ffc-panel__layer--out[data-dir='back'] { z-index: 2; box-shadow: var(--shadow-push); animation: ffc-pop-out var(--panel-motion) var(--ease) both; }
+.ffc-panel__layer[data-dir='back']:not(.ffc-panel__layer--out) { z-index: 1; animation: ffc-pop-under var(--panel-motion) var(--ease) both; }
+@keyframes ffc-push-in { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes ffc-push-under { from { transform: none; opacity: 1; } to { transform: translateX(calc(var(--panel-push-shift) * -1)); opacity: 0.4; } }
+@keyframes ffc-pop-out { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes ffc-pop-under { from { transform: translateX(calc(var(--panel-push-shift) * -1)); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes ffc-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ffc-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ffc-panel__layer[data-dir]:not(.ffc-panel__layer--out) { animation: ffc-fade-in 120ms linear both; box-shadow: none; }
+  .ffc-panel__layer--out[data-dir] { animation: ffc-fade-out 120ms linear both; box-shadow: none; }
+}
+.ffc-panel__stage .ffc-panel__layer { box-shadow: none; }   /* the shadow is the body's: the header is one strip */
+/* The ItemPager's footer arrives and leaves with the push and pop. */
+.ffc-panel__footer:has(.ffc-itempager) { animation: ffc-fade-in var(--panel-motion) var(--ease) both; }
+.ffc-panel__footer[data-leaving='true'] { animation: ffc-fade-out var(--panel-motion) var(--ease) both; }
+.ffc-panel__back {
   display: flex; align-items: center; gap: var(--space-2);
   width: 100%; min-height: var(--tap-min);
   padding: 0 var(--panel-pad);
