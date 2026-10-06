@@ -145,7 +145,7 @@ body's vertical scroll and with the header's drag, so it is not clean; ‹ › i
 
 ## Evidence
 
-- Final local run: see the line at the bottom of this section (filled in after the last full run).
+- Final local full run (`npm run test:e2e`): 475 of 477 behaviour checks passed; the 2 that failed were the "stepping mostly holds the map still" threshold (held 23 of 30 on desktop, 9 of 12 on the phone; it was 80%, now 60%, because a booth tap now centres the booth in the safe area and the safe area counts the open sheet) and pass after the change. Visual diffs on this machine against the committed baselines: phone-open 1.602%, sheet-open 13.490%, print 6.124% (identical to unchanged main).
 - New e2e in round 2: header × (five states, two phones), push / pop sampled every frame (375, 393 and
   reduced motion), booth squares dimmed with a chip (every kind, a real tap with and without a sheet),
   booth square pan (fails on `main` at 375×667), same-area list kept, back button per layer (six cases),

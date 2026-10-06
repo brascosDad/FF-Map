@@ -957,7 +957,10 @@ for (const [name, vp, box] of [
     const s = await selPos();
     if (!s || s.x < 0 || s.y < 0 || s.x > vp.width || s.y > vp.height) lost++;
   }
-  check(`${name}: stepping mostly holds the map still`, held >= Math.ceil(steps * 0.8),
+  // 60%, down from 80%: a booth tap now centres the booth in the safe area (item 4.4)
+  // and the safe area counts the open sheet, so a diagonal row leaves it sooner. It
+  // still holds while the booth is inside the band and moves once when it leaves.
+  check(`${name}: stepping mostly holds the map still`, held >= Math.ceil(steps * 0.6),
     `held ${held} of ${steps}, moved ${moved}`);
   check(`${name}: the selected booth is never lost off screen`, lost === 0, `${lost} step(s) off screen`);
   // The other half of the contract, and the reason this is not just `held === steps`:
