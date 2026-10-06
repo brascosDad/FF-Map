@@ -1,5 +1,6 @@
-// Before/after screenshots for a PR: the phone at open (390px), the desktop
-// (1440px) and the print sheet (?print=1), from `main` and from the branch.
+// Before/after screenshots for a PR: the phone at open (390, 375 and 430px), the
+// sheet in the states that changed, the desktop (1440px) and the print sheet
+// (?print=1), from `main` and from the branch.
 //
 //     npm run pr-shots                 # main vs the checked-out branch
 //     npm run pr-shots -- --base=xyz   # another base ref
@@ -24,10 +25,40 @@ import { launch } from './lib/browser.mjs';
 const OUT = resolve('docs/pr-shots');
 const BASE = (process.argv.find((a) => a.startsWith('--base=')) || '--base=main').slice(7);
 
-// One capture each of what a reviewer wants to see: the phone as it opens, the
-// desktop with its panel, the paper.
+// Steps that put the phone in a state a reviewer wants to see. Both use only
+// what exists on every version of the page (area markers, booth rows, chips,
+// pins), so the same steps run on `main` and on the branch.
+//   booth      an art-market list, then a booth opened from it (the sheet's
+//              back row, title line and ItemPager on this branch)
+//   chipSheet  Restrooms on, then one of its pins tapped (peek height on this
+//              branch)
+const booth = async (page) => {
+  const n = await page.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n; i++) {
+    await page.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click');
+    await page.waitForTimeout(500);
+    if (await page.locator('button.boothrow').count()) break;
+  }
+  await page.locator('button.boothrow').nth(5).dispatchEvent('click');
+};
+const chipSheet = async (page) => {
+  await page.locator('.ffc-chip', { hasText: 'Restrooms' }).click();
+  await page.waitForTimeout(650);
+  await page.locator('svg.ff-map g.ffc-pin--wc').nth(1).dispatchEvent('click');
+};
+const PHONE = { isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
+
+// One capture each of what a reviewer wants to see: the phone as it opens (390,
+// and the 375 and 430 widths the sheet is tuned at), the sheet in the two states
+// that changed, the desktop with its panel, the paper.
 const SHOTS = [
-  { name: 'phone', path: '/', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
+  { name: 'phone', path: '/', viewport: { width: 390, height: 844 }, ...PHONE },
+  { name: 'phone-375', path: '/', viewport: { width: 375, height: 667 }, ...PHONE },
+  { name: 'phone-430', path: '/', viewport: { width: 430, height: 932 }, ...PHONE },
+  { name: 'booth-375', path: '/', viewport: { width: 375, height: 667 }, steps: booth, ...PHONE },
+  { name: 'booth-430', path: '/', viewport: { width: 430, height: 932 }, steps: booth, ...PHONE },
+  { name: 'chip-sheet-375', path: '/', viewport: { width: 375, height: 667 }, steps: chipSheet, ...PHONE },
+  { name: 'chip-sheet-430', path: '/', viewport: { width: 430, height: 932 }, steps: chipSheet, ...PHONE },
   { name: 'desktop', path: '/', viewport: { width: 1440, height: 900 } },
   { name: 'print', path: '/?print=1', viewport: { width: 1632, height: 1056 }, fullPage: true },
 ];
@@ -49,11 +80,12 @@ async function capture(browser, dist, tag) {
   const server = await serve(dist);
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
-    for (const { name, path, fullPage, ...ctx } of SHOTS) {
+    for (const { name, path, fullPage, steps, ...ctx } of SHOTS) {
       const page = await browser.newPage(ctx);
       await page.goto(base + path, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(400);
+      if (steps) { await steps(page); await page.waitForTimeout(1000); }
       await page.screenshot({ path: join(OUT, `${tag}-${name}.png`), fullPage });
       await page.close();
     }
