@@ -117,10 +117,10 @@ for (const [name, w, h] of SIZES) {
     // Eleven categories (the beverage stations are hidden since 9/23), the
     // hollow "no number" square, the featured star.
     check(`${name}: key sits in the panel footer`,
-      (await p.locator('.panel-foot .ffc-legend__dot').count()) === 13,
-      `${await p.locator('.panel-foot .ffc-legend__dot').count()} swatches`);
+      (await p.locator('.ffc-panel__footer .ffc-legend__dot').count()) === 13,
+      `${await p.locator('.ffc-panel__footer .ffc-legend__dot').count()} swatches`);
     check(`${name}: no scroll region hides the key`,
-      await p.locator('.panel-foot').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
+      await p.locator('.ffc-panel__footer').evaluate((el, vh) => el.getBoundingClientRect().bottom <= vh, h));
 
     // Row -> detail -> back. Closing a docked detail returns to the list; it
     // does not dismiss the panel, because the panel is furniture.
@@ -131,8 +131,8 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: selected pin is ringed on the map`,
       (await p.locator('svg.ff-map .ff-pin circle[stroke]').count()) >= 2);
     check(`${name}: docked detail offers back, not close`,
-      (await p.locator('.panel-back').count()) === 1 && (await p.locator('.sheet .close').count()) === 0);
-    await p.locator('.panel-back').click();
+      (await p.locator('.ffc-panel__back').count()) === 1 && (await p.locator('.sheet .ffc-panel__close').count()) === 0);
+    await p.locator('.ffc-panel__back').click();
     await p.waitForTimeout(400);
     check(`${name}: back returns to the full list`,
       (await p.locator('.ffc-poirow').count()) === rows);
@@ -146,7 +146,7 @@ for (const [name, w, h] of SIZES) {
     await p.waitForTimeout(400);
     check(`${name}: category row filters the map`,
       (await p.locator('.chips .ffc-chip[aria-pressed="true"]').count()) === 1);
-    await p.locator('.panel-back').click();
+    await p.locator('.ffc-panel__back').click();
     await p.waitForTimeout(400);
   }
 
@@ -280,7 +280,7 @@ for (const [name, w, h] of SIZES) {
     if (!t) return check(`${name}: tapping a map feature opens detail`, false, 'no feature on screen');
     await p.mouse.click(t.x + t.width / 2, t.y + t.height / 2);
     await p.waitForTimeout(450);
-    const titles = await p.locator('.sheet .hd h3').allTextContents();
+    const titles = await p.locator('.sheet .ffc-panel__titleline h3').allTextContents();
     check(`${name}: tapping a map feature opens detail`, titles.length > 0, titles.join(' | '));
     check(`${name}: detail title is real, not undefined`,
       titles.length > 0 && !/undefined|null|NaN/.test(titles.join(' ')), titles.join(' | '));
@@ -294,7 +294,7 @@ for (const [name, w, h] of SIZES) {
     await p.mouse.click(bare.x, bare.y);
     await p.waitForTimeout(450);
     const stillOpen = docked
-      ? (await p.locator('.sheet .close').count()) > 0
+      ? (await p.locator('.sheet .ffc-panel__close').count()) > 0
       : (await p.locator('.sheet.open').count()) > 0;
     check(`${name}: background tap dismisses detail`, !stillOpen);
   });
@@ -312,7 +312,7 @@ for (const [name, w, h] of SIZES) {
     await p.mouse.up();
     await p.waitForTimeout(450);
     const opened = docked
-      ? (await p.locator('.sheet .close').count()) > 0
+      ? (await p.locator('.sheet .ffc-panel__close').count()) > 0
       : (await p.locator('.sheet.open').count()) > 0;
     check(`${name}: dragging from a pin pans without opening detail`, !opened);
   });
@@ -340,16 +340,16 @@ for (const [name, w, h] of SIZES) {
       if (bb.x < 4 || bb.y < 4 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
       await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
       await p.waitForTimeout(400);
-      opened = (await p.locator('.ffc-pager').count()) > 0;
+      opened = (await p.locator('.ffc-itempager').count()) > 0;
     }
     check(`${name}: tapping a booth square opens the ItemPager`, opened);
     if (!opened) return;
 
     const readPos = async () => {
-      const t = await p.locator('.ffc-pager__pos').textContent();
+      const t = await p.locator('.ffc-itempager__pos').textContent();
       const m = t.match(/^(\d+) of (\d+)$/);
-      // The area is in the sheet's subtitle now; the pager says only "11 of 139".
-      const area = ((await p.locator('.sheet .sub').first().textContent()) || '').split(' · ')[0];
+      // The area is in the sheet's subtitle now; the ItemPager says only "11 of 139".
+      const area = ((await p.locator('.sheet .ffc-panel__sub').first().textContent()) || '').split(' · ')[0];
       return m ? { i: +m[1], total: +m[2], area } : null;
     };
     const start = await readPos();
@@ -359,7 +359,7 @@ for (const [name, w, h] of SIZES) {
 
     // Wrap is checked in one click rather than by walking the whole area --
     // stepping 60+ booths three times over is what made this suite crawl.
-    await p.locator('.ffc-pager button').first().click();   // previous
+    await p.locator('.ffc-itempager button').first().click();   // previous
     await p.waitForTimeout(150);
     const back = await readPos();
     const expected = start.i === 1 ? start.total : start.i - 1;
@@ -371,17 +371,17 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: total matches the area, not all booths`,
       [58, 27, 54, 11, 16].includes(start.total), `${start.total} in ${start.area}`);
 
-    await p.locator('.ffc-pager button').last().click();    // forward again
+    await p.locator('.ffc-itempager button').last().click();    // forward again
     await p.waitForTimeout(150);
     const fwd = await readPos();
     check(`${name}: forward caret returns`, fwd && fwd.i === start.i, fwd ? `${back?.i} -> ${fwd.i}` : 'unparsed');
 
-    const btn = await p.locator('.ffc-pager button').first().boundingBox();
-    // The pager is the sheet's footer: it sits under the body, inside the sheet,
-    // above the bottom edge -- not above the title where the old stepper was.
+    const btn = await p.locator('.ffc-itempager button').first().boundingBox();
+    // The ItemPager is the sheet's footer: it sits under the body, inside the sheet,
+    // above the bottom edge -- not above the title.
     const fp = await p.evaluate(() => {
       const f = document.querySelector('.sheet .ffc-panel__footer').getBoundingClientRect();
-      const sc = document.querySelector('.sheet .panel-scroll').getBoundingClientRect();
+      const sc = document.querySelector('.sheet .ffc-panel__body').getBoundingClientRect();
       const sh = document.querySelector('.sheet').getBoundingClientRect();
       return { belowBody: f.top >= sc.bottom - 1, insideSheet: f.bottom <= sh.bottom + 1, gap: Math.round(sh.bottom - f.bottom) };
     });
@@ -393,9 +393,9 @@ for (const [name, w, h] of SIZES) {
   // ---- the 2026 assignments: every art booth names its artist, and an area
   // sheet lists its booths so an artist can be found by name ----
   await safe(`${name}: artist assignments`, async () => {
-    // The stepper block above left an art or food booth open. Whatever it is,
+    // The ItemPager block above left an art or food booth open. Whatever it is,
     // the sheet never promises names that are "coming".
-    const body = await p.locator('.sheet .panel-scroll').textContent();
+    const body = await p.locator('.sheet .ffc-panel__body').textContent();
     check(`${name}: no booth still says artist names are coming`, !/arrive with the 2026/.test(body || ''));
     // Open an area from its marker. Any run will do; the count is checked
     // against whichever one it was.
@@ -409,26 +409,26 @@ for (const [name, w, h] of SIZES) {
       if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
       await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
       await p.waitForTimeout(450);
-      opened = (await p.locator('.boothrow').count()) > 0;
+      opened = (await p.locator('.ffc-boothrow').count()) > 0;
     }
     check(`${name}: an area sheet lists its booths`, opened);
     if (!opened) return;
-    const rows = await p.locator('button.boothrow').count();
+    const rows = await p.locator('button.ffc-boothrow').count();
     // 58 on Candler Park Dr; 27 on McLendon + Achieve with Steve; 54 + 11
     // Kidlandia + AWARE Wildlife in the park. The unnumbered pair are rows too.
     check(`${name}: the list is the whole run`, [58, 28, 66].includes(rows), `${rows} rows`);
-    const named = await p.locator('button.boothrow .who').allTextContents();
+    const named = await p.locator('button.ffc-boothrow .ffc-boothrow__who').allTextContents();
     check(`${name}: every row names an artist or says it is open`,
       named.every((t) => t.trim().length > 0 && !/undefined|null/.test(t)));
-    const first = await p.locator('button.boothrow').first();
-    const num = (await first.locator('.n').textContent()).trim();
+    const first = await p.locator('button.ffc-boothrow').first();
+    const num = (await first.locator('.ffc-boothrow__number').textContent()).trim();
     await first.click();
     await p.waitForTimeout(600);
-    const title = await p.locator('.sheet .hd h3').textContent();
+    const title = await p.locator('.sheet .ffc-panel__titleline h3').textContent();
     check(`${name}: tapping a row opens that booth`, title === `Booth ${num}`, `${title} for row ${num}`);
-    const who = await p.locator('.sheet .li b').first().textContent().catch(() => null);
+    const who = await p.locator('.sheet .ffc-listrow b').first().textContent().catch(() => null);
     check(`${name}: the booth sheet names the business`, !!who && who.trim().length > 0, who || '(none)');
-    check(`${name}: the map is at the booth zoom`, (await p.locator('.ffc-panel__back').count()) > 0 || (await p.locator('.sheet .hd h3').textContent()).startsWith('Booth'));
+    check(`${name}: the map is at the booth zoom`, (await p.locator('.ffc-panel__back').count()) > 0 || (await p.locator('.sheet .ffc-panel__titleline h3').textContent()).startsWith('Booth'));
   });
 
   // ---- Esc closes, focus returns to the map ----
@@ -497,8 +497,8 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     const b = await p.locator(sel).first().boundingBox();
     await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     await p.waitForTimeout(700);
-    titles.push(await p.locator('.sheet .hd h3').first().textContent());
-    await p.locator('.sheet .close').click();
+    titles.push(await p.locator('.sheet .ffc-panel__titleline h3').first().textContent());
+    await p.locator('.sheet .ffc-panel__close').click();
     await p.waitForTimeout(350);
     await p.locator('.zoomctl button[aria-label="Reset to overview"]').click();
     await p.waitForTimeout(500);
@@ -636,8 +636,8 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
   const c = await p.locator('svg.ff-map [data-booth="spine-011"] rect').first().boundingBox();
   await p.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
   await p.waitForTimeout(500);
-  const hd = await p.locator('.sheet .hd h3').first().innerText().catch(() => '');
-  const sub = await p.locator('.sheet .sub').first().innerText().catch(() => '');
+  const hd = await p.locator('.sheet .ffc-panel__titleline h3').first().innerText().catch(() => '');
+  const sub = await p.locator('.sheet .ffc-panel__sub').first().innerText().catch(() => '');
   const body = await p.locator('.sheet').first().innerText().catch(() => '');
   check('mobile: booth 11\'s sheet says Featured artist and names her', /Booth 11/.test(hd) && /Featured artist/.test(sub) && /Madison O'Brien/.test(body), `${hd} · ${sub}`);
   await p.close();
@@ -812,7 +812,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   const p = await browser.newPage({ viewport: { width: w, height: h } });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
-  const title = async () => (await p.locator('.sheet .hd h3').allTextContents()).join('|');
+  const title = async () => (await p.locator('.sheet .ffc-panel__titleline h3').allTextContents()).join('|');
   // The first pin of that category that is on screen: some water stations
   // wait for Detail (from: 'detail'), and the rest sit wherever the plan
   // puts them, not necessarily in the middle of a phone's first step.
@@ -851,7 +851,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
     const { at, i } = await pick('g.ffc-pin--wc');
     await p.mouse.click(...at); await p.waitForTimeout(700);
     const v1 = await vb();
-    await p.locator('.sheet .close, .panel-back').first().click(); await p.waitForTimeout(400);
+    await p.locator('.sheet .ffc-panel__close, .ffc-panel__back').first().click(); await p.waitForTimeout(400);
     await p.mouse.dblclick(...await centreOf('g.ffc-pin--wc', i)); await p.waitForTimeout(700);
     const t = await title();
     check(`${name}: double-tap on a pin opens, does not zoom`, /Restroom/.test(t) && v1 === await vb(), `${t || '(closed)'}; zoomed=${v1 !== await vb()}`);
@@ -951,7 +951,7 @@ for (const [name, vp, box] of [
   let held = 0, moved = 0, lost = 0;
   for (let i = 0; i < steps; i++) {
     const before = await vbOf();
-    await p.locator('.ffc-pager button').nth(1).click();
+    await p.locator('.ffc-itempager button').nth(1).click();
     await p.waitForTimeout(300);
     if (await vbOf() === before) held++; else moved++;
     const s = await selPos();
@@ -1006,7 +1006,7 @@ for (const [name, vp, box] of [
     frames.push(await p.evaluate((t) => {
       const el = document.querySelector('.sheet');
       return { ms: Date.now() - t, y: Math.round(new DOMMatrix(getComputedStyle(el).transform).m42),
-               title: document.querySelector('.sheet .hd h3')?.textContent || '' };
+               title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent || '' };
     }, t0));
     await p.waitForTimeout(25);
   }
@@ -1023,7 +1023,7 @@ for (const [name, vp, box] of [
 // Closing has to be a move too. The content used to unmount the instant the
 // sheet closed, collapsing it to nothing -- and a zero-height sheet has no
 // height to translate, so closing read as vanishing rather than leaving.
-// And the grip is a real handle now: drag it down and the sheet follows.
+// And the handle is a real handle now: drag it down and the sheet follows.
 {
   const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
   await p.goto(BASE, { waitUntil: 'networkidle' });
@@ -1046,18 +1046,18 @@ for (const [name, vp, box] of [
   check('mobile: closing slides the sheet down rather than vanishing',
     slid.length >= 3, `${slid.length} frames mid-slide at full height (${openH}px)`);
 
-  // Drag the grip: the sheet follows the finger, and a real pull dismisses it.
+  // Drag the handle: the sheet follows the finger, and a real pull dismisses it.
   await p.mouse.click(...await at('g.ffc-pin--kids'));
   await p.waitForTimeout(600);
-  const g = await p.locator('.griparea').boundingBox();
-  check('mobile: the grip is a 44px grab area', g.height >= 44, `${Math.round(g.height)}px`);
+  const g = await p.locator('.ffc-panel__handle').boundingBox();
+  check('mobile: the handle is a 44px grab area', g.height >= 44, `${Math.round(g.height)}px`);
   await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
   await p.mouse.down();
   const follow = [];
   for (const dy of [20, 80, 160, 230]) { await p.mouse.move(g.x + g.width / 2, g.y + g.height / 2 + dy); follow.push((await state()).y); }
   await p.mouse.up();
   await p.waitForTimeout(500);
-  check('mobile: the sheet follows the grip', follow[0] > 0 && follow[3] > follow[0], follow.join(' -> '));
+  check('mobile: the sheet follows the handle', follow[0] > 0 && follow[3] > follow[0], follow.join(' -> '));
   check('mobile: a real pull dismisses it', !(await state()).open);
 
   // A small tug is not a dismissal.
@@ -1197,7 +1197,7 @@ for (const [chip, cat, count, at] of [['Water', 'water', 5, [552, 461]], ['Restr
     after.bottom != null && after.bottom < after.sheetTop - 4 && after.y > 100 && after.x > 0 && after.x < 375,
     `pin at ${after.x?.toFixed(0)},${after.y?.toFixed(0)} (bottom ${after.bottom?.toFixed(0)}), sheet top ${after.sheetTop.toFixed(0)}`);
   const vb1 = await p.locator('svg.ff-map').getAttribute('viewBox');
-  await p.locator('.sheet .close').click();
+  await p.locator('.sheet .ffc-panel__close').click();
   await p.waitForTimeout(500);
   const closed = await pinsOn();
   const chipOn = await p.locator('.ffc-chip[aria-pressed="true"]').count();
@@ -1227,16 +1227,16 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
     await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
     await p.waitForTimeout(500);
-    opened = (await p.locator('.boothrow').count()) > 0;
+    opened = (await p.locator('.ffc-boothrow').count()) > 0;
   }
   if (opened) {
-    await p.locator('button.boothrow').nth(3).click();
+    await p.locator('button.ffc-boothrow').nth(3).click();
     await p.waitForTimeout(700);
     const boxes = [], heights = [];
     for (let i = 0; i < 5; i++) {
-      boxes.push(await p.locator('.sheet .ffc-pager').boundingBox());
+      boxes.push(await p.locator('.sheet .ffc-itempager').boundingBox());
       heights.push(await p.evaluate(() => Math.round(document.querySelector('.sheet').getBoundingClientRect().height)));
-      await p.locator('.sheet .ffc-pager button').nth(1).click();
+      await p.locator('.sheet .ffc-itempager button').nth(1).click();
       await p.waitForTimeout(350);
     }
     const same = boxes.every((b) => b && Math.abs(b.x - boxes[0].x) < 0.5 && Math.abs(b.y - boxes[0].y) < 0.5 && Math.abs(b.width - boxes[0].width) < 0.5 && Math.abs(b.height - boxes[0].height) < 0.5);
@@ -1244,13 +1244,13 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     check(`${name}: B2 the sheet holds one height across five pages`, heights.every((x) => x === heights[0]), heights.join(' / '));
     const geo = await p.evaluate(() => {
       const f = document.querySelector('.sheet .ffc-panel__footer').getBoundingClientRect();
-      const bs = [...document.querySelectorAll('.sheet .ffc-pager button')].map((b) => b.getBoundingClientRect());
-      const pos = document.querySelector('.sheet .ffc-pager__pos').getBoundingClientRect();
+      const bs = [...document.querySelectorAll('.sheet .ffc-itempager button')].map((b) => b.getBoundingClientRect());
+      const pos = document.querySelector('.sheet .ffc-itempager__pos').getBoundingClientRect();
       const sh = document.querySelector('.sheet').getBoundingClientRect();
       return { btn: bs.map((b) => `${b.width.toFixed(0)}x${b.height.toFixed(0)}`), centred: Math.abs((pos.left + pos.right) / 2 - (sh.left + sh.right) / 2) <= 1,
                footerPad: parseFloat(getComputedStyle(document.querySelector('.sheet .ffc-panel__footer')).paddingBottom), footerBottom: f.bottom, sheetBottom: sh.bottom };
     });
-    check(`${name}: B2 both pager buttons are --tap-min and the count is centred`, geo.btn.every((x) => x === '44x44') && geo.centred, `${geo.btn.join(', ')}; centred ${geo.centred}`);
+    check(`${name}: B2 both ItemPager buttons are --tap-min and the count is centred`, geo.btn.every((x) => x === '44x44') && geo.centred, `${geo.btn.join(', ')}; centred ${geo.centred}`);
     check(`${name}: B2 the footer clears the bottom edge`, geo.footerPad >= 12, `padding-bottom ${geo.footerPad}px`);
   } else check(`${name}: B2 an area sheet opened`, false);
   await p.close();
@@ -1270,18 +1270,18 @@ for (const [name, w, h] of [['iPhone SE', 375, 667]]) {
     if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
     await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
     await p.waitForTimeout(500);
-    opened = (await p.locator('.boothrow').count()) > 0;
+    opened = (await p.locator('.ffc-boothrow').count()) > 0;
   }
   const r = opened ? await p.evaluate(() => {
-    const row = [...document.querySelectorAll('button.boothrow')].find((b) => b.querySelector('.who em'));
+    const row = [...document.querySelectorAll('button.ffc-boothrow')].find((b) => b.querySelector('.ffc-artistline__sub'));
     if (!row) return null;
-    const a = getComputedStyle(row.querySelector('.who__name')), b = getComputedStyle(row.querySelector('.who em'));
-    return { name: row.querySelector('.who__name').textContent, sub: row.querySelector('.who em').textContent,
+    const a = getComputedStyle(row.querySelector('.ffc-artistline__name')), b = getComputedStyle(row.querySelector('.ffc-artistline__sub'));
+    return { name: row.querySelector('.ffc-artistline__name').textContent, sub: row.querySelector('.ffc-artistline__sub').textContent,
              nameW: +a.fontWeight, subW: +b.fontWeight, nameS: parseFloat(a.fontSize), subS: parseFloat(b.fontSize), nameC: a.color, subC: b.color,
-             order: row.querySelector('.who').firstElementChild.className };
+             order: row.querySelector('.ffc-artistline').firstElementChild.className };
   }) : null;
   check(`${name}: C1 the artist's name is the primary line, the business secondary`,
-    !!r && r.order === 'who__name' && r.nameW > r.subW && r.nameS > r.subS && r.nameC !== r.subC,
+    !!r && r.order === 'ffc-artistline__name' && r.nameW > r.subW && r.nameS > r.subS && r.nameC !== r.subC,
     r ? `${r.name} ${r.nameS}px/${r.nameW} over ${r.sub} ${r.subS}px/${r.subW}` : 'no two-line row');
   await p.close();
 }
@@ -1300,11 +1300,11 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
       // off screen after the first one's pan.
       await p.locator(`svg.ff-map ${pinClass}`).nth(i).dispatchEvent('click'); await p.waitForTimeout(800);
       const r = await p.evaluate(() => {
-        const ts = [...document.querySelectorAll('.sheet .evt .t')];
+        const ts = [...document.querySelectorAll('.sheet .ffc-schedulerow__time')];
         // How many LINES the time's text sits on (the cell itself stretches to
         // the row when the artist's name wraps, so its own height says nothing).
         const lines = (el) => { const r = document.createRange(); r.selectNodeContents(el); return new Set([...r.getClientRects()].map((q) => Math.round(q.top))).size; };
-        return { title: document.querySelector('.sheet .hd h3')?.textContent, n: ts.length,
+        return { title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent, n: ts.length,
                  widest: ts.reduce((m, t) => (t.textContent.length > m.length ? t.textContent : m), ''),
                  wrapped: ts.filter((t) => lines(t) > 1).map((t) => t.textContent),
                  overflow: ts.filter((t) => t.scrollWidth > t.clientWidth + 1).map((t) => t.textContent),
@@ -1314,7 +1314,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
       });
       check(`${name}: C2 ${r.title}: ${r.n} set times, each on one line, none clipped`, r.n > 0 && r.wrapped.length === 0 && r.overflow.length === 0, `widest "${r.widest}"; wrapped ${JSON.stringify(r.wrapped)}; clipped ${JSON.stringify(r.overflow)}`);
       check(`${name}: C2 ${r.title}: the time column is fixed-width, nowrap, tabular`, r.widths.length === 1 && r.nowrap && r.tabular, `widths ${r.widths.join(',')}px`);
-      await p.locator('.sheet .close').click(); await p.waitForTimeout(450);
+      await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(450);
     }
     await p.close();
   }
@@ -1330,30 +1330,30 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
   await p.waitForTimeout(700);
   const PROVENANCE = /Source:|from the 2026 list|official map|chair'?s? 2026|2026 list from|Position approximate|position approximate|committee thread/;
   const audit = async (what) => {
-    const r = await p.evaluate(() => ({ foot: document.querySelectorAll('.sheet .foot').length, text: document.querySelector('.sheet .panel-scroll')?.textContent || '' }));
+    const r = await p.evaluate(() => ({ foot: document.querySelectorAll('.sheet .foot').length, text: document.querySelector('.sheet .ffc-panel__body')?.textContent || '' }));
     check(`C3: ${what} has no provenance footer`, r.foot === 0 && !PROVENANCE.test(r.text), `${r.foot} .foot; ${(r.text.match(PROVENANCE) || [''])[0]}`);
   };
   const tap = async (sel, i = 0) => { await p.locator(sel).nth(i).dispatchEvent('click'); await p.waitForTimeout(800); };
   await tap('svg.ff-map g.ffc-pin--stage'); await audit('a stage lineup');
   await tap('svg.ff-map g.ffc-pin--food'); await audit('the Food Court card');
   await tap('svg.ff-map g.ffc-pin--kids'); await audit('a pin card (Kidlandia)');
-  await p.locator('.sheet .close').click(); await p.waitForTimeout(450);
+  await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(450);
   // An area list, then a booth from it, a Kidlandia booth and an unnumbered spot.
   let opened = false;
   const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
   for (let i = 0; i < n && !opened; i++) {
     await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click'); await p.waitForTimeout(600);
-    opened = (await p.locator('button.boothrow .n', { hasText: /^K/ }).count()) > 0;
+    opened = (await p.locator('button.ffc-boothrow .ffc-boothrow__number', { hasText: /^K/ }).count()) > 0;
   }
   check('C3: the In the Park list opened', opened);
   if (opened) {
     await audit('an area list');
-    await p.locator('button.boothrow').filter({ has: p.locator('.n', { hasText: /^\d/ }) }).first().click(); await p.waitForTimeout(700); await audit('a numbered booth');
+    await p.locator('button.ffc-boothrow').filter({ has: p.locator('.ffc-boothrow__number', { hasText: /^\d/ }) }).first().click(); await p.waitForTimeout(700); await audit('a numbered booth');
     await p.locator('.sheet .ffc-panel__back').click(); await p.waitForTimeout(500);
-    await p.locator('button.boothrow').filter({ has: p.locator('.n', { hasText: /^K/ }) }).first().click(); await p.waitForTimeout(700); await audit('a Kidlandia booth');
+    await p.locator('button.ffc-boothrow').filter({ has: p.locator('.ffc-boothrow__number', { hasText: /^K/ }) }).first().click(); await p.waitForTimeout(700); await audit('a Kidlandia booth');
     await p.locator('.sheet .ffc-panel__back').click(); await p.waitForTimeout(500);
-    await p.locator('button.boothrow').filter({ has: p.locator('.n', { hasText: /^—$/ }) }).first().click(); await p.waitForTimeout(700); await audit('an unnumbered spot');
-    const where = (await p.locator('.sheet .li').allTextContents()).join(' | ');
+    await p.locator('button.ffc-boothrow').filter({ has: p.locator('.ffc-boothrow__number', { hasText: /^—$/ }) }).first().click(); await p.waitForTimeout(700); await audit('an unnumbered spot');
+    const where = (await p.locator('.sheet .ffc-listrow').allTextContents()).join(' | ');
     check('C3: an unnumbered spot still says where it is', /entrance path|Acoustic Stage/i.test(where || ''), where || '(none)');
   }
   await p.close();
@@ -1370,8 +1370,8 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]])
   const card = async (cat, chip) => {
     await p.locator('.ffc-chip', { hasText: chip }).click(); await p.waitForTimeout(650);   // its pins show at the overview
     await p.locator(`svg.ff-map g.ffc-pin--${cat}`).first().dispatchEvent('click'); await p.waitForTimeout(800);
-    const r = await p.evaluate(() => ({ head: document.querySelector('.sheet .ffc-panel__heading')?.textContent || '', body: document.querySelector('.sheet .panel-scroll')?.textContent || '', where: !!document.querySelector('.sheet .li--where') }));
-    await p.locator('.sheet .close').click(); await p.waitForTimeout(450);
+    const r = await p.evaluate(() => ({ head: document.querySelector('.sheet .ffc-panel__header')?.textContent || '', body: document.querySelector('.sheet .ffc-panel__body')?.textContent || '', where: !!document.querySelector('.sheet .ffc-listrow--where') }));
+    await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(450);
     await p.locator('.ffc-chip', { hasText: chip }).click(); await p.waitForTimeout(400);
     return r;
   };
@@ -1399,7 +1399,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
     if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
     await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
     await p.waitForTimeout(500);
-    opened = (await p.locator('.boothrow').count()) > 0;
+    opened = (await p.locator('.ffc-boothrow').count()) > 0;
   }
   check(`${name}: B1 an area sheet is open`, opened);
   if (opened) {
@@ -1409,21 +1409,21 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
       const sheet = document.querySelector('.sheet:not(.docked)');
       new MutationObserver(() => { if (!sheet.classList.contains('open')) window.__closed++; }).observe(sheet, { attributes: true, attributeFilter: ['class'] });
     });
-    const listTitle = await p.locator('.sheet .hd h3').textContent();
+    const listTitle = await p.locator('.sheet .ffc-panel__titleline h3').textContent();
     // Scroll the list, then tap a row well down it.
-    const scrolled = await p.evaluate(() => { const b = document.querySelector('.sheet .panel-scroll'); b.scrollTop = 400; return b.scrollTop; });
+    const scrolled = await p.evaluate(() => { const b = document.querySelector('.sheet .ffc-panel__body'); b.scrollTop = 400; return b.scrollTop; });
     await p.waitForTimeout(150);
-    const row = p.locator('button.boothrow').filter({ has: p.locator('.n') });
+    const row = p.locator('button.ffc-boothrow').filter({ has: p.locator('.ffc-boothrow__number') });
     const idx = await p.evaluate(() => {
-      const b = document.querySelector('.sheet .panel-scroll').getBoundingClientRect();
-      const rows = [...document.querySelectorAll('button.boothrow')];
+      const b = document.querySelector('.sheet .ffc-panel__body').getBoundingClientRect();
+      const rows = [...document.querySelectorAll('button.ffc-boothrow')];
       return rows.findIndex((r) => { const q = r.getBoundingClientRect(); return q.top > b.top + 60 && q.bottom < b.bottom - 20; });
     });
-    const num = (await row.nth(idx).locator('.n').textContent()).trim();
+    const num = (await row.nth(idx).locator('.ffc-boothrow__number').textContent()).trim();
     await row.nth(idx).click();
     await p.waitForTimeout(700);
     const d = await p.evaluate(() => ({
-      title: document.querySelector('.sheet .hd h3')?.textContent,
+      title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent,
       back: document.querySelector('.sheet .ffc-panel__back')?.textContent.trim(),
       open: document.querySelector('.sheet:not(.docked)').classList.contains('open'),
       closedEver: window.__closed,
@@ -1432,7 +1432,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
     check(`${name}: B1 a back arrow names the list`, !!d.back && d.back.includes('‹') && d.back.includes(listTitle), d.back || '(none)');
     await p.locator('.sheet .ffc-panel__back').click();
     await p.waitForTimeout(600);
-    const back = await p.evaluate(() => ({ title: document.querySelector('.sheet .hd h3')?.textContent, scroll: document.querySelector('.sheet .panel-scroll').scrollTop, open: document.querySelector('.sheet:not(.docked)').classList.contains('open'), closedEver: window.__closed }));
+    const back = await p.evaluate(() => ({ title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent, scroll: document.querySelector('.sheet .ffc-panel__body').scrollTop, open: document.querySelector('.sheet:not(.docked)').classList.contains('open'), closedEver: window.__closed }));
     check(`${name}: B1 back returns to the list at the same scroll position`, back.title === listTitle && Math.abs(back.scroll - scrolled) <= 2 && back.open && back.closedEver === 0,
       `${back.title}; scroll ${back.scroll} (was ${scrolled}); closed ${back.closedEver}x`);
   }
@@ -1457,27 +1457,27 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await tapPin('stage');
   const full = await sheetH();
   check(`${name}: B3 with no chip on, a sheet opens at full height`, full > peekPx + 20, `${full}px (peek is ${peekPx}px)`);
-  check(`${name}: B3 with no chip, the handle does not claim to resize`, /close/i.test(await p.locator('.sheet .griparea').getAttribute('aria-label')), await p.locator('.sheet .griparea').getAttribute('aria-label'));
-  await p.locator('.sheet .close').click(); await p.waitForTimeout(500);
+  check(`${name}: B3 with no chip, the handle does not claim to resize`, /close/i.test(await p.locator('.sheet .ffc-panel__handle').getAttribute('aria-label')), await p.locator('.sheet .ffc-panel__handle').getAttribute('aria-label'));
+  await p.locator('.sheet .ffc-panel__close').click(); await p.waitForTimeout(500);
   // Chip on: peek.
   await p.locator('.ffc-chip', { hasText: 'Restrooms' }).click(); await p.waitForTimeout(650);
   await tapPin('wc');
   const peek = await sheetH();
   check(`${name}: B3 with a chip on, the sheet opens at peek height`, peek <= peekPx + 24 && peek >= 100, `${peek}px (token ${peekPx}px; full was ${full}px)`);
-  const label1 = await p.locator('.sheet .griparea').getAttribute('aria-label');
+  const label1 = await p.locator('.sheet .ffc-panel__handle').getAttribute('aria-label');
   // Tap the handle: full.
-  const g = await p.locator('.sheet .griparea').boundingBox();
+  const g = await p.locator('.sheet .ffc-panel__handle').boundingBox();
   await p.mouse.click(g.x + g.width / 2, g.y + g.height / 2); await p.waitForTimeout(600);
   const up = await sheetH();
-  const label2 = await p.locator('.sheet .griparea').getAttribute('aria-label');   // at full
+  const label2 = await p.locator('.sheet .ffc-panel__handle').getAttribute('aria-label');   // at full
   check(`${name}: B3 tapping the handle goes to full height`, up > peek + 4, `${peek} -> ${up}px`);
-  const g1b = await p.locator('.sheet .griparea').boundingBox();   // the handle moved up with the sheet
+  const g1b = await p.locator('.sheet .ffc-panel__handle').boundingBox();   // the handle moved up with the sheet
   await p.mouse.click(g1b.x + g1b.width / 2, g1b.y + g1b.height / 2); await p.waitForTimeout(600);
   const down = await sheetH();
   check(`${name}: B3 tapping the handle again comes back to peek`, Math.abs(down - peek) <= 4, `${up} -> ${down}px`);
   check(`${name}: B3 the handle has an accessible name that says what it will do`, /expand/i.test(label1 || '') && label1 !== label2, `${label1} / ${label2}`);
   // Drag up: full.
-  const g2 = await p.locator('.sheet .griparea').boundingBox();
+  const g2 = await p.locator('.sheet .ffc-panel__handle').boundingBox();
   await p.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2); await p.mouse.down();
   for (const dy of [-10, -30, -60]) await p.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2 + dy);
   await p.mouse.up(); await p.waitForTimeout(600);
@@ -1491,7 +1491,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   });
   check(`${name}: B3 after the sheet grows the pin is still above it`, inView && inView.bottom <= inView.sheetTop, JSON.stringify(inView));
   // Swipe down from full closes.
-  const g3 = await p.locator('.sheet .griparea').boundingBox();
+  const g3 = await p.locator('.sheet .ffc-panel__handle').boundingBox();
   await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2); await p.mouse.down();
   for (const dy of [30, 90, 180, 260]) await p.mouse.move(g3.x + g3.width / 2, g3.y + g3.height / 2 + dy);
   await p.mouse.up(); await p.waitForTimeout(600);
@@ -1512,19 +1512,19 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.waitForTimeout(700);
   const r = await p.evaluate(() => {
     const q = (sel) => document.querySelector(sel)?.getBoundingClientRect();
-    const sheet = q('.sheet'), close = q('.sheet .close'), hd = q('.sheet .hd'), title = q('.sheet .hd h3'), grip = q('.sheet .grip'), strip = q('.sheet .griparea');
-    return { sheet, close, hd, title, grip, strip,
-             hasHandle: !!document.querySelector('.sheet .griparea')?.getAttribute('aria-label'),
-             inHead: !!document.querySelector('.sheet .ffc-panel__heading .close'), onSheetTop: !!document.querySelector('.sheet .sheettop .close') };
+    const sheet = q('.sheet'), close = q('.sheet .ffc-panel__close'), hd = q('.sheet .ffc-panel__titleline'), title = q('.sheet .ffc-panel__titleline h3'), bar = q('.sheet .ffc-panel__handle-bar'), strip = q('.sheet .ffc-panel__handle');
+    return { sheet, close, hd, title, bar, strip,
+             hasHandle: !!document.querySelector('.sheet .ffc-panel__handle')?.getAttribute('aria-label'),
+             inHead: !!document.querySelector('.sheet .ffc-panel__header .ffc-panel__close'), onSheetTop: !!document.querySelector('.sheet .ffc-panel__handle .ffc-panel__close') };
   });
   const mid = (x) => (x.top + x.bottom) / 2;
   check(`${name}: B4 the x is on the title line`, r.close && Math.abs(mid(r.close) - mid(r.hd)) <= 2 && r.inHead && !r.onSheetTop, `x centre ${mid(r.close).toFixed(0)}, title row centre ${mid(r.hd).toFixed(0)}`);
   check(`${name}: B4 the x is right-aligned and at least --tap-min`, r.close.width >= 44 && r.close.height >= 44 && r.sheet.right - r.close.right <= 12, `${r.close.width}x${r.close.height}, ${(r.sheet.right - r.close.right).toFixed(0)}px from the edge`);
   check(`${name}: B4 the x does not sit on the title`, r.title.right <= r.close.left + 1, `title ends ${r.title.right.toFixed(0)}, x starts ${r.close.left.toFixed(0)}`);
   check(`${name}: B4 the title is close to the top (no 120px row above it)`, r.title.top - r.sheet.top <= 72, `${(r.title.top - r.sheet.top).toFixed(0)}px from the sheet's top`);
-  check(`${name}: B4 the handle is kept, thin, with an accessible name`, r.hasHandle && r.grip.height <= 6 && r.strip.height >= 44, `bar ${r.grip.height}px in a ${r.strip.height}px target`);
+  check(`${name}: B4 the handle is kept, thin, with an accessible name`, r.hasHandle && r.bar.height <= 6 && r.strip.height >= 44, `bar ${r.bar.height}px in a ${r.strip.height}px target`);
   // Swipe down on the TITLE row closes.
-  const t = await p.locator('.sheet .hd h3').boundingBox();
+  const t = await p.locator('.sheet .ffc-panel__titleline h3').boundingBox();
   await p.mouse.move(t.x + t.width / 2, t.y + t.height / 2); await p.mouse.down();
   for (const dy of [30, 90, 180, 260]) await p.mouse.move(t.x + t.width / 2, t.y + t.height / 2 + dy);
   await p.mouse.up(); await p.waitForTimeout(600);
@@ -1578,7 +1578,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
 }
 
 // ---- the sheet's top row never scrolls ----
-// Grip and close stay put while a long sheet -- a stage lineup at 375px --
+// Handle and close stay put while a long sheet -- a stage lineup at 375px --
 // scrolls under them (Ernest, 9/22). Only the body scrolls.
 {
   const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
@@ -1588,15 +1588,15 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
   await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await p.waitForTimeout(600);
   const r = await p.evaluate(() => {
-    const top = document.querySelector('.sheet .sheettop'), body = document.querySelector('.sheet .panel-scroll'), close = document.querySelector('.sheet .close');
+    const top = document.querySelector('.sheet .ffc-panel__handle'), body = document.querySelector('.sheet .ffc-panel__body'), close = document.querySelector('.sheet .ffc-panel__close');
     const before = { top: top.getBoundingClientRect().top, close: close.getBoundingClientRect().top };
     const canScroll = body.scrollHeight > body.clientHeight + 20;
     body.scrollTop = 300;
     return { canScroll, scrolled: body.scrollTop, topMoved: top.getBoundingClientRect().top - before.top, closeMoved: close.getBoundingClientRect().top - before.close,
-             title: document.querySelector('.sheet .hd h3')?.textContent };
+             title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent };
   });
   check('375: a stage lineup is a scrolling body', r.canScroll && r.scrolled > 0, `${r.title}: scrolled ${r.scrolled}px`);
-  check('375: the grip and close row stays put while the body scrolls', r.topMoved === 0 && r.closeMoved === 0, `top row moved ${r.topMoved}px, close ${r.closeMoved}px`);
+  check('375: the handle and close row stay put while the body scrolls', r.topMoved === 0 && r.closeMoved === 0, `top row moved ${r.topMoved}px, close ${r.closeMoved}px`);
   await p.close();
 }
 
@@ -1607,7 +1607,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
   await p.waitForTimeout(700);
   await p.locator('g.ffc-pin--kids').first().click();
   await p.waitForTimeout(400);
-  const bullet = await p.locator('.li .b').first().evaluate((e) => getComputedStyle(e).backgroundColor);
+  const bullet = await p.locator('.ffc-listrow__bullet').first().evaluate((e) => getComputedStyle(e).backgroundColor);
   check('mobile: sheet bullets match the pin you opened', bullet === 'rgb(194, 91, 126)', `${bullet} (want --pin-kids)`);
   await p.close();
 }
@@ -1786,8 +1786,8 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
   await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
   await p.waitForTimeout(600);
   check('offline: tapping a pin still opens its detail',
-    (await p.locator('.sheet .hd h3').first().textContent()) === 'Kidlandia');
-  await p.locator('.sheet .close').click();
+    (await p.locator('.sheet .ffc-panel__titleline h3').first().textContent()) === 'Kidlandia');
+  await p.locator('.sheet .ffc-panel__close').click();
   await p.waitForTimeout(500);
   const before = await p.locator('svg.ff-map').getAttribute('viewBox');
   await p.locator('.zoomctl button').first().click();
@@ -1853,7 +1853,7 @@ await safe('analytics: key empty', async () => {
   await p.goto(`${BASE}/?s=qr`, { waitUntil: 'networkidle' });
   await p.waitForTimeout(500);
   await tapFirst(p, 'g.ffc-pin--kids');
-  const opened = (await p.locator('.sheet .hd h3').first().textContent()) === 'Kidlandia';
+  const opened = (await p.locator('.sheet .ffc-panel__titleline h3').first().textContent()) === 'Kidlandia';
   await p.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
   await p.waitForTimeout(300);
   check('analytics off: the ID was emptied in the bundle', emptied > 0, `${emptied} chunk(s)`);
@@ -1874,8 +1874,8 @@ await safe('analytics: blocked', async () => {
   check('analytics blocked: the script was asked for and refused', aborted > 0, `${aborted}`);
   check('analytics blocked: the map draws', (await p.locator('svg.ff-map g.ff-pin').count()) >= 6);
   await tapFirst(p, 'g.ffc-pin--kids');
-  check('analytics blocked: a pin still opens', (await p.locator('.sheet .hd h3').first().textContent()) === 'Kidlandia');
-  await p.locator('.sheet .close').click();
+  check('analytics blocked: a pin still opens', (await p.locator('.sheet .ffc-panel__titleline h3').first().textContent()) === 'Kidlandia');
+  await p.locator('.sheet .ffc-panel__close').click();
   await p.waitForTimeout(400);
   await p.locator('.ffc-chip').first().click();
   await p.waitForTimeout(400);
@@ -1901,7 +1901,7 @@ await safe('analytics: events', async () => {
     attrs && attrs.src === `${UMAMI}script.js` && attrs.domains === 'fall-fest-map.vercel.app' && attrs.auto === 'false' && !!attrs.id,
     JSON.stringify(attrs));
   await tapFirst(p, 'g.ffc-pin--stage');
-  await p.locator('.sheet .close').click();
+  await p.locator('.sheet .ffc-panel__close').click();
   await p.waitForTimeout(500);
   await p.locator('.ffc-chip').first().click();
   await p.waitForTimeout(500);

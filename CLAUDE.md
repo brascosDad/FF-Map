@@ -377,7 +377,7 @@ Figma workflow), and PR #8 (booth + beta fixes):
   header rule is `--space-4`, half what it was — the room went back into the index at
   **leading 1.3, 0.24" spare on this render**; **King of Pops has two food pins** (Main Stage
   cart 690, 320; entrance cart 583, 735) whose card is the vendor record; beverage and PTA
-  cards are one neutral line each with `TODO(Jess)` beside them; the **bottom sheet's grip/close
+  cards are one neutral line each with `TODO(Jess)` beside them; the **bottom sheet's handle/close
   row is fixed** and only the body scrolls (on `.ffc-panel--bottom`, every sheet). Pin moves
   to Ernest's endpoints, nudged only where rule 1 demanded: EMS (715, 373); beverage stations
   (669, 370) and (761, 379) edge to edge with it; beer stand (728, 472) and the in-park marker
@@ -432,7 +432,7 @@ Figma workflow), and PR #8 (booth + beta fixes):
   for every control and `--pin-hit` for every pin (nothing waits longer than before: pin hit areas
   were already 44); the **map safe area** and pan limits (the north-most restroom can reach it —
   reproduced on short phones, 390×550 and 375×560, where it sat under the header); **one sheet,
-  list → booth inside it with a back row**; the **ItemPager** (was the Stepper) in a pinned footer;
+  list → booth inside it with a back row**; the **ItemPager** in a pinned footer;
   **peek** when a chip is on; the close × on the title line; sheet/panel styles moved from `map.css`
   into `components.css`; the art list leads with the artist; set times never wrap; no provenance
   footer; restroom / water / first-aid copy. **`docs/interaction-states.md` lists every state,

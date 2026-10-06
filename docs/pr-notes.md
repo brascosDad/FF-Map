@@ -31,7 +31,7 @@ You asked to exercise the peek behaviour once I'm done. In the order the sheet i
    handle up: full. With no chip on, the sheet opens full and the handle does not resize.
 2. **The ItemPager is hidden at peek and appears at full height.** (Your call, 10/6.) In practice peek
    only happens on pin cards (picking an art area or a booth clears the chip), so you will only see this
-   if you expand a peeked card. Say so if you want the pager at peek too.
+   if you expand a peeked card. Say so if you want the ItemPager at peek too.
 3. **Back row label** is the area's own title (`‹ In the Park · Art Market`, `‹ McLendon Ave · Art
    Market`, `‹ Candler Park Dr · Art Market`), not the bare words "Art Market": three lists share that
    name and the title says which one you will land in. The back row is a different control from the
@@ -92,8 +92,7 @@ drawn twice (`part`), so the head can be pinned while only the body scrolls.
 
 **B5, styles.** Every sheet/panel style is now under `.ffc-panel` in `components.css`, with component
 tokens (`--panel-bg/fg/title/muted/rule/radius/shadow/pad/motion/accent`) pointing at semantic ones.
-`map.css` is map-screen layout only. The markup's hook classes (`.hd .li .evt .boothrow .griparea …`) are
-unchanged, because the e2e suite and the docs name them; only where their CSS lives moved.
+`map.css` is map-screen layout only. Round 2 renamed the markup's old hook classes to one name per part (see round 2).
 
 **C1.** The artist's name leads (`--text-lg`, bold); the business is secondary (`--text-sm`, regular,
 muted). No new type step. The booth *detail* still leads with the business, "**The Printables** — Anna

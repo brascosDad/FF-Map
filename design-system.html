@@ -201,13 +201,13 @@
 
   <h3>ItemPager</h3>
   <div class="card">
-    <div class="ffc-pager">
+    <div class="ffc-itempager">
       <button aria-label="Previous">‹</button>
-      <span class="ffc-pager__pos">12 of 62</span>
+      <span class="ffc-itempager__pos">12 of 62</span>
       <button aria-label="Next">›</button>
     </div>
     <table style="margin-top:var(--space-3)">
-      <tr><th>What it is</th><td>Pages between items (booths in a run). Not called a Stepper: in Apple's HIG a stepper is a −/+ value control.</td></tr>
+      <tr><th>What it is</th><td>Pages between items (booths in a run). It is not a −/+ value control; it moves you to the previous or next booth.</td></tr>
       <tr><th>Where</th><td>The sheet's <b>footer</b>, <code>.ffc-panel__footer</code>, pinned to the bottom above <code>env(safe-area-inset-bottom)</code> plus <code>--space-3</code> — never flush to the edge, so it clears the iPhone home bar and Safari's toolbar.</td></tr>
       <tr><th>Sizes</th><td>‹ and › are <code>--tap-min</code> (44px). The count is centred and says only where you are: "11 of 139".</td></tr>
       <tr><th>The rule</th><td><b>A control you tap repeatedly never moves.</b> The footer is pinned and a booth's detail holds <code>--sheet-detail-min-height</code>, so a short entry cannot change the sheet's height under your thumb. Longer content scrolls inside the body, above the footer.</td></tr>

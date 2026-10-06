@@ -21,13 +21,13 @@ const STAGE_MAP = { stageMain: 'main-stage', stageAcoustic: 'acoustic-stage' };
 function SheetHeader({ icon, color, title, sub }) {
   return (
     <>
-      <div className="hd">
-        <span className="dot" style={{ background: color }}>
+      <div className="ffc-panel__titleline">
+        <span className="ffc-panel__badge" style={{ background: color }}>
           <Icon name={icon} size={17} color="var(--icon-on-color)" />
         </span>
-        <h3>{title}</h3>
+        <h3 className="ffc-panel__title">{title}</h3>
       </div>
-      {sub && <div className="sub">{sub}</div>}
+      {sub && <div className="ffc-panel__sub">{sub}</div>}
     </>
   );
 }
@@ -37,7 +37,7 @@ function SheetHeader({ icon, color, title, sub }) {
 // is how someone confirms which one they tapped (Ernest, 9/22). A card opened
 // with no one pin -- a category row in the directory -- has no line.
 function Where({ pin }) {
-  return pin?.where ? <div className="li li--where"><span className="b" />{pin.where}</div> : null;
+  return pin?.where ? <div className="ffc-listrow ffc-listrow--where"><span className="ffc-listrow__bullet" />{pin.where}</div> : null;
 }
 
 // The sheet renders each thing it can show TWICE, once per half: the head (badge,
@@ -100,11 +100,11 @@ function StageSchedule({ stageKey, pin, part }) {
       <Where pin={pin} />
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
-          <div className="day">{day === 'saturday' ? 'Saturday' : 'Sunday'}</div>
+          <div className="ffc-dayheading">{day === 'saturday' ? 'Saturday' : 'Sunday'}</div>
           {stage.lineup[day].map((slot, i) => (
-            <div className="evt" key={i}>
-              <span className="t">{slot.time}</span>
-              <span className="a">
+            <div className="ffc-schedulerow" key={i}>
+              <span className="ffc-schedulerow__time">{slot.time}</span>
+              <span className="ffc-schedulerow__act">
                 {slot.act || <em>Open — to be confirmed</em>}
                 {slot.note && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{slot.note}</span>}
               </span>
@@ -130,8 +130,8 @@ function FoodCourt({ pin, part }) {
     <>
       <Where pin={pin} />
       {vendorsData.vendors.map((v) => (
-        <div className="li" key={v.id}>
-          <span className="b" />
+        <div className="ffc-listrow" key={v.id}>
+          <span className="ffc-listrow__bullet" />
           <span>
             {v.name}{v.offering ? ` — ${v.offering}` : ''}
             {v.location && <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{v.location}</span>}
@@ -153,12 +153,12 @@ function BoothRow({ booth, onOpen }) {
   const primary = booth.name || booth.biz;
   const secondary = booth.biz && booth.biz !== primary ? booth.biz : null;
   return (
-    <button className="boothrow" onClick={() => onOpen(booth)}>
-      <span className="n">{booth.n ?? '—'}</span>
-      {featured && <Icon name="star" size={12} color="var(--text-strong)" className="boothrow__star" />}
-      <span className="who">
+    <button className="ffc-boothrow" onClick={() => onOpen(booth)}>
+      <span className="ffc-boothrow__number">{booth.n ?? '—'}</span>
+      {featured && <Icon name="star" size={12} color="var(--text-strong)" className="ffc-boothrow__star" />}
+      <span className="ffc-boothrow__who">
         {primary
-          ? <><span className="who__name">{primary}</span>{secondary && <em>{secondary}</em>}</>
+          ? <><span className="ffc-artistline"><span className="ffc-artistline__name">{primary}</span>{secondary && <em className="ffc-artistline__sub">{secondary}</em>}</span></>
           : <em>Sponsor</em>}
       </span>
     </button>
@@ -176,7 +176,7 @@ function ArtMarketArea({ area, onOpenBooth, part }) {
   if (part === HEAD) return <SheetHeader icon="art" color={SLATE} title={area.name} sub={area.range} />;
   return (
     <>
-      <div className="boothlist">
+      <div className="ffc-boothlist">
         {[...booths, ...unnumbered].map((b) => <BoothRow key={b.id} booth={b} onOpen={onOpenBooth} />)}
       </div>
     </>
@@ -194,7 +194,7 @@ function FoodCart({ name, pin, part }) {
   return (
     <>
       <Where pin={pin} />
-      {v.location && <div className="li"><span className="b" />{v.location}</div>}
+      {v.location && <div className="ffc-listrow"><span className="ffc-listrow__bullet" />{v.location}</div>}
     </>
   );
 }
@@ -211,7 +211,7 @@ function GenericPoi({ id, pin, part }) {
   return (
     <>
       <Where pin={pin} />
-      {d.lines.map((line, i) => <div className="li" key={i}><span className="b" />{line}</div>)}
+      {d.lines.map((line, i) => <div className="ffc-listrow" key={i}><span className="ffc-listrow__bullet" />{line}</div>)}
     </>
   );
 }
@@ -231,7 +231,7 @@ const dotColor = (cat) => (cat === 'art' ? SLATE : PIN_COLOR[cat] || SLATE);
 function DirectoryRow({ row, onSelect }) {
   return (
     <button className="ffc-poirow" onClick={() => onSelect(row)}>
-      <span className="dot" style={{ background: dotColor(row.cat) }}>
+      <span className="ffc-poirow__badge" style={{ background: dotColor(row.cat) }}>
         <Icon name={row.cat === 'art' ? 'art' : row.cat} size={15} color="var(--icon-on-color)" />
       </span>
       <span className="ffc-poirow__text">
@@ -307,9 +307,9 @@ function boothPosition(booth) {
  */
 function ItemPager({ pos, total, onStep }) {
   return (
-    <div className="ffc-pager" role="group" aria-label="Page through booths">
+    <div className="ffc-itempager" role="group" aria-label="Page through booths">
       <button onClick={() => onStep(-1)} aria-label="Previous booth">‹</button>
-      <span className="ffc-pager__pos" aria-live="polite">{pos} of {total}</span>
+      <span className="ffc-itempager__pos" aria-live="polite">{pos} of {total}</span>
       <button onClick={() => onStep(1)} aria-label="Next booth">›</button>
     </div>
   );
@@ -343,15 +343,15 @@ function BoothDetail({ booth, part }) {
           the map. Each booth type now says the single thing that is actually
           uncertain about it; the sheet carries no source line. */}
       {isFood
-        ? <div className="li"><span className="b" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
+        ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
         : booth.biz
-          ? <div className="li"><span className="b" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
-          : <div className="li"><span className="b" />Sponsor booth.</div>}
+          ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
+          : <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Sponsor booth.</div>}
       {/* No provenance line on any sheet (C3): where a booth's name and position
           came from is a data-section fact (README, CLAUDE.md), not something to
           tell a visitor. The one thing worth keeping is WHERE the two unnumbered
           spots are, which is location, so it is a body line. */}
-      {unnumbered && booth.where && <div className="li"><span className="b" />{booth.where[0].toUpperCase() + booth.where.slice(1)}</div>}
+      {unnumbered && booth.where && <div className="ffc-listrow"><span className="ffc-listrow__bullet" />{booth.where[0].toUpperCase() + booth.where.slice(1)}</div>}
     </>
   );
 }
@@ -488,9 +488,9 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       <span aria-hidden="true">‹</span> {shown.openArea.name}
     </button>
   ) : null;
-  const pager = shown.openBooth ? boothPosition(shown.openBooth) : null;
-  // At peek there is no room for the footer: the pager shows at full height.
-  const showPager = pager && !(peekable && detent === 'peek');
+  const itemPager = shown.openBooth ? boothPosition(shown.openBooth) : null;
+  // At peek there is no room for the footer: the ItemPager shows at full height.
+  const showItemPager = itemPager && !(peekable && detent === 'peek');
   const renderThing = (part) => {
     if (shown.openBooth) return <BoothDetail booth={shown.openBooth} part={part} />;
     if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') return <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} part={part} />;
@@ -534,7 +534,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // springs back. Pull it UP from peek and the sheet opens to full. A press that
   // barely moves is a tap: it cycles peek <-> full where a peek exists. Keyboard
   // and screen-reader activation arrive as a click with no pointer (detail 0).
-  function onGripDown(e) {
+  function onHandleDown(e) {
     if (docked) return;
     // The ×, the back row and the handle's own button take their taps; a drag
     // that starts on the title row or the handle pulls the sheet.
@@ -549,7 +549,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     el.style.transition = 'none';
   }
 
-  function onGripMove(e) {
+  function onHandleMove(e) {
     const d = drag.current, el = sheetEl.current;
     if (!d || !el) return;
     d.raw = e.clientY - d.y0;
@@ -559,7 +559,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     el.style.transform = `translateY(${d.dy}px)`;
   }
 
-  function onGripUp(e) {
+  function onHandleUp(e) {
     const d = drag.current, el = sheetEl.current;
     drag.current = null;
     if (!d || !el) return;
@@ -571,7 +571,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
     const dy = d.dy || 0;
     if (dy > d.h * DISMISS_FRACTION || ((d.v || 0) > FLICK_VELOCITY && dy > FLICK_MIN_PX)) { onClose(); return; }
     if (peekable && detent === 'peek' && d.raw < -PULL_UP_PX) { setDetentTo('full'); return; }
-    if (e.currentTarget.classList.contains('griparea') && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
+    if (e.currentTarget.classList.contains('ffc-panel__handle') && Math.abs(d.raw) < TAP_SLOP_PX && performance.now() - d.t0 < TAP_MS) toggleDetent();
   }
 
   function toggleDetent() {
@@ -579,10 +579,10 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   }
 
   const dragHandlers = docked ? {} : {
-    onPointerDown: onGripDown, onPointerMove: onGripMove,
-    onPointerUp: onGripUp, onPointerCancel: onGripUp,
+    onPointerDown: onHandleDown, onPointerMove: onHandleMove,
+    onPointerUp: onHandleUp, onPointerCancel: onHandleUp,
   };
-  const gripHandlers = docked ? {} : { ...dragHandlers, onClick: (e) => { if (e.detail === 0) toggleDetent(); } };
+  const handleProps = docked ? {} : { ...dragHandlers, onClick: (e) => { if (e.detail === 0) toggleDetent(); } };
 
   const handleLabel = peekable
     ? (detent === 'peek' ? 'Expand the sheet' : 'Collapse the sheet')
@@ -602,32 +602,30 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       data-view={kind}
       data-detent={detent}
       data-peekable={peekable ? 'true' : undefined}
-      data-footer={showPager ? 'true' : undefined}
+      data-footer={showItemPager ? 'true' : undefined}
     >
       {/* The handle: a thin strip at the top, kept for resizing and for screen
           readers (Apple's HIG and Material both keep a grabber). It is a 44px
           band with a 4px bar in it. The close does NOT live here any more: it is
           on the title line, below (B4). */}
       {!docked && (
-        <div className="sheettop">
-          <button type="button" className="griparea" {...gripHandlers} aria-label={handleLabel}
-                  aria-expanded={peekable ? detent === 'full' : undefined}>
-            <span className="grip" />
-          </button>
-        </div>
+        <button type="button" className="ffc-panel__handle" {...handleProps} aria-label={handleLabel}
+                aria-expanded={peekable ? detent === 'full' : undefined}>
+          <span className="ffc-panel__handle-bar" />
+        </button>
       )}
 
       {/* Docked, the panel keeps its own header and a back row instead of an X:
           closing a detail here does not dismiss anything, it returns you to the
           list. The bottom sheet gets a close button -- it really does go away. */}
       {docked && !isOpen && (
-        <div className="panel-head">
+        <div className="ffc-panel__masthead">
           <h3>{FESTIVAL.name}</h3>
           <p>{FESTIVAL.dates}</p>
         </div>
       )}
       {docked && shownOpen && (
-        <button className="panel-back" onClick={canGoBack ? onBack : onClose}>
+        <button className="ffc-panel__back" onClick={canGoBack ? onBack : onClose}>
           <span aria-hidden="true">‹</span> {canGoBack ? shown.openArea.name : 'All locations'}
         </button>
       )}
@@ -637,19 +635,19 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
           right-aligned, at least --tap-min. Pinned: only the body scrolls. A
           drag that starts on it pulls the sheet, like the handle. */}
       {shownOpen && (
-        <div className="ffc-panel__heading" data-back={backBtn ? 'true' : undefined} {...dragHandlers}>
+        <div className="ffc-panel__header" data-back={backBtn ? 'true' : undefined} {...dragHandlers}>
           <div className="ffc-panel__view" key={kind} data-dir={viewDir || undefined}>
             {backBtn}
             {renderThing(HEAD)}
           </div>
           {!docked && (
-            <button className="close ffc-panel__close" ref={closeRef} onClick={onClose} aria-label="Close detail">
+            <button className="ffc-panel__close" ref={closeRef} onClick={onClose} aria-label="Close detail">
               <Icon name="close" size={20} />
             </button>
           )}
         </div>
       )}
-      <div className="panel-scroll" ref={scrollEl} style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>
+      <div className="ffc-panel__body" ref={scrollEl} style={{ '--sheet-accent': accentFor(shown.openId, shown.openArea, shown.openBooth) }}>
         {/* Keyed by what the sheet is showing (list or detail), so crossing
             between the two plays the slide and nothing else does -- stepping
             booth to booth swaps in place, no motion. */}
@@ -659,13 +657,13 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       {/* The ItemPager's footer: pinned to the bottom of the sheet, above the
           home bar, so the buttons are where the thumb left them whatever the
           booth's text does to the body above. */}
-      {showPager && (
+      {showItemPager && (
         <div className="ffc-panel__footer">
-          <ItemPager pos={pager.pos} total={pager.total} onStep={onStepBooth} />
+          <ItemPager pos={itemPager.pos} total={itemPager.total} onStep={onStepBooth} />
         </div>
       )}
 
-      {docked && !isOpen && <div className="panel-foot"><Legend /></div>}
+      {docked && !isOpen && <div className="ffc-panel__footer"><Legend /></div>}
     </div>
   );
 }
