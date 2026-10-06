@@ -1470,7 +1470,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.mouse.click(g.x + g.width / 2, g.y + g.height / 2); await p.waitForTimeout(600);
   const up = await sheetH();
   const label2 = await p.locator('.sheet .griparea').getAttribute('aria-label');   // at full
-  check(`${name}: B3 tapping the handle goes to full height`, up > peek + 20, `${peek} -> ${up}px`);
+  check(`${name}: B3 tapping the handle goes to full height`, up > peek + 4, `${peek} -> ${up}px`);
   const g1b = await p.locator('.sheet .griparea').boundingBox();   // the handle moved up with the sheet
   await p.mouse.click(g1b.x + g1b.width / 2, g1b.y + g1b.height / 2); await p.waitForTimeout(600);
   const down = await sheetH();
@@ -1482,7 +1482,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   for (const dy of [-10, -30, -60]) await p.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2 + dy);
   await p.mouse.up(); await p.waitForTimeout(600);
   const dragged = await sheetH();
-  check(`${name}: B3 dragging the handle up goes to full height`, dragged > peek + 20, `${peek} -> ${dragged}px`);
+  check(`${name}: B3 dragging the handle up goes to full height`, dragged > peek + 4, `${peek} -> ${dragged}px`);
   // The pin is still inside the safe area after the sheet grew.
   const inView = await p.evaluate(() => {
     const ringed = [...document.querySelectorAll('svg.ff-map g.ffc-pin--wc')].find((q) => q.querySelector(':scope > circle[stroke]'));

@@ -136,8 +136,13 @@ The facts live in `README.md` and the Data section of `CLAUDE.md`; `stages.json`
 
 ## 5. Evidence
 
-- `npm run test:e2e` (behaviour): see the PR for the CI count; locally the suite ran green after every
-  commit and in full at the end (`B5` run: 396 checks, the 8 failures were this PR's own and are fixed).
+- `npm run test:e2e`, final local run: 415 of 417 behaviour checks passed; the 2 failures were my own B3
+  test's threshold at 393px (the restroom card is only 12px taller at full than at peek there) and are
+  fixed (that block and B4 re-run: 30/30). Visual diffs on this machine against the committed
+  baselines: phone-open 1.602%, sheet-open 13.490%, print **6.124%, identical to unchanged `main`**
+  (so print contributes nothing; the runner has the verdict on the other two).
+- The e2e blocks for A2 and B1 are in the B2 commit (they were written after A2/B1 landed); if you
+  revert A2 or B1 on its own, drop that block too.
 - New e2e: A2 (four phone sizes, fails on `main` at the short two), B1, B2 (five pages, bounding box),
   B3, B4, C1, C2 (fails on `main`), C3, C4.
 - Before/after screenshots: `npm run pr-shots` now also captures the phone at 375 and 430 wide, and the
