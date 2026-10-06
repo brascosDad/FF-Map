@@ -142,24 +142,36 @@ function FoodCourt({ pin, part }) {
   );
 }
 
+/**
+ * ArtistLine: the name hierarchy (C1, round 2 item 8). The ARTIST leads; the
+ * business or title is the quiet line under it, and when the two are the same
+ * there is one line. One component for the area list's rows AND a booth's own
+ * detail, so the two never disagree about who comes first. `quiet` drops the
+ * second line where the title above already is the business.
+ */
+function ArtistLine({ booth, quiet = false }) {
+  const primary = booth.name || booth.biz;
+  if (!primary) return null;
+  const secondary = !quiet && booth.biz && booth.biz !== primary ? booth.biz : null;
+  return (
+    <span className="ffc-artistline">
+      <span className="ffc-artistline__name">{primary}</span>
+      {secondary && <em className="ffc-artistline__sub">{secondary}</em>}
+    </span>
+  );
+}
+
 // One row of the area's booth list: the number, then who is in it. Tapping it
 // opens that booth and flies the map to it -- on a phone the squares are too
 // dense to pick one by finger, so this list is how you find a specific artist.
 function BoothRow({ booth, onOpen }) {
   const featured = featuredTitle(booth);
-  // The artist is who you are looking for, so the artist's name is the primary
-  // line; the business or title is secondary (C1). When the two are the same
-  // there is one line.
-  const primary = booth.name || booth.biz;
-  const secondary = booth.biz && booth.biz !== primary ? booth.biz : null;
   return (
     <button className="ffc-boothrow" onClick={() => onOpen(booth)}>
       <span className="ffc-boothrow__number">{booth.n ?? '—'}</span>
       {featured && <Icon name="star" size={12} color="var(--text-strong)" className="ffc-boothrow__star" />}
       <span className="ffc-boothrow__who">
-        {primary
-          ? <><span className="ffc-artistline"><span className="ffc-artistline__name">{primary}</span>{secondary && <em className="ffc-artistline__sub">{secondary}</em>}</span></>
-          : <em>Sponsor</em>}
+        {booth.name || booth.biz ? <ArtistLine booth={booth} /> : <em>Sponsor</em>}
       </span>
     </button>
   );
@@ -344,8 +356,8 @@ function BoothDetail({ booth, part }) {
           uncertain about it; the sheet carries no source line. */}
       {isFood
         ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Which truck parks here is not assigned yet — placements arrive later this week. The Food Court pin lists all {vendorsData.vendors.length} for 2026.</div>
-        : booth.biz
-          ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" /><span><b>{booth.biz}</b>{booth.name !== booth.biz && ` — ${booth.name}`}</span></div>
+        : booth.name || booth.biz
+          ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" /><ArtistLine booth={booth} quiet={unnumbered} /></div>
           : <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Sponsor booth.</div>}
       {/* No provenance line on any sheet (C3): where a booth's name and position
           came from is a data-section fact (README, CLAUDE.md), not something to

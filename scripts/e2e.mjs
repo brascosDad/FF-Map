@@ -426,8 +426,8 @@ for (const [name, w, h] of SIZES) {
     await p.waitForTimeout(600);
     const title = await p.locator('.sheet .ffc-panel__titleline h3').textContent();
     check(`${name}: tapping a row opens that booth`, title === `Booth ${num}`, `${title} for row ${num}`);
-    const who = await p.locator('.sheet .ffc-listrow b').first().textContent().catch(() => null);
-    check(`${name}: the booth sheet names the business`, !!who && who.trim().length > 0, who || '(none)');
+    const who = await p.locator('.sheet .ffc-artistline__name').first().textContent().catch(() => null);
+    check(`${name}: the booth sheet names the artist`, !!who && who.trim().length > 0, who || '(none)');
     check(`${name}: the map is at the booth zoom`, (await p.locator('.ffc-panel__back').count()) > 0 || (await p.locator('.sheet .ffc-panel__titleline h3').textContent()).startsWith('Booth'));
   });
 
@@ -1283,6 +1283,29 @@ for (const [name, w, h] of [['iPhone SE', 375, 667]]) {
   check(`${name}: C1 the artist's name is the primary line, the business secondary`,
     !!r && r.order === 'ffc-artistline__name' && r.nameW > r.subW && r.nameS > r.subS && r.nameC !== r.subC,
     r ? `${r.name} ${r.nameS}px/${r.nameW} over ${r.sub} ${r.subS}px/${r.subW}` : 'no two-line row');
+  await p.close();
+}
+
+// ---- A booth's detail leads with the artist, like its list row (round 2, item 8) ----
+{
+  const p = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n; i++) { await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click'); await p.waitForTimeout(500); if (await p.locator('button.ffc-boothrow').count()) break; }
+  const row = await p.evaluate(() => {
+    const r = [...document.querySelectorAll('button.ffc-boothrow')].find((b) => b.querySelector('.ffc-artistline__sub'));
+    const nm = r.querySelector('.ffc-artistline__name'), sb = r.querySelector('.ffc-artistline__sub'), cs = (e) => getComputedStyle(e);
+    r.dataset.pick = '1';
+    return { name: nm.textContent, sub: sb.textContent, nameS: cs(nm).fontSize, nameW: cs(nm).fontWeight, subS: cs(sb).fontSize, subW: cs(sb).fontWeight };
+  });
+  await p.locator('button.ffc-boothrow[data-pick="1"]').click(); await p.waitForTimeout(800);
+  const det = await p.evaluate(() => {
+    const body = document.querySelector('.sheet .ffc-panel__body');
+    const nm = body.querySelector('.ffc-artistline__name'), sb = body.querySelector('.ffc-artistline__sub'), cs = (e) => getComputedStyle(e);
+    return nm && sb ? { name: nm.textContent, sub: sb.textContent, nameS: cs(nm).fontSize, nameW: cs(nm).fontWeight, subS: cs(sb).fontSize, subW: cs(sb).fontWeight, first: nm.parentElement.firstElementChild === nm, oldInline: /—/.test(body.textContent) } : null;
+  });
+  check('item 8: the booth detail leads with the artist, the business under it, in the list row\'s own type', !!det && det.name === row.name && det.sub === row.sub && det.first && det.nameS === row.nameS && det.nameW === row.nameW && det.subS === row.subS && det.subW === row.subW && !det.oldInline, JSON.stringify({ row, det }));
   await p.close();
 }
 
