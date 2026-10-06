@@ -401,8 +401,14 @@
 .ffc-panel .day { font-size: var(--text-md); font-weight: var(--weight-black); color: var(--panel-title); margin: var(--space-4) 0 var(--space-1); }
 .ffc-panel .evt { display: flex; gap: var(--space-3); padding: var(--space-2) var(--space-1); border-bottom: 1px solid var(--panel-rule); font-size: var(--text-md); }
 .ffc-panel .evt:last-child { border-bottom: none; }
-.ffc-panel .evt .t { flex: 0 0 72px; color: var(--panel-muted); font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
-.ffc-panel .evt .a { color: var(--panel-fg); }
+/* Times are always readable on one line (C2): the time is a FIXED-WIDTH column
+   that never wraps -- nowrap, tabular numerals, sized to the longest range in
+   the lineup ("11:30–12:30") -- and the artist takes the width that is left
+   and wraps if it has to. The old 72px column was narrower than a range like
+   "10:30–11:30", which broke at its dash. */
+.ffc-panel { --time-col: 6.5em; }
+.ffc-panel .evt .t { flex: 0 0 var(--time-col); white-space: nowrap; color: var(--panel-muted); font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
+.ffc-panel .evt .a { flex: 1; min-width: 0; color: var(--panel-fg); }
 .ffc-panel .li { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2) var(--space-1); font-size: var(--text-md); color: var(--panel-fg); line-height: 1.45; }
 /* Bullets take the colour of the thing you opened -- see accentFor() in
    DetailSheet. Teal for everything read as a fourth brand colour rather than as
@@ -436,7 +442,7 @@
 /* ===== Panel content blocks (design-system anatomy) ======================== */
 .ffc-dayheading { margin: var(--space-4) 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.2 var(--font-ui); color: var(--text-strong); }
 .ffc-schedulerow { display: flex; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--sand-100); }
-.ffc-schedulerow__time { flex: 0 0 72px; font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-muted); }
+.ffc-schedulerow__time { flex: 0 0 6.5em; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-muted); }
 .ffc-schedulerow__act { font-size: var(--text-md); color: var(--text-body); }
 .ffc-schedulerow--open .ffc-schedulerow__act { color: var(--text-muted); font-style: italic; }
 .ffc-listrow { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-2) 0; font-size: var(--text-md); }

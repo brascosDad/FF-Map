@@ -1289,6 +1289,40 @@ for (const [name, w, h] of [['iPhone SE', 375, 667]]) {
   await p.close();
 }
 
+// ---- C2: times are always readable on one line ----
+// A set time is a fixed-width column that never wraps; the artist wraps instead.
+// Both stages, at 375 and at 320 (the narrowest phone we claim).
+for (const [name, w, h] of [['iPhone SE', 375, 667], ['small phone', 320, 568]]) {
+  for (const pinClass of ['g.ffc-pin--stage']) {
+    const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+    await p.goto(BASE, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(700);
+    const stages = await p.locator(`svg.ff-map ${pinClass}`).count();
+    for (let i = 0; i < stages; i++) {
+      // Delivered to the pin the way React sees a tap: the second stage can be
+      // off screen after the first one's pan.
+      await p.locator(`svg.ff-map ${pinClass}`).nth(i).dispatchEvent('click'); await p.waitForTimeout(800);
+      const r = await p.evaluate(() => {
+        const ts = [...document.querySelectorAll('.sheet .evt .t')];
+        // How many LINES the time's text sits on (the cell itself stretches to
+        // the row when the artist's name wraps, so its own height says nothing).
+        const lines = (el) => { const r = document.createRange(); r.selectNodeContents(el); return new Set([...r.getClientRects()].map((q) => Math.round(q.top))).size; };
+        return { title: document.querySelector('.sheet .hd h3')?.textContent, n: ts.length,
+                 widest: ts.reduce((m, t) => (t.textContent.length > m.length ? t.textContent : m), ''),
+                 wrapped: ts.filter((t) => lines(t) > 1).map((t) => t.textContent),
+                 overflow: ts.filter((t) => t.scrollWidth > t.clientWidth + 1).map((t) => t.textContent),
+                 widths: [...new Set(ts.map((t) => Math.round(t.getBoundingClientRect().width)))],
+                 nowrap: ts.every((t) => getComputedStyle(t).whiteSpace === 'nowrap'),
+                 tabular: ts.every((t) => getComputedStyle(t).fontVariantNumeric.includes('tabular-nums')) };
+      });
+      check(`${name}: C2 ${r.title}: ${r.n} set times, each on one line, none clipped`, r.n > 0 && r.wrapped.length === 0 && r.overflow.length === 0, `widest "${r.widest}"; wrapped ${JSON.stringify(r.wrapped)}; clipped ${JSON.stringify(r.overflow)}`);
+      check(`${name}: C2 ${r.title}: the time column is fixed-width, nowrap, tabular`, r.widths.length === 1 && r.nowrap && r.tabular, `widths ${r.widths.join(',')}px`);
+      await p.locator('.sheet .close').click(); await p.waitForTimeout(450);
+    }
+    await p.close();
+  }
+}
+
 // ---- B1: one sheet, content changes in place ----
 // Area sheet -> tap a booth row in the list: the sheet never closes and
 // reopens; its content slides to the booth, a back arrow names the list, and
