@@ -166,7 +166,10 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 - Reset control is arrows-to-corners, not a locate button.
 - No search bar.
 - **Pins are touch targets. 44×44 CSS px is the floor.** The visible icon glyph may shrink inside
-  that target; the tappable area may not.
+  that target; the tappable area may not. Two tap-size tokens (10/6): `--tap-min` (44px) is the floor
+  for every **control** — chips, the sheet's close ×, the zoom buttons, the ItemPager's buttons, the
+  handle — and `--pin-hit` (44px) is the hit area centred on every **pin**. WCAG 2.2 AA 2.5.8 asks for
+  24px with a spacing exception; the no-overlap rule below is how pins satisfy it.
 - **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
   may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
   Circles may touch edge to edge; they may not cross. When two collide, one of two things happens:
@@ -196,6 +199,18 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
      stays where it is.
   6. **A pan or pinch that starts on empty map is never a tap.** Only a genuine tap (no movement
      past the usual slop) counts for step 4.
+  **10/6 additions** (Ernest, iPhone walkthrough; full spec in `docs/interaction-states.md` and
+  `design-system.html` §6): a sheet that opens **while a chip is on opens at peek height**
+  (`--sheet-peek-height`) so the map stays visible — drag the handle up or tap it for full, tap again
+  for peek; no chip, no peek. **One sheet, a stack one level deep:** a booth opened from a row in an
+  area's list slides in inside the same sheet with a back row (`‹ <area>`) to the list at the same
+  scroll position; the ItemPager pages sideways and never adds a back step ("the way you step in is
+  the way you step out"). **The ItemPager is a footer pinned to the bottom of the sheet** and a
+  booth's detail holds `--sheet-detail-min-height`: a control you tap repeatedly never moves. **Every
+  pan that targets a pin centres it in the map safe area** (`--map-inset-top` / `--map-inset-bottom`,
+  measured at runtime) and the pan limits run past the festival by the same amounts. Set times never
+  wrap. The close × is on the title line; the handle stays a thin strip. Sheets carry no provenance
+  line (see Data).
   The same pan-into-view applies to a pin tapped with no chip on: centred above the sheet and
   selected while the sheet is open. One tapped pin wears the ring; a category row in the
   directory (no one pin) rings every pin of that category. e2e drives the Water and Restrooms
@@ -412,6 +427,19 @@ Figma workflow), and PR #8 (booth + beta fixes):
   (16px / 15px optical); the field restroom is 8 units out on the lawn at (672.5, 550). Round 7
   (same day): the **"Art Market" heading over the index is gone** — the list starts under the key
   at the section gap — and the index is back at **leading 1.3 with 0.14" spare** (155 rows).
+
+- 10/6 round, Ernest's iPhone walkthrough of the live map (one PR, one commit per item): `--tap-min`
+  for every control and `--pin-hit` for every pin (nothing waits longer than before: pin hit areas
+  were already 44); the **map safe area** and pan limits (the north-most restroom can reach it —
+  reproduced on short phones, 390×550 and 375×560, where it sat under the header); **one sheet,
+  list → booth inside it with a back row**; the **ItemPager** (was the Stepper) in a pinned footer;
+  **peek** when a chip is on; the close × on the title line; sheet/panel styles moved from `map.css`
+  into `components.css`; the art list leads with the artist; set times never wrap; no provenance
+  footer; restroom / water / first-aid copy. **`docs/interaction-states.md` lists every state,
+  action and transition; the cells marked OPEN are Ernest's to decide** (browser back, pinch and
+  rotate with a sheet open, a food-stall tap clearing a chip, a booth-square tap not panning, swipe
+  down from a full chip sheet). No swipe-to-page on the ItemPager: a horizontal swipe on the body
+  fights the vertical scroll and the drag-to-dismiss, and the brief said only if clean.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts
