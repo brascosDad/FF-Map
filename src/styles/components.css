@@ -419,9 +419,14 @@
 .ffc-panel .boothrow:active { background: var(--surface-pressed); }
 .ffc-panel .boothrow--static { cursor: default; }
 .ffc-panel .boothrow .n { flex: 0 0 36px; font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--panel-title); font-variant-numeric: tabular-nums; }
+/* The hierarchy of a list row (C1): the artist's name is the primary line --
+   heavier and a type step up (--text-lg over --text-md) -- and the business or
+   title under it is secondary: smaller (--text-sm), regular weight, muted. */
+.ffc-panel .boothrow { --row-name-size: var(--text-lg); --row-name-weight: var(--weight-bold); --row-sub-size: var(--text-sm); }
 .ffc-panel .boothrow .who { flex: 1; min-width: 0; font-size: var(--text-md); line-height: 1.3; }
+.ffc-panel .boothrow .who__name { display: block; font-size: var(--row-name-size); font-weight: var(--row-name-weight); color: var(--panel-title); line-height: 1.3; }
 .ffc-panel .boothrow__star { flex: 0 0 auto; align-self: center; }
-.ffc-panel .boothrow .who em { display: block; font-style: normal; font-size: var(--text-xs); color: var(--panel-muted); }
+.ffc-panel .boothrow .who em { display: block; font-style: normal; font-weight: var(--weight-medium); font-size: var(--row-sub-size); color: var(--panel-muted); }
 
 /* ---- Directory (the docked panel's resting state) -------------------------- */
 .dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }

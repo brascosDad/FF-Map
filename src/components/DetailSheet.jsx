@@ -146,13 +146,18 @@ function FoodCourt({ pin, part }) {
 // dense to pick one by finger, so this list is how you find a specific artist.
 function BoothRow({ booth, onOpen }) {
   const featured = featuredTitle(booth);
+  // The artist is who you are looking for, so the artist's name is the primary
+  // line; the business or title is secondary (C1). When the two are the same
+  // there is one line.
+  const primary = booth.name || booth.biz;
+  const secondary = booth.biz && booth.biz !== primary ? booth.biz : null;
   return (
     <button className="boothrow" onClick={() => onOpen(booth)}>
       <span className="n">{booth.n ?? '—'}</span>
       {featured && <Icon name="star" size={12} color="var(--text-strong)" className="boothrow__star" />}
       <span className="who">
-        {booth.biz
-          ? <>{booth.biz}{booth.name !== booth.biz && <em>{booth.name}</em>}</>
+        {primary
+          ? <><span className="who__name">{primary}</span>{secondary && <em>{secondary}</em>}</>
           : <em>Sponsor</em>}
       </span>
     </button>

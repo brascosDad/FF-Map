@@ -1259,6 +1259,36 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
+// ---- C1: the art list's hierarchy ----
+// In a list row the ARTIST's name is the primary line (heavier, a type step up)
+// and the business or title is secondary (smaller, muted).
+for (const [name, w, h] of [['iPhone SE', 375, 667]]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  let opened = false;
+  const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+  for (let i = 0; i < n && !opened; i++) {
+    const bb = await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).boundingBox().catch(() => null);
+    if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
+    await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+    await p.waitForTimeout(500);
+    opened = (await p.locator('.boothrow').count()) > 0;
+  }
+  const r = opened ? await p.evaluate(() => {
+    const row = [...document.querySelectorAll('button.boothrow')].find((b) => b.querySelector('.who em'));
+    if (!row) return null;
+    const a = getComputedStyle(row.querySelector('.who__name')), b = getComputedStyle(row.querySelector('.who em'));
+    return { name: row.querySelector('.who__name').textContent, sub: row.querySelector('.who em').textContent,
+             nameW: +a.fontWeight, subW: +b.fontWeight, nameS: parseFloat(a.fontSize), subS: parseFloat(b.fontSize), nameC: a.color, subC: b.color,
+             order: row.querySelector('.who').firstElementChild.className };
+  }) : null;
+  check(`${name}: C1 the artist's name is the primary line, the business secondary`,
+    !!r && r.order === 'who__name' && r.nameW > r.subW && r.nameS > r.subS && r.nameC !== r.subC,
+    r ? `${r.name} ${r.nameS}px/${r.nameW} over ${r.sub} ${r.subS}px/${r.subW}` : 'no two-line row');
+  await p.close();
+}
+
 // ---- B1: one sheet, content changes in place ----
 // Area sheet -> tap a booth row in the list: the sheet never closes and
 // reopens; its content slides to the booth, a back arrow names the list, and
