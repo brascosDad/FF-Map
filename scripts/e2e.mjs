@@ -206,7 +206,7 @@ for (const [name, w, h] of SIZES) {
     const pressed = await p.locator('.ffc-chip').first().getAttribute('aria-pressed');
     check(`${name}: chip carries aria-pressed`, pressed !== null, String(pressed));
     const zb = await p.locator('.zoomctl button').first().boundingBox();
-    check(`${name}: zoom button is 40px`, zb && Math.abs(zb.height - 40) <= 1, `${zb?.height?.toFixed(0)}px`);
+    check(`${name}: zoom button is --tap-min (44px)`, zb && Math.abs(zb.height - 44) <= 1 && Math.abs(zb.width - 44) <= 1, `${zb?.height?.toFixed(0)}px`);
   });
 
   // ---- pan clamping, every level ----
@@ -376,7 +376,7 @@ for (const [name, w, h] of SIZES) {
       return Math.round(h.top - s.bottom);
     });
     check(`${name}: stepper has air between it and the title`, stepGap >= 16, `${stepGap}px`);
-    check(`${name}: caret is a real touch target`, btn && btn.width >= 40 && btn.height >= 38,
+    check(`${name}: caret is a real touch target`, btn && btn.width >= 43.5 && btn.height >= 43.5,
       btn ? `${btn.width}x${btn.height}` : 'none');
   });
 

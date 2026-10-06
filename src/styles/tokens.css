@@ -188,7 +188,16 @@
   --ease: cubic-bezier(0.2, 0, 0.2, 1);
 
   /* Sizing */
-  --tap-min: 44px;        /* everything tappable; the visual may be smaller */
+  /* Two tap-size rules (Ernest, 10/6; 44 CSS px = 44pt on iPhone, Apple's HIG
+     minimum).
+       --tap-min  the floor for every CONTROL: chips, the sheet's close, the zoom
+                  buttons, the ItemPager's buttons. It replaces the 40px floor
+                  the zoom stack and the stepper used to sit on.
+       --pin-hit  the invisible hit area centred on every map pin. The visible
+                  marker (--pin-size) is unchanged; MapCanvas draws this circle
+                  and the e2e no-overlap rule measures it, at every stop. */
+  --tap-min: 44px;
+  --pin-hit: 44px;
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
      where 28 read as too small. The tap area is 44 either way. ONE size at
      every zoom level: the overview used to draw pins a step smaller (34), and

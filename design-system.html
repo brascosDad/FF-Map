@@ -104,7 +104,7 @@
       <tr><th>Radius</th><td>10 small · 14 medium · 20 large · pill</td></tr>
       <tr><th>Shadow</th><td>Navy-tinted, never black</td></tr>
       <tr><th>Motion</th><td>120ms press · 250ms panel · 420ms zoom (matches <code>STEP_COOLDOWN</code>). Honours <code>prefers-reduced-motion</code>.</td></tr>
-      <tr><th>Tap</th><td><code>--tap-min</code> 44px on everything tappable. The visual may be smaller; the hit area may not.</td></tr>
+      <tr><th>Tap</th><td>Two rules. <code>--tap-min</code> 44px is the floor for every <b>control</b> (chips, the sheet's close ×, zoom buttons, the ItemPager's buttons). <code>--pin-hit</code> 44px is the invisible hit area centred on every <b>pin</b>; the visible marker (<code>--pin-size</code>) is unchanged. 44 CSS px is 44pt on iPhone, Apple's HIG minimum.</td></tr>
     </table>
   </div>
 
@@ -142,7 +142,7 @@
       <button class="ffc-iconbtn" aria-disabled="true" aria-label="At limit">−</button>
     </div>
     <table style="margin-top:var(--space-3)">
-      <tr><th>Variants</th><td>round 44 · square 40 (zoom) · ghost 44 (close / back)</td></tr>
+      <tr><th>Variants</th><td>round 44 · square 44 (zoom) · ghost 44 (close / back) — all <code>--tap-min</code></td></tr>
       <tr><th>Toggled</th><td>Coral fill, <b>navy</b> glyph — white on coral is 2.4:1 and fails. No live use since GPS was cut; kept for the next toggle.</td></tr>
       <tr><th>At limit</th><td><code>aria-disabled</code>, dimmed, <b>still focusable</b> — a keyboard user can reach it and hear why.</td></tr>
     </table>
@@ -273,7 +273,8 @@
   <div class="card">
     <table>
       <tr><th>Contrast</th><td>4.5:1 for text. <code>--text-muted</code> is 5.4:1 on white; the greys it replaces (#9aa0ac, #8b90a0, #8a8f7f) all failed.</td></tr>
-      <tr><th>Tap</th><td>44px minimum hit area, even where the visual is 28 or 40.</td></tr>
+      <tr><th>Tap</th><td>Controls: <code>--tap-min</code> 44px, no exceptions. Pins: a <code>--pin-hit</code> 44px circle centred on the marker, even where the visual is 28 or 40. 44 CSS px is 44pt on iPhone (Apple HIG).</td></tr>
+      <tr><th>Target spacing</th><td>WCAG 2.2 AA (2.5.8, Target Size Minimum) asks for 24px, with an exception where undersized targets have enough spacing around them. We hold the stricter bar: 44px, <b>and no tap target overlaps another at any zoom stop, on either map or on paper</b>. That no-overlap rule is how pins satisfy 2.5.8 in a dense park: when two hit areas would cross, the lower-priority pin waits for a closer stop (<code>from: 'detail'</code> in <code>pins.js</code>) or the two are moved edge to edge. Booth squares are the one exception to 44: at the Detail stop each is its own 9.4-unit cell, and the ItemPager is how you page through a run when a finger can't pick one.</td></tr>
       <tr><th>Type</th><td>12px floor. No 11px.</td></tr>
       <tr><th>Selection</th><td>Never opacity alone — a navy fill, or a navy ring where the fill carries category.</td></tr>
       <tr><th>Focus</th><td>2px navy ring, 2px offset, on every interactive element.</td></tr>

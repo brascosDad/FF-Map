@@ -20,8 +20,8 @@ const HOLLOW_STROKE = 1.6;
 // viewBox, so while the map scales under the fingers the pins do not, and the
 // same size holds at every stop, so nothing pops when the gesture settles.
 //
-// The pin diameter is read from --pin-size rather than repeated here: it is a
-// token, and a second copy of the number is how the two drift apart. Read once
+// The pin diameter is read from --pin-size and its hit area from --pin-hit
+// rather than repeated here: they are tokens, and a second copy of the number is how the two drift apart. Read once
 // and cached -- the stylesheet is in the document well before first render, and
 // getComputedStyle on every pan frame is a layout read we do not need.
 let sizes = null;
@@ -32,7 +32,7 @@ function pinPx() {
     const n = parseFloat(cs.getPropertyValue(name));
     return Number.isFinite(n) ? n : fallback;
   };
-  sizes = { pin: px('--pin-size', 40), tap: px('--tap-min', 44) };
+  sizes = { pin: px('--pin-size', 40), tap: px('--pin-hit', 44) };
   return sizes;
 }
 

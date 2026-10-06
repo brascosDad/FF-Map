@@ -91,7 +91,7 @@
 }
 
 /* ===== IconButton =========================================================
-   Three shapes. Round 44 (locate), square 40 (zoom), ghost 44 (close / back).
+   Three shapes, all --tap-min (44): round (locate), square (zoom), ghost (close / back).
    Toggled locate is a coral fill with a NAVY glyph — white on coral is 2.4:1.
    At a limit it is aria-disabled and dimmed but stays focusable, so a keyboard
    user can still tab through and hear why it is unavailable.
@@ -116,7 +116,7 @@
   transition: background var(--motion-press) var(--ease);
 }
 .ffc-iconbtn:active { --btn-bg: var(--surface-pressed); }
-.ffc-iconbtn--square { --btn-radius: var(--radius-sm); --btn-size: 40px; }
+.ffc-iconbtn--square { --btn-radius: var(--radius-sm); --btn-size: var(--tap-min); }
 .ffc-iconbtn--ghost { --btn-bg: transparent; --btn-border: transparent; --btn-fg: var(--text-muted); box-shadow: none; }
 .ffc-iconbtn--on { --btn-bg: var(--current); --btn-border: var(--current); --btn-fg: var(--ff-navy); }
 .ffc-iconbtn[aria-disabled='true'] { opacity: var(--opacity-disabled); cursor: default; }
@@ -137,7 +137,7 @@
 }
 .ffc-zoom button {
   position: relative;
-  width: 40px; height: 40px;
+  width: var(--tap-min); height: var(--tap-min);
   display: flex; align-items: center; justify-content: center;
   border: 0; background: none; padding: 0;
   color: var(--text-strong);
@@ -252,7 +252,7 @@
    is the primary way through a row; the carets are full touch targets.
 ========================================================================== */
 .ffc-step { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-1); background: var(--sand-100); border-radius: var(--radius-md); }
-.ffc-step button { position: relative; width: var(--tap-min); height: 40px; flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.ffc-step button { position: relative; width: var(--tap-min); height: var(--tap-min); flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
 .ffc-step button:active { background: var(--surface-pressed); }
 .ffc-step__pos { flex: 1; text-align: center; font: var(--weight-bold) var(--text-xs)/1.3 var(--font-ui); color: var(--text-muted); }
 
