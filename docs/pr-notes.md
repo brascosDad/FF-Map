@@ -1,9 +1,81 @@
-# PR notes: 10/6, interaction fixes + the interaction state spec (rounds 1 and 2)
+# PR notes: 10/6, interaction fixes + the interaction state spec (rounds 1, 2 and 3)
 
 Ernest's iPhone walkthrough of the live map (10/6), turned into rules in the design system. Same branch,
 same PR. One commit per numbered item, so any one can be reverted. Read `docs/interaction-states.md`
 (and `design-system.html` §3 and §6) for the spec; this file is the record of questions, decisions,
 skipped items, measurements and what to try on the phone.
+
+## Round 3 (Ernest's iPhone check of the round-2 preview)
+
+A booth opened from an area list read "‹ In the Park · Art Market" on the header row, then "Booth 6", then
+"In the Park · Art Market" again as the subtitle. Same branch, same PR; one commit per item.
+
+### Status by item
+
+| Item | What | Commit subject |
+|---|---|---|
+| Action | The PR screenshots Action failed on the last two pushes; fixed first so this push refreshes the table | `PR screenshots: find the list row on main as well as the branch` |
+| 1 | Back label is the area's short name: "‹ In the Park", "‹ Candler Park Dr"; same on the docked panel | `Round 3, item 1` |
+| 2 | Nothing on a card repeats its header: under a back row the booth subtitle keeps only "no booth number" / "★ Featured artist", or is not drawn; three other cards trimmed | `Round 3, item 2` |
+| 3 | No change to the ×. It is top-right on the first row under the handle in every state; the round-2 e2e that checks it in five states on two phones still passes | — |
+| Docs + tests | Two rules in the design system (§3 Panel table, §6 rules 13 and 14) and the state spec; e2e for both items; this file | `Round 3: pr-notes …` |
+
+### Things to know
+
+- **Why the screenshot table was stale.** The Action's "Capture before and after" step failed on runs 29 and
+  30 (the round-2 pushes): `scripts/pr-shots.mjs` waited 30s for `button.boothrow`, the list row's class
+  before the naming sweep renamed it `.ffc-boothrow`, and timed out on the branch's own build. The steps run
+  against both builds (`main` still has the old name), so the selector now matches either. Verified locally:
+  `node scripts/pr-shots.mjs --base=main` exits 0 and writes all 10 pairs. Run 31 (triggered by the
+  baselines Action's own push) is sitting at "action required"; **it can be ignored** — this push starts a
+  new run that supersedes it. If you want to clear it anyway: open
+  https://github.com/brascosDad/FF-Map/actions/runs/37531305654 and press **Approve and run** in the
+  yellow banner at the top.
+- **Item 1 needed no new data field.** Every area record already carried `shortName` (the directory
+  lists by it). Its job is now documented in `src/data/areas.js`: the directory's label AND the back
+  label. A run that needs a different short name gets one there, not by trimming the title in a component.
+- **Item 2's one prop.** `BoothDetail` takes `pushed`, the same flag that draws the back row, so the sheet
+  and the docked panel cannot disagree about whether the area is already named above the title.
+- **Other cards changed for item 2** (a body line that only restated the header):
+  - Water: "Bring a bottle to refill" under "Free refill" → "Bring a bottle".
+  - Beverages: "Beverage station — drinks for sale." under "Beverage station" → "Drinks for sale".
+  - PTA booth: the body line "PTA booth." under the title "PTA booth" is gone; the subtitle ("In
+    Kidlandia") and the pin's location line remain. Still TODO(Jess) for which PTA.
+  - Checked and left alone: Main Stage and Acoustic (sponsor · schedule, then the lineup), Food Court
+    (count, then the list), a food cart (cart number · offering, then where), Kidlandia, Beer Stand,
+    Beer, Merch, Restrooms, First Aid, Info, Bike valet — each says each thing once already (C4, item 9).
+- **The visual baselines do not move.** `sheet-open` is the Kidlandia card, which round 3 does not touch;
+  `phone-open` and `print` are untouched. No label needed for this push.
+- **Not changed, on purpose:** the "× top-right" rule and its position (item 3). The round-2 e2e
+  (`item 1: the close is top-right …`, five states, 375 and 393) is unchanged and passes.
+
+### What to try on your iPhone (the new preview)
+
+1. Art Market area → tap a booth in the list. The top row reads "‹ In the Park" (short), × on the right.
+   Under "Booth 6" there is no subtitle at all. Tap ‹: the list, where you left it.
+2. Close it, tap a booth square on the map directly: "Booth N" with "In the Park · Art Market" under it,
+   since nothing above it names the area.
+3. Booth 11 (the featured one) from the list: the only subtitle is "★ Featured artist". From the map: "In
+   the Park · Art Market · ★ Featured artist".
+4. Desktop: Art market → In the Park → a row: the panel's back row reads "‹ In the Park".
+
+### Evidence (round 3)
+
+- Full local run (`npm run test:e2e`, this branch at the item 2 commit): **482 of 482 behaviour checks
+  pass**, including the new ones: `B1 a back arrow names the list, short` ("‹ McLendon Ave" at 375 and
+  390), `item 2 a booth from the list has no subtitle repeating the back row` ("no subtitle line"), `item 2
+  a booth from the map keeps its area subtitle` (phone, tablet, desktop), and the unchanged round-2
+  `item 1: the close is top-right …` and real-tap-on-× checks.
+- Visual comparisons on this machine (advisory; the runner has the verdict): phone-open 0.372%, sheet-open
+  2.243%, print 3.941%. The sheet-open diff image is glyph edges on every line of text, masthead and chips
+  included, with nothing moved: the font engine, not round 3. No baseline changes expected.
+- Browser check of the build (390×844 touch and 1280×900): list → booth gives back "‹ In the Park", title
+  "Booth 6", **no** `.ffc-panel__sub` element; the × top stays at the same y before and after the push;
+  booth 20 from the map: "In the Park · Art Market"; booth 11 from the map: "In the Park · Art Market ·
+  ★ Featured artist"; booth 11 via the list: "★ Featured artist" only; docked panel back row "‹ In the
+  Park"; Water card "Free refill | Bring a bottle".
+- `node scripts/pr-shots.mjs --base=main` exits 0 locally after the selector fix (the PNGs it wrote were
+  discarded: the Action commits the runner's renders).
 
 ## Round 2 (Ernest's reply, 10/6)
 
