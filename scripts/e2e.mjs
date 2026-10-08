@@ -356,6 +356,9 @@ for (const [name, w, h] of SIZES) {
     check(`${name}: ItemPager reports position within the area`, !!start,
       start ? `${start.i} of ${start.total} in ${start.area}` : 'unparsed');
     if (!start) return;
+    // Round 3, item 2: opened straight from the map there is no back row, so the
+    // subtitle still names the area.
+    check(`${name}: item 2 a booth from the map keeps its area subtitle`, /^(In the Park|McLendon Ave|Candler Park Dr|Food Court|Kidlandia)$/.test(start.area), start.area || '(none)');
 
     // Wrap is checked in one click rather than by walking the whole area --
     // stepping 60+ booths three times over is what made this suite crawl.
@@ -1468,6 +1471,11 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
     // not its title -- the "· Art Market" would be said again on the row below.
     const shortTitle = listTitle.split(' · ')[0];
     check(`${name}: B1 a back arrow names the list, short`, !!d.back && d.back.includes('‹') && d.back.includes(shortTitle) && !/Art Market/.test(d.back), d.back || '(none)');
+    // Round 3, item 2: nothing on the card repeats the header. With the back row
+    // naming the area, the booth's subtitle must not name it again (or exist at
+    // all, when nothing else is left to say).
+    const subAfterPush = await p.evaluate(() => document.querySelector('.sheet .ffc-panel__layer:not(.ffc-panel__layer--out) .ffc-panel__sub')?.textContent ?? null);
+    check(`${name}: item 2 a booth from the list has no subtitle repeating the back row`, subAfterPush === null || !(subAfterPush.includes(shortTitle) || /Art Market/.test(subAfterPush)), subAfterPush === null ? 'no subtitle line' : subAfterPush);
     await p.locator('.sheet .ffc-panel__back').click();
     await p.waitForTimeout(600);
     const back = await p.evaluate(() => ({ title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent, scroll: document.querySelector('.sheet .ffc-panel__body').scrollTop, open: document.querySelector('.sheet:not(.docked)').classList.contains('open'), closedEver: window.__closed }));

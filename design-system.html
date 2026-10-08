@@ -267,7 +267,6 @@
             <div class="ffc-panel__stage"><div class="ffc-panel__layer">
               <button class="ffc-panel__back"><span aria-hidden="true">‹</span> Candler Park Dr</button>
               <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--cat-booth)"></span><h3 class="ffc-panel__title">Booth 87</h3></div>
-              <div class="ffc-panel__sub">Candler Park Dr · Art Market</div>
             </div></div>
             <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
           </div>
@@ -276,7 +275,7 @@
           </div>
           <div class="ffc-panel__footer"><div class="ffc-itempager"><button aria-label="Previous booth">‹</button><span class="ffc-itempager__pos">6 of 58</span><button aria-label="Next booth">›</button></div></div>
         </div>
-        <figcaption><b>Pushed detail.</b> The header row holds <b>‹ back</b> at the left (the list's short name) and the same close at the right; the booth's own title line is the row below. ItemPager in the footer.</figcaption>
+        <figcaption><b>Pushed detail.</b> The header row holds <b>‹ back</b> at the left (the list's short name) and the same close at the right; the booth's own title line is the row below, with no subtitle: the back row already names the area. ItemPager in the footer.</figcaption>
       </figure>
       <figure class="demo-fig">
         <div class="ffc-panel demo" style="height:208px">
@@ -298,6 +297,7 @@
     <table style="margin-top:var(--space-3)">
       <tr><th>Rule · close</th><td><b>Close is always top-right, on the first row under the handle.</b> In every sheet state, so it never moves when the content does. (Apple's HIG puts the dismiss control in a sheet's top-trailing corner and navigation in the top-leading corner, on the same row.) It is not part of either layer, so it does not animate when you push or pop.</td></tr>
       <tr><th>Rule · back</th><td><b>The back label names the previous screen, short.</b> The area's <code>shortName</code> ("‹ In the Park", "‹ Candler Park Dr"), the way an iOS back button names where you came from, never the list's full title: its "· Art Market" would be said again on the row below. Same on the docked panel's back row. A run that needs a different short name gets it as a field on its record in <code>src/data/areas.js</code>, not by trimming the title in a component.</td></tr>
+      <tr><th>Rule · no repeat</th><td><b>Nothing on a card repeats its header.</b> A booth reached from its list (the back row showing) drops the area and "Art Market" from its subtitle and keeps only what the back row does not say: "no booth number", "★ Featured artist". If nothing is left, there is no subtitle line, not an empty one. A booth opened straight from the map has no back row, so its subtitle names the area. The same test applies to every card's body: a line that only restates the title or the subtitle is cut.</td></tr>
       <tr><th>Anatomy</th><td><code>.ffc-panel__handle</code> (a <code>--tap-min</code> band holding a 4px <code>__handle-bar</code>; a button with an accessible name) → <code>.ffc-panel__header</code> (the stage holding the back row and/or the <code>__titleline</code>: <code>__badge</code>, <code>__title</code>, then <code>__sub</code>; plus <code>__close</code>) → <code>.ffc-panel__body</code> (the only thing that scrolls) → <code>.ffc-panel__footer</code>. The docked variant adds <code>__masthead</code> (the resting header) and a <code>__back</code> row.</td></tr>
       <tr><th>Navigation</th><td><b>One sheet, a stack one level deep: push from the right, pop to the right, height held.</b> Tapping a booth in an area's list <i>pushes</i>: the booth slides in from the right while the list shifts a little left underneath it. <b>‹ back</b> <i>pops</i>: the booth slides out to the right and the list returns at its previous scroll position. The sheet's height does not change (<code>data-stack</code> holds it at the list's height; the booth's content scrolls if it must) and the header eases between its two lengths. ItemPager steps pan sideways and never add a back step. <b>The way you step in is the way you step out.</b> Reduced motion: a crossfade, no slide.</td></tr>
       <tr><th>Detents</th><td><b>Full</b> (<code>--sheet-max-height</code>) is how a sheet opens. <b>Peek</b> (<code>--sheet-peek-height</code>) is how it opens while a filter chip is on. Drag the handle up, or tap it, for full; tap again for peek. A swipe down closes (from peek) or steps down to peek (from full, with a chip on).</td></tr>
@@ -585,6 +585,7 @@
     <li><b>Every pan that targets a pin or a booth centres it in the map safe area,</b> and runs again after a pinch settles and after a resize.</li>
     <li><b>Swipe down from a full chip sheet stops at peek;</b> the second swipe closes. On a phone on its side the sheet is capped at peek.</li>
     <li><b>The back label names the previous screen, short.</b> "‹ In the Park", not "‹ In the Park · Art Market": the area's <code>shortName</code>, on the sheet and on the docked panel.</li>
+    <li><b>Nothing on a card repeats its header.</b> Under a back row the booth's subtitle keeps only what the back row does not say, or is not drawn at all; no body line restates the title or the subtitle.</li>
   </ol></div>
   <h3>Tested explicitly (10/6)</h3><div class="card"><table>
     <tr><th>Tap a dimmed pin while a chip is on</th><td>The pin has pointer-events: none, so the tap reaches the map. No sheet open: the chip turns off (390×844, Restrooms on, tapped the Main Stage pin). Sheet open: the sheet closes and the chip stays on. Every booth square now behaves the same way (round 2): e2e taps one for real with and without a sheet.</td></tr>

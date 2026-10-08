@@ -64,7 +64,7 @@ const POI_COPY = {
   // the beer stands. TODO(Jess): what the stations serve -- Ernest has asked;
   // until then one neutral line that invents nothing (9/22).
   beverage: { title: 'Beverages', sub: 'Beverage station', icon: 'beverage', cat: 'beverage',
-    lines: ['Beverage station — drinks for sale.'] },
+    lines: ['Drinks for sale'] },
   merch: { title: 'Merch Booth', sub: 'Fall Fest merchandise', icon: 'merch', cat: 'merch',
     lines: ['Official Fall Fest shirts and goods', 'At the park entrance off McLendon Ave, on the east side of the path — the same spot every year'] },
   // "Restroom (+ ADA)" is the print key's wording (Jess, 9/21); one symbol
@@ -76,13 +76,15 @@ const POI_COPY = {
   firstaid: { title: 'First Aid / EMS', sub: 'On-site medical support', icon: 'firstaid', cat: 'firstaid',
     lines: ['Staffed by EMS for the whole festival', 'Dial 911 for emergencies'] },
   water: { title: 'Water Station', sub: 'Free refill', icon: 'water', cat: 'water',
-    lines: ['Bring a bottle to refill'] },
+    lines: ['Bring a bottle'] },
   info: { title: 'Info', sub: 'Volunteer / info booth', icon: 'info', cat: 'info',
     lines: ['At the park entrance off McLendon Ave, on the east side of the path just north of the merch tent', 'Programs and general festival information', 'Ask here about lost & found'] },
   // TODO(Jess): which PTA runs the booth -- Ernest has asked; one neutral
   // line until then (9/22).
+  // The body said "PTA booth." under a title saying the same; the card is the
+  // title, the subtitle and the pin's location line until Jess answers.
   pta: { title: 'PTA booth', sub: 'In Kidlandia', icon: 'pta', cat: 'pta',
-    lines: ['PTA booth.'] },
+    lines: [] },
   bikevalet: { title: 'Bike Valet', sub: 'Free, attended bike parking', icon: 'bikevalet', cat: 'bikevalet',
     lines: ['Roll up and a volunteer tags and racks your bike'] },
 };
@@ -326,7 +328,13 @@ function ItemPager({ pos, total, onStep }) {
   );
 }
 
-function BoothDetail({ booth, part }) {
+// `pushed`: a back row is showing above this booth (it was opened from its
+// area's list), so the area is already named one row up. Nothing on a card
+// repeats its header (round 3, item 2): the subtitle then keeps only what the
+// back row does not say -- "no booth number", "★ Featured artist" -- and if
+// nothing is left there is no subtitle line at all. Opened straight from the
+// map there is no back row, so the subtitle names the area as before.
+function BoothDetail({ booth, part, pushed = false }) {
   const isFood = booth.area === 'Food Court';
   const isKid = booth.area === 'Kidlandia';
   // A spot with no number is not in any row, so there is nothing to page
@@ -341,7 +349,11 @@ function BoothDetail({ booth, part }) {
         icon={isFood ? 'food' : isKid ? 'kids' : 'art'}
         color={isFood ? PIN_COLOR.food : isKid ? PIN_COLOR.kids : SLATE}
         title={unnumbered ? booth.biz : `${isFood ? 'Stall' : 'Booth'} ${booth.n}`}
-        sub={`${booth.area}${isFood ? '' : ' · Art Market'}${unnumbered ? ' · no booth number' : ''}${featured ? ` · ★ ${featured}` : ''}`} />
+        sub={[
+          pushed ? null : `${booth.area}${isFood ? '' : ' · Art Market'}`,
+          unnumbered ? 'no booth number' : null,
+          featured ? `★ ${featured}` : null,
+        ].filter(Boolean).join(' · ') || undefined} />
     );
   }
   return (
@@ -504,7 +516,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // At peek there is no room for the footer: the ItemPager shows at full height.
   const showItemPager = itemPager && !(peekable && detent === 'peek');
   const renderThing = (part) => {
-    if (shown.openBooth) return <BoothDetail booth={shown.openBooth} part={part} />;
+    if (shown.openBooth) return <BoothDetail booth={shown.openBooth} part={part} pushed={canGoBack} />;
     if (shown.openId === 'stageMain' || shown.openId === 'stageAcoustic') return <StageSchedule stageKey={shown.openId} pin={shown.selectedPin} part={part} />;
     if (shown.openId === 'food') return <FoodCourt pin={shown.selectedPin} part={part} />;
     if (shown.openId) return <GenericPoi id={shown.openId} pin={shown.selectedPin} part={part} />;
