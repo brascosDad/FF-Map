@@ -1464,7 +1464,10 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844]]) {
       closedEver: window.__closed,
     }));
     check(`${name}: B1 tapping a list row keeps the sheet open and shows the booth`, d.title === `Booth ${num}` && d.open && d.closedEver === 0, `${d.title} for row ${num}; open ${d.open}; closed ${d.closedEver}x`);
-    check(`${name}: B1 a back arrow names the list`, !!d.back && d.back.includes('‹') && d.back.includes(listTitle), d.back || '(none)');
+    // Round 3, item 1: the back label is the list's SHORT name ("‹ In the Park"),
+    // not its title -- the "· Art Market" would be said again on the row below.
+    const shortTitle = listTitle.split(' · ')[0];
+    check(`${name}: B1 a back arrow names the list, short`, !!d.back && d.back.includes('‹') && d.back.includes(shortTitle) && !/Art Market/.test(d.back), d.back || '(none)');
     await p.locator('.sheet .ffc-panel__back').click();
     await p.waitForTimeout(600);
     const back = await p.evaluate(() => ({ title: document.querySelector('.sheet .ffc-panel__titleline h3')?.textContent, scroll: document.querySelector('.sheet .ffc-panel__body').scrollTop, open: document.querySelector('.sheet:not(.docked)').classList.contains('open'), closedEver: window.__closed }));

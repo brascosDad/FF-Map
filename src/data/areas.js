@@ -5,8 +5,18 @@
 // list moved here rather than being typed out a second time.
 //
 // `mk` is where the area's marker sits, in map units -- it doubles as the point
-// the panel centres on. `shortName` is how the panel lists the run; `label` is
-// the only text the map itself still draws for it. `blobs`/`clip` are drawing concerns the panel ignores.
+// the panel centres on.
+//
+// Two names per run, and each has one job:
+//   `name`       the sheet's title when the run's list is open
+//                ("In the Park · Art Market")
+//   `shortName`  how the directory lists the run AND what the back row says
+//                above a booth opened from its list ("‹ In the Park"): the
+//                previous screen, short, the way an iOS back button names it.
+//                Never derive it from `name` in a component; give the record
+//                one here.
+// `label` is the only text the map itself still draws for it. `blobs`/`clip`
+// are drawing concerns the panel ignores.
 // `range` is read off the booths themselves (data/booths.js, generated from
 // the chair's sheet), so it cannot say 82-142 after the sheet says 82-139.
 // The K stack counts toward the in-park run but sits in its own stack by

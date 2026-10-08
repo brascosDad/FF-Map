@@ -490,11 +490,14 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
   // The head stays while the sheet slides away on close (`shown` holds the
   // content until it has gone), not only while `isOpen`.
   const shownOpen = !!(shown.openId || shown.openArea || shown.openBooth);
-  // The back row names the level you came from (B1). The docked panel has its
-  // own back row above the header; the bottom sheet carries it in the head.
+  // The back row names the screen you came from, SHORT, the way an iOS back
+  // button does (round 3, item 1): the area's `shortName` ("‹ In the Park"),
+  // never its full title -- the title's "· Art Market" would be said again a
+  // row below. The docked panel has its own back row above the header; the
+  // bottom sheet carries it in the head.
   const backBtn = canGoBack && !docked ? (
     <button className="ffc-panel__back" onClick={onBack}>
-      <span aria-hidden="true">‹</span> {shown.openArea.name}
+      <span aria-hidden="true">‹</span> {shown.openArea.shortName}
     </button>
   ) : null;
   const itemPager = shown.openBooth ? boothPosition(shown.openBooth) : null;
@@ -700,7 +703,7 @@ export default function DetailSheet({ openId, openArea, openBooth, selectedPin =
       )}
       {docked && shownOpen && (
         <button className="ffc-panel__back" onClick={canGoBack ? onBack : onClose}>
-          <span aria-hidden="true">‹</span> {canGoBack ? shown.openArea.name : 'All locations'}
+          <span aria-hidden="true">‹</span> {canGoBack ? shown.openArea.shortName : 'All locations'}
         </button>
       )}
 

@@ -15,10 +15,10 @@ The zoom stop (below) is a second, independent dimension: any state can be at an
 | S3 | **Sheet open · full** | No chip. A pin card, a stage lineup (the schedule), the Food Court, or an art-market area's booth list, at full height. |
 | S4 | **Chip on + sheet · peek** | A sheet opened while a chip is on opens at peek height (`--sheet-peek-height`) so the map stays visible. The ItemPager is not shown. |
 | S5 | **Chip on + sheet · full** | The same sheet after the handle was tapped or dragged up. |
-| S6 | **List → booth (inside the sheet)** | A booth opened from a row in an area's list: ONE sheet, the content slid to the booth, a back row (`‹ <area>`) above the title, the ItemPager in the footer. The chip is off (an area list clears it). |
+| S6 | **List → booth (inside the sheet)** | A booth opened from a row in an area's list: ONE sheet, the content slid to the booth, a back row (`‹ <area short name>`, e.g. `‹ In the Park`) above the title, the ItemPager in the footer. The chip is off (an area list clears it). |
 | S7 | **Booth opened from the map** | A booth opened by tapping its square: the same booth sheet with no list behind it, so no back row. |
 
-The docked panel (desktop, 1024px and up) has no peek, no handle and no ×: the directory is its resting state, a detail replaces it, and `‹ All locations` (or `‹ <area>` for a booth opened from a list) goes back. Esc does nothing there. Every other rule below applies the same way.
+The docked panel (desktop, 1024px and up) has no peek, no handle and no ×: the directory is its resting state, a detail replaces it, and `‹ All locations` (or `‹ <area short name>` for a booth opened from a list) goes back. Esc does nothing there. Every other rule below applies the same way.
 
 ### The three zoom stops
 
@@ -222,6 +222,7 @@ stateDiagram-v2
 10. **A pan or a pinch is never a tap.** Only a genuine tap clears a layer.
 11. **Every pan that targets a pin or a booth centres it in the map safe area,** and runs again after a pinch settles and after a resize.
 12. **Swipe down from a full chip sheet stops at peek;** the second swipe closes. On a phone on its side the sheet is capped at peek.
+13. **The back label names the previous screen, short.** "‹ In the Park", not "‹ In the Park · Art Market": the area's `shortName`, on the sheet and on the docked panel.
 
 ## 6 · Tested explicitly (10/6)
 
