@@ -32,14 +32,19 @@ const BASE = (process.argv.find((a) => a.startsWith('--base=')) || '--base=main'
 //              back row, title line and ItemPager on this branch)
 //   chipSheet  Restrooms on, then one of its pins tapped (peek height on this
 //              branch)
+// The list row's class on this branch (.ffc-boothrow, the naming rule) AND on
+// main before the rename (.boothrow): "before" is built from the base ref, so
+// the steps have to find the row on both, or the capture times out and the
+// Action fails without a screenshot (runs 29 and 30 of PR 15 did exactly that).
+const BOOTH_ROW = 'button.ffc-boothrow, button.boothrow';
 const booth = async (page) => {
   const n = await page.locator('svg.ff-map g.ff-area .ff-marker').count();
   for (let i = 0; i < n; i++) {
     await page.locator('svg.ff-map g.ff-area .ff-marker').nth(i).dispatchEvent('click');
     await page.waitForTimeout(500);
-    if (await page.locator('button.boothrow').count()) break;
+    if (await page.locator(BOOTH_ROW).count()) break;
   }
-  await page.locator('button.boothrow').nth(5).dispatchEvent('click');
+  await page.locator(BOOTH_ROW).nth(5).dispatchEvent('click');
 };
 const chipSheet = async (page) => {
   await page.locator('.ffc-chip', { hasText: 'Restrooms' }).click();
