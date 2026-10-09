@@ -27,13 +27,17 @@ data file changed underneath you, that's why.
 
 **Don't restructure, rename, or refactor beyond the task asked.** We are weeks from a festival.
 
-## Two standing requirements — every PR, not just the one that asks
+## Standing requirements — every PR, not just the one that asks
 
 **1. Build with components and reference the design system on every move.** Tokens live in
 `src/styles/tokens.css`, documented in `design-system.html`. No ad-hoc colors, spacing, or type
 sizes. If the value you need doesn't exist as a token, **add the token and document it** rather
 than hardcoding past it — the design system is meant to grow alongside the build, in real time,
-not be reverse-documented afterward.
+not be reverse-documented afterward. Ask the system instead of rereading the prose:
+`design-system/manifest.json` (generated, `npm run manifest`) answers to `npm run ds -- …` or the
+`ff-design-system` MCP server in `.mcp.json`, and `check` flags raw hex/px, missing tokens and unknown
+class names in a snippet. How it changes (propose → review → adopt, versions, deprecation):
+`design-system.html` §7.
 
 **2. The data layer has to be clean and scalable, even though the dataset is small.** The test:
 a volunteer picking this up next year opens the repo and can see immediately what to change. One
@@ -157,6 +161,8 @@ npm run test:visual   # just the visual diffs, advisory off CI; to accept a chan
 npm run pr-shots   # before/after screenshots (main vs branch) into docs/pr-shots/, prints the PR table
 npm run print      # writes the 11x17 print PDF + 300dpi PNG
 npm run sync       # git pull --ff-only && npm install
+npm run ds -- component ItemPager   # ask the design system: components | component <Name> | tokens [filter] | rules | check <css>
+npm run manifest   # regenerate design-system/manifest.json (CI fails if it is stale); npm run test:ds tests it
 python3 scripts/pull-sheet.py && python3 scripts/build-booths.py   # re-read Courtney's sheet
 ```
 

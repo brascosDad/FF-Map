@@ -603,6 +603,32 @@
     <tr><th>Swipe down from a full sheet with a chip on</th><td>The first swipe stops at peek, the second closes. <span class="next">4.6</span></td></tr>
     <tr><th><span class="open-tag">OPEN</span> The ItemPager on a phone on its side</th><td>Landscape caps the sheet at peek height and the ItemPager is not shown at peek, so booths cannot be paged in landscape. Show it at peek in landscape only, or leave paging to portrait?</td></tr>
   </table></div>
+
+  <h2>7 · Governance</h2>
+  <p class="lede">How the system changes. The system is the files plus <code>design-system/manifest.json</code>; the manifest is what an agent asks (<code>npm run ds -- component ItemPager</code>, or the <code>ff-design-system</code> MCP server in <code>.mcp.json</code>).</p>
+
+  <h3>Propose → review → adopt</h3>
+  <div class="card"><table>
+    <tr><th>Propose</th><td>A pull request that changes a token, a component, a name or a rule. It carries, <b>together</b>: the CSS, <code>design-system/manifest.json</code> (run <code>npm run manifest</code>; hand-write only <code>cssClass</code>, <code>file</code>, <code>inStates</code>, <code>rules</code>, <code>doNot</code> and the rules themselves), the <b>Names table</b> in §3 if a name is added, renamed or removed, this page, <code>docs/interaction-states.md</code> if a state changed, a line in <code>design-system/CHANGELOG.md</code> and the version bump. A value that is not a token becomes one, here, before it is used.</td></tr>
+    <tr><th>Review</th><td>CI: <b>manifest is current</b> (the committed manifest is what a fresh generation produces), <code>npm run test:ds</code>, lint and the e2e suite. New CSS goes through <code>npm run ds -- check</code>. Open questions and skipped items go in <code>docs/pr-notes.md</code>.</td></tr>
+    <tr><th>Adopt</th><td><b>Ernest approves and merges.</b> Nothing is part of the system until it is merged, and no agent merges its own proposal.</td></tr>
+  </table></div>
+
+  <h3>Versioning</h3>
+  <div class="card"><table>
+    <tr><th>Major</th><td>Something code may depend on is removed or renamed, or the meaning changes: a token, component, CSS class or rule removed; a token or class renamed; a token moved between tiers; a rule tightened so that code which passed now fails. Also the end of a deprecation (below).</td></tr>
+    <tr><th>Minor</th><td>Something is added, or visibly changes, and nothing breaks: a new token, component, part, variant or rule; a token's value changed; a deprecation announced.</td></tr>
+    <tr><th>Patch</th><td>Words only: a note, a description, a <code>doNot</code>, a rule's reason, an <code>enforcedBy</code> or <code>source</code> pointer, a typo.</td></tr>
+    <tr><th>Where</th><td><code>version</code> and <code>updated</code> in the manifest, and the newest heading of <code>design-system/CHANGELOG.md</code>; <code>npm run test:ds</code> fails if the two disagree. Starts at 1.0.0.</td></tr>
+  </table></div>
+
+  <h3>Deprecation</h3>
+  <div class="card"><table>
+    <tr><th>Mark</th><td>A component: <code>"deprecated": true, "replacement": "&lt;Name&gt;"</code> on its manifest entry. A token: start the comment above it in <code>tokens.css</code> with <code>Deprecated: use --other</code>; the manifest picks it up. Same idea as <code>hidden: true</code> on a pin. This is a minor version.</td></tr>
+    <tr><th>One version</th><td>It stays, still working, for that one version. <code>npm run ds -- check</code> warns on every use and names the replacement.</td></tr>
+    <tr><th>Remove</th><td>In the next major, the entry, the CSS and the Names row go together, and the CHANGELOG says what replaced it.</td></tr>
+  </table></div>
+
 </div>
 
 <script type="module">

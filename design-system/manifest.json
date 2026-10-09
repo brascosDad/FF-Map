@@ -1,0 +1,2435 @@
+{
+  "name": "Fall Fest design system",
+  "version": "1.0.0",
+  "updated": "2026-10-09",
+  "provenance": {
+    "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
+    "generated": [
+      "tokens (from src/styles/tokens.css and components.css)",
+      "components[].name, description (the Names table, design-system.html §3)",
+      "components[].states (docs/interaction-states.md), shipped, cssParts, cssVariants, tokens, knobs, setElsewhere",
+      "unlistedClasses",
+      "tokens[].deprecated, replacement (from a \"Deprecated: use --x\" comment above the token)"
+    ],
+    "handWritten": [
+      "version, updated",
+      "components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated + replacement (checked against the files)",
+      "rules (every enforcedBy test name and every source phrase is checked against the files)"
+    ]
+  },
+  "tokens": [
+    {
+      "name": "--ff-navy",
+      "tier": "primitive",
+      "value": "#23385B",
+      "pointsAt": [],
+      "note": "Brand — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ff-cream",
+      "tier": "primitive",
+      "value": "#F5EFDA",
+      "pointsAt": [],
+      "note": "Brand — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ff-teal",
+      "tier": "primitive",
+      "value": "#56AC9B",
+      "pointsAt": [],
+      "note": "Brand — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ff-coral",
+      "tier": "primitive",
+      "value": "#E89370",
+      "pointsAt": [],
+      "note": "Brand — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-food",
+      "tier": "primitive",
+      "value": "#C97636",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-drinks",
+      "tier": "primitive",
+      "value": "#B78B34",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-restroom",
+      "tier": "primitive",
+      "value": "#3D9E6E",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-water",
+      "tier": "primitive",
+      "value": "#3D8FA4",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-info",
+      "tier": "primitive",
+      "value": "#407EB5",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-stage",
+      "tier": "primitive",
+      "value": "#8F71B7",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-kids",
+      "tier": "primitive",
+      "value": "#C25B7E",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-firstaid",
+      "tier": "primitive",
+      "value": "#C84B46",
+      "pointsAt": [],
+      "note": "Category pins (POI wayfinding) — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-merch",
+      "tier": "primitive",
+      "value": "#9E3F94",
+      "pointsAt": [],
+      "note": "Merch is its own destination (the festival's own booth, at the park entrance), so it takes its own hue rather than the services neutral. Magenta sits in the widest open gap on the wheel: 40 degrees from the stage lavender on one side and the kids rose on the other. 5.4:1 under the white glyph.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-beverage",
+      "tier": "primitive",
+      "value": "#8A6521",
+      "pointsAt": [],
+      "note": "Beverage stations are not beer (Jess's 2026 plan draws them apart), so they take their own hue in the drinks family: the same amber, a step darker, so a cup beside a mug reads as two things. 6.4:1 under the white glyph.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--food-ink",
+      "tier": "primitive",
+      "value": "#A86F36",
+      "pointsAt": [],
+      "note": "food orange darkened for text on ground",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--cat-booth",
+      "tier": "primitive",
+      "value": "#47597A",
+      "pointsAt": [],
+      "note": "Structural / neutral — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--cat-utility",
+      "tier": "primitive",
+      "value": "#6E7C93",
+      "pointsAt": [],
+      "note": "Structural / neutral — unchanged",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-barricade",
+      "tier": "primitive",
+      "value": "#F07A22",
+      "pointsAt": [],
+      "note": "Operations — the paper-only layer EMS and the fire inspector read (pins flagged print: true in assets/pins.js). Not visitor categories, so not pin hues. The barricade orange is the traffic-cone orange of Jess's 2026 site plan, chosen to read on the street grey.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-generator",
+      "tier": "primitive",
+      "value": "#F7D117",
+      "pointsAt": [],
+      "note": "A generator is Jess's gold bolt: a clear yellow disc -- nowhere near the beer amber -- with the bolt in navy (--ff-navy on it: 8.6:1). A dumpster is the quiet one: a white disc with a charcoal ring and glyph, so it reads as low priority rather than as one more dark fill.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-dumpster-fill",
+      "tier": "primitive",
+      "value": "var(--ff-white)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--ff-white"
+      ],
+      "note": "A generator is Jess's gold bolt: a clear yellow disc -- nowhere near the beer amber -- with the bolt in navy (--ff-navy on it: 8.6:1). A dumpster is the quiet one: a white disc with a charcoal ring and glyph, so it reads as low priority rather than as one more dark fill.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-dumpster-ink",
+      "tier": "primitive",
+      "value": "var(--slate-700)",
+      "resolved": "#4A5262",
+      "pointsAt": [
+        "--slate-700"
+      ],
+      "note": "A generator is Jess's gold bolt: a clear yellow disc -- nowhere near the beer amber -- with the bolt in navy (--ff-navy on it: 8.6:1). A dumpster is the quiet one: a white disc with a charcoal ring and glyph, so it reads as low priority rather than as one more dark fill.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-speed-bump",
+      "tier": "primitive",
+      "value": "var(--ff-white)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--ff-white"
+      ],
+      "note": "A speed bump is a thin bar across the street, white as Jess asked (her plan hatches them yellow).",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-ice-truck",
+      "tier": "primitive",
+      "value": "#CFEAF5",
+      "pointsAt": [],
+      "note": "The ice truck (Jess, 9/23): an ice-blue disc with the truck in navy -- reads on the lawn green and is no visitor hue (water is a mid teal-blue under a white glyph). Navy on it: 9.2:1.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ops-musician-tent",
+      "tier": "primitive",
+      "value": "#6B4A2B",
+      "pointsAt": [],
+      "note": "The musicians' tent (Jess, 9/23): canvas brown, white glyph (8.1:1). Not the food orange, not the stage lavender; a structure, not a service.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ff-white",
+      "tier": "primitive",
+      "value": "#FFFFFF",
+      "pointsAt": [],
+      "note": "Neutrals — these replace the ad-hoc greys scattered through map.css",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--sand-100",
+      "tier": "primitive",
+      "value": "#F0EDE4",
+      "pointsAt": [],
+      "note": "dividers, pressed fills",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--sand-200",
+      "tier": "primitive",
+      "value": "#E0DCCB",
+      "pointsAt": [],
+      "note": "control borders",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--sand-300",
+      "tier": "primitive",
+      "value": "#D7D2C2",
+      "pointsAt": [],
+      "note": "chip borders, the sheet handle",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--slate-500",
+      "tier": "primitive",
+      "value": "#636B7B",
+      "pointsAt": [],
+      "note": "muted text — 5.4:1 on white",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--slate-600",
+      "tier": "primitive",
+      "value": "#5C6570",
+      "pointsAt": [],
+      "note": "street names on the map",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--slate-700",
+      "tier": "primitive",
+      "value": "#4A5262",
+      "pointsAt": [],
+      "note": "body text",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--slate-800",
+      "tier": "primitive",
+      "value": "#3B4A63",
+      "pointsAt": [],
+      "note": "booth numbers",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ground-100",
+      "tier": "primitive",
+      "value": "#ECEAE1",
+      "pointsAt": [],
+      "note": "Neutrals — these replace the ad-hoc greys scattered through map.css",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ground-200",
+      "tier": "primitive",
+      "value": "#E4E1D7",
+      "pointsAt": [],
+      "note": "Neutrals — these replace the ad-hoc greys scattered through map.css",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--green-lawn",
+      "tier": "primitive",
+      "value": "#7CD763",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--green-neighbourhood",
+      "tier": "primitive",
+      "value": "#ADD29E",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--grey-street",
+      "tier": "primitive",
+      "value": "#E1E6EB",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--grey-structure",
+      "tier": "primitive",
+      "value": "#E1E1E1",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--grey-hairline",
+      "tier": "primitive",
+      "value": "#C7C7C7",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--blue-water",
+      "tier": "primitive",
+      "value": "#CBE4FF",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pink-court",
+      "tier": "primitive",
+      "value": "#FFD7D9",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pink-kids",
+      "tier": "primitive",
+      "value": "#D1849E",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--paper-festival",
+      "tier": "primitive",
+      "value": "#F7F7F7",
+      "pointsAt": [],
+      "note": "Basemap greens/greys, straight off the Figma artboard. The bright lawn green is the export's own value; the neighbourhood green is our recolour of \"candler park outline\", which shipped bright and fought the pins.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--surface-base",
+      "tier": "semantic",
+      "value": "var(--ff-navy)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--ff-navy"
+      ],
+      "note": "Surfaces",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--surface-chrome",
+      "tier": "semantic",
+      "value": "rgb(255 255 255 / 95%)",
+      "pointsAt": [],
+      "note": "floating controls over the map",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--surface-chrome-solid",
+      "tier": "semantic",
+      "value": "var(--ff-white)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--ff-white"
+      ],
+      "note": "Surfaces",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--surface-pressed",
+      "tier": "semantic",
+      "value": "var(--sand-100)",
+      "resolved": "#F0EDE4",
+      "pointsAt": [
+        "--sand-100"
+      ],
+      "note": "Surfaces",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--surface-selected",
+      "tier": "semantic",
+      "value": "var(--ff-navy)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--ff-navy"
+      ],
+      "note": "Surfaces",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--border-control",
+      "tier": "semantic",
+      "value": "var(--sand-200)",
+      "resolved": "#E0DCCB",
+      "pointsAt": [
+        "--sand-200"
+      ],
+      "note": "Surfaces",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--border-subtle",
+      "tier": "semantic",
+      "value": "var(--sand-300)",
+      "resolved": "#D7D2C2",
+      "pointsAt": [
+        "--sand-300"
+      ],
+      "note": "Surfaces",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-strong",
+      "tier": "semantic",
+      "value": "var(--ff-navy)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--ff-navy"
+      ],
+      "note": "Text — all of these clear 4.5:1 on white",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-body",
+      "tier": "semantic",
+      "value": "var(--slate-700)",
+      "resolved": "#4A5262",
+      "pointsAt": [
+        "--slate-700"
+      ],
+      "note": "Text — all of these clear 4.5:1 on white",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-muted",
+      "tier": "semantic",
+      "value": "var(--slate-500)",
+      "resolved": "#636B7B",
+      "pointsAt": [
+        "--slate-500"
+      ],
+      "note": "Text — all of these clear 4.5:1 on white",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-on-navy",
+      "tier": "semantic",
+      "value": "var(--ff-cream)",
+      "resolved": "#F5EFDA",
+      "pointsAt": [
+        "--ff-cream"
+      ],
+      "note": "Text — all of these clear 4.5:1 on white",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--current",
+      "tier": "semantic",
+      "value": "var(--ff-coral)",
+      "resolved": "#E89370",
+      "pointsAt": [
+        "--ff-coral"
+      ],
+      "note": "Meaning. Coral is \"now\" and nothing else -- GPS was cut for time, so it has no live use in the app and stays reserved rather than becoming decoration. Teal is zones. A navy fill means selected where the thing has no colour of its own to lose (a booth); a navy ring means it where it does (a pin, whose hue IS its category). Pin hues mean category.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--zone-fill",
+      "tier": "semantic",
+      "value": "var(--ff-teal)",
+      "resolved": "#56AC9B",
+      "pointsAt": [
+        "--ff-teal"
+      ],
+      "note": "Meaning. Coral is \"now\" and nothing else -- GPS was cut for time, so it has no live use in the app and stays reserved rather than becoming decoration. Teal is zones. A navy fill means selected where the thing has no colour of its own to lose (a booth); a navy ring means it where it does (a pin, whose hue IS its category). Pin hues mean category.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--focus-ring",
+      "tier": "semantic",
+      "value": "var(--ff-navy)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--ff-navy"
+      ],
+      "note": "Meaning. Coral is \"now\" and nothing else -- GPS was cut for time, so it has no live use in the app and stays reserved rather than becoming decoration. Teal is zones. A navy fill means selected where the thing has no colour of its own to lose (a booth); a navy ring means it where it does (a pin, whose hue IS its category). Pin hues mean category.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-ground",
+      "tier": "semantic",
+      "value": "var(--green-neighbourhood)",
+      "resolved": "#ADD29E",
+      "pointsAt": [
+        "--green-neighbourhood"
+      ],
+      "note": "everything outside the park",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-park",
+      "tier": "semantic",
+      "value": "var(--green-neighbourhood)",
+      "resolved": "#ADD29E",
+      "pointsAt": [
+        "--green-neighbourhood"
+      ],
+      "note": "Candler Park's own footprint",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-lawn",
+      "tier": "semantic",
+      "value": "var(--green-lawn)",
+      "resolved": "#7CD763",
+      "pointsAt": [
+        "--green-lawn"
+      ],
+      "note": "the three mown lawns",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-festival",
+      "tier": "semantic",
+      "value": "var(--paper-festival)",
+      "resolved": "#F7F7F7",
+      "pointsAt": [
+        "--paper-festival"
+      ],
+      "note": "festival footprint",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-street",
+      "tier": "semantic",
+      "value": "var(--grey-street)",
+      "resolved": "#E1E6EB",
+      "pointsAt": [
+        "--grey-street"
+      ],
+      "note": "roads and paved paths",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-structure",
+      "tier": "semantic",
+      "value": "var(--grey-structure)",
+      "resolved": "#E1E1E1",
+      "pointsAt": [
+        "--grey-structure"
+      ],
+      "note": "buildings",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-hairline",
+      "tier": "semantic",
+      "value": "var(--grey-hairline)",
+      "resolved": "#C7C7C7",
+      "pointsAt": [
+        "--grey-hairline"
+      ],
+      "note": "court linework",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-court",
+      "tier": "semantic",
+      "value": "var(--pink-court)",
+      "resolved": "#FFD7D9",
+      "pointsAt": [
+        "--pink-court"
+      ],
+      "note": "Basemap. Every fill in assets/basemapTrace.js points at one of these, so a palette change is a token edit rather than a hunt through path data.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-water",
+      "tier": "semantic",
+      "value": "var(--blue-water)",
+      "resolved": "#CBE4FF",
+      "pointsAt": [
+        "--blue-water"
+      ],
+      "note": "Basemap. Every fill in assets/basemapTrace.js points at one of these, so a palette change is a token edit rather than a hunt through path data.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-kids",
+      "tier": "semantic",
+      "value": "var(--pink-kids)",
+      "resolved": "#D1849E",
+      "pointsAt": [
+        "--pink-kids"
+      ],
+      "note": "Kidlandia zone tint",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-label",
+      "tier": "semantic",
+      "value": "var(--slate-600)",
+      "resolved": "#5C6570",
+      "pointsAt": [
+        "--slate-600"
+      ],
+      "note": "street names",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-number",
+      "tier": "semantic",
+      "value": "var(--slate-800)",
+      "resolved": "#3B4A63",
+      "pointsAt": [
+        "--slate-800"
+      ],
+      "note": "booth numbers",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-halo",
+      "tier": "semantic",
+      "value": "var(--ff-white)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--ff-white"
+      ],
+      "note": "stroke behind map text",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-food-label",
+      "tier": "semantic",
+      "value": "var(--food-ink)",
+      "resolved": "#A86F36",
+      "pointsAt": [
+        "--food-ink"
+      ],
+      "note": "Ink drawn ON the map. Separate from the panel text roles: these sit on green and cream rather than on white chrome.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--icon-on-color",
+      "tier": "semantic",
+      "value": "var(--ff-white)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--ff-white"
+      ],
+      "note": "Glyph sitting on a filled category dot or pin.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--opacity-dimmed",
+      "tier": "semantic",
+      "value": "0.28",
+      "pointsAt": [],
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--opacity-disabled",
+      "tier": "semantic",
+      "value": "0.35",
+      "pointsAt": [],
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--font-display",
+      "tier": "semantic",
+      "value": "'Brice', 'Manrope', system-ui, sans-serif",
+      "pointsAt": [],
+      "note": "brand lockup only — see src/assets/fonts/README.md",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--font-ui",
+      "tier": "semantic",
+      "value": "'Manrope', system-ui, sans-serif",
+      "pointsAt": [],
+      "note": "Type",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-brand",
+      "tier": "semantic",
+      "value": "48px",
+      "pointsAt": [],
+      "note": "brand lockup — the masthead, sat on the map (36 on a phone, below)",
+      "file": "src/styles/tokens.css",
+      "overrides": [
+        {
+          "when": "(max-width: 480px)",
+          "value": "28px"
+        }
+      ]
+    },
+    {
+      "name": "--text-3xl",
+      "tier": "semantic",
+      "value": "28px",
+      "pointsAt": [],
+      "note": "Type",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-2xl",
+      "tier": "semantic",
+      "value": "18px",
+      "pointsAt": [],
+      "note": "panel title",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-lg",
+      "tier": "semantic",
+      "value": "15px",
+      "pointsAt": [],
+      "note": "body, chips",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-md",
+      "tier": "semantic",
+      "value": "14px",
+      "pointsAt": [],
+      "note": "Type",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-sm",
+      "tier": "semantic",
+      "value": "13px",
+      "pointsAt": [],
+      "note": "street labels, secondary",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--text-xs",
+      "tier": "semantic",
+      "value": "12px",
+      "pointsAt": [],
+      "note": "floor — nothing smaller ships",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--weight-medium",
+      "tier": "semantic",
+      "value": "500",
+      "pointsAt": [],
+      "note": "Type",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--weight-bold",
+      "tier": "semantic",
+      "value": "700",
+      "pointsAt": [],
+      "note": "Type",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--weight-black",
+      "tier": "semantic",
+      "value": "800",
+      "pointsAt": [],
+      "note": "Type",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-1",
+      "tier": "semantic",
+      "value": "4px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-2",
+      "tier": "semantic",
+      "value": "8px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-3",
+      "tier": "semantic",
+      "value": "12px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-4",
+      "tier": "semantic",
+      "value": "16px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-5",
+      "tier": "semantic",
+      "value": "20px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-6",
+      "tier": "semantic",
+      "value": "24px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--space-8",
+      "tier": "semantic",
+      "value": "32px",
+      "pointsAt": [],
+      "note": "Space — 4px base",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--radius-sm",
+      "tier": "semantic",
+      "value": "10px",
+      "pointsAt": [],
+      "note": "Radius",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--radius-md",
+      "tier": "semantic",
+      "value": "14px",
+      "pointsAt": [],
+      "note": "Radius",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--radius-lg",
+      "tier": "semantic",
+      "value": "20px",
+      "pointsAt": [],
+      "note": "Radius",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--radius-pill",
+      "tier": "semantic",
+      "value": "999px",
+      "pointsAt": [],
+      "note": "Radius",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--shadow-control",
+      "tier": "semantic",
+      "value": "0 2px 8px rgb(35 56 91 / 15%)",
+      "pointsAt": [],
+      "note": "Shadows — navy-tinted, never black",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--shadow-panel",
+      "tier": "semantic",
+      "value": "0 8px 30px rgb(35 56 91 / 13%)",
+      "pointsAt": [],
+      "note": "Shadows — navy-tinted, never black",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--shadow-sheet",
+      "tier": "semantic",
+      "value": "0 -6px 24px rgb(35 56 91 / 18%)",
+      "pointsAt": [],
+      "note": "Shadows — navy-tinted, never black",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--shadow-push",
+      "tier": "semantic",
+      "value": "-6px 0 18px rgb(35 56 91 / 14%)",
+      "pointsAt": [],
+      "note": "a pushed layer over the one beneath it",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--shadow-foot",
+      "tier": "semantic",
+      "value": "0 -8px 18px -6px rgb(35 56 91 / 22%)",
+      "pointsAt": [],
+      "note": "pinned footer over a scroll",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--motion-press",
+      "tier": "semantic",
+      "value": "120ms",
+      "pointsAt": [],
+      "note": "Motion. 420ms matches STEP_COOLDOWN in useMapView — the zoom transition and the input lockout are the same duration on purpose.",
+      "file": "src/styles/tokens.css",
+      "overrides": [
+        {
+          "when": "(prefers-reduced-motion: reduce)",
+          "value": "0ms"
+        }
+      ]
+    },
+    {
+      "name": "--motion-panel",
+      "tier": "semantic",
+      "value": "250ms",
+      "pointsAt": [],
+      "note": "Motion. 420ms matches STEP_COOLDOWN in useMapView — the zoom transition and the input lockout are the same duration on purpose.",
+      "file": "src/styles/tokens.css",
+      "overrides": [
+        {
+          "when": "(prefers-reduced-motion: reduce)",
+          "value": "0ms"
+        }
+      ]
+    },
+    {
+      "name": "--motion-sheet-out",
+      "tier": "semantic",
+      "value": "140ms",
+      "pointsAt": [],
+      "note": "the drop before a sheet swaps content",
+      "file": "src/styles/tokens.css",
+      "overrides": [
+        {
+          "when": "(prefers-reduced-motion: reduce)",
+          "value": "0ms"
+        }
+      ]
+    },
+    {
+      "name": "--ease-in",
+      "tier": "semantic",
+      "value": "cubic-bezier(0.4, 0, 1, 1)",
+      "pointsAt": [],
+      "note": "leaving: accelerate away",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--ease",
+      "tier": "semantic",
+      "value": "cubic-bezier(0.2, 0, 0.2, 1)",
+      "pointsAt": [],
+      "note": "Motion. 420ms matches STEP_COOLDOWN in useMapView — the zoom transition and the input lockout are the same duration on purpose.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--tap-min",
+      "tier": "semantic",
+      "value": "44px",
+      "pointsAt": [],
+      "note": "Two tap-size rules (Ernest, 10/6; 44 CSS px = 44pt on iPhone, Apple's HIG minimum). --tap-min the floor for every CONTROL: chips, the sheet's close, the zoom buttons, the ItemPager's buttons. It replaces the 40px floor the zoom stack and the ItemPager used to sit on. --pin-hit the invisible hit area centred on every map pin. The visible marker (--pin-size) is unchanged; MapCanvas draws this circle and the e2e no-overlap rule measures it, at every stop.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-hit",
+      "tier": "semantic",
+      "value": "44px",
+      "pointsAt": [],
+      "note": "Two tap-size rules (Ernest, 10/6; 44 CSS px = 44pt on iPhone, Apple's HIG minimum). --tap-min the floor for every CONTROL: chips, the sheet's close, the zoom buttons, the ItemPager's buttons. It replaces the 40px floor the zoom stack and the ItemPager used to sit on. --pin-hit the invisible hit area centred on every map pin. The visible marker (--pin-size) is unchanged; MapCanvas draws this circle and the e2e no-overlap rule measures it, at every stop.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-size",
+      "tier": "semantic",
+      "value": "40px",
+      "pointsAt": [],
+      "note": "40px, not the 28px the draft spec proposed: judged against the real map, where 28 read as too small. The tap area is 44 either way. ONE size at every zoom level: the overview used to draw pins a step smaller (34), and a pinch that crossed the overview boundary ended with every pin popping to a new size the moment the fingers lifted (Ernest, iPhone, 9/19). A pin is a control, not ground; it holds one on-screen size while the map scales under it, gesture and settle included.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--panel-width",
+      "tier": "semantic",
+      "value": "360px",
+      "pointsAt": [],
+      "note": "40px, not the 28px the draft spec proposed: judged against the real map, where 28 read as too small. The tap area is 44 either way. ONE size at every zoom level: the overview used to draw pins a step smaller (34), and a pinch that crossed the overview boundary ended with every pin popping to a new size the moment the fingers lifted (Ernest, iPhone, 9/19). A pin is a control, not ground; it holds one on-screen size while the map scales under it, gesture and settle included.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--sheet-max-height",
+      "tier": "semantic",
+      "value": "72%",
+      "pointsAt": [],
+      "note": "40px, not the 28px the draft spec proposed: judged against the real map, where 28 read as too small. The tap area is 44 either way. ONE size at every zoom level: the overview used to draw pins a step smaller (34), and a pinch that crossed the overview boundary ended with every pin popping to a new size the moment the fingers lifted (Ernest, iPhone, 9/19). A pin is a control, not ground; it holds one on-screen size while the map scales under it, gesture and settle included.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--sheet-peek-height",
+      "tier": "semantic",
+      "value": "208px",
+      "pointsAt": [],
+      "note": "The short detent (B3): about the title row plus one or two lines. A sheet that opens while a filter chip is on opens this tall, so the map stays visible; the handle (drag up, or tap) takes it to --sheet-max-height.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--sheet-detail-min-height",
+      "tier": "semantic",
+      "value": "300px",
+      "pointsAt": [],
+      "note": "A booth's detail sheet never gets shorter than this, whatever the booth's text: stepping through a run must not change the sheet's height, or the ItemPager's buttons move under the thumb (B2). Sized so the longest booth entry at 375px fits above the footer without scrolling.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-inset-top",
+      "tier": "semantic",
+      "value": "0px",
+      "pointsAt": [],
+      "note": "The map safe area (A2): what is left of the map between the header + chip row and the open sheet. Both are SET AT RUNTIME on .ff-screen by App, from the real layout (the topbar's bottom edge; the sheet's height while it is open, 0 when closed) -- these are only the first-paint defaults. Every pan or zoom that targets a pin centres it between the two, and the map's pan limits run past the festival by the same amounts so any pin can get there.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-inset-bottom",
+      "tier": "semantic",
+      "value": "0px",
+      "pointsAt": [],
+      "note": "The map safe area (A2): what is left of the map between the header + chip row and the open sheet. Both are SET AT RUNTIME on .ff-screen by App, from the real layout (the topbar's bottom edge; the sheet's height while it is open, 0 when closed) -- these are only the first-paint defaults. Every pan or zoom that targets a pin centres it between the two, and the map's pan limits run past the festival by the same amounts so any pin can get there.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--chip-height-sm",
+      "tier": "semantic",
+      "value": "30px",
+      "pointsAt": [],
+      "file": "src/styles/tokens.css",
+      "when": "(max-width: 480px)"
+    },
+    {
+      "name": "--chip-bg",
+      "tier": "component",
+      "value": "var(--surface-chrome)",
+      "resolved": "rgb(255 255 255 / 95%)",
+      "pointsAt": [
+        "--surface-chrome"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-chip",
+          "value": "var(--surface-chrome)"
+        },
+        {
+          "selector": ".ffc-chip:active",
+          "value": "var(--surface-pressed)"
+        },
+        {
+          "selector": ".ffc-chip[aria-pressed='true']",
+          "value": "var(--surface-selected)"
+        }
+      ]
+    },
+    {
+      "name": "--chip-fg",
+      "tier": "component",
+      "value": "var(--text-strong)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--text-strong"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-chip",
+          "value": "var(--text-strong)"
+        },
+        {
+          "selector": ".ffc-chip[aria-pressed='true']",
+          "value": "var(--ff-cream)"
+        },
+        {
+          "selector": ".ffc-chip--muted",
+          "value": "var(--text-muted)"
+        }
+      ]
+    },
+    {
+      "name": "--chip-border",
+      "tier": "component",
+      "value": "var(--border-subtle)",
+      "resolved": "#D7D2C2",
+      "pointsAt": [
+        "--border-subtle"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-chip",
+          "value": "var(--border-subtle)"
+        },
+        {
+          "selector": ".ffc-chip[aria-pressed='true']",
+          "value": "var(--surface-selected)"
+        },
+        {
+          "selector": ".ffc-chip--muted",
+          "value": "var(--border-subtle)"
+        }
+      ]
+    },
+    {
+      "name": "--chip-pad-x",
+      "tier": "component",
+      "value": "var(--space-4)",
+      "resolved": "16px",
+      "pointsAt": [
+        "--space-4"
+      ],
+      "file": "src/styles/components.css",
+      "overrides": [
+        {
+          "when": "(max-width: 480px)",
+          "value": "10px"
+        }
+      ],
+      "declaredIn": [
+        {
+          "selector": ".ffc-chip",
+          "value": "var(--space-4)"
+        }
+      ]
+    },
+    {
+      "name": "--chip-gap",
+      "tier": "component",
+      "value": "var(--space-2)",
+      "resolved": "8px",
+      "pointsAt": [
+        "--space-2"
+      ],
+      "file": "src/styles/components.css",
+      "overrides": [
+        {
+          "when": "(max-width: 480px)",
+          "value": "var(--space-1)"
+        }
+      ],
+      "declaredIn": [
+        {
+          "selector": ".ffc-chip",
+          "value": "var(--space-2)"
+        }
+      ]
+    },
+    {
+      "name": "--btn-size",
+      "tier": "component",
+      "value": "var(--tap-min)",
+      "resolved": "44px",
+      "pointsAt": [
+        "--tap-min"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-iconbtn",
+          "value": "var(--tap-min)"
+        },
+        {
+          "selector": ".ffc-iconbtn--square",
+          "value": "var(--tap-min)"
+        }
+      ]
+    },
+    {
+      "name": "--btn-bg",
+      "tier": "component",
+      "value": "var(--surface-chrome-solid)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--surface-chrome-solid"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-iconbtn",
+          "value": "var(--surface-chrome-solid)"
+        },
+        {
+          "selector": ".ffc-iconbtn:active",
+          "value": "var(--surface-pressed)"
+        },
+        {
+          "selector": ".ffc-iconbtn--ghost",
+          "value": "transparent"
+        },
+        {
+          "selector": ".ffc-iconbtn--on",
+          "value": "var(--current)"
+        }
+      ]
+    },
+    {
+      "name": "--btn-fg",
+      "tier": "component",
+      "value": "var(--text-strong)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--text-strong"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-iconbtn",
+          "value": "var(--text-strong)"
+        },
+        {
+          "selector": ".ffc-iconbtn--ghost",
+          "value": "var(--text-muted)"
+        },
+        {
+          "selector": ".ffc-iconbtn--on",
+          "value": "var(--ff-navy)"
+        }
+      ]
+    },
+    {
+      "name": "--btn-border",
+      "tier": "component",
+      "value": "var(--border-control)",
+      "resolved": "#E0DCCB",
+      "pointsAt": [
+        "--border-control"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-iconbtn",
+          "value": "var(--border-control)"
+        },
+        {
+          "selector": ".ffc-iconbtn--ghost",
+          "value": "transparent"
+        },
+        {
+          "selector": ".ffc-iconbtn--on",
+          "value": "var(--current)"
+        }
+      ]
+    },
+    {
+      "name": "--btn-radius",
+      "tier": "component",
+      "value": "var(--radius-pill)",
+      "resolved": "999px",
+      "pointsAt": [
+        "--radius-pill"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-iconbtn",
+          "value": "var(--radius-pill)"
+        },
+        {
+          "selector": ".ffc-iconbtn--square",
+          "value": "var(--radius-sm)"
+        }
+      ]
+    },
+    {
+      "name": "--pin-fill",
+      "tier": "component",
+      "value": "var(--cat-booth)",
+      "resolved": "#47597A",
+      "pointsAt": [
+        "--cat-booth"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-pin",
+          "value": "var(--cat-booth)"
+        },
+        {
+          "selector": ".ffc-pin--food",
+          "value": "var(--pin-food)"
+        },
+        {
+          "selector": ".ffc-pin--drinks",
+          "value": "var(--pin-drinks)"
+        },
+        {
+          "selector": ".ffc-pin--beverage",
+          "value": "var(--pin-beverage)"
+        },
+        {
+          "selector": ".ffc-pin--wc",
+          "value": "var(--pin-restroom)"
+        },
+        {
+          "selector": ".ffc-pin--water",
+          "value": "var(--pin-water)"
+        },
+        {
+          "selector": ".ffc-pin--info",
+          "value": "var(--pin-info)"
+        },
+        {
+          "selector": ".ffc-pin--stage",
+          "value": "var(--pin-stage)"
+        },
+        {
+          "selector": ".ffc-pin--kids",
+          "value": "var(--pin-kids)"
+        },
+        {
+          "selector": ".ffc-pin--firstaid",
+          "value": "var(--pin-firstaid)"
+        },
+        {
+          "selector": ".ffc-pin--bikevalet",
+          "value": "var(--cat-utility)"
+        },
+        {
+          "selector": ".ffc-pin--pta",
+          "value": "var(--pin-kids)"
+        },
+        {
+          "selector": ".ffc-pin--merch",
+          "value": "var(--pin-merch)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-bg",
+      "tier": "component",
+      "value": "var(--surface-chrome-solid)",
+      "resolved": "#FFFFFF",
+      "pointsAt": [
+        "--surface-chrome-solid"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--surface-chrome-solid)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-fg",
+      "tier": "component",
+      "value": "var(--text-body)",
+      "resolved": "#4A5262",
+      "pointsAt": [
+        "--text-body"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--text-body)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-title",
+      "tier": "component",
+      "value": "var(--text-strong)",
+      "resolved": "#23385B",
+      "pointsAt": [
+        "--text-strong"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--text-strong)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-muted",
+      "tier": "component",
+      "value": "var(--text-muted)",
+      "resolved": "#636B7B",
+      "pointsAt": [
+        "--text-muted"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--text-muted)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-rule",
+      "tier": "component",
+      "value": "var(--sand-100)",
+      "resolved": "#F0EDE4",
+      "pointsAt": [
+        "--sand-100"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--sand-100)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-radius",
+      "tier": "component",
+      "value": "var(--radius-lg)",
+      "resolved": "20px",
+      "pointsAt": [
+        "--radius-lg"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--radius-lg)"
+        },
+        {
+          "selector": ".ffc-panel--right",
+          "value": "var(--radius-md)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-shadow",
+      "tier": "component",
+      "value": "var(--shadow-sheet)",
+      "resolved": "0 -6px 24px rgb(35 56 91 / 18%)",
+      "pointsAt": [
+        "--shadow-sheet"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--shadow-sheet)"
+        },
+        {
+          "selector": ".ffc-panel--right",
+          "value": "var(--shadow-panel)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-pad",
+      "tier": "component",
+      "value": "var(--space-4)",
+      "resolved": "16px",
+      "pointsAt": [
+        "--space-4"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--space-4)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-motion",
+      "tier": "component",
+      "value": "var(--motion-panel)",
+      "resolved": "250ms",
+      "pointsAt": [
+        "--motion-panel"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--motion-panel)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-accent",
+      "tier": "component",
+      "value": "var(--cat-booth)",
+      "resolved": "#47597A",
+      "pointsAt": [
+        "--cat-booth"
+      ],
+      "note": "bullets, unless the body names the colour of what you opened (--sheet-accent)",
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "var(--cat-booth)"
+        }
+      ]
+    },
+    {
+      "name": "--panel-push-shift",
+      "tier": "component",
+      "value": "30%",
+      "pointsAt": [],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel",
+          "value": "30%"
+        }
+      ]
+    },
+    {
+      "name": "--view-slide",
+      "tier": "component",
+      "value": "var(--space-6)",
+      "resolved": "24px",
+      "pointsAt": [
+        "--space-6"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel__view",
+          "value": "var(--space-6)"
+        }
+      ]
+    },
+    {
+      "name": "--footer-pad",
+      "tier": "component",
+      "value": "var(--space-3)",
+      "resolved": "12px",
+      "pointsAt": [
+        "--space-3"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-panel__footer",
+          "value": "var(--space-3)"
+        }
+      ]
+    },
+    {
+      "name": "--time-col",
+      "tier": "component",
+      "value": "6.5em",
+      "pointsAt": [],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-schedulerow",
+          "value": "6.5em"
+        }
+      ]
+    },
+    {
+      "name": "--artist-name-size",
+      "tier": "component",
+      "value": "var(--text-lg)",
+      "resolved": "15px",
+      "pointsAt": [
+        "--text-lg"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-artistline",
+          "value": "var(--text-lg)"
+        }
+      ]
+    },
+    {
+      "name": "--artist-name-weight",
+      "tier": "component",
+      "value": "var(--weight-bold)",
+      "resolved": "700",
+      "pointsAt": [
+        "--weight-bold"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-artistline",
+          "value": "var(--weight-bold)"
+        }
+      ]
+    },
+    {
+      "name": "--artist-name-color",
+      "tier": "component",
+      "value": "var(--panel-title, var(--text-strong))",
+      "pointsAt": [
+        "--panel-title",
+        "--text-strong"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-artistline",
+          "value": "var(--panel-title, var(--text-strong))"
+        }
+      ]
+    },
+    {
+      "name": "--artist-sub-size",
+      "tier": "component",
+      "value": "var(--text-sm)",
+      "resolved": "13px",
+      "pointsAt": [
+        "--text-sm"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-artistline",
+          "value": "var(--text-sm)"
+        }
+      ]
+    },
+    {
+      "name": "--artist-sub-weight",
+      "tier": "component",
+      "value": "var(--weight-medium)",
+      "resolved": "500",
+      "pointsAt": [
+        "--weight-medium"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-artistline",
+          "value": "var(--weight-medium)"
+        }
+      ]
+    },
+    {
+      "name": "--artist-sub-color",
+      "tier": "component",
+      "value": "var(--panel-muted, var(--text-muted))",
+      "pointsAt": [
+        "--panel-muted",
+        "--text-muted"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-artistline",
+          "value": "var(--panel-muted, var(--text-muted))"
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "name": "FilterChip",
+      "description": "The category filter pill in the header.",
+      "cssClass": ".ffc-chip",
+      "file": "src/components/FilterChips.jsx",
+      "shipped": true,
+      "inStates": [
+        "S1",
+        "S2"
+      ],
+      "rules": [
+        "tap-floor"
+      ],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S1",
+          "name": "Map only"
+        },
+        {
+          "id": "S2",
+          "name": "Chip on"
+        }
+      ],
+      "cssParts": [],
+      "cssVariants": [
+        ".ffc-chip--muted"
+      ],
+      "tokens": [
+        "--border-subtle",
+        "--chip-height-sm",
+        "--ease",
+        "--ff-cream",
+        "--focus-ring",
+        "--font-ui",
+        "--motion-press",
+        "--radius-pill",
+        "--space-1",
+        "--space-2",
+        "--space-4",
+        "--surface-chrome",
+        "--surface-pressed",
+        "--surface-selected",
+        "--tap-min",
+        "--text-md",
+        "--text-muted",
+        "--text-strong",
+        "--text-xs",
+        "--weight-bold"
+      ],
+      "knobs": [
+        "--chip-bg",
+        "--chip-border",
+        "--chip-fg",
+        "--chip-gap",
+        "--chip-pad-x"
+      ],
+      "doNot": [
+        "Signal \"not selected\" by fading text: the old .chip.off used 45% opacity and failed contrast. Use the muted variant, a colour change."
+      ]
+    },
+    {
+      "name": "IconButton",
+      "description": "Round, square and ghost icon buttons.",
+      "cssClass": ".ffc-iconbtn",
+      "file": null,
+      "shipped": false,
+      "inStates": [],
+      "rules": [
+        "tap-floor"
+      ],
+      "notCalled": [],
+      "states": [],
+      "cssParts": [],
+      "cssVariants": [
+        ".ffc-iconbtn--ghost",
+        ".ffc-iconbtn--on",
+        ".ffc-iconbtn--square"
+      ],
+      "tokens": [
+        "--border-control",
+        "--current",
+        "--ease",
+        "--ff-navy",
+        "--focus-ring",
+        "--motion-press",
+        "--opacity-disabled",
+        "--radius-pill",
+        "--radius-sm",
+        "--shadow-control",
+        "--surface-chrome-solid",
+        "--surface-pressed",
+        "--tap-min",
+        "--text-muted",
+        "--text-strong"
+      ],
+      "knobs": [
+        "--btn-bg",
+        "--btn-border",
+        "--btn-fg",
+        "--btn-radius",
+        "--btn-size"
+      ],
+      "doNot": []
+    },
+    {
+      "name": "ZoomControl",
+      "description": "The in / out / reset stack.",
+      "cssClass": ".ffc-zoom",
+      "file": "src/components/ZoomControls.jsx",
+      "shipped": true,
+      "inStates": [],
+      "rules": [
+        "tap-floor"
+      ],
+      "notCalled": [],
+      "states": [],
+      "cssParts": [],
+      "cssVariants": [],
+      "tokens": [
+        "--border-control",
+        "--focus-ring",
+        "--font-ui",
+        "--opacity-disabled",
+        "--radius-md",
+        "--sand-100",
+        "--shadow-control",
+        "--surface-chrome-solid",
+        "--surface-pressed",
+        "--tap-min",
+        "--text-strong",
+        "--weight-bold"
+      ],
+      "knobs": [],
+      "doNot": []
+    },
+    {
+      "name": "MapPin",
+      "description": "A category pin on the map.",
+      "cssClass": ".ffc-pin",
+      "file": "src/components/MapCanvas.jsx",
+      "shipped": true,
+      "inStates": [
+        "S1",
+        "S2"
+      ],
+      "rules": [
+        "no-overlap",
+        "tap-floor"
+      ],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S1",
+          "name": "Map only"
+        },
+        {
+          "id": "S2",
+          "name": "Chip on"
+        }
+      ],
+      "cssParts": [],
+      "cssVariants": [
+        ".ffc-pin--beverage",
+        ".ffc-pin--bikevalet",
+        ".ffc-pin--drinks",
+        ".ffc-pin--firstaid",
+        ".ffc-pin--food",
+        ".ffc-pin--info",
+        ".ffc-pin--kids",
+        ".ffc-pin--merch",
+        ".ffc-pin--pta",
+        ".ffc-pin--stage",
+        ".ffc-pin--water",
+        ".ffc-pin--wc"
+      ],
+      "tokens": [
+        "--cat-booth",
+        "--cat-utility",
+        "--pin-beverage",
+        "--pin-drinks",
+        "--pin-firstaid",
+        "--pin-food",
+        "--pin-info",
+        "--pin-kids",
+        "--pin-merch",
+        "--pin-restroom",
+        "--pin-stage",
+        "--pin-water"
+      ],
+      "knobs": [
+        "--pin-fill"
+      ],
+      "doNot": [
+        "Introduce a second glyph for the same category, or tint a glyph anything but white (the generator and dumpster discs are the documented exceptions, in PIN_INK)."
+      ]
+    },
+    {
+      "name": "Panel",
+      "description": "The sheet and the docked panel. Parts: Handle · Header (back row, title line, close) · Body · Footer. Variants: bottom sheet, docked panel.",
+      "cssClass": ".ffc-panel",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "rules": [
+        "close-top-right",
+        "step-in-step-out",
+        "tap-floor"
+      ],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        },
+        {
+          "id": "S4",
+          "name": "Chip on + sheet · peek"
+        },
+        {
+          "id": "S5",
+          "name": "Chip on + sheet · full"
+        },
+        {
+          "id": "S6",
+          "name": "List → booth (inside the sheet)"
+        },
+        {
+          "id": "S7",
+          "name": "Booth opened from the map"
+        }
+      ],
+      "cssParts": [
+        ".ffc-panel__back",
+        ".ffc-panel__badge",
+        ".ffc-panel__body",
+        ".ffc-panel__bodystage",
+        ".ffc-panel__close",
+        ".ffc-panel__footer",
+        ".ffc-panel__handle",
+        ".ffc-panel__handle-bar",
+        ".ffc-panel__header",
+        ".ffc-panel__layer",
+        ".ffc-panel__layer--out",
+        ".ffc-panel__masthead",
+        ".ffc-panel__stage",
+        ".ffc-panel__sub",
+        ".ffc-panel__title",
+        ".ffc-panel__titleline",
+        ".ffc-panel__view"
+      ],
+      "cssVariants": [
+        ".ffc-panel--bottom",
+        ".ffc-panel--right"
+      ],
+      "tokens": [
+        "--border-control",
+        "--border-subtle",
+        "--cat-booth",
+        "--ease",
+        "--ease-in",
+        "--focus-ring",
+        "--font-ui",
+        "--motion-panel",
+        "--motion-sheet-out",
+        "--radius-lg",
+        "--radius-md",
+        "--radius-pill",
+        "--sand-100",
+        "--shadow-foot",
+        "--shadow-panel",
+        "--shadow-push",
+        "--shadow-sheet",
+        "--sheet-detail-min-height",
+        "--sheet-max-height",
+        "--sheet-peek-height",
+        "--space-1",
+        "--space-2",
+        "--space-3",
+        "--space-4",
+        "--space-5",
+        "--space-6",
+        "--surface-chrome-solid",
+        "--surface-pressed",
+        "--tap-min",
+        "--text-2xl",
+        "--text-body",
+        "--text-lg",
+        "--text-md",
+        "--text-muted",
+        "--text-strong",
+        "--text-xs",
+        "--weight-black",
+        "--weight-bold",
+        "--weight-medium"
+      ],
+      "knobs": [
+        "--footer-pad",
+        "--panel-accent",
+        "--panel-bg",
+        "--panel-fg",
+        "--panel-motion",
+        "--panel-muted",
+        "--panel-pad",
+        "--panel-push-shift",
+        "--panel-radius",
+        "--panel-rule",
+        "--panel-shadow",
+        "--panel-title",
+        "--view-slide"
+      ],
+      "doNot": []
+    },
+    {
+      "name": "ItemPager",
+      "description": "Previous / \"11 of 139\" / next, in the Panel's footer. Pages between items. Nothing else is called a pager, stepper or booth nav.",
+      "cssClass": ".ffc-itempager",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S6",
+        "S7"
+      ],
+      "rules": [
+        "tap-floor",
+        "step-in-step-out"
+      ],
+      "notCalled": [
+        "pager",
+        "stepper",
+        "booth nav"
+      ],
+      "states": [
+        {
+          "id": "S6",
+          "name": "List → booth (inside the sheet)"
+        },
+        {
+          "id": "S7",
+          "name": "Booth opened from the map"
+        }
+      ],
+      "cssParts": [
+        ".ffc-itempager__pos"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--border-control",
+        "--focus-ring",
+        "--font-ui",
+        "--radius-sm",
+        "--space-2",
+        "--surface-chrome-solid",
+        "--surface-pressed",
+        "--tap-min",
+        "--text-md",
+        "--text-strong",
+        "--weight-bold"
+      ],
+      "knobs": [],
+      "doNot": [
+        "Call it a pager, stepper or booth nav.",
+        "Let paging add a back step: the ItemPager pages sideways inside the sheet."
+      ]
+    },
+    {
+      "name": "BoothRow",
+      "description": "A row in an area's booth list; the artist-first name hierarchy inside it and in a booth's detail.",
+      "cssClass": ".ffc-boothrow",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S3"
+      ],
+      "rules": [
+        "step-in-step-out"
+      ],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        }
+      ],
+      "cssParts": [
+        ".ffc-boothrow__number",
+        ".ffc-boothrow__star",
+        ".ffc-boothrow__who"
+      ],
+      "cssVariants": [
+        ".ffc-boothrow--static"
+      ],
+      "tokens": [
+        "--sand-100",
+        "--space-1",
+        "--space-2",
+        "--space-3",
+        "--surface-pressed",
+        "--tap-min",
+        "--text-body",
+        "--text-md",
+        "--text-muted",
+        "--text-sm",
+        "--text-strong",
+        "--weight-bold",
+        "--weight-medium"
+      ],
+      "knobs": [],
+      "doNot": []
+    },
+    {
+      "name": "ArtistLine",
+      "description": "A row in an area's booth list; the artist-first name hierarchy inside it and in a booth's detail.",
+      "cssClass": ".ffc-artistline",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S3",
+        "S6",
+        "S7"
+      ],
+      "rules": [],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        },
+        {
+          "id": "S6",
+          "name": "List → booth (inside the sheet)"
+        },
+        {
+          "id": "S7",
+          "name": "Booth opened from the map"
+        }
+      ],
+      "cssParts": [
+        ".ffc-artistline__name",
+        ".ffc-artistline__sub"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--text-lg",
+        "--text-muted",
+        "--text-sm",
+        "--text-strong",
+        "--weight-bold",
+        "--weight-medium"
+      ],
+      "knobs": [
+        "--artist-name-color",
+        "--artist-name-size",
+        "--artist-name-weight",
+        "--artist-sub-color",
+        "--artist-sub-size",
+        "--artist-sub-weight"
+      ],
+      "doNot": [
+        "Lead with the business, or style a name locally in one list."
+      ]
+    },
+    {
+      "name": "ScheduleRow",
+      "description": "Rows in a stage lineup, its day headings, and a bulleted line.",
+      "cssClass": ".ffc-schedulerow",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S3"
+      ],
+      "rules": [],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        }
+      ],
+      "cssParts": [
+        ".ffc-schedulerow__act",
+        ".ffc-schedulerow__time"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--sand-100",
+        "--space-1",
+        "--space-2",
+        "--space-3",
+        "--text-body",
+        "--text-md",
+        "--text-muted",
+        "--text-sm"
+      ],
+      "knobs": [
+        "--time-col"
+      ],
+      "doNot": []
+    },
+    {
+      "name": "DayHeading",
+      "description": "Rows in a stage lineup, its day headings, and a bulleted line.",
+      "cssClass": ".ffc-dayheading",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S3"
+      ],
+      "rules": [],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        }
+      ],
+      "cssParts": [],
+      "cssVariants": [],
+      "tokens": [
+        "--space-1",
+        "--space-4",
+        "--text-md",
+        "--text-strong",
+        "--weight-black"
+      ],
+      "knobs": [],
+      "doNot": [
+        "Uppercase day headings. Sentence case."
+      ]
+    },
+    {
+      "name": "ListRow",
+      "description": "Rows in a stage lineup, its day headings, and a bulleted line.",
+      "cssClass": ".ffc-listrow",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [
+        "S3"
+      ],
+      "rules": [],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        }
+      ],
+      "cssParts": [
+        ".ffc-listrow__bullet"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--cat-booth",
+        "--space-1",
+        "--space-2",
+        "--text-body",
+        "--text-md"
+      ],
+      "knobs": [],
+      "setElsewhere": [
+        "--bullet",
+        "--sheet-accent"
+      ],
+      "doNot": []
+    },
+    {
+      "name": "PoiRow",
+      "description": "A row in the docked directory.",
+      "cssClass": ".ffc-poirow",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [],
+      "rules": [],
+      "notCalled": [],
+      "states": [],
+      "cssParts": [
+        ".ffc-poirow__badge",
+        ".ffc-poirow__go",
+        ".ffc-poirow__text"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--font-ui",
+        "--radius-pill",
+        "--space-2",
+        "--space-3",
+        "--surface-pressed",
+        "--tap-min",
+        "--text-md",
+        "--text-muted",
+        "--text-strong",
+        "--text-xs",
+        "--weight-bold"
+      ],
+      "knobs": [],
+      "doNot": []
+    },
+    {
+      "name": "Legend",
+      "description": "The colour key.",
+      "cssClass": ".ffc-legend",
+      "file": "src/components/DetailSheet.jsx",
+      "shipped": true,
+      "inStates": [],
+      "rules": [],
+      "notCalled": [],
+      "states": [],
+      "cssParts": [
+        ".ffc-legend__dot",
+        ".ffc-legend__dot--featured",
+        ".ffc-legend__dot--hollow",
+        ".ffc-legend__row"
+      ],
+      "cssVariants": [
+        ".ffc-legend--inline"
+      ],
+      "tokens": [
+        "--border-control",
+        "--cat-booth",
+        "--ff-cream",
+        "--radius-md",
+        "--shadow-control",
+        "--space-1",
+        "--space-2",
+        "--space-3",
+        "--space-4",
+        "--surface-chrome",
+        "--text-body",
+        "--text-muted",
+        "--text-sm",
+        "--text-xs"
+      ],
+      "knobs": [],
+      "doNot": []
+    }
+  ],
+  "unlistedClasses": [
+    ".ffc-boothlist",
+    ".ffc-brand",
+    ".ffc-dimmed",
+    ".ffc-scale"
+  ],
+  "rules": [
+    {
+      "id": "no-overlap",
+      "statement": "No tap target overlaps another at any of the three zoom stops, on either map, or on paper. Circles may touch edge to edge; they may not cross. When two collide, either the lower-priority pin waits for a closer stop (from: 'detail' in pins.js) or the two are moved edge to edge.",
+      "priority": [
+        "labelled destinations (stages, Food Court, Kidlandia)",
+        "first aid / EMS",
+        "restrooms",
+        "info, merch, bike valet, beer",
+        "water, beverage stations, PTA, food carts"
+      ],
+      "reason": "An overlap invites a wrong tap, and paper has no zoom to hide behind.",
+      "enforcedBy": [
+        "e2e: no two touch targets overlap at the",
+        "e2e: on, no two touch targets overlap at the",
+        "e2e: print: nothing covers anything else"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › No element covers another"
+    },
+    {
+      "id": "tap-floor",
+      "statement": "--tap-min (44px) is the floor for every control (chips, close, zoom buttons, the ItemPager's buttons, the handle); --pin-hit (44px) is the hit area centred on every pin. The visible glyph may be smaller than its target; the target may not.",
+      "reason": "44 CSS px is 44pt on iPhone, Apple's HIG minimum; WCAG 2.2 AA 2.5.8 asks for 24px with a spacing exception, which the no-overlap rule satisfies for pins.",
+      "enforcedBy": [
+        "e2e: zoom button is --tap-min (44px)",
+        "e2e: B2 both ItemPager buttons are --tap-min",
+        "e2e: B4 the x is right-aligned and at least --tap-min",
+        "e2e: the handle is a 44px grab area"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pins are touch targets. 44×44 CSS px is the floor."
+    },
+    {
+      "id": "token-first",
+      "statement": "A value that isn't a token becomes a token, documented in design-system.html, before it is used. Components reference only semantic and component tokens (tiers 2 and 3); a raw hex in a component is a bug.",
+      "reason": "The design system grows alongside the build instead of being reverse-documented afterward.",
+      "enforcedBy": [
+        "ds: npm run ds -- check reports raw hex and px values that have a token, and tokens that do not exist (on a snippet; advisory)",
+        "review"
+      ],
+      "source": "CLAUDE.md › Build with components and reference the design system on every move"
+    },
+    {
+      "id": "one-name",
+      "statement": "One name per component, used the same way everywhere: in the code, the CSS (.ffc-<name>), the tests, the docs and the design-system page. The Names table in design-system.html §3 is the list; check it before adding a class or a word for something, and fix a stray old name when you see one. The component is ItemPager, never \"pager\", \"stepper\" or \"booth nav\".",
+      "reason": "A person, an agent and a grep should all find the same thing under the same word.",
+      "enforcedBy": [
+        "ci: manifest is current",
+        "ds: npm run ds -- check reports a class that is not in the Names table",
+        "review"
+      ],
+      "source": "CLAUDE.md › One name per component, used the same way everywhere"
+    },
+    {
+      "id": "close-top-right",
+      "statement": "Close is always top-right, on the first row under the handle, in every sheet state. A top-level sheet's first row is its title line; a pushed detail's is the ‹ back row, with the booth's own title on the row below.",
+      "reason": "It never moves when the content does, and the thumb always knows where it is.",
+      "enforcedBy": [
+        "e2e: the x is on the first row under the handle in all",
+        "e2e: the x holds one right edge in every state",
+        "e2e: a pushed booth has back at the left on the x's row"
+      ],
+      "source": "CLAUDE.md › Close is always top-right, on the first row under the handle"
+    },
+    {
+      "id": "step-in-step-out",
+      "statement": "The way you step in is the way you step out: one layer per back. A booth opened from a list pushes in from the right and ‹ back pops it to the right with the height held; the ItemPager pages sideways and never adds a step. The phone's back gesture closes the sheet first, then clears the chip, then leaves the page.",
+      "reason": "Every way in has exactly one way out, so no gesture skips a layer or adds one.",
+      "enforcedBy": [
+        "e2e: item 4.1: back with a sheet open closes the sheet and stays on the map",
+        "e2e: item 4.1: back again clears the chip, still on the map",
+        "e2e: item 4.5: back returns to that list"
+      ],
+      "source": "CLAUDE.md › the way you step in is the way you step out"
+    },
+    {
+      "id": "paper-number-row",
+      "statement": "A number on paper has to point at a list row. The three food carts are C1–C3 (n on the cart's pin, the one place); food-stall numbers are off the printed map.",
+      "reason": "A printed number with no row to look up in is noise on a one-page handout.",
+      "enforcedBy": [
+        "e2e: print: every art booth square carries its number, and no stall does",
+        "review"
+      ],
+      "source": "CLAUDE.md › a number on paper has to point at a list row"
+    },
+    {
+      "id": "coral-is-now",
+      "statement": "Coral (--current, --ff-coral) means \"now\" and nothing else. It has no live use in the app since GPS was cut and stays reserved rather than becoming decoration.",
+      "reason": "Colour carries meaning only if each colour has one: pin hues are categories, navy is selected, teal is zones.",
+      "enforcedBy": [
+        "review"
+      ],
+      "source": "CLAUDE.md › coral is \"now\""
+    }
+  ]
+}

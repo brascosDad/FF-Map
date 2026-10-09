@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ff-design-system": {
+      "command": "node",
+      "args": ["design-system/mcp/server.mjs"]
+    }
+  }
+}
