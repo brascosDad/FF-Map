@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from './Icon';
+import WhatsOnNow from './WhatsOnNow';
 import { ACTIVE_PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
@@ -100,6 +101,7 @@ function StageSchedule({ stageKey, pin, part }) {
   return (
     <>
       <Where pin={pin} />
+      {FESTIVAL.showNow && <WhatsOnNow stage={stage} />}
       {['saturday', 'sunday'].map((day) => (
         <div key={day}>
           <div className="ffc-dayheading">{day === 'saturday' ? 'Saturday' : 'Sunday'}</div>

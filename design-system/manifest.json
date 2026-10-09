@@ -1,6 +1,6 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "updated": "2026-10-09",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
@@ -1687,6 +1687,38 @@
           "value": "var(--panel-muted, var(--text-muted))"
         }
       ]
+    },
+    {
+      "name": "--now-accent",
+      "tier": "component",
+      "value": "var(--current)",
+      "resolved": "#E89370",
+      "pointsAt": [
+        "--current"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-whatsonnow",
+          "value": "var(--current)"
+        }
+      ]
+    },
+    {
+      "name": "--now-bar",
+      "tier": "component",
+      "value": "var(--space-1)",
+      "resolved": "4px",
+      "pointsAt": [
+        "--space-1"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-whatsonnow",
+          "value": "var(--space-1)"
+        }
+      ]
     }
   ],
   "components": [
@@ -2330,6 +2362,61 @@
       ],
       "knobs": [],
       "doNot": []
+    },
+    {
+      "name": "WhatsOnNow",
+      "description": "The act on one stage now and the one after it, at the top of a stage sheet. Defined, not shipped (behind FESTIVAL.showNow).",
+      "cssClass": ".ffc-whatsonnow",
+      "file": "src/components/WhatsOnNow.jsx",
+      "shipped": false,
+      "flag": "FESTIVAL.showNow",
+      "inStates": [
+        "S3"
+      ],
+      "rules": [
+        "coral-is-now"
+      ],
+      "notCalled": [
+        "now playing",
+        "live card"
+      ],
+      "states": [
+        {
+          "id": "S3",
+          "name": "Sheet open · full"
+        }
+      ],
+      "cssParts": [
+        ".ffc-whatsonnow__act",
+        ".ffc-whatsonnow__label",
+        ".ffc-whatsonnow__row",
+        ".ffc-whatsonnow__time"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--border-control",
+        "--current",
+        "--radius-md",
+        "--radius-pill",
+        "--space-1",
+        "--space-2",
+        "--space-3",
+        "--text-lg",
+        "--text-md",
+        "--text-muted",
+        "--text-sm",
+        "--text-strong",
+        "--text-xs",
+        "--weight-bold"
+      ],
+      "knobs": [
+        "--now-accent",
+        "--now-bar"
+      ],
+      "doNot": [
+        "Coral text: --current is the bar and the dot; the act and the times stay navy and slate (coral on white is under 4.5:1).",
+        "A second copy of the schedule: the card reads the lineup in stages.json."
+      ]
     }
   ],
   "unlistedClasses": [
@@ -2424,7 +2511,7 @@
     },
     {
       "id": "coral-is-now",
-      "statement": "Coral (--current, --ff-coral) means \"now\" and nothing else. It has no live use in the app since GPS was cut and stays reserved rather than becoming decoration.",
+      "statement": "Coral (--current, --ff-coral) means \"now\" and nothing else. It has no live use in the app since GPS was cut and stays reserved rather than becoming decoration. Its one defined use is WhatsOnNow (the bar and the dot beside \"Now\"), built behind FESTIVAL.showNow and not shipped.",
       "reason": "Colour carries meaning only if each colour has one: pin hues are categories, navy is selected, teal is zones.",
       "enforcedBy": [
         "review"
