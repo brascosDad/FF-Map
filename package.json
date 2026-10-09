@@ -14,7 +14,10 @@
     "shots": "vite build && (vite preview --port 4310 & sleep 4 && node scripts/shot.mjs; kill %1)",
     "print": "vite build && node scripts/build-sw.mjs && node scripts/print.mjs",
     "test:visual": "npm run build && node scripts/test.mjs --visual-only",
-    "pr-shots": "node scripts/pr-shots.mjs"
+    "pr-shots": "node scripts/pr-shots.mjs",
+    "manifest": "node design-system/build-manifest.mjs",
+    "ds": "node design-system/cli.mjs",
+    "test:ds": "node --test design-system/"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",
@@ -23,6 +26,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",

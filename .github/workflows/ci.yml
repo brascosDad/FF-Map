@@ -29,6 +29,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The design-system manifest is generated from tokens.css, components.css,
+      # the Names table and the interaction-states doc. A stale one fails here.
+      - name: manifest is current
+        run: npm run manifest -- --check
+      - name: design-system tests
+        run: npm run test:ds
       - run: npx playwright install --with-deps chromium
       - run: npm run lint
       - run: npm run test:e2e
