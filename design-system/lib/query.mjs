@@ -152,8 +152,13 @@ export function checkCss(m, css) {
       }
     }
 
-    // 3. Tokens that do not exist.
+    // 3. Tokens that do not exist, and tokens on their way out.
     for (const ref of new Set(varRefs(d.value))) {
+      if (byName.get(ref)?.deprecated) {
+        const to = byName.get(ref).replacement;
+        add({ ...at, rule: 'token-first', severity: 'warning', found: ref,
+          message: `${ref} is deprecated${to ? `: use var(${to})` : ''}. It is removed in the next major version`, suggest: to ? [to] : [] });
+      }
       if (byName.has(ref) || own.has(ref)) continue;
       const near = nearest(ref, m.tokens.map((t) => t.name).filter((n) => !byName.get(n) || byName.get(n).tier !== 'component'), 4);
       add({ ...at, rule: 'token-first', severity: 'error', found: ref,
@@ -175,7 +180,12 @@ export function checkCss(m, css) {
       seen.add(cls);
       const line = bare.slice(0, offset + prelude.indexOf(c[0])).split('\n').length;
       const root = cls.split(/__|--/)[0];
-      if (roots.has(root)) continue;
+      if (roots.has(root)) {
+        const dep = roots.get(root);
+        if (dep.deprecated) add({ line, property: null, value: null, rule: 'one-name', found: `.${cls}`, severity: 'warning',
+          message: `${dep.name} is deprecated${dep.replacement ? `: use ${dep.replacement}` : ''}. It is removed in the next major version`, suggest: dep.replacement ? [dep.replacement] : [] });
+        continue;
+      }
       const base = { line, property: null, value: null, rule: 'one-name', found: `.${cls}` };
       if (unlisted.has(root)) {
         add({ ...base, severity: 'warning', message: `.${root} is in components.css but the Names table does not name it: add a row to design-system.html §3 (and the manifest) before building on it` });

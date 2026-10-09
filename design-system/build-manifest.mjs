@@ -13,7 +13,7 @@
 // HAND-WRITTEN, kept as they are in the committed file and checked against the
 // real files here, so they cannot quietly rot:
 //   version, updated, rules
-//   components[].cssClass, file, inStates, rules, notCalled, doNot
+//   components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated, replacement
 //     cssClass must exist in components.css; file must exist and use the class;
 //     every id in inStates must be a state in the doc;
 //   rules[].enforcedBy      "e2e: <text of a check in scripts/e2e.mjs>", "ci: <step>", "ds: ..." or "review"
@@ -53,6 +53,12 @@ export function readStates(md) {
   for (const [, id, name] of md.matchAll(/^\|\s*(S\d+)\s*\|\s*\*\*(.+?)\*\*\s*\|/gm)) out[id] = name;
   if (!Object.keys(out).length) throw new Error('docs/interaction-states.md: no state table');
   return out;
+}
+
+/** "Deprecated: use --other" at the start of a token's comment. */
+export function readDeprecation(note) {
+  const m = (note || '').match(/^deprecated\b(?:[:,]?\s*use\s+(--[\w-]+))?/i);
+  return m ? { replacement: m[1] || null } : null;
 }
 
 const rootOf = (cls) => cls.split(/__|--/)[0];
@@ -101,6 +107,9 @@ export function buildTokens() {
     t.pointsAt = [...new Set(varRefs(first.value))];
     const note = first.trailing || first.above;
     if (note) t.note = note;
+    // Deprecation lives where the token does: a comment that starts "Deprecated: use --other".
+    const dep = readDeprecation(note);
+    if (dep) { t.deprecated = true; if (dep.replacement) t.replacement = dep.replacement; }
     t.file = first.file;
     const overrides = ds.filter((d) => d.media && d !== first).map((d) => ({ when: d.media, value: d.value }));
     if (first.media) t.when = first.media;
@@ -171,8 +180,11 @@ export function buildManifest() {
       knobs: [...knobs].sort(),
       ...(loose.length ? { setElsewhere: loose.sort() } : {}),
       doNot: hand.doNot || [],
+      ...(hand.deprecated ? { deprecated: true, replacement: hand.replacement ?? null } : {}),
     };
   });
+  for (const c of components) if (c?.deprecated && !names.some((n) => n.name === c.replacement)) problems.push(`${c.name} is deprecated: its replacement must name a component in the Names table`);
+  for (const t of tokens) if (t.replacement && !declared.has(t.replacement)) problems.push(`${t.name} is deprecated: ${t.replacement} is not a token`);
   const stray = (prev.components || []).filter((c) => !names.some((n) => n.name === c.name)).map((c) => c.name);
   if (stray.length) problems.push(`manifest.json names ${stray.join(', ')}, which the Names table does not: add the row to design-system.html or delete the entry.`);
 
@@ -207,10 +219,11 @@ export function buildManifest() {
         'components[].name, description (the Names table, design-system.html §3)',
         'components[].states (docs/interaction-states.md), shipped, cssParts, cssVariants, tokens, knobs, setElsewhere',
         'unlistedClasses',
+        'tokens[].deprecated, replacement (from a "Deprecated: use --x" comment above the token)',
       ],
       handWritten: [
         'version, updated',
-        'components[].cssClass, file, inStates, rules, notCalled, doNot (checked against the files)',
+        'components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated + replacement (checked against the files)',
         'rules (every enforcedBy test name and every source phrase is checked against the files)',
       ],
     },

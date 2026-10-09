@@ -8,11 +8,12 @@
       "tokens (from src/styles/tokens.css and components.css)",
       "components[].name, description (the Names table, design-system.html §3)",
       "components[].states (docs/interaction-states.md), shipped, cssParts, cssVariants, tokens, knobs, setElsewhere",
-      "unlistedClasses"
+      "unlistedClasses",
+      "tokens[].deprecated, replacement (from a \"Deprecated: use --x\" comment above the token)"
     ],
     "handWritten": [
       "version, updated",
-      "components[].cssClass, file, inStates, rules, notCalled, doNot (checked against the files)",
+      "components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated + replacement (checked against the files)",
       "rules (every enforcedBy test name and every source phrase is checked against the files)"
     ]
   },

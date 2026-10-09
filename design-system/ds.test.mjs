@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { buildManifest, readNames, serialise } from './build-manifest.mjs';
+import { buildManifest, readDeprecation, readNames, serialise } from './build-manifest.mjs';
 import { parseCss, subjectClasses } from './lib/css.mjs';
 import { checkCss, getComponent, getRules, getTokens, loadManifest } from './lib/query.mjs';
 
@@ -109,6 +109,24 @@ test('query: a hex with no token says to add one, and a knob the snippet declare
   const r = checkCss(m, '.ffc-chip { --chip-x: var(--space-2); color: #ABCDEF; padding: var(--chip-x); }');
   assert.equal(r.findings.length, 1);
   assert.match(r.findings[0].message, /not a token: add it to src\/styles\/tokens\.css/);
+});
+
+test('deprecation: a comment starting "Deprecated: use --x" marks a token; check warns on use, never errors', () => {
+  assert.deepEqual(readDeprecation('Deprecated: use --text-strong. Removed in 2.0.0.'), { replacement: '--text-strong' });
+  assert.equal(readDeprecation('Text — all of these clear 4.5:1'), null);
+  const old = structuredClone(m);
+  old.tokens.find((t) => t.name === '--text-muted').deprecated = true;
+  old.tokens.find((t) => t.name === '--text-muted').replacement = '--text-body';
+  old.components.find((c) => c.name === 'ItemPager').deprecated = true;
+  old.components.find((c) => c.name === 'ItemPager').replacement = 'Panel';
+  const r = checkCss(old, '.ffc-itempager { color: var(--text-muted); }');
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.findings.map((f) => [f.rule, f.severity, f.suggest[0]]).sort(), [['one-name', 'warning', 'Panel'], ['token-first', 'warning', '--text-body']]);
+});
+
+test('governance: the changelog\'s newest entry is the manifest\'s version', () => {
+  const log = readFileSync(join(ROOT, 'design-system/CHANGELOG.md'), 'utf8');
+  assert.equal(log.match(/^## (\d+\.\d+\.\d+)/m)[1], m.version);
 });
 
 // ---- door 1: the CLI ------------------------------------------------------------
