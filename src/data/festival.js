@@ -30,6 +30,15 @@ export const FESTIVAL = {
   featured: [
     { booth: 11, title: 'Featured artist' },
   ],
+  // The two festival days as calendar dates, keyed like the lineups in
+  // stages.json, and the clock they are read on. `dates` above is the same
+  // fact written for people; this is it written for the "What's on now" card.
+  days: { saturday: '2026-10-03', sunday: '2026-10-04' },
+  timeZone: 'America/New_York',
+  // The "What's on now" card at the top of a stage sheet (src/components/
+  // WhatsOnNow.jsx). Defined, NOT shipped: false keeps it out of the app.
+  // design-system.html §4 lists it under "defined but not shipped".
+  showNow: false,
 };
 
 /** The featured title of a booth record ("Featured artist"), or undefined.

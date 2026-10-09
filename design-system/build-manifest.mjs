@@ -13,7 +13,8 @@
 // HAND-WRITTEN, kept as they are in the committed file and checked against the
 // real files here, so they cannot quietly rot:
 //   version, updated, rules
-//   components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated, replacement
+//   components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated, replacement,
+//     flag (the switch a built-but-not-shipped component waits behind: shipped is then false)
 //     cssClass must exist in components.css; file must exist and use the class;
 //     every id in inStates must be a state in the doc;
 //   rules[].enforcedBy      "e2e: <text of a check in scripts/e2e.mjs>", "ci: <step>", "ds: ..." or "review"
@@ -169,7 +170,8 @@ export function buildManifest() {
       description,
       cssClass: hand.cssClass,
       file: hand.file,
-      shipped: users.length > 0,
+      shipped: users.length > 0 && !hand.flag,
+      ...(hand.flag ? { flag: hand.flag } : {}),
       inStates: hand.inStates || [],
       rules: hand.rules || [],
       notCalled: hand.notCalled || [],
