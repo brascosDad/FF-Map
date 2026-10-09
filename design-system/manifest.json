@@ -12,7 +12,7 @@
     ],
     "handWritten": [
       "version, updated",
-      "components[].cssClass, file, inStates, doNot (checked against the files)",
+      "components[].cssClass, file, inStates, rules, notCalled, doNot (checked against the files)",
       "rules (every enforcedBy test name and every source phrase is checked against the files)"
     ]
   },
@@ -1699,6 +1699,10 @@
         "S1",
         "S2"
       ],
+      "rules": [
+        "tap-floor"
+      ],
+      "notCalled": [],
       "states": [
         {
           "id": "S1",
@@ -1753,6 +1757,10 @@
       "file": null,
       "shipped": false,
       "inStates": [],
+      "rules": [
+        "tap-floor"
+      ],
+      "notCalled": [],
       "states": [],
       "cssParts": [],
       "cssVariants": [
@@ -1793,6 +1801,10 @@
       "file": "src/components/ZoomControls.jsx",
       "shipped": true,
       "inStates": [],
+      "rules": [
+        "tap-floor"
+      ],
+      "notCalled": [],
       "states": [],
       "cssParts": [],
       "cssVariants": [],
@@ -1823,6 +1835,11 @@
         "S1",
         "S2"
       ],
+      "rules": [
+        "no-overlap",
+        "tap-floor"
+      ],
+      "notCalled": [],
       "states": [
         {
           "id": "S1",
@@ -1882,6 +1899,12 @@
         "S6",
         "S7"
       ],
+      "rules": [
+        "close-top-right",
+        "step-in-step-out",
+        "tap-floor"
+      ],
+      "notCalled": [],
       "states": [
         {
           "id": "S3",
@@ -1995,6 +2018,15 @@
         "S6",
         "S7"
       ],
+      "rules": [
+        "tap-floor",
+        "step-in-step-out"
+      ],
+      "notCalled": [
+        "pager",
+        "stepper",
+        "booth nav"
+      ],
       "states": [
         {
           "id": "S6",
@@ -2037,6 +2069,10 @@
       "inStates": [
         "S3"
       ],
+      "rules": [
+        "step-in-step-out"
+      ],
+      "notCalled": [],
       "states": [
         {
           "id": "S3",
@@ -2080,6 +2116,8 @@
         "S6",
         "S7"
       ],
+      "rules": [],
+      "notCalled": [],
       "states": [
         {
           "id": "S3",
@@ -2128,6 +2166,8 @@
       "inStates": [
         "S3"
       ],
+      "rules": [],
+      "notCalled": [],
       "states": [
         {
           "id": "S3",
@@ -2163,6 +2203,8 @@
       "inStates": [
         "S3"
       ],
+      "rules": [],
+      "notCalled": [],
       "states": [
         {
           "id": "S3",
@@ -2192,6 +2234,8 @@
       "inStates": [
         "S3"
       ],
+      "rules": [],
+      "notCalled": [],
       "states": [
         {
           "id": "S3",
@@ -2223,6 +2267,8 @@
       "file": "src/components/DetailSheet.jsx",
       "shipped": true,
       "inStates": [],
+      "rules": [],
+      "notCalled": [],
       "states": [],
       "cssParts": [
         ".ffc-poirow__badge",
@@ -2253,6 +2299,8 @@
       "file": "src/components/DetailSheet.jsx",
       "shipped": true,
       "inStates": [],
+      "rules": [],
+      "notCalled": [],
       "states": [],
       "cssParts": [
         ".ffc-legend__dot",

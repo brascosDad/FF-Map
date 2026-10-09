@@ -13,7 +13,7 @@
 // HAND-WRITTEN, kept as they are in the committed file and checked against the
 // real files here, so they cannot quietly rot:
 //   version, updated, rules
-//   components[].cssClass, file, inStates, doNot
+//   components[].cssClass, file, inStates, rules, notCalled, doNot
 //     cssClass must exist in components.css; file must exist and use the class;
 //     every id in inStates must be a state in the doc;
 //   rules[].enforcedBy      "e2e: <text of a check in scripts/e2e.mjs>", "ci: <step>", "ds: ..." or "review"
@@ -145,6 +145,7 @@ export function buildManifest() {
       if (!existsSync(join(ROOT, hand.file))) problems.push(`${name}: file ${hand.file} does not exist`);
       else if (!read(hand.file).includes(root)) problems.push(`${name}: ${hand.file} never uses ${hand.cssClass}`);
     } else if (users.length) problems.push(`${name}: file is null but ${users[0]} uses ${hand.cssClass}`);
+    for (const id of hand.rules || []) if (!(prev.rules || []).some((r) => r.id === id)) problems.push(`${name}: rule ${id} is not in rules`);
     for (const id of hand.inStates || []) if (!states[id]) problems.push(`${name}: state ${id} is not in docs/interaction-states.md`);
 
     const reads = new Set(), knobs = new Set();
@@ -161,6 +162,8 @@ export function buildManifest() {
       file: hand.file,
       shipped: users.length > 0,
       inStates: hand.inStates || [],
+      rules: hand.rules || [],
+      notCalled: hand.notCalled || [],
       states: (hand.inStates || []).map((id) => ({ id, name: states[id] })),
       cssParts: [...classes].filter((c) => c.startsWith(`${root}__`)).map((c) => `.${c}`).sort(),
       cssVariants: [...classes].filter((c) => c.startsWith(`${root}--`)).map((c) => `.${c}`).sort(),
@@ -207,7 +210,7 @@ export function buildManifest() {
       ],
       handWritten: [
         'version, updated',
-        'components[].cssClass, file, inStates, doNot (checked against the files)',
+        'components[].cssClass, file, inStates, rules, notCalled, doNot (checked against the files)',
         'rules (every enforcedBy test name and every source phrase is checked against the files)',
       ],
     },
