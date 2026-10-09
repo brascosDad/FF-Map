@@ -97,6 +97,9 @@ No `BLOCKED:` question. Nothing skipped from the three items. No pins nudged (no
 client; the two doors returning identical JSON for eight questions; one snippet that fails, one that
 passes; deprecation; changelog/manifest version).
 
+`npm run lint` clean; `npm run test:e2e` (behaviour suite, then the visual diffs) exit 0, no FAIL, on this
+branch locally. The visual verdict that counts is the CI runner's; no baseline should move (no `src/` change).
+
 `npm run ds -- component ItemPager`:
 
 ```
