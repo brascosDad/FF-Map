@@ -71,7 +71,7 @@
   --ff-white: #FFFFFF;
   --sand-100: #F0EDE4;   /* dividers, pressed fills */
   --sand-200: #E0DCCB;   /* control borders */
-  --sand-300: #D7D2C2;   /* chip borders, sheet grip */
+  --sand-300: #D7D2C2;   /* chip borders, the sheet handle */
   --slate-500: #636B7B;  /* muted text — 5.4:1 on white */
   --slate-600: #5C6570;  /* street names on the map */
   --slate-700: #4A5262;  /* body text */
@@ -177,6 +177,7 @@
   --shadow-control: 0 2px 8px rgb(35 56 91 / 15%);
   --shadow-panel: 0 8px 30px rgb(35 56 91 / 13%);
   --shadow-sheet: 0 -6px 24px rgb(35 56 91 / 18%);
+  --shadow-push: -6px 0 18px rgb(35 56 91 / 14%);        /* a pushed layer over the one beneath it */
   --shadow-foot: 0 -8px 18px -6px rgb(35 56 91 / 22%);  /* pinned footer over a scroll */
 
   /* Motion. 420ms matches STEP_COOLDOWN in useMapView — the zoom transition
@@ -188,7 +189,16 @@
   --ease: cubic-bezier(0.2, 0, 0.2, 1);
 
   /* Sizing */
-  --tap-min: 44px;        /* everything tappable; the visual may be smaller */
+  /* Two tap-size rules (Ernest, 10/6; 44 CSS px = 44pt on iPhone, Apple's HIG
+     minimum).
+       --tap-min  the floor for every CONTROL: chips, the sheet's close, the zoom
+                  buttons, the ItemPager's buttons. It replaces the 40px floor
+                  the zoom stack and the ItemPager used to sit on.
+       --pin-hit  the invisible hit area centred on every map pin. The visible
+                  marker (--pin-size) is unchanged; MapCanvas draws this circle
+                  and the e2e no-overlap rule measures it, at every stop. */
+  --tap-min: 44px;
+  --pin-hit: 44px;
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
      where 28 read as too small. The tap area is 44 either way. ONE size at
      every zoom level: the overview used to draw pins a step smaller (34), and
@@ -199,6 +209,23 @@
   --pin-size: 40px;
   --panel-width: 360px;
   --sheet-max-height: 72%;
+  /* The short detent (B3): about the title row plus one or two lines. A sheet
+     that opens while a filter chip is on opens this tall, so the map stays
+     visible; the handle (drag up, or tap) takes it to --sheet-max-height. */
+  --sheet-peek-height: 208px;
+  /* A booth's detail sheet never gets shorter than this, whatever the booth's
+     text: stepping through a run must not change the sheet's height, or the
+     ItemPager's buttons move under the thumb (B2). Sized so the longest booth
+     entry at 375px fits above the footer without scrolling. */
+  --sheet-detail-min-height: 300px;
+  /* The map safe area (A2): what is left of the map between the header + chip
+     row and the open sheet. Both are SET AT RUNTIME on .ff-screen by App, from
+     the real layout (the topbar's bottom edge; the sheet's height while it is
+     open, 0 when closed) -- these are only the first-paint defaults. Every pan
+     or zoom that targets a pin centres it between the two, and the map's pan
+     limits run past the festival by the same amounts so any pin can get there. */
+  --map-inset-top: 0px;
+  --map-inset-bottom: 0px;
 }
 
 /* The masthead is a quarter smaller on a phone. At 48 it took the top eighth of

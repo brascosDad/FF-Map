@@ -51,6 +51,12 @@ nudge goes into `docs/pr-notes.md` on the branch, overwritten each PR — the PR
 summarise it, the file is the record. If an answer is needed before work can continue, the chat
 reply ends with a line starting `BLOCKED:`.
 
+**6. One name per component, used the same way everywhere** (Ernest, 10/6, round 2): in the code,
+the CSS (`.ffc-<name>`), the tests, the docs and the design-system page. The **Names** table at the top
+of `design-system.html` §3 is the list (ItemPager, Handle, Header, BoothRow, ArtistLine, ScheduleRow …);
+check it before adding a class or a word for something, and fix a stray old name when you see one.
+The component is **ItemPager** — never "pager", "stepper" or "booth nav".
+
 **4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
 phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
 any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
@@ -71,6 +77,14 @@ snapshot, and record the read date when you do.
 | Food vendors | `vendors.json`; 2026 names and descriptions are final, **stall assignments are not** | Todd Tharp |
 | Stage schedule | `stages.json` — final, both stages both days | Thomas Helland / Hallie Meushaw |
 | Site layout / amenity placement | 2026 site plan PDF (Operations) | Jess Richards / Van Jensen |
+
+**Sheets carry no provenance line** (Ernest, 10/6 — it was noise to a visitor): the "Artists from the
+2026 list · positions from the official map" footer on a booth sheet, the "Source: …" line under a
+stage lineup, and the food list's note are gone from every sheet on phone and desktop. Where a fact
+came from lives here and in the data files: `stages.json` has `source` (the committee thread and the
+confirm date), `vendors.json` has `note`, `booth-numbering-2026.json` has `sheet_url` and
+`read_date`, and a booth's position is the Figma basemap plus the official site plan (see the table
+above). Don't put a source line back on a sheet; add it to the data file instead.
 
 Artist numbering, **as of the 9/21 sheet read: 1–54 park, 55–81 McLendon, 82–139 Candler Park Dr,
 K0–K10 Kidlandia.** The top number moves every time Courtney edits — it was 142 on 9/17 and 139
@@ -158,7 +172,10 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 - Reset control is arrows-to-corners, not a locate button.
 - No search bar.
 - **Pins are touch targets. 44×44 CSS px is the floor.** The visible icon glyph may shrink inside
-  that target; the tappable area may not.
+  that target; the tappable area may not. Two tap-size tokens (10/6): `--tap-min` (44px) is the floor
+  for every **control** — chips, the sheet's close ×, the zoom buttons, the ItemPager's buttons, the
+  handle — and `--pin-hit` (44px) is the hit area centred on every **pin**. WCAG 2.2 AA 2.5.8 asks for
+  24px with a spacing exception; the no-overlap rule below is how pins satisfy it.
 - **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
   may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
   Circles may touch edge to edge; they may not cross. When two collide, one of two things happens:
@@ -188,6 +205,24 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
      stays where it is.
   6. **A pan or pinch that starts on empty map is never a tap.** Only a genuine tap (no movement
      past the usual slop) counts for step 4.
+  **10/6 additions** (Ernest, iPhone walkthrough, rounds 1 and 2; full spec in
+  `docs/interaction-states.md` and `design-system.html` §6): a sheet that opens **while a chip is on
+  opens at peek height** (`--sheet-peek-height`) so the map stays visible — drag the handle up or tap
+  it for full, tap again for peek; no chip, no peek; **on a phone on its side the sheet is capped at
+  peek**. A swipe down from a full chip sheet **stops at peek; the second closes**. **Close is always
+  top-right, on the first row under the handle**, in every sheet state (a top-level sheet's first row
+  is its title line; a pushed detail's is `‹ back`, the booth's own title the row below). **One sheet,
+  a stack one level deep, push from the right / pop to the right, height held**: a booth opened from
+  a row in an area's list (or a square in the same area on the map) slides in from the right inside
+  the same sheet at the list's height; `‹ back` slides it out to the right and the list returns at
+  its scroll position; the ItemPager pages sideways and never adds a step ("the way you step in is the
+  way you step out"). **The ItemPager is a footer pinned to the bottom of the sheet.** **Every pan
+  that targets a pin or a booth centres it in the map safe area** (`--map-inset-top` /
+  `--map-inset-bottom`, measured at runtime), the pan limits run past the festival by the same
+  amounts, and the pan runs again after a pinch settles and after a resize. **Every booth square is
+  dimmed with a chip on** and a tap on one falls through like a dimmed pin. **Back (the phone's back
+  gesture) closes the sheet first, then clears the chip, then leaves the page**: one history entry per
+  layer (`useLayerHistory`). Set times never wrap. Sheets carry no provenance line (see Data).
   The same pan-into-view applies to a pin tapped with no chip on: centred above the sheet and
   selected while the sheet is open. One tapped pin wears the ring; a category row in the
   directory (no one pin) rings every pin of that category. e2e drives the Water and Restrooms
@@ -354,7 +389,7 @@ Figma workflow), and PR #8 (booth + beta fixes):
   header rule is `--space-4`, half what it was — the room went back into the index at
   **leading 1.3, 0.24" spare on this render**; **King of Pops has two food pins** (Main Stage
   cart 690, 320; entrance cart 583, 735) whose card is the vendor record; beverage and PTA
-  cards are one neutral line each with `TODO(Jess)` beside them; the **bottom sheet's grip/close
+  cards are one neutral line each with `TODO(Jess)` beside them; the **bottom sheet's handle/close
   row is fixed** and only the body scrolls (on `.ffc-panel--bottom`, every sheet). Pin moves
   to Ernest's endpoints, nudged only where rule 1 demanded: EMS (715, 373); beverage stations
   (669, 370) and (761, 379) edge to edge with it; beer stand (728, 472) and the in-park marker
@@ -404,6 +439,26 @@ Figma workflow), and PR #8 (booth + beta fixes):
   (16px / 15px optical); the field restroom is 8 units out on the lawn at (672.5, 550). Round 7
   (same day): the **"Art Market" heading over the index is gone** — the list starts under the key
   at the section gap — and the index is back at **leading 1.3 with 0.14" spare** (155 rows).
+
+- 10/6 round, Ernest's iPhone walkthrough of the live map (one PR, one commit per item): `--tap-min`
+  for every control and `--pin-hit` for every pin (nothing waits longer than before: pin hit areas
+  were already 44); the **map safe area** and pan limits (the north-most restroom can reach it —
+  reproduced on short phones, 390×550 and 375×560, where it sat under the header); **one sheet,
+  list → booth inside it with a back row**; the **ItemPager** in a pinned footer; **peek** when a
+  chip is on; sheet/panel styles moved from `map.css` into `components.css`; the art list leads
+  with the artist; set times never wrap; no provenance footer; restroom / water / first-aid copy;
+  `docs/interaction-states.md` lists every state, action and transition.
+- 10/6 round 2 (same PR): **one name per component** (a Names table in the design system; classes
+  renamed to match: `.ffc-itempager`, `.ffc-panel__handle`, `__header`, `__titleline`, `__body`,
+  `__footer`, `.ffc-boothrow`, `.ffc-artistline` …); **Close fixed top-right on the first row**;
+  **push / pop with the height held**; **ArtistLine** in the booth detail too; the six OPEN cells
+  decided and built (back per layer, re-pan after pinch/rotate + landscape peek cap, every booth
+  square dimmed with a chip, booth squares pan, same-area list kept, swipe → peek); copy pass (the
+  stale "placements arrive later this week" line gone; Beer and Bike valet say each thing once);
+  the design-system Panel demo is the live anatomy. **Still OPEN:** the ItemPager is hidden at peek,
+  so booths cannot be paged on a phone on its side. `vendors.json`'s own `note` still says "later this
+  week" — Cowork's file, no sheet shows it. No swipe-to-page on the ItemPager: a horizontal swipe
+  fights the body's scroll and the drag-to-dismiss.
 
 **Placed by description in that PR — confirm before print / at setup, don't leave to chance:**
 - The **beer stand** pin is the Figma export's main-lawn beverage marker, chosen because Todd puts

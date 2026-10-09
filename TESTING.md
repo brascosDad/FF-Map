@@ -122,7 +122,25 @@ Figma, re-export, re-run the script. Don't hand-edit the JS.
       Worth a real-device check: it does not reproduce in a desktop emulator.)*
 - [ ] **Sheet bullets match what you opened** — Kidlandia's are Kidlandia pink,
       the food court's are food orange. Never one shared teal.
-- [ ] **The booth stepper sits above the title**, not below it.
+- [ ] **Peek (10/6, on a real iPhone).** Restrooms chip on → tap a restroom: the sheet opens short
+      with the map above it, and no ItemPager. Tap the handle: full height. Tap it again: back to peek.
+      Drag it up: full. With no chip on, a sheet opens full and the handle only drags down.
+- [ ] **One sheet, push and pop.** Art market → tap a booth in the list: the booth slides in from the
+      RIGHT, the sheet does not change height, `‹ back` is top-left and × top-right. Tap ‹: the booth
+      slides out to the right and the list is back at the same scroll position. Page with ‹ › in the
+      footer a few times: `‹ back` still goes straight back to the list.
+- [ ] **The × never moves.** Open a pin card, a stage, a list, a booth from the list: the × is in the
+      same top-right spot every time.
+- [ ] **Back.** Restrooms chip on, tap a restroom, use the phone's back gesture: the sheet closes,
+      the chip stays. Back again: the chip clears. Back again: you leave the map.
+- [ ] **Swipe down twice** from a full chip sheet: the first stops at peek, the second closes.
+- [ ] **The north-most restroom** (Restrooms chip on, Safari with its bars showing): tap it and it
+      ends clear of the chips, centred in the map above the sheet.
+- [ ] **Swipe down** on the handle or the title row closes the sheet; the chip stays on.
+- [ ] **Stage times** are on one line; no sheet has a "source" or "position from the official map"
+      footer.
+- [ ] **The ItemPager is a footer, pinned to the bottom of the booth sheet**, clear of the home bar.
+      Page through five booths: the ‹ and › buttons must not move under your thumb.
 - [ ] **Step through a row on a phone and watch the map.** Press next eight or
       ten times: the map should sit still and the selection ring should just
       walk along the row. It only recentres when the ring would leave the

@@ -28,6 +28,26 @@
   code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--sand-100); padding: 1px 5px; border-radius: 5px; }
   .use { border-left: 3px solid var(--ff-teal); padding-left: var(--space-3); margin: var(--space-3) 0; }
   .use b { color: var(--text-strong); }
+  .demo { position: relative; width: 100%; max-width: 375px; border: 1px solid var(--border-control); border-radius: var(--radius-lg); overflow: hidden; }
+  .demo-grid { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-start; }
+  .demo-fig { margin: 0; flex: 0 1 375px; min-width: 0; }
+  .demo-fig figcaption { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-2); }
+  .open-tag { display: inline-block; font: var(--weight-black) 10px/1 var(--font-ui); letter-spacing: .06em; padding: 3px 6px; border-radius: var(--radius-pill); background: var(--ff-coral); color: var(--ff-navy); vertical-align: 1px; }
+  .states h4 { margin: 0 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.3 var(--font-ui); color: var(--text-strong); }
+  .states th { width: 28%; }
+  .next { font-weight: var(--weight-bold); color: var(--text-strong); white-space: nowrap; }
+  .na { color: var(--text-muted); }
+  .rules { margin: 0; padding-left: var(--space-5); } .rules li { margin: var(--space-1) 0; }
+  .diagram { width: 100%; height: auto; display: block; }
+  .diagram .node { fill: var(--sand-100); stroke: var(--border-subtle); stroke-width: 1.5; }
+  .diagram .node-S1 { fill: var(--ff-white); } .diagram .node-S2 { fill: var(--ff-navy); stroke: var(--ff-navy); }
+  .diagram .node-S4, .diagram .node-S5 { fill: var(--ff-cream); stroke: var(--ff-navy); }
+  .diagram .nodetext { font: var(--weight-bold) 13px var(--font-ui); fill: var(--text-strong); }
+  .diagram .node-S2 + .nodetext { fill: var(--text-on-navy); }
+  .diagram .edge { fill: none; stroke: var(--text-muted); stroke-width: 1.4; }
+  .diagram .arrowhead { fill: var(--text-muted); }
+  .diagram .edgetext { font: var(--weight-medium) 10.5px var(--font-ui); fill: var(--text-body); }
+
   .dont { border-left-color: var(--pin-firstaid); }
   .stage { background: var(--ground-200); border-radius: var(--radius-md); padding: var(--space-4); position: relative; min-height: 90px; }
   .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--space-3); text-align: center; }
@@ -104,7 +124,7 @@
       <tr><th>Radius</th><td>10 small · 14 medium · 20 large · pill</td></tr>
       <tr><th>Shadow</th><td>Navy-tinted, never black</td></tr>
       <tr><th>Motion</th><td>120ms press · 250ms panel · 420ms zoom (matches <code>STEP_COOLDOWN</code>). Honours <code>prefers-reduced-motion</code>.</td></tr>
-      <tr><th>Tap</th><td><code>--tap-min</code> 44px on everything tappable. The visual may be smaller; the hit area may not.</td></tr>
+      <tr><th>Tap</th><td>Two rules. <code>--tap-min</code> 44px is the floor for every <b>control</b> (chips, the sheet's close ×, zoom buttons, the ItemPager's buttons). <code>--pin-hit</code> 44px is the invisible hit area centred on every <b>pin</b>; the visible marker (<code>--pin-size</code>) is unchanged. 44 CSS px is 44pt on iPhone, Apple's HIG minimum.</td></tr>
     </table>
   </div>
 
@@ -116,6 +136,23 @@
   <div class="use dont"><b>Don't:</b> introduce a second glyph for the same category, or tint a glyph anything but white — the two paper-only ops discs (a navy bolt on the generator's yellow, a charcoal trash can on the dumpster's white) are the documented exceptions, in <code>PIN_INK</code>.</div>
 
   <h2>3 · Components</h2>
+
+  <h3>Names</h3>
+  <div class="card">
+    <p style="margin-top:0"><b>One name per component, used the same way everywhere:</b> in the code, the CSS (<code>.ffc-&lt;name&gt;</code>), the tests, the docs and this page. Before adding a class or a word for something, check this table.</p>
+    <table>
+      <tr><th>FilterChip</th><td>The category filter pill in the header.</td></tr>
+      <tr><th>IconButton</th><td>Round, square and ghost icon buttons.</td></tr>
+      <tr><th>ZoomControl</th><td>The in / out / reset stack.</td></tr>
+      <tr><th>MapPin</th><td>A category pin on the map.</td></tr>
+      <tr><th>Panel</th><td>The sheet and the docked panel. Parts: <b>Handle</b> · <b>Header</b> (back row, title line, close) · <b>Body</b> · <b>Footer</b>. Variants: <b>bottom sheet</b>, <b>docked panel</b>.</td></tr>
+      <tr><th>ItemPager</th><td>Previous / "11 of 139" / next, in the Panel's footer. Pages between items. Nothing else is called a pager, stepper or booth nav.</td></tr>
+      <tr><th>BoothRow · ArtistLine</th><td>A row in an area's booth list; the artist-first name hierarchy inside it and in a booth's detail.</td></tr>
+      <tr><th>ScheduleRow · DayHeading · ListRow</th><td>Rows in a stage lineup, its day headings, and a bulleted line.</td></tr>
+      <tr><th>PoiRow</th><td>A row in the docked directory.</td></tr>
+      <tr><th>Legend</th><td>The colour key.</td></tr>
+    </table>
+  </div>
 
   <h3>FilterChip</h3>
   <div class="card">
@@ -142,7 +179,7 @@
       <button class="ffc-iconbtn" aria-disabled="true" aria-label="At limit">−</button>
     </div>
     <table style="margin-top:var(--space-3)">
-      <tr><th>Variants</th><td>round 44 · square 40 (zoom) · ghost 44 (close / back)</td></tr>
+      <tr><th>Variants</th><td>round 44 · square 44 (zoom) · ghost 44 (close / back) — all <code>--tap-min</code></td></tr>
       <tr><th>Toggled</th><td>Coral fill, <b>navy</b> glyph — white on coral is 2.4:1 and fails. No live use since GPS was cut; kept for the next toggle.</td></tr>
       <tr><th>At limit</th><td><code>aria-disabled</code>, dimmed, <b>still focusable</b> — a keyboard user can reach it and hear why.</td></tr>
     </table>
@@ -162,11 +199,11 @@
     </p>
   </div>
 
-  <h3>Directory row</h3>
+  <h3>PoiRow</h3>
   <div class="card">
     <div style="max-width:340px">
       <button class="ffc-poirow">
-        <span class="dot" style="width:28px;height:28px;flex:0 0 28px;border-radius:var(--radius-pill);background:var(--pin-stage)"></span>
+        <span class="ffc-poirow__badge" style="background:var(--pin-stage)"></span>
         <span class="ffc-poirow__text"><b>Main Stage</b><em>Music both days</em></span>
         <span class="ffc-poirow__go">›</span>
       </button>
@@ -183,44 +220,121 @@
     </p>
   </div>
 
-  <h3>Stepper</h3>
+  <h3>ItemPager</h3>
   <div class="card">
-    <div class="ffc-step">
+    <div class="ffc-itempager">
       <button aria-label="Previous">‹</button>
-      <span class="ffc-step__pos">12 of 62 · In the Park</span>
+      <span class="ffc-itempager__pos">12 of 62</span>
       <button aria-label="Next">›</button>
     </div>
-    <p style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-3)">
-      Sits <b>above</b> the title: where you are in the row, then what you are looking at.
-      Booth pitch is ~9 map units, so tapping a specific booth is unreliable even zoomed in.
-      This is the primary way through a row. It wraps <b>inside one area</b> — running off the
-      end of the car-path market returns to its start rather than spilling into the food trucks.
-    </p>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>What it is</th><td>Pages between items (booths in a run). It is not a −/+ value control; it moves you to the previous or next booth.</td></tr>
+      <tr><th>Where</th><td>The sheet's <b>footer</b>, <code>.ffc-panel__footer</code>, pinned to the bottom above <code>env(safe-area-inset-bottom)</code> plus <code>--space-3</code> — never flush to the edge, so it clears the iPhone home bar and Safari's toolbar.</td></tr>
+      <tr><th>Sizes</th><td>‹ and › are <code>--tap-min</code> (44px). The count is centred and says only where you are: "11 of 139".</td></tr>
+      <tr><th>The rule</th><td><b>A control you tap repeatedly never moves.</b> The footer is pinned and a booth's detail holds <code>--sheet-detail-min-height</code>, so a short entry cannot change the sheet's height under your thumb. Longer content scrolls inside the body, above the footer.</td></tr>
+      <tr><th>Wraps</th><td>Inside one area — running off the end of the car-path market returns to its start rather than spilling into the food trucks.</td></tr>
+      <tr><th>Not here</th><td>The back arrow is a different control: <b>‹ back</b> sits at the left of the Panel's header row and returns to the list. Paging with the ItemPager never adds a back step.</td></tr>
+    </table>
   </div>
 
   <h3>Panel</h3>
   <div class="card">
-    <table>
-      <tr><th>bottom</th><td>below 1024px — full width on phone, 560 max centred on tablet (768–1023), grip. <code>role="dialog"</code>, <code>hidden</code> when closed so it leaves the tab order, Esc closes, focus returns to the pin.</td></tr>
-      <tr><th>right</th><td>1024px and up — floating, 20px inset, persistent list of all locations with the legend in its footer. Tapping a pin or row swaps to detail with a back button.</td></tr>
-      <tr><th>Anatomy</th><td>header (32px badge · title · subtitle · close/back) → scrolling body → optional footer</td></tr>
+    <p style="margin-top:0">One component, two variants, chosen by viewport. The <b>bottom sheet</b> (below 1024px: full width on a phone, 560 max centred on a tablet) and the <b>docked panel</b> (1024px and up: floating beside the map, persistent, the directory is its resting state). In the code and the tests <code>.sheet</code> is the hook for the bottom variant; the component is the Panel.</p>
+    <div class="demo-grid">
+      <figure class="demo-fig">
+        <div class="ffc-panel demo">
+          <button class="ffc-panel__handle" aria-label="Sheet handle"><span class="ffc-panel__handle-bar"></span></button>
+          <div class="ffc-panel__header">
+            <div class="ffc-panel__stage"><div class="ffc-panel__layer">
+              <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--pin-stage)"></span><h3 class="ffc-panel__title">Main Stage</h3></div>
+              <div class="ffc-panel__sub">ANNA K Intown / SweetWater · Confirmed 2026 schedule</div>
+            </div></div>
+            <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
+          </div>
+          <div class="ffc-panel__body">
+            <div class="ffc-listrow" style="--sheet-accent:var(--pin-stage)"><span class="ffc-listrow__bullet"></span>North end of the lawn, below the pool</div>
+            <div class="ffc-dayheading">Saturday</div>
+            <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">10:30–11:30</span><span class="ffc-schedulerow__act">Atlanta Irish Dance</span></div>
+            <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">Noon–1:00</span><span class="ffc-schedulerow__act">Peet Midnite &amp; The Back Taxes</span></div>
+          </div>
+        </div>
+        <figcaption><b>Top-level, full.</b> Handle, then the header row: title line at the left, close at the right.</figcaption>
+      </figure>
+      <figure class="demo-fig">
+        <div class="ffc-panel demo">
+          <button class="ffc-panel__handle" aria-label="Sheet handle"><span class="ffc-panel__handle-bar"></span></button>
+          <div class="ffc-panel__header">
+            <div class="ffc-panel__stage"><div class="ffc-panel__layer">
+              <button class="ffc-panel__back"><span aria-hidden="true">‹</span> Candler Park Dr</button>
+              <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--cat-booth)"></span><h3 class="ffc-panel__title">Booth 87</h3></div>
+            </div></div>
+            <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
+          </div>
+          <div class="ffc-panel__body" style="min-height:96px">
+            <div class="ffc-artistline"><span class="ffc-artistline__name">Dan Vogel</span><em class="ffc-artistline__sub">Dan Vogel Art</em></div>
+          </div>
+          <div class="ffc-panel__footer"><div class="ffc-itempager"><button aria-label="Previous booth">‹</button><span class="ffc-itempager__pos">6 of 58</span><button aria-label="Next booth">›</button></div></div>
+        </div>
+        <figcaption><b>Pushed detail.</b> The header row holds <b>‹ back</b> at the left (the list's short name) and the same close at the right; the booth's own title line is the row below, with no subtitle: the back row already names the area. ItemPager in the footer.</figcaption>
+      </figure>
+      <figure class="demo-fig">
+        <div class="ffc-panel demo" style="height:208px">
+          <button class="ffc-panel__handle" aria-label="Expand the sheet"><span class="ffc-panel__handle-bar"></span></button>
+          <div class="ffc-panel__header">
+            <div class="ffc-panel__stage"><div class="ffc-panel__layer">
+              <div class="ffc-panel__titleline"><span class="ffc-panel__badge" style="background:var(--pin-restroom)"></span><h3 class="ffc-panel__title">Restrooms</h3></div>
+              <div class="ffc-panel__sub">Five-toilet banks</div>
+            </div></div>
+            <button class="ffc-panel__close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66 194.34a8 8 0 0 1-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 0 1-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0 1 11.32-11.32L128 116.69l66.34-66.35a8 8 0 0 1 11.32 11.32L139.31 128Z"/></svg></button>
+          </div>
+          <div class="ffc-panel__body">
+            <div class="ffc-listrow" style="--sheet-accent:var(--pin-restroom)"><span class="ffc-listrow__bullet"></span>Just inside the McLendon entrance, by art booth 54</div>
+          </div>
+        </div>
+        <figcaption><b>Peek.</b> <code>--sheet-peek-height</code>: the title line plus a line or two, so the map stays visible. No ItemPager at peek.</figcaption>
+      </figure>
+    </div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>Rule · close</th><td><b>Close is always top-right, on the first row under the handle.</b> In every sheet state, so it never moves when the content does. (Apple's HIG puts the dismiss control in a sheet's top-trailing corner and navigation in the top-leading corner, on the same row.) It is not part of either layer, so it does not animate when you push or pop.</td></tr>
+      <tr><th>Rule · back</th><td><b>The back label names the previous screen, short.</b> The area's <code>shortName</code> ("‹ In the Park", "‹ Candler Park Dr"), the way an iOS back button names where you came from, never the list's full title: its "· Art Market" would be said again on the row below. Same on the docked panel's back row. A run that needs a different short name gets it as a field on its record in <code>src/data/areas.js</code>, not by trimming the title in a component.</td></tr>
+      <tr><th>Rule · no repeat</th><td><b>Nothing on a card repeats its header.</b> A booth reached from its list (the back row showing) drops the area and "Art Market" from its subtitle and keeps only what the back row does not say: "no booth number", "★ Featured artist". If nothing is left, there is no subtitle line, not an empty one. A booth opened straight from the map has no back row, so its subtitle names the area. The same test applies to every card's body: a line that only restates the title or the subtitle is cut.</td></tr>
+      <tr><th>Anatomy</th><td><code>.ffc-panel__handle</code> (a <code>--tap-min</code> band holding a 4px <code>__handle-bar</code>; a button with an accessible name) → <code>.ffc-panel__header</code> (the stage holding the back row and/or the <code>__titleline</code>: <code>__badge</code>, <code>__title</code>, then <code>__sub</code>; plus <code>__close</code>) → <code>.ffc-panel__body</code> (the only thing that scrolls) → <code>.ffc-panel__footer</code>. The docked variant adds <code>__masthead</code> (the resting header) and a <code>__back</code> row.</td></tr>
+      <tr><th>Navigation</th><td><b>One sheet, a stack one level deep: push from the right, pop to the right, height held.</b> Tapping a booth in an area's list <i>pushes</i>: the booth slides in from the right while the list shifts a little left underneath it. <b>‹ back</b> <i>pops</i>: the booth slides out to the right and the list returns at its previous scroll position. The sheet's height does not change (<code>data-stack</code> holds it at the list's height; the booth's content scrolls if it must) and the header eases between its two lengths. ItemPager steps pan sideways and never add a back step. <b>The way you step in is the way you step out.</b> Reduced motion: a crossfade, no slide.</td></tr>
+      <tr><th>Detents</th><td><b>Full</b> (<code>--sheet-max-height</code>) is how a sheet opens. <b>Peek</b> (<code>--sheet-peek-height</code>) is how it opens while a filter chip is on. Drag the handle up, or tap it, for full; tap again for peek. A swipe down closes (from peek) or steps down to peek (from full, with a chip on).</td></tr>
+      <tr><th>Tokens</th><td>Sheet: <code>--sheet-max-height</code> <code>--sheet-peek-height</code> <code>--sheet-detail-min-height</code> (a booth opened from the map never gets shorter, so the footer never moves) <code>--shadow-push</code>. Map safe area (measured at runtime): <code>--map-inset-top</code> <code>--map-inset-bottom</code>. On <code>.ffc-panel</code>, each pointing at a semantic token: <code>--panel-bg</code> <code>--panel-fg</code> <code>--panel-title</code> <code>--panel-muted</code> <code>--panel-rule</code> <code>--panel-radius</code> <code>--panel-shadow</code> <code>--panel-pad</code> <code>--panel-motion</code> <code>--panel-accent</code> <code>--panel-push-shift</code>.</td></tr>
+      <tr><th>Safe area</th><td>Every pan or zoom that targets a pin or a booth (a pin tap, a booth square, a list row, an ItemPager step) centres it in the <b>visible map between the two insets</b>: the bottom edge of the header + chip row, and the top of the sheet at its current height (0 when closed). The pan limits run past the festival by the same amounts so any pin can reach it.</td></tr>
     </table>
-    <div class="stage" style="margin-top:var(--space-3)">
-      <div class="ffc-panel" style="border:1px solid var(--border-control);border-radius:var(--radius-md)">
-        <div class="ffc-panel__grip"></div>
-        <div class="ffc-panel__head">
-          <span class="ffc-panel__badge" style="background:var(--pin-stage)"></span>
-          <div><h4 class="ffc-panel__title">Main Stage</h4><p class="ffc-panel__sub">Saturday · 10:30–11:30</p></div>
-        </div>
-        <div class="ffc-panel__body">
-          <div class="ffc-dayheading">Saturday</div>
-          <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">10:30 AM</span><span class="ffc-schedulerow__act">Opening set</span></div>
-          <div class="ffc-schedulerow ffc-schedulerow--open"><span class="ffc-schedulerow__time">11:30 AM</span><span class="ffc-schedulerow__act">Not yet announced</span></div>
-          <div class="ffc-listrow"><span class="ffc-listrow__bullet" style="--bullet:var(--pin-stage)"></span><span>Bring a chair — no seating provided.</span></div>
-        </div>
-        <div class="ffc-panel__foot">2025 list, kept as a structural placeholder.</div>
+  </div>
+
+  <h3>BoothRow and ArtistLine</h3>
+  <div class="card">
+    <div class="ffc-panel demo" style="--sheet-accent:var(--cat-booth)">
+      <div class="ffc-boothlist" style="padding:0 var(--space-4)">
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">17</span><span class="ffc-boothrow__who"><span class="ffc-artistline"><span class="ffc-artistline__name">Amy Clark</span><em class="ffc-artistline__sub">Clark Ceramics</em></span></span></button>
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">18</span><span class="ffc-boothrow__who"><span class="ffc-artistline"><span class="ffc-artistline__name">Sergey Cherep</span></span></span></button>
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">11</span><span class="ffc-boothrow__star" aria-hidden="true">★</span><span class="ffc-boothrow__who"><span class="ffc-artistline"><span class="ffc-artistline__name">Madison O'Brien</span><em class="ffc-artistline__sub">Madison O'Brien Art</em></span></span></button>
+        <button class="ffc-boothrow"><span class="ffc-boothrow__number">57</span><span class="ffc-boothrow__who"><em>Sponsor</em></span></button>
       </div>
     </div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>BoothRow</th><td>A row in an area's booth list: number, then who is in it. A real button, <code>--tap-min</code> tall. <code>.ffc-boothrow</code> › <code>__number</code> · <code>__who</code> · <code>__star</code> (a featured booth).</td></tr>
+      <tr><th>ArtistLine</th><td><b>The artist leads; the business is secondary.</b> The same component is used in a booth's detail, so the list and the detail never disagree. <code>.ffc-artistline</code> › <code>__name</code> (primary) · <code>__sub</code> (secondary). When the artist and the business are the same there is one line.</td></tr>
+      <tr><th>Tokens</th><td><code>--artist-name-size</code> (<code>--text-lg</code>) · <code>--artist-name-weight</code> (<code>--weight-bold</code>) · <code>--artist-name-color</code> (<code>--text-strong</code>) · <code>--artist-sub-size</code> (<code>--text-sm</code>) · <code>--artist-sub-weight</code> (<code>--weight-medium</code>) · <code>--artist-sub-color</code> (<code>--text-muted</code>). No new type step: the scale already had both.</td></tr>
+      <tr><th>Don't</th><td>Lead with the business, or style a name locally in one list. A long name may wrap; that is allowed.</td></tr>
+    </table>
+  </div>
+
+  <h3>ScheduleRow, DayHeading and ListRow</h3>
+  <div class="card">
+    <div class="ffc-panel demo"><div class="ffc-panel__body">
+      <div class="ffc-dayheading" style="margin-top:0">Sunday</div>
+      <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">11:30–12:30</span><span class="ffc-schedulerow__act">An artist with a rather long name that has to wrap onto a second line</span></div>
+      <div class="ffc-schedulerow"><span class="ffc-schedulerow__time">Noon–1:00</span><span class="ffc-schedulerow__act">Peet Midnite &amp; The Back Taxes</span></div>
+    </div></div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>Rule</th><td><b>Times are always readable on one line.</b> The time is a fixed-width column (<code>--time-col</code>, <code>6.5em</code>, sized to the longest range in the lineup) that never wraps: <code>white-space: nowrap</code>, tabular numerals. The artist takes the width that is left and wraps if it has to.</td></tr>
+      <tr><th>Components</th><td><code>.ffc-dayheading</code> (sentence case, never uppercase-tracked) · <code>.ffc-schedulerow</code> › <code>__time</code> · <code>__act</code> · <code>--open</code> · <code>.ffc-listrow</code> › <code>__bullet</code> (the colour of what you opened, <code>--sheet-accent</code>) · <code>--where</code> (a pin's location line).</td></tr>
+    </table>
   </div>
 
   <h3>Legend · scale · brand</h3>
@@ -273,13 +387,222 @@
   <div class="card">
     <table>
       <tr><th>Contrast</th><td>4.5:1 for text. <code>--text-muted</code> is 5.4:1 on white; the greys it replaces (#9aa0ac, #8b90a0, #8a8f7f) all failed.</td></tr>
-      <tr><th>Tap</th><td>44px minimum hit area, even where the visual is 28 or 40.</td></tr>
+      <tr><th>Tap</th><td>Controls: <code>--tap-min</code> 44px, no exceptions. Pins: a <code>--pin-hit</code> 44px circle centred on the marker, even where the visual is 28 or 40. 44 CSS px is 44pt on iPhone (Apple HIG).</td></tr>
+      <tr><th>Target spacing</th><td>WCAG 2.2 AA (2.5.8, Target Size Minimum) asks for 24px, with an exception where undersized targets have enough spacing around them. We hold the stricter bar: 44px, <b>and no tap target overlaps another at any zoom stop, on either map or on paper</b>. That no-overlap rule is how pins satisfy 2.5.8 in a dense park: when two hit areas would cross, the lower-priority pin waits for a closer stop (<code>from: 'detail'</code> in <code>pins.js</code>) or the two are moved edge to edge. Booth squares are the one exception to 44: at the Detail stop each is its own 9.4-unit cell, and the ItemPager is how you page through a run when a finger can't pick one.</td></tr>
       <tr><th>Type</th><td>12px floor. No 11px.</td></tr>
       <tr><th>Selection</th><td>Never opacity alone — a navy fill, or a navy ring where the fill carries category.</td></tr>
       <tr><th>Focus</th><td>2px navy ring, 2px offset, on every interactive element.</td></tr>
       <tr><th>Closed UI</th><td>Hidden, not just translated off-screen, so it leaves the tab order.</td></tr>
     </table>
   </div>
+
+  <h2>6 · Interaction states</h2>
+  <p class="lede">How the map behaves, as built after the 10/6 interaction PR. Cells tagged <span class="open-tag">OPEN</span> are still undefined or inconsistent; round 1's six were decided by Ernest on 10/6 and are built. The same content is in <code>docs/interaction-states.md</code>.</p>
+  <h3>States</h3><div class="card"><table>
+    <tr><th>S1</th><td><b>Map only</b> — No chip, no sheet.</td></tr>
+    <tr><th>S2</th><td><b>Chip on</b> — A filter chip is on, no sheet. The chip's pins are bright and on top; everything else is dimmed and takes no taps.</td></tr>
+    <tr><th>S3</th><td><b>Sheet open · full</b> — No chip. A pin card, a stage lineup (the schedule), the Food Court, or an art-market area's booth list, at full height.</td></tr>
+    <tr><th>S4</th><td><b>Chip on + sheet · peek</b> — A sheet opened while a chip is on opens at peek height (<code>--sheet-peek-height</code>) so the map stays visible. The ItemPager is not shown.</td></tr>
+    <tr><th>S5</th><td><b>Chip on + sheet · full</b> — The same sheet after the handle was tapped or dragged up.</td></tr>
+    <tr><th>S6</th><td><b>List → booth (inside the sheet)</b> — A booth opened from a row in an area's list: ONE sheet, the content slid to the booth, a back row (<code>‹ &lt;area&gt;</code>) above the title, the ItemPager in the footer. The chip is off (an area list clears it).</td></tr>
+    <tr><th>S7</th><td><b>Booth opened from the map</b> — A booth opened by tapping its square: the same booth sheet with no list behind it, so no back row.</td></tr>
+  </table><p style="font-size:var(--text-sm);color:var(--text-muted);margin:var(--space-3) 0 0">The zoom stop is a second dimension: any state can be at any of the three stops. The docked panel (desktop) has no peek, no handle and no ×; the directory is its resting state and <code>‹ All locations</code> (or <code>‹ &lt;area&gt;</code>) goes back.</p></div>
+  <h3>The three zoom stops</h3><div class="card"><table>
+    <tr><th>1 · Overview</th><td>Area blobs, no individual booths. Pins flagged <code>overview</code> (stages, Food Court, Kidlandia, first aid, bike valet, beer, merch, the art-market markers) plus any chip's pins. The whole festival is in frame.</td></tr>
+    <tr><th>2 · Booths</th><td>Blobs give way to the individual squares (no numbers). Amenity pins appear, except those held back with <code>from: 'detail'</code>. Art-market markers still show.</td></tr>
+    <tr><th>3 · Detail</th><td>Booth numbers and area names are drawn; the art-market markers have faded out so every booth is its own target; <code>from: 'detail'</code> pins appear; the Food Court pin gives way to its stalls.</td></tr>
+  </table></div>
+  <h3>State diagram</h3><div class="card">
+<svg class="diagram" viewBox="0 0 760 450" role="img" aria-label="State diagram of the map's layers: map only, chip on, sheet open, chip plus sheet at peek and full, list to booth, booth from map.">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs>
+<g><rect x="30" y="30" width="190" height="56" rx="14" class="node node-S1"/><text x="125.0" y="63.0" text-anchor="middle" class="nodetext">S1  Map only</text></g>
+<g><rect x="540" y="30" width="190" height="56" rx="14" class="node node-S2"/><text x="635.0" y="63.0" text-anchor="middle" class="nodetext">S2  Chip on</text></g>
+<g><rect x="30" y="200" width="190" height="56" rx="14" class="node node-S3"/><text x="125.0" y="233.0" text-anchor="middle" class="nodetext">S3  Sheet · full</text></g>
+<g><rect x="540" y="200" width="190" height="56" rx="14" class="node node-S4"/><text x="635.0" y="233.0" text-anchor="middle" class="nodetext">S4  Chip + sheet · peek</text></g>
+<g><rect x="30" y="370" width="190" height="56" rx="14" class="node node-S6"/><text x="125.0" y="403.0" text-anchor="middle" class="nodetext">S6  List → booth</text></g>
+<g><rect x="285" y="370" width="190" height="56" rx="14" class="node node-S7"/><text x="380.0" y="403.0" text-anchor="middle" class="nodetext">S7  Booth from map</text></g>
+<g><rect x="540" y="370" width="190" height="56" rx="14" class="node node-S5"/><text x="635.0" y="403.0" text-anchor="middle" class="nodetext">S5  Chip + sheet · full</text></g>
+<path d="M220 45 L540 45" class="edge" marker-end="url(#arr)"/>
+<text x="380" y="38" text-anchor="middle" class="edgetext">tap a chip</text>
+<path d="M540 71 L220 71" class="edge" marker-end="url(#arr)"/>
+<text x="380" y="92" text-anchor="middle" class="edgetext">tap it again · tap empty map · reset</text>
+<path d="M60 86 L60 200" class="edge" marker-end="url(#arr)"/>
+<text x="67" y="138" text-anchor="start" class="edgetext">tap a pin</text>
+<text x="67" y="151" text-anchor="start" class="edgetext">or a marker</text>
+<path d="M160 200 L160 86" class="edge" marker-end="url(#arr)"/>
+<text x="167" y="138" text-anchor="start" class="edgetext">×, swipe down,</text>
+<text x="167" y="151" text-anchor="start" class="edgetext">empty map, reset</text>
+<path d="M570 86 L570 200" class="edge" marker-end="url(#arr)"/>
+<text x="577" y="138" text-anchor="start" class="edgetext">tap a pin</text>
+<path d="M670 200 L670 86" class="edge" marker-end="url(#arr)"/>
+<text x="677" y="138" text-anchor="start" class="edgetext">×, swipe down,</text>
+<text x="677" y="151" text-anchor="start" class="edgetext">empty map</text>
+<path d="M570 256 L570 370" class="edge" marker-end="url(#arr)"/>
+<text x="577" y="308" text-anchor="start" class="edgetext">tap the handle</text>
+<text x="577" y="321" text-anchor="start" class="edgetext">or drag up</text>
+<path d="M670 370 L670 256" class="edge" marker-end="url(#arr)"/>
+<text x="677" y="308" text-anchor="start" class="edgetext">tap the handle</text>
+<path d="M60 256 L60 370" class="edge" marker-end="url(#arr)"/>
+<text x="67" y="308" text-anchor="start" class="edgetext">tap a</text>
+<text x="67" y="321" text-anchor="start" class="edgetext">booth row</text>
+<path d="M160 370 L160 256" class="edge" marker-end="url(#arr)"/>
+<text x="167" y="312" text-anchor="start" class="edgetext">back arrow</text>
+<path d="M220 205 L545 84" class="edge" marker-end="url(#arr)"/>
+<text x="360" y="152" text-anchor="middle" class="edgetext">tap a chip (the sheet closes)</text>
+<path d="M200 256 L330 370" class="edge" marker-end="url(#arr)"/>
+<text x="318" y="318" text-anchor="start" class="edgetext">tap a booth square</text>
+</svg>
+    <p style="font-size:var(--text-xs);color:var(--text-muted);margin:var(--space-2) 0 0">Layers clear from the top: the sheet first, then the chip. S5 closes like S4. S6 and S7 close with ×, swipe down, back or a tap on empty map (to S1); S7 also opens from a booth square in S1. The browser back button follows the same layers: sheet first, then chip. Not drawn: reset (to S1 from anywhere) and a pin tap while a sheet is open (swaps the card). The Mermaid source is in <code>docs/interaction-states.md</code>.</p></div>
+  <h3>Transition table</h3><p>One table per state: each action, what it does, and where it leaves you (→). An action that does not exist in a state is left out.</p>
+  <div class="card states"><h4>S1 · Map only</h4><table>
+    <tr><th>Tap a live pin</th><td>Opens the pin's card at full height; the pin wears the navy ring; the map pans so the pin sits centred in the safe area, zooming in only if it has to. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>There are no dimmed pins with no chip on.</td></tr>
+    <tr><th>Tap a chip</th><td>Chip on, map goes to the overview so the whole category is in frame. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>Nothing. (A double-tap zooms in a stop.)</td></tr>
+    <tr><th>Pinch zoom</th><td>Follows the fingers, settles on the nearest of the three stops.</td></tr>
+    <tr><th>Pan</th><td>Pans, inside the pan limits (festival + the header and chip row).</td></tr>
+    <tr><th>Tap an art-market marker</th><td>Opens the area's booth list at full height. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>Opens that booth's sheet (no list behind it) and pans through the safe-area pan, like a pin. <span class="next">→ S7</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>Changes the stop. No layer changes.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>Already clean: goes to the overview.</td></tr>
+    <tr><th>Browser / Android back</th><td>Leaves the map for the page before. Nothing is on screen to close, so no history entry was pushed.</td></tr>
+    <tr><th>Rotate the phone</th><td>The map refits at the same stop and centre.</td></tr>
+  </table></div>
+  <div class="card states"><h4>S2 · Chip on</h4><table>
+    <tr><th>Tap a live pin</th><td>Opens the pin's card at PEEK height; ring; the pin pans into the safe area above the sheet. The chip stays on: a pin tap never touches it. <span class="next">→ S4</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>A dimmed pin has pointer-events: none, so the tap falls through to the map and counts as a tap on empty map: the chip turns off. <span class="next">→ S1</span></td></tr>
+    <tr><th>Tap a chip</th><td>Same chip: off, the map stays where it is. Another chip: switches, back to the overview. <span class="next">→ S1 / S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>The chip turns off. The map stays. <span class="next">→ S1</span></td></tr>
+    <tr><th>Pinch zoom</th><td>As S1. The chip's pins show at every stop.</td></tr>
+    <tr><th>Pan</th><td>As S1.</td></tr>
+    <tr><th>Tap an art-market marker</th><td>Art-market markers are dimmed, so this is a tap on empty map: the chip turns off. <span class="next">→ S1</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>Every booth square is dimmed (art, food stalls, Kidlandia, the unnumbered two): none is in a chip's category. A tap falls through like a tap on a dimmed pin: it opens nothing, and no booth handler touches the chip. <span class="next">→ S1</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>The chip turns off and the map goes to the overview. <span class="next">→ S1</span></td></tr>
+    <tr><th>Browser / Android back</th><td>Back clears the chip (one history entry per layer). <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td>As S1.</td></tr>
+  </table></div>
+  <div class="card states"><h4>S3 · Sheet open · full</h4><table>
+    <tr><th>Tap a live pin</th><td>The sheet swaps to the new card (drops, then rises); the ring moves; the pin pans into the safe area. Stays full. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>There are no dimmed pins with no chip on.</td></tr>
+    <tr><th>Tap a chip</th><td>The sheet closes, the chip comes on, the map goes to the overview. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>The sheet closes. The map stays. <span class="next">→ S1</span></td></tr>
+    <tr><th>Close × / Esc</th><td>Closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Swipe the sheet down</th><td>Closes if dragged past 30% of the sheet's height, or flicked (over 0.5 px/ms and over 40px). Let go short of that and it springs back. <span class="next">→ S1</span></td></tr>
+    <tr><th>Drag the handle up / tap the handle</th><td>Nothing: with no chip on there is no peek, so no second detent. The handle still drags down. (On a phone on its side the sheet is capped at peek and the handle does not expand it.)</td></tr>
+    <tr><th>Pinch zoom</th><td>The map zooms under the sheet; the sheet stays. When the pinch settles the selected pin is re-centred in the safe area: the same routine as a tap, at the stop the visitor is at, stepping in only if the pan alone cannot reach.</td></tr>
+    <tr><th>Pan</th><td>Pans in the visible band above the sheet. The sheet stays.</td></tr>
+    <tr><th>Tap a booth row in a list</th><td>On an area list: the booth PUSHES in from the right inside the same sheet; the map pans to it. <span class="next">→ S6</span></td></tr>
+    <tr><th>Tap an art-market marker</th><td>Swaps in that area's list (or the same list, if it is already open). <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>On an area list, a square in the SAME area pushes that booth with the list kept under it (the back row stays); a square in another area, or any square while a pin card is open, swaps the sheet to the booth with no list. The map pans through the safe-area pan. <span class="next">→ S6 / S7</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>As S1. The sheet stays.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, chip off, overview. <span class="next">→ S1</span></td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td>The sheet stays open. On a phone in landscape (max-height 500px) it is capped at peek height (208px) and cannot expand; the map refits and the selected pin is re-centred in the safe area.</td></tr>
+  </table></div>
+  <div class="card states"><h4>S4 · Chip on + sheet · peek</h4><table>
+    <tr><th>Tap a live pin</th><td>The sheet swaps to the new card, stays at peek; the ring moves; the pin pans into the safe area above the peek sheet. <span class="next">→ S4</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>Falls through to the map: a tap on empty map. With a sheet open that closes the sheet and leaves the chip on. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a chip</th><td>Same chip: sheet closes, chip off. Another chip: sheet closes, switches, overview. <span class="next">→ S1 / S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>The sheet closes. The chip stays on, all its pins stay, the map stays. <span class="next">→ S2</span></td></tr>
+    <tr><th>Close × / Esc</th><td>Closes the sheet. The chip stays on. <span class="next">→ S2</span></td></tr>
+    <tr><th>Swipe the sheet down</th><td>As S3 (30% or a flick closes; shorter springs back). The chip stays on. <span class="next">→ S2</span></td></tr>
+    <tr><th>Drag the handle up / tap the handle</th><td>Tap the handle, or pull it up 30px: full height. The map re-centres the pin in the new safe area (it can take one zoom stop in if it must). <span class="next">→ S5</span></td></tr>
+    <tr><th>Pinch zoom</th><td>As S3: the selected pin is re-centred once the pinch settles.</td></tr>
+    <tr><th>Pan</th><td>As S3.</td></tr>
+    <tr><th>Tap an art-market marker</th><td>Art-market markers are dimmed: a tap on empty map (closes the sheet). <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>Every booth square is dimmed: a tap falls through, which closes the sheet and leaves the chip on. <span class="next">→ S2</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, chip off, overview. <span class="next">→ S1</span></td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet; the chip stays. <span class="next">→ S2</span></td></tr>
+    <tr><th>Rotate the phone</th><td>As S3: peek is also the landscape cap.</td></tr>
+  </table></div>
+  <div class="card states"><h4>S5 · Chip on + sheet · full</h4><table>
+    <tr><th>Tap a live pin</th><td>Swaps to the new card; the sheet stays FULL (the detent persists across swaps within one open). <span class="next">→ S5</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>As S4: falls through; closes the sheet, chip stays. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a chip</th><td>As S4. <span class="next">→ S1 / S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>As S4. <span class="next">→ S2</span></td></tr>
+    <tr><th>Close × / Esc</th><td>As S4. <span class="next">→ S2</span></td></tr>
+    <tr><th>Swipe the sheet down</th><td>The first swipe steps down to PEEK; a second swipe closes (one layer at a time, like a tap on empty map). <span class="next">→ S4</span></td></tr>
+    <tr><th>Drag the handle up / tap the handle</th><td>Tap the handle: back to peek. Drag up: nothing (already full). <span class="next">→ S4</span></td></tr>
+    <tr><th>Pinch zoom</th><td>As S3.</td></tr>
+    <tr><th>Pan</th><td>As S3.</td></tr>
+    <tr><th>Tap an art-market marker</th><td>As S4. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>As S4. <span class="next">→ S2</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>As S4. <span class="next">→ S1</span></td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet; the chip stays. <span class="next">→ S2</span></td></tr>
+    <tr><th>Rotate the phone</th><td>Rotating to landscape caps the sheet at peek. <span class="next">→ S4</span></td></tr>
+  </table></div>
+  <div class="card states"><h4>S6 · List → booth (inside the sheet)</h4><table>
+    <tr><th>Tap a live pin</th><td>The sheet swaps to the pin's card. The list context is dropped: no back row. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>There are no dimmed pins with no chip on.</td></tr>
+    <tr><th>Tap a chip</th><td>The sheet closes, the chip comes on. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>The sheet closes (all the way, not back to the list). The map stays. <span class="next">→ S1</span></td></tr>
+    <tr><th>Close × / Esc</th><td>Closes the sheet, all the way. Does not step back to the list. <span class="next">→ S1</span></td></tr>
+    <tr><th>Swipe the sheet down</th><td>Closes the sheet, all the way. <span class="next">→ S1</span></td></tr>
+    <tr><th>Drag the handle up / tap the handle</th><td>Nothing (no peek).</td></tr>
+    <tr><th>Pinch zoom</th><td>As S3: the selected booth is re-centred once the pinch settles.</td></tr>
+    <tr><th>Pan</th><td>Pans. The booth stays selected (navy square).</td></tr>
+    <tr><th>ItemPager ‹ ›</th><td>Pages to the previous / next booth in this area (wraps inside it). The content changes in place; the ItemPager does not move; the map holds still while the booth is inside the safe area and centres it once if not. The back row is unchanged: paging never adds a back step. <span class="next">→ S6</span></td></tr>
+    <tr><th>Back arrow (‹ list)</th><td>POPS: the booth slides out to the right and the list returns at the scroll position you left it; the sheet's height does not change; the booth is deselected. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap an art-market marker</th><td>Swaps in that area's list. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>A square in the SAME area: the booth swaps in place, the list stays under it, the back row stays. A square in another area (or a food stall): the list is dropped, no back row. The map pans through the safe-area pan. <span class="next">→ S6 / S7</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, chip off, overview. <span class="next">→ S1</span></td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet (not back to the list: one layer per entry). <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S3: capped at peek in landscape. The ItemPager is not shown at peek, so on a phone on its side booths cannot be paged.</td></tr>
+  </table></div>
+  <div class="card states"><h4>S7 · Booth opened from the map</h4><table>
+    <tr><th>Tap a live pin</th><td>The sheet swaps to the pin's card. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a dimmed pin</th><td>There are no dimmed pins with no chip on.</td></tr>
+    <tr><th>Tap a chip</th><td>The sheet closes, the chip comes on. <span class="next">→ S2</span></td></tr>
+    <tr><th>Tap empty map</th><td>The sheet closes. <span class="next">→ S1</span></td></tr>
+    <tr><th>Close × / Esc</th><td>Closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Swipe the sheet down</th><td>Closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Drag the handle up / tap the handle</th><td>Nothing (no peek).</td></tr>
+    <tr><th>Pinch zoom</th><td>As S3.</td></tr>
+    <tr><th>Pan</th><td>Pans.</td></tr>
+    <tr><th>ItemPager ‹ ›</th><td>As S6: pages within the area, in place, ItemPager fixed.</td></tr>
+    <tr><th>Tap an art-market marker</th><td>Swaps in that area's list. <span class="next">→ S3</span></td></tr>
+    <tr><th>Tap a booth square on the map</th><td>The booth swaps in place (no list to keep); the map pans through the safe-area pan. <span class="next">→ S7</span></td></tr>
+    <tr><th>Zoom buttons / double-tap</th><td>As S1.</td></tr>
+    <tr><th>Reset (arrows-to-corners)</th><td>Closes the sheet, overview. <span class="next">→ S1</span></td></tr>
+    <tr><th>Browser / Android back</th><td>Back closes the sheet. <span class="next">→ S1</span></td></tr>
+    <tr><th>Rotate the phone</th><td><span class="open-tag">OPEN</span> As S6: capped at peek in landscape, and the ItemPager is hidden there.</td></tr>
+  </table></div>
+  <h3>The agreed rules</h3><div class="card"><ol class="rules">
+    <li><b>Chip on → its pins stay bright and everything else dims.</b> Dimmed pins and every booth square take no taps.</li>
+    <li><b>Closing the sheet keeps the chip on.</b> × , swipe down and Esc close the sheet only.</li>
+    <li><b>A tap on empty map clears one layer at a time:</b> first the sheet, then the chip. So does the back button.</li>
+    <li><b>Tapping the chip again turns it off.</b> The map stays where it is.</li>
+    <li><b>Close is always top-right, on the first row under the handle.</b> In every sheet state; it never moves when the content does.</li>
+    <li><b>The way you step in is the way you step out.</b> A booth opened from a list pushes in from the right and ‹ back pops it to the right; the sheet's height is held; paging with the ItemPager never adds a step.</li>
+    <li><b>A control you tap repeatedly never moves.</b> The ItemPager is pinned to the bottom of the sheet, above the home bar.</li>
+    <li><b>No tap target overlaps another,</b> at any zoom stop, on either map, or on paper. Pins have a 44px hit area (<code>--pin-hit</code>), controls are at least <code>--tap-min</code>.</li>
+    <li><b>Times are always readable on one line.</b> A set time is a fixed-width column that never wraps; the artist wraps instead.</li>
+    <li><b>A pan or a pinch is never a tap.</b> Only a genuine tap clears a layer.</li>
+    <li><b>Every pan that targets a pin or a booth centres it in the map safe area,</b> and runs again after a pinch settles and after a resize.</li>
+    <li><b>Swipe down from a full chip sheet stops at peek;</b> the second swipe closes. On a phone on its side the sheet is capped at peek.</li>
+    <li><b>The back label names the previous screen, short.</b> "‹ In the Park", not "‹ In the Park · Art Market": the area's <code>shortName</code>, on the sheet and on the docked panel.</li>
+    <li><b>Nothing on a card repeats its header.</b> Under a back row the booth's subtitle keeps only what the back row does not say, or is not drawn at all; no body line restates the title or the subtitle.</li>
+  </ol></div>
+  <h3>Tested explicitly (10/6)</h3><div class="card"><table>
+    <tr><th>Tap a dimmed pin while a chip is on</th><td>The pin has pointer-events: none, so the tap reaches the map. No sheet open: the chip turns off (390×844, Restrooms on, tapped the Main Stage pin). Sheet open: the sheet closes and the chip stays on. Every booth square now behaves the same way (round 2): e2e taps one for real with and without a sheet.</td></tr>
+    <tr><th>Pinch-zoom while the sheet is open</th><td>The map zooms and settles on the nearest stop and the sheet stays open. When it settles the selected booth is re-centred above the sheet (390×844, pinched from Detail to the Booths stop with a booth sheet open; that stop has no vertical pan on a tall phone, so it stepped in one stop to reach). Round 1 left the booth under the sheet.</td></tr>
+    <tr><th>Android / browser back, sheet open or chip on</th><td>One history entry per layer. Back with a sheet open closes the sheet and stays on the map; with a chip and a sheet it closes the sheet, then clears the chip; with nothing open it leaves. A layer closed by × or a tap takes its entry with it (no stale entry), and open / close / open in quick succession still closes the new sheet on back.</td></tr>
+    <tr><th>Rotate the phone with the sheet open</th><td>390×844 → 844×390 with a booth sheet open: the sheet is capped at 184px (peek is 208px), the map refits and the booth ends at y 154–172 with the header ending at 120 and the sheet starting at 206. In round 1 the sheet was 281px and the booth ended 68px above the screen.</td></tr>
+    <tr><th>Swipe the sheet down partway, then let go</th><td>Dragging the handle (or the header) slowly: 15% and 25% of the sheet's height spring back; 35% and 50% close it. The threshold is 30%, or a flick faster than 0.5 px/ms that travels at least 40px. From a full sheet with a chip on, the first swipe steps down to peek and the second closes.</td></tr>
+  </table></div>
+  <h3>Decisions (Ernest, 10/6) and what is still OPEN</h3><div class="card"><table>
+    <tr><th>Browser / Android back</th><td>Closes the sheet first, then clears the chip, then leaves the page: one history entry per layer. <span class="next">4.1 · <code>useLayerHistory</code></span></td></tr>
+    <tr><th>Pinch or rotate with a sheet open</th><td>The safe-area pan re-runs after a pinch settles and after a resize. On a phone in landscape the sheet opens at and is capped at peek height. <span class="next">4.2</span></td></tr>
+    <tr><th>Booth squares with a chip on</th><td>Every booth square is dimmed (food, Kidlandia, unnumbered included). A tap behaves like a tap on a dimmed pin; no booth handler clears the chip. <span class="next">4.3</span></td></tr>
+    <tr><th>Booth square tap on the map</th><td>Pans through the same safe-area pan as a pin. <span class="next">4.4</span></td></tr>
+    <tr><th>Booth square tapped while a booth-from-list is open</th><td>Same area: the list stays under it and the back row stays. Different area: the list is dropped. <span class="next">4.5 · <code>boothInArea</code></span></td></tr>
+    <tr><th>Swipe down from a full sheet with a chip on</th><td>The first swipe stops at peek, the second closes. <span class="next">4.6</span></td></tr>
+    <tr><th><span class="open-tag">OPEN</span> The ItemPager on a phone on its side</th><td>Landscape caps the sheet at peek height and the ItemPager is not shown at peek, so booths cannot be paged in landscape. Show it at peek in landscape only, or leave paging to portrait?</td></tr>
+  </table></div>
 </div>
 
 <script type="module">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMapView } from './hooks/useMapView';
+import { useLayerHistory } from './hooks/useLayerHistory';
 import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
 import ZoomControls from './components/ZoomControls';
@@ -7,6 +8,7 @@ import DetailSheet from './components/DetailSheet';
 import { BOOTHS } from './data/booths';
 import { ACTIVE_PINS } from './assets/pins';
 import { FESTIVAL } from './data/festival';
+import { boothInArea } from './data/areas';
 import { startAnalytics, track } from './analytics';
 import './styles/map.css';
 
@@ -17,6 +19,7 @@ import './styles/map.css';
 // width on a phone, 560 max and centred on a tablet); at and above it the panel
 // docks to the right. Tablet portrait is too narrow to give up 360px.
 const PANEL_AT = '(min-width: 1024px)';
+const LANDSCAPE_PHONE = '(orientation: landscape) and (max-height: 500px)';
 const PANEL_W = 360;  // --panel-width
 const GAP = 20;       // --ff-gap / --space-5
 // Phone screens get the map drawn ~10% larger at the overview. The festival
@@ -59,10 +62,13 @@ function useMedia(query) {
 
 export default function App() {
   const docked = useMedia(PANEL_AT);
+  // A phone on its side: header + a 72% sheet leave no map at all, so the sheet
+  // opens at, and is capped at, peek height (round 2, item 4.2).
+  const landscapePhone = useMedia(LANDSCAPE_PHONE);
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
 
   // Analytics loads after the map has drawn, never before (src/analytics.js).
@@ -116,27 +122,78 @@ export default function App() {
     setReveal({ x: pin.x, y: pin.y, n: (reveal?.n || 0) + 1 });
   }
 
-  // Bring the selected pin into the band above the open sheet. Measured after
-  // the sheet has rendered its content, and once more after a swap (the sheet
-  // holds the old content for --motion-sheet-out before the new card rises),
-  // since the band's bottom is the sheet's own height.
+  // The map safe area (A2): the visible map between the bottom edge of the
+  // header + chip row and the top of the open bottom sheet. Measured from the
+  // real layout, written to --map-inset-top / --map-inset-bottom on the screen
+  // (tokens.css) and handed to the map, which uses it for every pan that
+  // targets a pin and for the pan limits. Re-measured whenever either piece
+  // changes size: the sheet changes height with its content (peek, full, a
+  // booth after a list), the bar with the breakpoint.
+  const screenRef = useRef(null);
+  const isOpen = !!(openId || openArea || openBooth);
+  useEffect(() => {
+    const screen = screenRef.current;
+    if (!screen) return;
+    const measure = () => {
+      const bar = screen.querySelector('.topbar');
+      const sheet = docked ? null : screen.querySelector('.sheet:not(.docked)');
+      const top = bar ? Math.round(bar.getBoundingClientRect().bottom) : 0;
+      // offsetHeight, not the bounding box: the sheet slides on a transform,
+      // and its height is what it will cover once it has arrived.
+      const bottom = sheet && isOpen ? sheet.offsetHeight : 0;
+      screen.style.setProperty('--map-inset-top', `${top}px`);
+      screen.style.setProperty('--map-inset-bottom', `${bottom}px`);
+      setSafeInsets({ top, bottom });
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    screen.querySelectorAll('.topbar, .sheet:not(.docked)').forEach((el) => ro.observe(el));
+    return () => ro.disconnect();
+  }, [docked, isOpen, setSafeInsets]);
+
+  // Bring the selected pin into the safe area once its sheet has rendered, and
+  // once more after a swap (the sheet holds the old content for
+  // --motion-sheet-out before the new card rises), since the band's bottom is
+  // the sheet's own height.
   useEffect(() => {
     if (!reveal) return;
-    const go = () => {
-      const bar = wrapRef.current?.querySelector('.topbar');
-      const sheet = document.querySelector('.sheet:not(.docked)');
-      const top = (bar ? Math.round(bar.getBoundingClientRect().bottom) : 96) + 24;
-      const bottom = (sheet ? Math.round(sheet.getBoundingClientRect().height) : 0) + 24;
-      revealAt(reveal.x, reveal.y, { top, bottom });
-    };
+    const go = () => revealAt(reveal.x, reveal.y, { minLevel: reveal.minLevel });
     const a = requestAnimationFrame(() => requestAnimationFrame(go));
     const b = setTimeout(go, 220);
-    return () => { cancelAnimationFrame(a); clearTimeout(b); };
-  }, [reveal, revealAt, wrapRef]);
+    const c = setTimeout(go, 320);   // after a peek <-> full resize has settled
+    return () => { cancelAnimationFrame(a); clearTimeout(b); clearTimeout(c); };
+  }, [reveal, revealAt]);
+
+  // The sheet changed height (peek <-> full): bring the pin into the new safe
+  // area again, once the sheet has finished growing or shrinking.
+  function handleDetentChange() {
+    setReveal((r) => (r ? { ...r, n: r.n + 1, minLevel: 0 } : r));
+  }
+
+  // Back (the phone's back gesture, the browser's button) closes the sheet first,
+  // then clears the chip, then leaves the page: one layer per history entry
+  // (round 2, item 4.1), the same rule as a tap on empty map.
+  useLayerHistory((filter ? 1 : 0) + (isOpen ? 1 : 0), (n) => {
+    let left = n;
+    if (left > 0 && isOpen) { closeAll(); left -= 1; }
+    if (left > 0 && filter) setFilter(null);
+  });
+
+  // Re-run the safe-area pan after a pinch has settled and after a resize or a
+  // rotation (round 2, item 4.2), so the selected pin or booth does not end up
+  // under the sheet. Same routine as a tap: it stays at the stop the visitor is
+  // at and steps in only if the pan alone cannot bring it into the band.
+  const latest = useRef({});
+  latest.current = { isOpen, selected: !!(selectedPin || openBooth), reveal };
+  useEffect(() => {
+    if (!settleTick) return;
+    const { isOpen: open, selected, reveal: r } = latest.current;
+    if (open && selected && r) revealAt(r.x, r.y);
+  }, [settleTick, revealAt]);
 
   function handleAreaClick(cluster) {
     if (suppressClickRef.current) return;
-    setFilter(null);
     setOpenId(null);
     setOpenBooth(null);
     setOpenArea(cluster);
@@ -156,53 +213,42 @@ export default function App() {
     const i = group.findIndex((b) => b.id === openBooth.id);
     const next = group[(i + dir + group.length) % group.length];
     setOpenBooth(next);
-    // Hold the map still while the next booth is already on screen -- it just
-    // lights up. Only when the row walks off the edge does the view move, and
-    // then it moves once.
-    ensureVisible(next.x, next.y, coveredEdges());
-  }
-
-  /**
-   * How much room a booth needs around it to count as "in view", in CSS pixels.
-   *
-   * Deliberately NOT the sheet. Counting the open sheet as cover meant the
-   * visible band on a 844px phone was 327px, so a row stepping diagonally left
-   * it after two or three presses and the map lurched -- which is exactly the
-   * lurch the stepper is supposed to avoid. A booth under the sheet is still on
-   * screen: the sheet is a few hundred ms of drag away, and the selection ring
-   * is waiting there when you dismiss it.
-   *
-   * The top bar is the one exception, because it is fixed and you cannot get it
-   * out of the way. Measure it rather than guess -- it has three different
-   * heights across the breakpoints. The 24px on the other three sides is one
-   * pin radius, so the marker is whole rather than half off the edge.
-   */
-  function coveredEdges() {
-    const bar = wrapRef.current?.querySelector('.topbar');
-    const top = bar ? Math.round(bar.getBoundingClientRect().bottom) + 12 : 96;
-    return { top, right: 24, bottom: 24, left: 24 };
+    // Hold the map still while the next booth is already inside the safe area
+    // -- it just lights up. Only when the row walks out of it does the view
+    // move, and then it centres the booth there, once.
+    ensureVisible(next.x, next.y);
   }
 
   function handleBoothClick(booth) {
     if (suppressClickRef.current) return;
-    setFilter(null);
     setOpenId(null);
-    setOpenArea(null);
+    // A square in the SAME area as the open list keeps that list under it, so
+    // the back row stays (item 4.5); a square in another area drops the list.
+    setOpenArea((area) => (area && boothInArea(booth, area) ? area : null));
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));
+    // The same safe-area pan as a pin tap (round 2, item 4.4): centred above
+    // the sheet, at the current stop unless it has to step in to get there.
+    setReveal({ x: booth.x, y: booth.y, n: (reveal?.n || 0) + 1 });
   }
 
   /**
-   * A row in an area's booth list. Opens that booth and flies to it at the
-   * booth zoom, so the number you just tapped is the one lit up on the map.
+   * A row in an area's booth list. Opens that booth INSIDE the same sheet: the
+   * area stays underneath (`openArea` is not cleared), so the sheet shows the
+   * booth with a way back to the list (B1). The map pans to the booth at the
+   * booth zoom at least, centred in the safe area.
    */
   function handleBoothFromList(booth) {
-    setFilter(null);
     setOpenId(null);
-    setOpenArea(null);
     setOpenBooth(booth);
     track('pin_open', boothEvent(booth));
-    focusOn(booth.x, booth.y, 2);
+    setReveal({ x: booth.x, y: booth.y, minLevel: 2, n: (reveal?.n || 0) + 1 });
+  }
+
+  // Back from a booth to the list it was opened from. The way you step in is
+  // the way you step out; paging with the ItemPager never adds a step.
+  function handleSheetBack() {
+    setOpenBooth(null);
   }
 
   /**
@@ -270,7 +316,7 @@ export default function App() {
 
   return (
     <div className="ff-app">
-      <div className={`ff-screen${docked ? ' docked' : ''}`} onClick={handleBackgroundClick}>
+      <div ref={screenRef} className={`ff-screen${docked ? ' docked' : ''}`} onClick={handleBackgroundClick}>
         <div className="mapstage">
         <MapCanvas
           mapRef={mapRef}
@@ -324,6 +370,10 @@ export default function App() {
             selectedPin={selectedPin}
             onSelect={handleDirectorySelect}
             onOpenBooth={handleBoothFromList}
+            onBack={handleSheetBack}
+            chipOn={!!filter}
+            capPeek={landscapePhone}
+            onDetentChange={handleDetentChange}
             onClose={closeAll}
             onFocusReturn={() => mapRef.current?.focus({ preventScroll: true })}
           />

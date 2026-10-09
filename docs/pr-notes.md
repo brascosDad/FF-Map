@@ -1,145 +1,228 @@
-# PR notes: 9/24, analytics + tagged QR + booth 57
+# PR notes: 10/6, interaction fixes + the interaction state spec (rounds 1, 2 and 3)
 
-## Visual checks: all three fail on CI. Where each difference comes from
+Ernest's iPhone walkthrough of the live map (10/6), turned into rules in the design system. Same branch,
+same PR. One commit per numbered item, so any one can be reverted. Read `docs/interaction-states.md`
+(and `design-system.html` §3 and §6) for the spec; this file is the record of questions, decisions,
+skipped items, measurements and what to try on the phone.
 
-**Merged `main` (1d1aee2) into this branch 9/27.** Two conflicts, and this branch's version kept for both:
-`docs/pr-notes.md` and `docs/pr-shots/after-print.png`. Everything else merged cleanly, including #14's
-barricade move in `pins.js` and `PrintSheet.jsx`. **Behaviour tests: 342/342 pass** (locally; CI
-numbers are in the PR). **All three visual checks are expected to fail.** The baselines in
-`tests/visual/` are stale: they were last committed in `0a70cdc`, partway through PR #12, and `main`'s
-CI has been red on them since #12 merged (run 31, 9/23: phone-open 0.978%, sheet-open 11.724%,
-print 6.208%).
+## Round 3 (Ernest's iPhone check of the round-2 preview)
 
-Method: the three cases rendered on this one machine at four commits, then diffed pairwise. That
-takes out the machine-vs-runner text difference, which is 1.35% / 2.93% / 4.41% between this
-machine and the committed PNGs even at the same commit.
+A booth opened from an area list read "‹ In the Park · Art Market" on the header row, then "Booth 6", then
+"In the Park · Art Market" again as the subtitle. Same branch, same PR; one commit per item.
 
-| Case | PR #12 (0a70cdc → 542dc9b) | PR #14, barricade (542dc9b → 1d1aee2) | This PR, #13 (1d1aee2 → this merge) |
-|---|---|---|---|
-| **phone-open** | 0 px | 0 px | 0 px |
-| **sheet-open** | **11.18%**: the Kidlandia card gained its location line ("The west lawn, off Candler Park Dr"), so the sheet is taller, and the map pans Kidlandia into view above it (round 4's `revealAt`) | 0 px | 0 px |
-| **print** | **6.07%**: header (smaller wordmark, tighter date line); legend (food cart, King of Pops, ops rows, musicians' tent, ice truck); map (lawn pins by Kidlandia, C1–C3 carts, food-stall numbers off, "Art Market" off the car path, generators, ice truck, the east barricade moved to 979, and so on); index (no heading, C1–C3 rows, leading 1.3) | **0.007%** (136 px): only the three cones, from x 979 to x 912. Nothing else on the sheet | **1.86%**: the QR (new modules for `?s=qr`) and the index reflow from the F's on (Flack Injury Law out, "57 Sponsor" in at the end). Booth 57's square on the map is unchanged. Nothing else |
+### Status by item
 
-- **phone-open is the odd one.** The phone at open renders **identically** at every commit from
-  `0a70cdc` to this merge, yet CI fails it by 0.978%. So that failure is not any PR's content. The
-  committed `phone-open.png` doesn't match what today's runner draws for the same page, most likely
-  because of how that PNG was produced (a Claude session committed it in `0a70cdc`, not the
-  `Update visual baselines` Action) or because the runner's Chromium has changed since. The label
-  re-renders it on the runner either way.
-- **What the label will do:** re-render all three on the runner and commit them. After that,
-  CI should be green for #12's, #14's and this PR's changes together. No label added, as you asked.
-
-One commit per item, in the order below. Nothing here blocks the merge.
-
-## 1. `?s=` source tag, and the QR carries `?s=qr`
-
-- `FESTIVAL.mapUrl` is unchanged (locked). New `FESTIVAL.qrUrl = 'https://fall-fest-map.vercel.app/?s=qr'`,
-  used by `MapQr()`; `data-url` matches.
-- **The QR still scans.** The longer URL is still QR version 3, 29 modules, error correction M, so the
-  module size on paper is unchanged. Decoded (OpenCV) from the 300 dpi render of `npm run print`,
-  and again after shrinking the crop to 150, 100, 72 and 60 dpi: every one reads
-  `https://fall-fest-map.vercel.app/?s=qr`. Nothing from `print/` is committed (it is gitignored).
-- `?s=` is read once in `main.jsx` before the first render, kept for the visit, and removed with
-  `history.replaceState`. `?print=1` and the hash are left alone (e2e checks `?print=1&s=qr#x` →
-  `?print=1#x`).
-- **Changed on your 9/24 message:** any short slug is recorded as written, so `?s=email` works with no
-  code change. The rule: 1–20 characters, lowercase letters, digits or dashes (the value is lowercased
-  first). Anything else is recorded as `other`, never as the raw text, because anyone can type into a URL.
-- **Not in the brief:** the tag is also kept in `sessionStorage`, so reloading the same tab after the
-  address is cleaned still counts as `qr`. If storage is blocked, the reload counts as `direct`.
-- **Offline:** the service worker already answered every navigation (any query) with the cached
-  shell, so `/?s=qr` needed no worker change. The comments now say so, and say that other origins
-  (Umami) are never cached or intercepted. e2e opens `/?s=qr` in a fresh tab with no network.
-
-## 2. Analytics module (Umami Cloud, Hobby)
-
-- `src/data/analytics.js`: `websiteId` (Ernest's, committed), `src`, and `domains`, which is taken from
-  `FESTIVAL.mapUrl`'s host rather than typed a second time. **Empty `websiteId` = off.**
-- `src/analytics.js` is the only file that touches `window.umami`. It injects the script after the
-  first render (a `setTimeout` inside App's mount effect). Attributes: `data-website-id`,
-  `data-domains="fall-fest-map.vercel.app"`, `data-auto-track="false"`, and
-  **`data-exclude-search="true"` (not in the brief; a privacy belt, since `?s=` is already gone by
-  the time anything is sent).** It sends the pageview (`umami.track()` with no arguments) and then
-  `map_open` when the script loads.
-- **Attribute names:** checked against Umami's docs through web search, because this container
-  can't reach umami.is, docs.umami.is or the CDNs (egress blocked). `data-auto-track="false"`
-  turns off every automatic feature (pageviews, clicks, path changes, performance), which is what
-  we want. Umami's docs point out `data-auto-pageview="false"` as the lighter switch that keeps
-  performance tracking; we don't want performance tracking, so it's `auto-track`.
-- **`visit_summary` on unload:** Umami's tracker sends with `fetch(…, { keepalive: true })` to
-  `/api/send` (it moved off `sendBeacon` to get past ad blockers, Umami PR #1163). A keepalive request
-  outlives the page the same way a beacon does, so `umami.track` is used and there is no separate
-  `sendBeacon` path. **Not seen live**, because the container can't reach Umami. Check it after the
-  merge: in Umami's realtime view, open the live map on a phone, tap a pin, switch apps, and look
-  for `visit_summary`.
-- `visit_summary` fires **once**: on `pagehide` or on the first `visibilitychange` to hidden, whichever
-  comes first. iOS rarely fires `pagehide` after an app switch, so the first hide is the reliable
-  moment. If the visitor comes back, what they do after that is in the other events but not in
-  the summary.
-- The service worker returns early for every other origin, so it never touches Umami.
-- `scripts/lib/browser.mjs` resolves `cloud.umami.is` to nowhere for every Playwright script (e2e,
-  visual, print, pr-shots). No test or render ever reaches Umami; the whole suite runs the way a
-  visitor with a content blocker would see it.
-
-## 3. Events, as wired
-
-| Event | Fired from | Notes |
+| Item | What | Commit subject |
 |---|---|---|
-| `map_open` | script `onload` | `viewport`: `desktop` when the side panel is docked (≥1024px), otherwise `phone`, **so tablets count as phone** |
-| `pin_open` | pin tap, booth tap, area-marker tap, booth row in an area list, directory row | categories are the map's `c` keys; booths are `art`/`food`; area markers are `art` |
-| `chip_on` | chip turned **on** only | |
-| `zoom_stop` | `levelIdx` changes | level 1–3. Not sent for the opening stop. A pin tap that zooms in (`revealAt`) counts |
-| `schedule_open` | **the Main Stage and Acoustic Stage sheets.** Each stage's sheet is its lineup; there's no separate schedule screen | `stage`: `stageMain` / `stageAcoustic` (the sheet ids). Sent alongside that tap's `pin_open` |
-| `visit_summary` | see above | `categories` is sorted, comma-separated |
+| Action | The PR screenshots Action failed on the last two pushes; fixed first so this push refreshes the table | `PR screenshots: find the list row on main as well as the branch` |
+| 1 | Back label is the area's short name: "‹ In the Park", "‹ Candler Park Dr"; same on the docked panel | `Round 3, item 1` |
+| 2 | Nothing on a card repeats its header: under a back row the booth subtitle keeps only "no booth number" / "★ Featured artist", or is not drawn; three other cards trimmed | `Round 3, item 2` |
+| 3 | No change to the ×. It is top-right on the first row under the handle in every state; the round-2 e2e that checks it in five states on two phones still passes | — |
+| Docs + tests | Two rules in the design system (§3 Panel table, §6 rules 13 and 14) and the state spec; e2e for both items; this file | `Round 3: pr-notes …` |
 
-- **`pin_id`, a proposal and not done:** pins in `pins.js` have no id of their own. For now the id is
-  worked out from the pin: the sheet id `d`, plus the cart number (`kingofpops-C1`), or for
-  pins that share a sheet, the pin's position among them in file order (`wc-1` … `wc-4`). That
-  position shifts if someone reorders or inserts pins in `pins.js`. The fix is an `id` field on
-  every pin. That's a data-structure change, so I'm proposing it rather than making it.
-- Stepping through booths with ‹ › in a booth sheet isn't a `pin_open`; it's browsing inside one open sheet.
+### Things to know
 
-## 4. Booth 57 → Sponsor (your 9/24 message)
+- **Why the screenshot table was stale.** The Action's "Capture before and after" step failed on runs 29 and
+  30 (the round-2 pushes): `scripts/pr-shots.mjs` waited 30s for `button.boothrow`, the list row's class
+  before the naming sweep renamed it `.ffc-boothrow`, and timed out on the branch's own build. The steps run
+  against both builds (`main` still has the old name), so the selector now matches either. Verified locally:
+  `node scripts/pr-shots.mjs --base=main` exits 0 and writes all 10 pairs. Run 31 (triggered by the
+  baselines Action's own push) is sitting at "action required"; **it can be ignored** — this push starts a
+  new run that supersedes it. If you want to clear it anyway: open
+  https://github.com/brascosDad/FF-Map/actions/runs/37531305654 and press **Approve and run** in the
+  yellow banner at the top.
+- **Item 1 needed no new data field.** Every area record already carried `shortName` (the directory
+  lists by it). Its job is now documented in `src/data/areas.js`: the directory's label AND the back
+  label. A run that needs a different short name gets one there, not by trimming the title in a component.
+- **Item 2's one prop.** `BoothDetail` takes `pushed`, the same flag that draws the back row, so the sheet
+  and the docked panel cannot disagree about whether the area is already named above the title.
+- **Other cards changed for item 2** (a body line that only restated the header):
+  - Water: "Bring a bottle to refill" under "Free refill" → "Bring a bottle".
+  - Beverages: "Beverage station — drinks for sale." under "Beverage station" → "Drinks for sale".
+  - PTA booth: the body line "PTA booth." under the title "PTA booth" is gone; the subtitle ("In
+    Kidlandia") and the pin's location line remain. Still TODO(Jess) for which PTA.
+  - Checked and left alone: Main Stage and Acoustic (sponsor · schedule, then the lineup), Food Court
+    (count, then the list), a food cart (cart number · offering, then where), Kidlandia, Beer Stand,
+    Beer, Merch, Restrooms, First Aid, Info, Bike valet — each says each thing once already (C4, item 9).
+- **The visual baselines do not move.** `sheet-open` is the Kidlandia card, which round 3 does not touch;
+  `phone-open` and `print` are untouched. No label needed for this push.
+- **Not changed, on purpose:** the "× top-right" rule and its position (item 3). The round-2 e2e
+  (`item 1: the close is top-right …`, five states, 375 and 393) is unchanged and passes.
 
-- Read the sheet **9/24 through the Google Drive connector** (CSV export, same file the script fetches),
-  then ran `pull-sheet.py <csv>` and `build-booths.py`. No hand edits.
-- **Diff against the 9/21 read: one row changed.** 57 (McLendon) was Ashley Flack / Flack Injury Law and
-  now reads `Sponsor, Sponsor`. The top number is still 139 and Kidlandia is still K0–K10.
-- Courtney put "Sponsor" in **both** columns. The parser only recognised a sponsor booth when the
-  business column was blank, so it would have listed an artist named "Sponsor". It now treats
-  "Sponsor" in the business column the same way.
-- Phone: the McLendon list shows `57 Sponsor`, and the booth sheet says "Sponsor booth."
-  Print index: sponsor booths used to be left out. They are now listed as **"Sponsor"** with their
-  number, so 57 on the map points at a row. Still 155 index rows (one artist out, one sponsor in),
-  so the index fits as before.
-- **Skipped:** a sponsor booth's card footer still says "Artist from the 2026 list; position from the
-  official map". That was already true for any sponsor booth before today. It's a wording question,
-  so I left it alone.
+### What to try on your iPhone (the new preview)
 
-## 5. Tests
+1. Art Market area → tap a booth in the list. The top row reads "‹ In the Park" (short), × on the right.
+   Under "Booth 6" there is no subtitle at all. Tap ‹: the list, where you left it.
+2. Close it, tap a booth square on the map directly: "Booth N" with "In the Park · Art Market" under it,
+   since nothing above it names the area.
+3. Booth 11 (the featured one) from the list: the only subtitle is "★ Featured artist". From the map: "In
+   the Park · Art Market · ★ Featured artist".
+4. Desktop: Art market → In the Park → a row: the panel's back row reads "‹ In the Park".
 
-`npm run test:e2e`: **342/342 pass** locally. New checks: `?s=qr` online, and from the offline cache in a
-fresh tab, with the address bar clean both times; the website ID emptied inside the built bundle
-(the same code with the one value a volunteer would clear), with **no request to cloud.umami.is**,
-no script tag, and the map working; Umami blocked, with the map drawing, a pin opening, a chip
-turning on and no page errors; every event and property checked against a stand-in tracker; a
-visit that only pans reports `direct` and not engaged. The offline "nothing failed to load" check
-now skips `cloud.umami.is`, which is supposed to fail there.
+### Evidence (round 3)
 
-## Visual baselines: **print will go red, as expected**
+- Full local run (`npm run test:e2e`, this branch at the item 2 commit): **482 of 482 behaviour checks
+  pass**, including the new ones: `B1 a back arrow names the list, short` ("‹ McLendon Ave" at 375 and
+  390), `item 2 a booth from the list has no subtitle repeating the back row` ("no subtitle line"), `item 2
+  a booth from the map keeps its area subtitle` (phone, tablet, desktop), and the unchanged round-2
+  `item 1: the close is top-right …` and real-tap-on-× checks.
+- Visual comparisons on this machine (advisory; the runner has the verdict): phone-open 0.372%, sheet-open
+  2.243%, print 3.941%. The sheet-open diff image is glyph edges on every line of text, masthead and chips
+  included, with nothing moved: the font engine, not round 3. No baseline changes expected.
+- Browser check of the build (390×844 touch and 1280×900): list → booth gives back "‹ In the Park", title
+  "Booth 6", **no** `.ffc-panel__sub` element; the × top stays at the same y before and after the push;
+  booth 20 from the map: "In the Park · Art Market"; booth 11 from the map: "In the Park · Art Market ·
+  ★ Featured artist"; booth 11 via the list: "★ Featured artist" only; docked panel back row "‹ In the
+  Park"; Water card "Free refill | Bring a bottle".
+- `node scripts/pr-shots.mjs --base=main` exits 0 locally after the selector fix (the PNGs it wrote were
+  discarded: the Action commits the runner's renders).
 
-- **print:** the QR changed (new URL) and the index moved rows around (Flack Injury Law left the F's,
-  Sponsor joined the S's). Compared to `main` 542dc9b rendered on this same machine, the diff sits only
-  in the QR box and the index columns. **Needs the `update-visual-baselines` label.**
-- **phone-open, sheet-open:** **0 pixels differ from `main`** on this machine. Analytics draws nothing.
-  They still fail on CI, because the baselines are stale from PR #12 (see the table at the top).
+## Round 2 (Ernest's reply, 10/6)
 
-## For Ernest
+### Status by item
 
-1. After merging, **rebuild the handout PDF (`npm run print`) and re-send it to Jess.** The old QR still
-   works but counts as `direct`, not `qr`.
-2. In Umami's site settings, the site's domain should be `fall-fest-map.vercel.app` (the same host as
-   `data-domains`).
-3. The Squarespace band link: add `?s=web` when you're ready. The CPNO newsletter: `?s=email`.
-   Social posts: `?s=social`.
-4. Proposal above: an explicit `id` on each pin in `pins.js`, so `pin_id` stays stable next year.
+| Item | What | Commit subject |
+|---|---|---|
+| Naming rule | ItemPager everywhere; one name per component; stray names fixed | `Naming: one name per component …` |
+| 1 | One fixed header layout; **Close always top-right on the first row under the handle** | `Round 2, item 1` |
+| 2 | List → booth is a **push and pop**; the sheet's height is held | `Round 2, item 2` |
+| 3 + 10 | Every change is a documented component or rule; the Panel demo is the live anatomy | `Round 2, items 3 and 10` |
+| 4.1 | Back: sheet, then chip, then leave | `Round 2, item 4.1` |
+| 4.2 | Re-pan after pinch / resize; landscape caps at peek | `Round 2, item 4.2` |
+| 4.3 | Every booth square dimmed with a chip on | `Round 2, item 4.3` |
+| 4.4 | A booth square tap pans through the safe-area pan | `Round 2, item 4.4` |
+| 4.5 | A square in the same area keeps the list under it | `Round 2, item 4.5` |
+| 4.6 | Swipe down from a full chip sheet stops at peek | `Round 2, item 4.6` |
+| 7 | Visual baselines: label (see below) | — |
+| 8 | Booth detail leads with the artist (ArtistLine) | `Round 2, item 8` |
+| 9 | Copy pass | `Round 2, item 9` |
+
+### Things to know
+
+- **I broke the × in the naming sweep and caught it with the back-button test.** The sweep renamed
+  `.close` to `.ffc-panel__close`, but the header's drag handler still excluded `.close`, so a real tap
+  on the × was swallowed by the drag (the earlier tests closed sheets in ways that hid it). Fixed in the
+  item 4.1 commit, with a new e2e check that taps the × for real. This was never on the pushed branch.
+- **Item 4.3 reading.** "Tapping one behaves like tapping a dimmed pin. It never clears the chip." A
+  dimmed pin has `pointer-events: none`, so the tap falls through to the map, and a tap on empty map
+  clears one layer: the sheet if one is open, otherwise the chip. I built it that way: no booth handler
+  touches the chip any more, and a tap on a square with no sheet open is a tap on empty map (the chip
+  turns off), exactly like a dimmed pin. If you meant the squares should swallow the tap and do nothing
+  at all, say so; it is one wrapper.
+- **Item 4.2: the pan after a pinch can step the zoom in one stop.** At the Booths stop on a tall phone
+  the whole festival fits vertically, so there is nothing to pan; the same routine as a tap steps in one
+  stop to bring the booth above the sheet. It stays at the visitor's stop whenever the pan alone works.
+- **Item 4.2: landscape.** A phone on its side (`orientation: landscape` and `max-height: 500px`) opens
+  the sheet at peek and caps it there; the handle says "drag down to close" and does not expand it.
+  **Still OPEN:** the ItemPager is hidden at peek, so on a phone on its side booths cannot be paged.
+  Show it at peek in landscape only, or leave paging to portrait?
+- **The header animates its own height.** A pushed detail has a back row above the title; the header
+  eases between its two lengths (JS, `--motion-panel`) so the body does not jump a row. Reduced motion
+  skips it.
+- **Desktop gets the same push / pop.** The docked panel's list → booth uses the same layers.
+- **`vendors.json`'s `note` still says "arrives later this week".** It is Cowork's file and no sheet shows
+  it (C3 took it off), so I left it. The food-stall *sheet* line is gone (item 9).
+
+### Visual baselines (item 7)
+
+Ernest approved refreshing all three baselines (print is byte-identical to `main`; the stored print
+baseline has been stale since 9/23). I add the `update-visual-baselines` label to PR 15 **after the
+last push** so the Action re-renders them against the final code (a later push would make them stale
+again). If the label is not on the PR when you read this, add it.
+
+### Components in this PR (each is in `design-system.html` with its tokens)
+
+| Component / rule | Where it is documented | Tokens |
+|---|---|---|
+| **Names** (one name per component) | §3 Names | — |
+| **Panel** (bottom sheet, docked panel) and its parts: Handle, Header, Body, Footer | §3 Panel | `--sheet-max-height` `--sheet-peek-height` `--sheet-detail-min-height` `--shadow-push` `--panel-bg/fg/title/muted/rule/radius/shadow/pad/motion/accent/push-shift` |
+| **Header: Close is always top-right, on the first row under the handle** | §3 Panel (rule) | `--tap-min` |
+| **Navigation: push from the right, pop to the right, height held** | §3 Panel (navigation) | `--panel-motion` `--panel-push-shift` `--shadow-push` |
+| **Peek** (the short detent) | §3 Panel (detents) | `--sheet-peek-height` |
+| **Map safe area** | §3 Panel (safe area) | `--map-inset-top` `--map-inset-bottom` |
+| **ItemPager** (pinned footer) | §3 ItemPager | `--tap-min` `--sheet-detail-min-height` |
+| **BoothRow** and **ArtistLine** (artist leads) | §3 BoothRow and ArtistLine | `--artist-name-size/-weight/-color` `--artist-sub-size/-weight/-color` |
+| **ScheduleRow, DayHeading, ListRow** (times never wrap) | §3 ScheduleRow… | `--time-col` |
+| **Tap sizes** | §1 and §5 | `--tap-min` `--pin-hit` |
+| **Interaction states** | §6 | — |
+
+### What to try on your iPhone (the new preview)
+
+1. Art market → tap a booth in the list: slides in from the **right**, no change in sheet height, ‹ back
+   top-left, × top-right. Tap ‹: slides out to the right, list back where you were.
+2. Open any other sheet (a stage, a pin): the × is in the same top-right spot every time.
+3. Restrooms chip on → tap a restroom → swipe down once (it should stop short), again (it closes).
+4. Phone back gesture with a sheet open: the sheet closes and you stay on the map. Again with a chip on:
+   the chip clears.
+5. Turn the phone on its side with a sheet open: the sheet shrinks to peek and the booth stays above it.
+
+## Round 1 (kept as the record)
+
+### Does print stay green? Print did not change, and CI's print check was red before this PR
+
+- **The print sheet is byte-for-byte identical** on `main` (454ca59) and on this branch (checked after
+  round 1; round 2 touches no print code): both `/?print=1` renders (1632×1056, full page) compare equal
+  with `cmp`. Nothing leaked into print.
+- **The print check is red on CI for a reason that was there before:** the committed
+  `tests/visual/print.png` is stale (`main`'s CI has been red on it since #12 merged; unchanged `main`
+  differs from it by 6.124% on this machine).
+- **Phone baselines change, expected:** `phone-open` (zoom stack buttons are 44px) and `sheet-open` (the
+  sheet layout). Local diffs are advisory; the runner has the verdict.
+
+### Decisions you were to exercise (round 1)
+
+1. **Peek.** Restrooms chip on → tap a restroom: opens short (`--sheet-peek-height`, 208px + the home-bar
+   inset). Tap the handle: full. Tap again: peek. Drag up: full. No chip: opens full, handle does not
+   resize.
+2. **The ItemPager is hidden at peek** (your call).
+3. **Back row label** is the area's own title (`‹ In the Park · Art Market` …), not "Art Market": three
+   lists share that name.
+4. **Swipe down closes from the handle or from the header** (a drag that starts on either pulls the
+   sheet); swiping on the body scrolls it.
+5. **When the handle changes the sheet's height the map re-centres the pin** in the new safe area.
+
+**Skipped on purpose: swipe-to-page on the ItemPager.** A horizontal swipe shares the touch with the
+body's vertical scroll and with the header's drag, so it is not clean; ‹ › in the footer is the one way.
+
+### Per item (round 1)
+
+- **A1** `--tap-min` 44px for every control, `--pin-hit` 44px for every pin. Controls that were below the
+  floor and are now 44: the zoom buttons, the square icon button, the ItemPager's buttons. **No pin waits
+  for a closer stop than before** (the pin hit circle was already 44 and the no-overlap suite measured
+  it). There is no "schedule button" in the app.
+- **A2** Safe area measured at runtime; the north-most restroom repro only reproduced at short viewports
+  (390×550, 375×560: pin top at 84 and 80px under a 91px header); the e2e test covers them and fails on
+  `main` there. Stepping the ItemPager holds the map less often now ("12 of 12" held before, "10 of 12"):
+  the safe area counts the open sheet.
+- **B1–B5** see round 2 for the final shapes of B1 (push / pop) and B4 (header). B2: `--sheet-detail-min-height`
+  300px holds a booth opened from the map at one height. B5: every sheet/panel style is under `.ffc-panel`
+  in `components.css`.
+- **C1** artist leads (`--text-lg` bold), business secondary (`--text-sm` muted). **C2** `--time-col`
+  6.5em, nowrap, tabular (the old 72px column broke "10:30–11:30" at its dash). **C3** no provenance
+  footer anywhere; an unnumbered spot's location stays as body text; the facts live in `README.md` and
+  the Data section of `CLAUDE.md`.
+- **C4** copy: Restrooms (one ADA line, no interface line), Water ("Bring a bottle to refill"), First aid
+  ("Staffed by EMS for the whole festival"), Beer (no zoom line). **Round 2 item 9** added: Beer loses its
+  own location line (the pin's says where, and it contradicted the pin; subtitle "The main one"), the
+  Bike valet card says "Roll up and a volunteer tags and racks your bike" (the subtitle already says
+  free, the pin says where), the stale food-stall line is gone.
+
+### Noticed, not changed
+
+- **Tablet (768–1023)** has the same bottom sheet at 560px wide; the existing e2e covers 834×1112.
+- **`DetailSheet.jsx` / `.sheet` / `.sheetwrap`** are the file and hook names for the Panel's bottom
+  variant. The design system's Names table says so; I did not rename the file or the e2e's `.sheet`
+  hooks (CLAUDE.md: don't refactor beyond the task).
+- **Pins nudged:** none.
+
+## Evidence
+
+- Final local full run (`npm run test:e2e`): 475 of 477 behaviour checks passed; the 2 that failed were the "stepping mostly holds the map still" threshold (held 23 of 30 on desktop, 9 of 12 on the phone; it was 80%, now 60%, because a booth tap now centres the booth in the safe area and the safe area counts the open sheet) and pass after the change. Visual diffs on this machine against the committed baselines: phone-open 1.602%, sheet-open 13.490%, print 6.124% (identical to unchanged main).
+- New e2e in round 2: header × (five states, two phones), push / pop sampled every frame (375, 393 and
+  reduced motion), booth squares dimmed with a chip (every kind, a real tap with and without a sheet),
+  booth square pan (fails on `main` at 375×667), same-area list kept, back button per layer (six cases),
+  pinch and rotate with a sheet open, landscape peek cap, swipe → peek → close, ArtistLine in the detail,
+  copy (Beer, Bike valet, food stall), a real tap on the ×.
+- The e2e blocks for A2 and B1 sit in the B2 commit; if you revert A2 or B1 on its own, drop that block.
+- Before/after screenshots: `npm run pr-shots` captures the phone at 375, 390 and 430, the booth sheet
+  and a chip sheet; the Action commits them under `docs/pr-shots/` and writes the table into the PR.

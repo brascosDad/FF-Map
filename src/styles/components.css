@@ -20,7 +20,7 @@
    them must not win the touch. */
 .ffc-dimmed { opacity: var(--opacity-dimmed); pointer-events: none; }
 
-:where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-step button):focus-visible {
+:where(.ffc-chip, .ffc-iconbtn, .ffc-zoom button, .ffc-itempager button):focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -91,7 +91,7 @@
 }
 
 /* ===== IconButton =========================================================
-   Three shapes. Round 44 (locate), square 40 (zoom), ghost 44 (close / back).
+   Three shapes, all --tap-min (44): round (locate), square (zoom), ghost (close / back).
    Toggled locate is a coral fill with a NAVY glyph — white on coral is 2.4:1.
    At a limit it is aria-disabled and dimmed but stays focusable, so a keyboard
    user can still tab through and hear why it is unavailable.
@@ -116,7 +116,7 @@
   transition: background var(--motion-press) var(--ease);
 }
 .ffc-iconbtn:active { --btn-bg: var(--surface-pressed); }
-.ffc-iconbtn--square { --btn-radius: var(--radius-sm); --btn-size: 40px; }
+.ffc-iconbtn--square { --btn-radius: var(--radius-sm); --btn-size: var(--tap-min); }
 .ffc-iconbtn--ghost { --btn-bg: transparent; --btn-border: transparent; --btn-fg: var(--text-muted); box-shadow: none; }
 .ffc-iconbtn--on { --btn-bg: var(--current); --btn-border: var(--current); --btn-fg: var(--ff-navy); }
 .ffc-iconbtn[aria-disabled='true'] { opacity: var(--opacity-disabled); cursor: default; }
@@ -137,7 +137,7 @@
 }
 .ffc-zoom button {
   position: relative;
-  width: 40px; height: 40px;
+  width: var(--tap-min); height: var(--tap-min);
   display: flex; align-items: center; justify-content: center;
   border: 0; background: none; padding: 0;
   color: var(--text-strong);
@@ -177,69 +177,322 @@
 
 /* ===== Panel ==============================================================
    One component, two variants, chosen by viewport. Shared anatomy:
-   header (32px category badge · title · subtitle · close/back) → scrolling
-   body → optional footer.
 
-     bottom  below 1024px  full width on phone, 560 max centred on tablet, grip
-     right   1024px and up floating, 20px inset, persistent
+     handle (bottom only) -> header (back row, title line, close)
+       -> scrolling body -> optional footer (the ItemPager)
+
+     bottom  below 1024px  full width on phone, 560 max centred on tablet
+     right   1024px and up floating beside the map, persistent
 
    The bottom variant is role="dialog": hidden (not merely translated) when
    closed so it leaves the tab order, Esc closes it, focus returns to the pin.
+   useMapView is told how much of the right edge the docked panel covers, so
+   the festival is fitted into what remains and nothing hides behind it.
+
+   Tokens: every colour, space and motion value below is a component token
+   defined on .ffc-panel and pointing at a semantic one -- the same shape as
+   the chip and the buttons. Retune the sheet here, not at its call sites.
+   One name per part, used the same way in the markup, the CSS, the tests and
+   the design-system page: handle · header · titleline · badge · title · sub ·
+   body · footer · close · back, and the content components ListRow,
+   ScheduleRow, DayHeading, BoothRow, ArtistLine and ItemPager.
 ========================================================================== */
 .ffc-panel {
   --panel-bg: var(--surface-chrome-solid);
+  --panel-fg: var(--text-body);
+  --panel-title: var(--text-strong);
+  --panel-muted: var(--text-muted);
+  --panel-rule: var(--sand-100);
   --panel-radius: var(--radius-lg);
+  --panel-shadow: var(--shadow-sheet);
+  --panel-pad: var(--space-4);
+  --panel-motion: var(--motion-panel);
+  --panel-accent: var(--cat-booth);   /* bullets, unless the body names the colour of what you opened (--sheet-accent) */
   display: flex; flex-direction: column;
   background: var(--panel-bg);
-  color: var(--text-body);
+  color: var(--panel-fg);
   font: var(--weight-medium) var(--text-lg)/1.45 var(--font-ui);
 }
-.ffc-panel__grip { width: 38px; height: 4px; border-radius: 3px; background: var(--border-subtle); margin: var(--space-1) auto var(--space-3); }
-.ffc-panel__head { display: flex; align-items: flex-start; gap: var(--space-3); padding: 0 var(--space-4); }
-.ffc-panel__badge { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
-.ffc-panel__title { margin: 0; font: var(--weight-black) var(--text-2xl)/1.2 var(--font-ui); color: var(--text-strong); }
-.ffc-panel__sub { margin: 2px 0 0; font-size: var(--text-xs); color: var(--text-muted); }
-.ffc-panel__body { flex: 1; overflow-y: auto; padding: var(--space-3) var(--space-4) var(--space-5); }
-.ffc-panel__foot { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--sand-100); font-size: var(--text-xs); color: var(--text-muted); }
 
+/* ---- Anatomy classes (documented in design-system.html) ------------------- */
+.ffc-panel__badge { width: 32px; height: 32px; flex: 0 0 32px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
+.ffc-panel__title { margin: 0; font: var(--weight-black) var(--text-2xl)/1.2 var(--font-ui); color: var(--panel-title); }
+.ffc-panel__sub { font-size: var(--text-xs); color: var(--panel-muted); margin: 2px 0 var(--space-3); padding-left: 44px; }
+.ffc-panel__body { flex: 1; overflow-y: auto; padding: var(--space-3) var(--panel-pad) var(--space-5); }
+
+/* ---- Bottom variant ------------------------------------------------------- */
 .ffc-panel--bottom {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
   max-height: var(--sheet-max-height);
+  padding: 0;
   border-radius: var(--panel-radius) var(--panel-radius) 0 0;
-  box-shadow: var(--shadow-sheet);
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
   transform: translateY(100%);
-  transition: transform var(--motion-panel) var(--ease);
+  /* Closed means GONE, not merely pushed off-screen: visibility flips after
+     the slide finishes, so the animation still plays and a keyboard user
+     never tabs into an invisible dialog. max-height is animated for the
+     peek <-> full detent change (B3). */
+  visibility: hidden;
+  transition: transform var(--panel-motion) var(--ease), max-height var(--panel-motion) var(--ease), visibility 0s var(--panel-motion);
 }
-.ffc-panel--bottom[data-open='true'] { transform: translateY(0); }
-/* Only the body scrolls. The sheet's own top row -- grip and close -- stays
-   where it is while a long sheet (a stage lineup, the food list) scrolls
-   under it; it used to scroll away with the content (Ernest, 9/22). The
-   sheet is a column flex box, so the body takes the height that is left and
-   scrolls inside it; min-height: 0 is what lets a flex child shrink below
-   its content. Every sheet built on .ffc-panel--bottom gets this. */
-.ffc-panel--bottom { overflow: hidden; }
-.ffc-panel--bottom .panel-scroll, .ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.ffc-panel--bottom[data-open='true'] {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform var(--panel-motion) var(--ease), max-height var(--panel-motion) var(--ease), visibility 0s;
+}
+/* Mid-swap: drop out of the way so the next sheet can rise in its place. The
+   content changes while this is off screen (see DetailSheet). Accelerating
+   out, the standard ease back in -- about 0.39s door to door. */
+.ffc-panel--bottom[data-open='true'][data-phase='out'] {
+  transform: translateY(100%);
+  transition: transform var(--motion-sheet-out) var(--ease-in);
+}
 .ffc-panel--bottom[hidden] { display: none; }        /* out of the tab order when closed */
+/* Tablet: still a sheet, but capped and centred rather than spanning a 1023px
+   screen edge to edge. */
 @media (min-width: 768px) {
   .ffc-panel--bottom { left: 50%; right: auto; width: min(560px, 100%); transform: translate(-50%, 100%); }
   .ffc-panel--bottom[data-open='true'] { transform: translate(-50%, 0); }
-}
-.ffc-panel--right {
-  position: absolute; top: var(--space-5); right: var(--space-5); bottom: var(--space-5);
-  width: var(--panel-width); z-index: 6;
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-panel);
+  .ffc-panel--bottom[data-open='true'][data-phase='out'] { transform: translate(-50%, 100%); }
 }
 
-/* ===== Panel content blocks =============================================== */
-.ffc-dayheading { margin: var(--space-4) 0 var(--space-2); font: var(--weight-black) var(--text-md)/1.2 var(--font-ui); color: var(--text-strong); }
-.ffc-schedulerow { display: flex; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--sand-100); }
-.ffc-schedulerow__time { flex: 0 0 72px; font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--text-muted); }
-.ffc-schedulerow__act { font-size: var(--text-md); color: var(--text-body); }
+/* Only the body scrolls. The handle, the title line (with the close) and the
+   footer stay where they are while a long sheet -- a stage lineup, the food
+   list -- scrolls under them (Ernest, 9/22). The sheet is a column flex box,
+   so the body takes the height that is left and scrolls inside it;
+   min-height: 0 is what lets a flex child shrink below its content. The sheet
+   has no padding of its own: the body pads itself, so the footer can run edge
+   to edge. With a footer the body needs no home-bar clearance (the footer has
+   it); without one it carries it. */
+.ffc-panel--bottom .ffc-panel__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; width: 100%; padding: var(--space-2) var(--panel-pad) max(var(--space-5), env(safe-area-inset-bottom)); }
+.ffc-panel--bottom[data-footer='true'] .ffc-panel__body { padding-bottom: var(--space-4); }
+/* A booth's detail never gets shorter than --sheet-detail-min-height (B2), so
+   the footer does not move while paging. */
+.ffc-panel--bottom[data-view='detail']:not([data-detent='peek']) { min-height: var(--sheet-detail-min-height); }
+/* While there is a stack (an area's list, or a booth pushed from it) the sheet is
+   one fixed frame: the height of the list, whichever level you are on. */
+.ffc-panel--bottom[data-stack='true'] { height: var(--sheet-max-height); }
+/* Peek (B3): the title row plus a line or two. max-height, not height: the
+   sheet still sizes to its content, a peek is just a lower ceiling. */
+.ffc-panel--bottom[data-detent='peek'][data-peekable='true'] { max-height: calc(var(--sheet-peek-height) + env(safe-area-inset-bottom)); }
+
+/* The handle: a thin strip at the top, kept for resizing and for screen
+   readers. A 44px band (--tap-min, it is a control) holding a 4px bar. It is a
+   button -- tap cycles peek <-> full -- so the browser's button look goes.
+   touch-action: none so a drag is ours rather than the browser's scroll. */
+.ffc-panel__handle {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  width: 100%; height: var(--tap-min);
+  border: 0; background: none; padding: 0; margin: 0; font: inherit;
+  touch-action: none; cursor: grab;
+}
+.ffc-panel__handle:active { cursor: grabbing; }
+.ffc-panel__handle-bar { width: 38px; height: 4px; background: var(--border-subtle); border-radius: 3px; }
+.ffc-panel__handle:active .ffc-panel__handle-bar { background: var(--panel-muted); }
+.ffc-panel__handle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; border-radius: var(--panel-radius); }
+
+/* ---- Docked (right) variant ----------------------------------------------
+   The host is positioned over the full-bleed map; the panel fills it. Header
+   and legend are pinned; only the middle scrolls -- a directory this long
+   would otherwise carry its own key off the bottom of the screen. */
+.ff-screen.docked .sheetwrap {
+  position: absolute; top: var(--space-5); right: var(--space-5); bottom: var(--space-5);
+  width: var(--panel-width); z-index: 6;
+}
+.ffc-panel--right {
+  --panel-radius: var(--radius-md);
+  --panel-shadow: var(--shadow-panel);
+  position: static; height: 100%;
+  border: 1px solid var(--border-control);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--panel-shadow);
+  overflow: hidden;
+}
+.ffc-panel--right .ffc-panel__body { flex: 1; overflow-y: auto; padding: var(--panel-pad); }
+.ffc-panel--right .ffc-panel__masthead { padding: var(--panel-pad) var(--panel-pad) var(--space-3); border-bottom: 1px solid var(--panel-rule); }
+.ffc-panel--right .ffc-panel__masthead h3 { margin: 0; font-weight: var(--weight-black); font-size: var(--text-2xl); color: var(--panel-title); }
+.ffc-panel--right .ffc-panel__masthead p { margin: 2px 0 0; font-size: var(--text-xs); color: var(--panel-muted); }
+/* The key is pinned while the directory scrolls under it (the footer, shared
+   with the ItemPager's): it needs to read as a layer on top rather than as
+   the last row of the list. Shadow casts upward, against the scroll. */
+/* Back, not close. The docked panel is furniture -- there is nothing to
+   dismiss, only a list to return to. */
+.ffc-panel--right .ffc-panel__back {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: var(--tap-min);
+  padding: 0 var(--panel-pad);
+  border: 0; border-bottom: 1px solid var(--panel-rule);
+  background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--panel-muted);
+}
+.ffc-panel--right .ffc-panel__back:hover { color: var(--panel-title); }
+.ffc-panel--right .ffc-panel__back:active { background: var(--surface-pressed); }
+.ffc-panel--right .ffc-panel__back span { font-size: 20px; line-height: 1; }
+
+/* ---- Navigation: push and pop inside ONE sheet (B1, round 2) --------------
+   An area's booth list and a booth opened from it are two levels of one stack
+   in one sheet; the sheet never closes and reopens, and its HEIGHT does not
+   change while there is a stack (data-stack holds it at --sheet-max-height, the
+   list's own height; the booth's content scrolls if it must).
+     push  (list -> booth)  the booth slides in from the RIGHT; the list shifts
+                            a little left underneath it
+     pop   (back)           the booth slides out to the RIGHT; the list returns
+                            at its previous scroll position
+   Both layers are on screen for one --panel-motion: the arriving layer is in the
+   flow, the leaving one is a still copy laid over it. The close, the handle and
+   the footer are not layers, so they stay put. Reduced motion: a crossfade, no
+   slide. The header's own height eases between its two lengths (JS). */
+.ffc-panel { --panel-push-shift: 30%; }
+.ffc-panel__stage { position: relative; overflow: hidden; }
+.ffc-panel__bodystage { flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.ffc-panel__layer { background: var(--panel-bg); }
+.ffc-panel__layer--out { position: absolute; inset: 0; pointer-events: none; }
+.ffc-panel__body.ffc-panel__layer--out { overflow: hidden; }
+.ffc-panel__layer[data-dir] { position: relative; }
+.ffc-panel__layer--out[data-dir] { position: absolute; }
+.ffc-panel__layer[data-dir='forward']:not(.ffc-panel__layer--out) { z-index: 2; box-shadow: var(--shadow-push); animation: ffc-push-in var(--panel-motion) var(--ease) both; }
+.ffc-panel__layer--out[data-dir='forward'] { z-index: 1; animation: ffc-push-under var(--panel-motion) var(--ease) both; }
+.ffc-panel__layer--out[data-dir='back'] { z-index: 2; box-shadow: var(--shadow-push); animation: ffc-pop-out var(--panel-motion) var(--ease) both; }
+.ffc-panel__layer[data-dir='back']:not(.ffc-panel__layer--out) { z-index: 1; animation: ffc-pop-under var(--panel-motion) var(--ease) both; }
+@keyframes ffc-push-in { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes ffc-push-under { from { transform: none; opacity: 1; } to { transform: translateX(calc(var(--panel-push-shift) * -1)); opacity: 0.4; } }
+@keyframes ffc-pop-out { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes ffc-pop-under { from { transform: translateX(calc(var(--panel-push-shift) * -1)); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes ffc-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ffc-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ffc-panel__layer[data-dir]:not(.ffc-panel__layer--out) { animation: ffc-fade-in 120ms linear both; box-shadow: none; }
+  .ffc-panel__layer--out[data-dir] { animation: ffc-fade-out 120ms linear both; box-shadow: none; }
+}
+.ffc-panel__stage .ffc-panel__layer { box-shadow: none; }   /* the shadow is the body's: the header is one strip */
+/* The ItemPager's footer arrives and leaves with the push and pop. */
+.ffc-panel__footer:has(.ffc-itempager) { animation: ffc-fade-in var(--panel-motion) var(--ease) both; }
+.ffc-panel__footer[data-leaving='true'] { animation: ffc-fade-out var(--panel-motion) var(--ease) both; }
+.ffc-panel__back {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: var(--tap-min);
+  padding: 0 var(--panel-pad);
+  border: 0; border-bottom: 1px solid var(--panel-rule);
+  background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--panel-muted);
+}
+.ffc-panel--right .ffc-panel__back:hover { color: var(--panel-title); }
+.ffc-panel--right .ffc-panel__back:active { background: var(--surface-pressed); }
+.ffc-panel--right .ffc-panel__back span { font-size: 20px; line-height: 1; }
+
+/* ---- Navigation: list -> detail inside ONE sheet (B1) ----------------------
+   An area's booth list and a booth opened from it are two levels of one stack
+   in one sheet. Crossing between them plays a short horizontal slide (in from
+   the right going deeper, from the left coming back); the sheet itself never
+   closes and reopens. The back row names the level you came from. Reduced
+   motion: a crossfade, no slide. */
+.ffc-panel__view { --view-slide: var(--space-6); }
+.ffc-panel__view[data-dir='forward'] { animation: ffc-view-in-forward var(--panel-motion) var(--ease) both; }
+.ffc-panel__view[data-dir='back'] { animation: ffc-view-in-back var(--panel-motion) var(--ease) both; }
+@keyframes ffc-view-in-forward { from { opacity: 0; transform: translateX(var(--view-slide)); } to { opacity: 1; transform: none; } }
+@keyframes ffc-view-in-back { from { opacity: 0; transform: translateX(calc(var(--view-slide) * -1)); } to { opacity: 1; transform: none; } }
+@keyframes ffc-view-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ffc-panel__view[data-dir='forward'], .ffc-panel__view[data-dir='back'] { animation: ffc-view-fade 120ms linear both; }
+}
+.ffc-panel__back {
+  display: flex; align-items: center; gap: var(--space-2);
+  min-height: var(--tap-min); margin: 0 calc(var(--space-1) * -1); padding: 0 var(--space-1);
+  border: 0; background: none; cursor: pointer; text-align: left;
+  font: var(--weight-bold) var(--text-md)/1 var(--font-ui); color: var(--panel-muted);
+}
+.ffc-panel__back span { font-size: 20px; line-height: 1; }
+.ffc-panel__back:active { color: var(--panel-title); }
+:where(.ffc-panel__back):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* ---- Header: ONE fixed layout for every state (B4, round 2) -----------------
+   Handle strip, then the header row directly under it. The close x is ALWAYS
+   top-right on that first row, in every sheet state: a control does not move
+   when the content does. Apple's HIG puts the dismiss control in the sheet's
+   top-trailing corner and navigation (back) in the top-leading corner, on the
+   same row; this is that. What the first row holds changes:
+     top-level sheet   the title line (badge, title) at the left, close at the right
+     pushed detail     "< back" at the left, close at the right; the booth's own
+                       title line sits on the row below
+   The header is pinned (only the body scrolls) and a drag that starts on it
+   pulls the sheet like the handle does, so touch-action: none. */
+.ffc-panel__header { position: relative; flex: none; padding: 0 var(--panel-pad); touch-action: none; }
+.ffc-panel:not(.ffc-panel--right) .ffc-panel__header .ffc-panel__titleline { padding-right: var(--tap-min); }
+/* Docked: the header sits directly under the back row, so it needs its own air. */
+.ffc-panel--right .ffc-panel__header { padding-top: var(--space-3); }
+.ffc-panel__close {
+  position: absolute; top: 0; right: var(--space-2); z-index: 1;
+  width: var(--tap-min); height: var(--tap-min);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  color: var(--panel-muted);
+}
+.ffc-panel__close:active { color: var(--panel-title); }
+:where(.ffc-panel__close):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; border-radius: var(--radius-pill); }
+.ffc-panel__titleline { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); margin: 0 0 2px; }
+
+/* ---- Footer: pinned, above the home bar ------------------------------------ */
+.ffc-panel__footer {
+  --footer-pad: var(--space-3);
+  flex: none;
+  padding: var(--footer-pad) var(--panel-pad) calc(var(--footer-pad) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--panel-rule);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-foot);
+  position: relative; z-index: 1;
+}
+
+/* ---- Content components ------------------------------------------------------
+   DayHeading, ScheduleRow, ListRow, BoothRow, ArtistLine: each named once, the
+   same in the markup, here, the tests and design-system.html. */
+/* Day headings are sentence case, not uppercase-tracked. */
+.ffc-dayheading { font-size: var(--text-md); font-weight: var(--weight-black); color: var(--panel-title, var(--text-strong)); margin: var(--space-4) 0 var(--space-1); }
+.ffc-schedulerow { display: flex; gap: var(--space-3); padding: var(--space-2) var(--space-1); border-bottom: 1px solid var(--panel-rule, var(--sand-100)); font-size: var(--text-md); }
+.ffc-schedulerow:last-child { border-bottom: none; }
+/* Times are always readable on one line (C2): the time is a FIXED-WIDTH column
+   that never wraps -- nowrap, tabular numerals, sized to the longest range in
+   the lineup ("11:30–12:30") -- and the artist takes the width that is left
+   and wraps if it has to. The old 72px column was narrower than a range like
+   "10:30–11:30", which broke at its dash. */
+.ffc-schedulerow { --time-col: 6.5em; }
+.ffc-schedulerow__time { flex: 0 0 var(--time-col); white-space: nowrap; color: var(--panel-muted, var(--text-muted)); font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
+.ffc-schedulerow__act { flex: 1; min-width: 0; color: var(--panel-fg, var(--text-body)); }
 .ffc-schedulerow--open .ffc-schedulerow__act { color: var(--text-muted); font-style: italic; }
-.ffc-listrow { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-2) 0; font-size: var(--text-md); }
-.ffc-listrow__bullet { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; margin-top: 7px; background: var(--bullet, var(--cat-booth)); }
+.ffc-listrow { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2) var(--space-1); font-size: var(--text-md); color: var(--panel-fg, var(--text-body)); line-height: 1.45; }
+/* Bullets take the colour of the thing you opened -- see accentFor() in
+   DetailSheet. Teal for everything read as a fourth brand colour rather than as
+   part of the place you tapped. */
+.ffc-listrow__bullet { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--sheet-accent, var(--bullet, var(--panel-accent, var(--cat-booth)))); margin-top: 7px; }
+
+/* ArtistLine: the name hierarchy (C1) -- the ARTIST is the primary line,
+   heavier and a type step up (--text-lg over --text-md); the business or title
+   under it is secondary: smaller (--text-sm), regular weight, muted. Used by
+   BoothRow (the area list) and by a booth's detail. */
+.ffc-artistline { --artist-name-size: var(--text-lg); --artist-name-weight: var(--weight-bold); --artist-name-color: var(--panel-title, var(--text-strong));
+  --artist-sub-size: var(--text-sm); --artist-sub-weight: var(--weight-medium); --artist-sub-color: var(--panel-muted, var(--text-muted)); display: block; line-height: 1.3; }
+.ffc-artistline__name { display: block; font-size: var(--artist-name-size); font-weight: var(--artist-name-weight); color: var(--artist-name-color); }
+.ffc-artistline__sub { display: block; font-style: normal; font-size: var(--artist-sub-size); font-weight: var(--artist-sub-weight); color: var(--artist-sub-color); }
+
+/* BoothRow: number, then who is in it. Each row is a real button that opens
+   the booth, sized to the tap minimum -- 64 of them on the park sheet is a long
+   scroll, but it is the only way to find an artist by name. */
+.ffc-boothlist { margin-top: var(--space-1); }
+.ffc-boothrow { display: flex; align-items: baseline; gap: var(--space-3); width: 100%; min-height: var(--tap-min); padding: var(--space-2) var(--space-1); border: 0; border-bottom: 1px solid var(--panel-rule, var(--sand-100)); background: none; text-align: left; cursor: pointer; font: inherit; color: var(--panel-fg, var(--text-body)); }
+.ffc-boothrow:last-child { border-bottom: none; }
+.ffc-boothrow:active { background: var(--surface-pressed); }
+.ffc-boothrow--static { cursor: default; }
+.ffc-boothrow__number { flex: 0 0 36px; font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--panel-title, var(--text-strong)); font-variant-numeric: tabular-nums; }
+.ffc-boothrow__who { flex: 1; min-width: 0; font-size: var(--text-md); line-height: 1.3; }
+.ffc-boothrow__who > em { display: block; font-style: normal; font-weight: var(--weight-medium); font-size: var(--text-sm); color: var(--panel-muted, var(--text-muted)); }   /* a Sponsor row: no artist, one quiet line */
+.ffc-boothrow__star { flex: 0 0 auto; align-self: center; }
+
+/* ---- Directory (the docked panel's resting state) -------------------------- */
+.dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }
+.dir-title { margin: 0 0 var(--space-1); font: var(--weight-black) var(--text-xs)/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.ffc-poirow__badge { width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; }
+
+/* ===== PoiRow (the docked directory's rows) ================================ */
 .ffc-poirow { position: relative; display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--tap-min); padding: var(--space-2) 0; border: 0; background: none; text-align: left; cursor: pointer; }
 .ffc-poirow:active { background: var(--surface-pressed); }
 .ffc-poirow__text { flex: 1; min-width: 0; }
@@ -247,14 +500,19 @@
 .ffc-poirow__text em { display: block; font-style: normal; font-size: var(--text-xs); color: var(--text-muted); margin-top: 1px; }
 .ffc-poirow__go { flex: 0 0 auto; font-size: 18px; line-height: 1; color: var(--text-muted); }
 
-/* ===== Stepper ============================================================
-   Prev / position / next. The map is too dense to tap a booth reliably, so this
-   is the primary way through a row; the carets are full touch targets.
+/* ===== ItemPager ==========================================================
+   Previous / "11 of 139" / next, in the sheet's footer. It pages BETWEEN items
+   (booths in a run); it is not a -/+ value control. The map is too dense to tap a booth reliably, so this is
+   the primary way through a row; both buttons are full --tap-min targets.
+   The rule it carries: a control you tap repeatedly never moves. So it lives
+   in .ffc-panel__footer, pinned to the bottom of the sheet above the home
+   bar, and the sheet holds --sheet-detail-min-height so short entries do not
+   change the sheet's height under your thumb.
 ========================================================================== */
-.ffc-step { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-1); background: var(--sand-100); border-radius: var(--radius-md); }
-.ffc-step button { position: relative; width: var(--tap-min); height: 40px; flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
-.ffc-step button:active { background: var(--surface-pressed); }
-.ffc-step__pos { flex: 1; text-align: center; font: var(--weight-bold) var(--text-xs)/1.3 var(--font-ui); color: var(--text-muted); }
+.ffc-itempager { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.ffc-itempager button { position: relative; width: var(--tap-min); height: var(--tap-min); flex: 0 0 var(--tap-min); border: 1px solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface-chrome-solid); color: var(--text-strong); font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+.ffc-itempager button:active { background: var(--surface-pressed); }
+.ffc-itempager__pos { flex: 1; text-align: center; font: var(--weight-bold) var(--text-md)/1.3 var(--font-ui); color: var(--text-strong); font-variant-numeric: tabular-nums; }
 
 /* ===== Legend + scale bar (desktop) ======================================= */
 .ffc-legend { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--surface-chrome); border: 1px solid var(--border-control); border-radius: var(--radius-md); box-shadow: var(--shadow-control); }

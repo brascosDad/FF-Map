@@ -5,14 +5,24 @@
 // list moved here rather than being typed out a second time.
 //
 // `mk` is where the area's marker sits, in map units -- it doubles as the point
-// the panel centres on. `shortName` is how the panel lists the run; `label` is
-// the only text the map itself still draws for it. `blobs`/`clip` are drawing concerns the panel ignores.
+// the panel centres on.
+//
+// Two names per run, and each has one job:
+//   `name`       the sheet's title when the run's list is open
+//                ("In the Park · Art Market")
+//   `shortName`  how the directory lists the run AND what the back row says
+//                above a booth opened from its list ("‹ In the Park"): the
+//                previous screen, short, the way an iOS back button names it.
+//                Never derive it from `name` in a component; give the record
+//                one here.
+// `label` is the only text the map itself still draws for it. `blobs`/`clip`
+// are drawing concerns the panel ignores.
 // `range` is read off the booths themselves (data/booths.js, generated from
 // the chair's sheet), so it cannot say 82-142 after the sheet says 82-139.
 // The K stack counts toward the in-park run but sits in its own stack by
 // Kidlandia, drawn by MapCanvas outside these areas.
 import { BLOBS } from '../assets/basemapBlobs';
-import { BOOTHS } from './booths';
+import { BOOTHS, UNNUMBERED } from './booths';
 
 /** "82–139" for a run: its booths are in number order, so first and last. */
 export const span = (booths) => `${booths[0].n}–${booths[booths.length - 1].n}`;
@@ -51,3 +61,16 @@ export const AREAS = [
  * markets line straight streets, so their squares are already square to them.
  */
 export const BOOTH_ANGLE = { cpd: 0, mcl: 0, spine: 36, kid: 0, food: 21 };
+
+/**
+ * Is this booth one of the area's own list rows? The area's numbered booths, the
+ * Kidlandia stack (it counts toward the in-park run) and the unnumbered spots
+ * grouped under it. A booth tapped on the map keeps the area's list under it
+ * (a back row to it) only when it is in the open area (round 2, item 4.5).
+ */
+export function boothInArea(booth, area) {
+  if (!booth || !area) return false;
+  if (area.booths.some((b) => b.id === booth.id)) return true;
+  if (area.id === 'spine' && BOOTHS.kid.some((b) => b.id === booth.id)) return true;
+  return UNNUMBERED.some((u) => u.id === booth.id && u.group === area.id);
+}
