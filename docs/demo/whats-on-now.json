@@ -1,0 +1,97 @@
+[
+  {
+    "type": "ask",
+    "text": "npm run ds -- components",
+    "detail": "The ff-design-system MCP server failed to connect this session (its SDK was missing from node_modules), so every question went through the CLI, which reads the same manifest."
+  },
+  {
+    "type": "answer",
+    "text": "ScheduleRow (.ffc-schedulerow) and DayHeading (.ffc-dayheading) are the stage lineup; Panel (.ffc-panel) is the sheet. No existing component for a 'now' card.",
+    "detail": "13 components; used: Panel, ScheduleRow, DayHeading."
+  },
+  {
+    "type": "ask",
+    "text": "npm run ds -- rules",
+    "detail": null
+  },
+  {
+    "type": "answer",
+    "text": "coral-is-now: coral (--current) means \"now\" and nothing else. token-first: no raw values, a missing value becomes a token. one-name: a new component gets a row in the Names table and .ffc-<name>.",
+    "detail": "tap-floor, close-top-right and step-in-step-out don't apply: the card has no controls and adds no layer."
+  },
+  {
+    "type": "ask",
+    "text": "npm run ds -- component ScheduleRow; npm run ds -- component DayHeading; npm run ds -- component Panel",
+    "detail": null
+  },
+  {
+    "type": "answer",
+    "text": "ScheduleRow: parts __time and __act; tokens --text-md, --text-sm, --text-muted, --text-body, --space-1..3; time column never wraps. DayHeading: sentence case, never uppercase. Panel knobs to inherit: --panel-bg, --panel-title, --panel-muted, --panel-rule. The stage sheet is state S3.",
+    "detail": "The card reuses the act/time split and the nowrap tabular time from ScheduleRow, and reads the Panel knobs so it follows the sheet's colours."
+  },
+  {
+    "type": "ask",
+    "text": "npm run ds -- tokens current; npm run ds -- tokens coral",
+    "detail": null
+  },
+  {
+    "type": "answer",
+    "text": "--current = var(--ff-coral) = #E89370, semantic: 'Coral is \"now\" and nothing else'.",
+    "detail": "#E89370 on white is under 4.5:1, so coral is the bar and the dot, never the text."
+  },
+  {
+    "type": "ask",
+    "text": "npm run ds -- tokens radius | surface | border | text- | weight | space",
+    "detail": null
+  },
+  {
+    "type": "answer",
+    "text": "--radius-md 14px, --radius-pill; --border-control; --text-strong (navy), --text-muted; --text-lg 15, --text-md 14, --text-sm 13, --text-xs 12 (the floor); --weight-bold; --space-1 4px, --space-2 8px, --space-3 12px.",
+    "detail": "No new semantic value needed. Two component knobs added: --now-accent -> --current, --now-bar -> --space-1."
+  },
+  {
+    "type": "ask",
+    "text": "printf '.x{border-left:4px solid #E89370;color:var(--nope)} .ffc-foo{}' | npm run ds -- check -",
+    "detail": "How check treats a raw value, an unknown token and an unknown class, before writing any CSS."
+  },
+  {
+    "type": "answer",
+    "text": "#E89370 -> use var(--current); --nope is not a token; .ffc-foo is not in the Names table.",
+    "detail": null
+  },
+  {
+    "type": "build",
+    "text": "src/whatsOnNow.js: whatsOnNow(stage, date, { days, timeZone }) -> playing | between | before | null",
+    "detail": "Parses the lineup's own strings ('Noon–1:00', '1:30–2:30'; 10 and 11 are morning, 1 to 9 afternoon) on festival time (America/New_York). No copy of the schedule."
+  },
+  {
+    "type": "build",
+    "text": "src/data/festival.js: days, timeZone, showNow: false",
+    "detail": "days is the dates line written for code, keyed like the lineups in stages.json."
+  },
+  {
+    "type": "build",
+    "text": "src/components/WhatsOnNow.jsx + .ffc-whatsonnow in components.css; StageSchedule renders it only when FESTIVAL.showNow",
+    "detail": "Rows: 'Now' (coral dot) + 'Up next'; 'Between sets' + 'Up next'; 'First up' before the day's first act; nothing outside the music hours."
+  },
+  {
+    "type": "check",
+    "text": "npm run ds -- check (the .ffc-whatsonnow block)",
+    "detail": "Before registering: 7 one-name errors (the new class), 0 token errors. After the Names row and the manifest entry: no findings."
+  },
+  {
+    "type": "build",
+    "text": "design-system.html: Names row and §4 'defined but not shipped' row; manifest.json 1.1.0 with a hand-written flag field, so ds component WhatsOnNow says 'not shipped: behind FESTIVAL.showNow'; CHANGELOG 1.1.0",
+    "detail": "npm run test:ds: 20/20. npm run manifest -- --check: current."
+  },
+  {
+    "type": "check",
+    "text": "npm run test:e2e",
+    "detail": "491/491 behaviour checks pass, 9 of them new (the logic on a fixed clock against the real lineup, and no card in the built app while the flag is off). Visual: 3 advisory diffs, text anti-aliasing only (this container vs the CI runner); no baseline should change."
+  },
+  {
+    "type": "build",
+    "text": "docs/demo/whats-on-now-390.png via scripts/demo-whats-on-now.mjs",
+    "detail": "Vite dev, flag flipped in flight for that page only, clock held at Sat 2026-10-03 1:45 PM: Now Run Katie Run 1:30–2:30, Up next 3:00–4:00."
+  }
+]

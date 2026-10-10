@@ -9,7 +9,9 @@
  * LOOKS right -- that stays a human job, and the cases marked "?" in TESTING.md
  * are design decisions, not assertions.
  */
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { FESTIVAL } from '../src/data/festival.js';
+import { whatsOnNow } from '../src/whatsOnNow.js';
 import { BASE, launch } from './lib/browser.mjs';
 
 const OUT = '.e2e-out';
@@ -2309,6 +2311,42 @@ await safe('analytics: a pan is not engagement', async () => {
   check('analytics: no tag is direct', open?.source === 'direct', JSON.stringify(open));
   check('analytics: pan only -> engaged false, nothing opened', sum && sum.engaged === false && sum.pins_opened === 0 && sum.categories === '',
     JSON.stringify(sum));
+  await p.close();
+});
+
+// WhatsOnNow: defined, not shipped. The logic is checked against the real
+// lineup on a fixed festival clock; the built app must not show the card.
+await safe('whats on now', async () => {
+  const stages = JSON.parse(readFileSync(new URL('../src/data/stages.json', import.meta.url), 'utf8')).stages;
+  const main = stages.find((s) => s.id === 'main-stage'), acoustic = stages.find((s) => s.id === 'acoustic-stage');
+  const at = (stage, iso) => whatsOnNow(stage, new Date(iso), FESTIVAL);
+  const act = (slot) => slot && slot.act;
+  const playing = at(main, '2026-10-03T13:45:00-04:00');
+  check('whats on now: Sat 1:45 PM, Main Stage -> Run Katie Run now, the 3:00 act next',
+    playing?.state === 'playing' && act(playing.now) === 'Run Katie Run' && playing.next?.time === '3:00–4:00', JSON.stringify(playing));
+  const gap = at(main, '2026-10-04T12:10:00-04:00');
+  check('whats on now: Sun 12:10 PM, Main Stage -> CJ Jones on (Noon is 12:00)', gap?.state === 'playing' && act(gap.now) === 'CJ Jones & The Spirit Bones', JSON.stringify(gap));
+  const between = at(acoustic, '2026-10-03T13:50:00-04:00');
+  check('whats on now: Sat 1:50 PM, Acoustic -> between sets, Veronika Jackson next',
+    between?.state === 'between' && between.now === null && act(between.next) === 'Veronika Jackson', JSON.stringify(between));
+  const before = at(main, '2026-10-03T09:00:00-04:00');
+  check('whats on now: Sat 9 AM -> first up is the opener', before?.state === 'before' && act(before.next) === 'Atlanta Irish Dance', JSON.stringify(before));
+  const last = at(main, '2026-10-04T18:30:00-04:00');
+  check('whats on now: the last set has no next', last?.state === 'playing' && last.next === null, JSON.stringify(last));
+  check('whats on now: nothing after the music, or on a day off',
+    at(main, '2026-10-03T19:00:00-04:00') === null && at(main, '2026-10-05T13:00:00-04:00') === null);
+  check('whats on now: read on festival time, not the machine\'s (17:45 UTC is 1:45 PM in Atlanta)',
+    act(at(main, '2026-10-03T17:45:00Z')?.now) === 'Run Katie Run');
+
+  check('whats on now: FESTIVAL.showNow is false', FESTIVAL.showNow === false);
+  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+  await p.clock.setFixedTime(new Date('2026-10-03T13:45:00-04:00'));
+  await p.goto(BASE, { waitUntil: 'load' });
+  await p.waitForTimeout(600);
+  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(800);
+  const open = await p.locator('.ffc-panel .ffc-dayheading').count();
+  check('whats on now: the stage sheet opens and has no card while the flag is off',
+    open > 0 && (await p.locator('.ffc-whatsonnow').count()) === 0, `${open} day headings`);
   await p.close();
 });
 

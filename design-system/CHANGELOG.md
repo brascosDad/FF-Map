@@ -4,6 +4,21 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.1.0 — 2026-10-09
+
+Minor: one component added, defined but not shipped. Nothing the visitor sees
+changes.
+
+- **Component: WhatsOnNow** (`.ffc-whatsonnow`, `src/components/WhatsOnNow.jsx`):
+  the act playing now on one stage and the next one, at the top of the stage
+  sheet, read from `stages.json` on festival time. Behind
+  `FESTIVAL.showNow: false`; listed in design-system.html §4.
+- **Tokens: +2 component knobs**, `--now-accent` (→ `--current`) and `--now-bar`
+  (→ `--space-1`). No new semantic or primitive values.
+- **Rule `coral-is-now`** names WhatsOnNow as coral's one defined use.
+- **Manifest:** a component can carry a hand-written `flag`, the switch it
+  waits behind; `shipped` is then false, and `ds component` says so.
+
 ## 1.0.0 — 2026-10-09
 
 The system, written down as data an agent can ask questions of. Nothing the

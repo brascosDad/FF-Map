@@ -30,7 +30,7 @@ const wrap = (s, indent = '  ', width = 92) => {
 function formatComponent(c) {
   if (c.error) return [c.error, c.didYouMean?.length ? `did you mean ${c.didYouMean.join(', ')}?` : '', c.names ? `components: ${c.names.join(', ')}` : ''].filter(Boolean).join('\n');
   const out = [
-    `${c.name}   ${c.cssClass}   ${c.file || '(defined in CSS only, not used in the app)'}`,
+    `${c.name}   ${c.cssClass}   ${c.file || '(defined in CSS only, not used in the app)'}${c.flag ? `   (not shipped: behind ${c.flag})` : ''}`,
     wrap(c.description),
     '',
     `states     ${c.states.length ? c.states.map((s) => `${s.id} ${s.name}`).join(' · ') : 'none in docs/interaction-states.md'}`,

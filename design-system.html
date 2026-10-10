@@ -151,6 +151,7 @@
       <tr><th>ScheduleRow · DayHeading · ListRow</th><td>Rows in a stage lineup, its day headings, and a bulleted line.</td></tr>
       <tr><th>PoiRow</th><td>A row in the docked directory.</td></tr>
       <tr><th>Legend</th><td>The colour key.</td></tr>
+      <tr><th>WhatsOnNow</th><td>The act on one stage now and the one after it, at the top of a stage sheet. Defined, not shipped (behind <code>FESTIVAL.showNow</code>).</td></tr>
     </table>
   </div>
 
@@ -372,6 +373,7 @@
   <div class="card">
     <table>
       <tr><th>--current</th><td>Coral, reserved for "now". Its only uses were you-are-here and locate-on; GPS was cut for time. Kept so "now" has a colour when something needs one — never as decoration.</td></tr>
+      <tr><th>WhatsOnNow</th><td><code>.ffc-whatsonnow</code>: the act playing now on one stage and the next one, from <code>stages.json</code>, read on festival time (<code>FESTIVAL.days</code>, <code>FESTIVAL.timeZone</code>), at the top of the stage sheet. The one legitimate use of <code>--current</code>: a coral bar and a coral dot beside "Now" while an act is on; the words stay navy. States: <b>Now + Up next</b>, <b>Between sets + Up next</b>, <b>First up</b> before the day's first act; nothing outside the music hours. Built and tested, <b>behind <code>FESTIVAL.showNow: false</code></b> — set it to <code>true</code> in <code>src/data/festival.js</code> to ship it. Picture at 390px: <code>docs/demo/whats-on-now-390.png</code>.</td></tr>
       <tr><th>.ffc-scale</th><td>Scale bar. Needs one confirmed ground measurement before it can carry a number.</td></tr>
       <tr><th>--font-display</th><td>Brice Black, the brand lockup's face and the same one the Fall Fest site uses. Shipping since 12 Sep, self-hosted as woff2. Only the Black weight loads — the masthead is the only thing that uses it.</td></tr>
     </table>
