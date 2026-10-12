@@ -10,7 +10,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { buildManifest, readDeprecation, readNames, serialise } from './build-manifest.mjs';
 import { parseCss, subjectClasses } from './lib/css.mjs';
-import { checkCss, getComponent, getRules, getTokens, loadManifest } from './lib/query.mjs';
+import { checkCss, checkPalette, getComponent, getRules, getTokens, loadManifest } from './lib/query.mjs';
+import { contrastOnWhite, oklch } from './lib/color.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = join(ROOT, 'design-system/cli.mjs');
@@ -129,6 +130,40 @@ test('governance: the changelog\'s newest entry is the manifest\'s version', () 
   assert.equal(log.match(/^## (\d+\.\d+\.\d+)/m)[1], m.version);
 });
 
+// ---- the palette -----------------------------------------------------------------
+
+test('color: OKLCH and contrast match known values', () => {
+  assert.equal(Math.round(oklch('#FFFFFF').l), 100);
+  assert.equal(Math.round(oklch('#000000').l), 0);
+  assert.equal(oklch('#808080').c < 1e-4, true);
+  assert.equal(Math.round(oklch('#FF0000').l * 10) / 10, 62.8);
+  assert.equal(Math.round(oklch('#FF0000').h), 29);
+  assert.equal(Math.round(contrastOnWhite('#000000') * 10) / 10, 21);
+  assert.equal(Math.round(contrastOnWhite('#767676') * 100) / 100, 4.54);
+});
+
+test('category-lightness-band: every --pin-* hue sits in OKLCH L 57–67, coral above 70, each pin 3:1 under white', () => {
+  // Straight from tokens.css, not the manifest, so a stale manifest cannot hide a bad value.
+  const tokens = parseCss(readFileSync(join(ROOT, 'src/styles/tokens.css'), 'utf8')).filter((d) => !d.media && d.prop.startsWith('--')).map((d) => ({ name: d.prop, value: d.value }));
+  const r = checkPalette({ tokens });
+  const table = [...r.pins, r.coral].filter(Boolean).map((t) => `${t.name} ${t.value} L ${t.l} ${t.contrastOnWhite}:1`).join('; ');
+  assert.ok(r.pins.length >= 10, `expected the ten category pins, measured: ${table}`);
+  assert.ok(r.ok, `${r.findings.map((f) => f.message).join('\n')}\nmeasured: ${table}`);
+});
+
+test('check-palette fails a pin outside the band, coral at 70 or below, and a pin under 3:1', () => {
+  const r = checkPalette({ tokens: [
+    { name: '--pin-merch', value: '#9E3F94' }, { name: '--pin-pale', value: '#F0E0A0' }, { name: '--ff-coral', value: '#C84B46' },
+    { name: '--cat-booth', value: '#47597A' }, { name: '--pin-size', value: '40px' } ] });
+  assert.equal(r.ok, false);
+  const msgs = r.findings.map((f) => f.message).join('\n');
+  assert.match(msgs, /--pin-merch #9E3F94 is OKLCH L 52\.7, outside the category band 57–67/);
+  assert.match(msgs, /--pin-pale #F0E0A0 is 1\.\d+:1 under the white glyph, below 3:1/);
+  assert.match(msgs, /--ff-coral #C84B46 \(--current\) is OKLCH L 58\.1, not above 70/);
+  assert.deepEqual(r.exempt.map((t) => t.name), ['--cat-booth']);
+  assert.deepEqual(r.pins.map((t) => t.name).sort(), ['--pin-merch', '--pin-pale']);
+});
+
 // ---- door 1: the CLI ------------------------------------------------------------
 
 test('cli: component ItemPager', () => {
@@ -165,6 +200,14 @@ test('cli: check exits 0 for the passing snippet', () => {
   assert.match(r.stdout, /no findings/);
 });
 
+test('cli: check-palette lists every pin with its OKLCH L and contrast, and exits 0 inside the band', () => {
+  const r = cli(['check-palette']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /--pin-merch\s+#AF4FA5\s+L 57\.9/);
+  assert.match(r.stdout, /--ff-coral\s+#E89370\s+L 74\.3/);
+  assert.match(r.stdout, /ok: every pin is in the band/);
+});
+
 // ---- door 2: the MCP server -----------------------------------------------------
 
 async function withClient(fn) {
@@ -177,9 +220,9 @@ const call = async (client, name, args = {}) => {
   return { isError: !!r.isError, data: JSON.parse(r.content[0].text) };
 };
 
-test('mcp: the five tools are listed, each with a schema', () => withClient(async (c) => {
+test('mcp: the six tools are listed, each with a schema', () => withClient(async (c) => {
   const { tools } = await c.listTools();
-  assert.deepEqual(tools.map((t) => t.name), ['list_components', 'get_component', 'get_tokens', 'get_rules', 'check_css']);
+  assert.deepEqual(tools.map((t) => t.name), ['list_components', 'get_component', 'get_tokens', 'get_rules', 'check_css', 'check_palette']);
   for (const t of tools) { assert.ok(t.description); assert.equal(t.inputSchema.type, 'object'); }
 }));
 
@@ -192,6 +235,7 @@ test('mcp: same answers as the CLI for the same questions', () => withClient(asy
   assert.deepEqual((await call(c, 'get_rules', { id: 'close-top-right' })).data, cliJson(['rules', 'close-top-right']));
   assert.deepEqual((await call(c, 'check_css', { css: FAILS })).data, cliJson(['check'], FAILS));
   assert.deepEqual((await call(c, 'check_css', { css: PASSES })).data, cliJson(['check'], PASSES));
+  assert.deepEqual((await call(c, 'check_palette')).data, cliJson(['check-palette']));
 }));
 
 test('mcp: check_css fails one snippet and passes the other', () => withClient(async (c) => {

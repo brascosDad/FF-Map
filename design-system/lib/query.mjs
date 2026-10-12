@@ -7,6 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { contrastOnWhite, oklch, parseHex } from './color.mjs';
 import { parseCss, varRefs } from './css.mjs';
 
 export const MANIFEST_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'manifest.json');
@@ -207,4 +208,42 @@ export function checkCss(m, css) {
   findings.sort((a, b) => a.line - b.line);
   const errors = findings.filter((f) => f.severity === 'error').length;
   return { ok: errors === 0, errors, warnings: findings.length - errors, findings };
+}
+
+// ---- the palette ---------------------------------------------------------------
+
+/** Rule category-lightness-band, as numbers. */
+export const PALETTE = { pinMin: 57, pinMax: 67, coralAbove: 70, minContrast: 3 };
+const r1 = (x) => Math.round(x * 10) / 10;
+const r2 = (x) => Math.round(x * 100) / 100;
+
+/**
+ * Every --pin-* colour and --ff-coral, measured as the eye sees it (OKLCH) and
+ * against the white glyph, and checked against category-lightness-band. Takes
+ * anything with a tokens list of { name, value, resolved? } (the manifest, or
+ * tokens.css parsed), so the test and both doors measure the same way.
+ */
+export function checkPalette(m) {
+  const hex = (t) => t.resolved || t.value;
+  const colour = (t) => t.tier !== 'component' && parseHex(hex(t));
+  const measure = (t) => {
+    const o = oklch(hex(t));
+    return { name: t.name, value: hex(t), l: r1(o.l), c: Math.round(o.c * 1000) / 1000, h: r1(o.h), contrastOnWhite: r2(contrastOnWhite(hex(t))) };
+  };
+  const pins = m.tokens.filter((t) => t.name.startsWith('--pin-') && colour(t)).map(measure).sort((a, b) => a.l - b.l);
+  const coral = m.tokens.filter((t) => t.name === '--ff-coral' && colour(t)).map(measure)[0] || null;
+  const exempt = m.tokens.filter((t) => t.name.startsWith('--cat-') && colour(t)).map(measure);
+  const { pinMin, pinMax, coralAbove, minContrast } = PALETTE;
+  const findings = [];
+  for (const p of pins) {
+    if (p.l < pinMin || p.l > pinMax) findings.push({ token: p.name, rule: 'category-lightness-band',
+      message: `${p.name} ${p.value} is OKLCH L ${p.l}, outside the category band ${pinMin}–${pinMax}` });
+    if (p.contrastOnWhite < minContrast) findings.push({ token: p.name, rule: 'category-lightness-band',
+      message: `${p.name} ${p.value} is ${p.contrastOnWhite}:1 under the white glyph, below ${minContrast}:1` });
+  }
+  if (!coral) findings.push({ token: '--ff-coral', rule: 'category-lightness-band', message: '--ff-coral is not a hex colour in tokens.css' });
+  else if (coral.l <= coralAbove) findings.push({ token: coral.name, rule: 'category-lightness-band',
+    message: `--ff-coral ${coral.value} (--current) is OKLCH L ${coral.l}, not above ${coralAbove}: "now" could be read as a category` });
+  if (!pins.length) findings.push({ token: '--pin-*', rule: 'category-lightness-band', message: 'no --pin-* colours found' });
+  return { ok: findings.length === 0, band: PALETTE, pins, coral, exempt, findings };
 }

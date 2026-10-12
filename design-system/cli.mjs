@@ -6,17 +6,19 @@
 //   tokens [filter]               tokens, or those matching a name / tier / note / value / component
 //   rules [id]                    the standing rules
 //   check [file | -]              a CSS snippet (a file, or stdin) against the rules; exit 1 on an error
+//   check-palette                 every pin colour and coral in OKLCH, against category-lightness-band; exit 1 outside it
 //
 // --json prints exactly what the MCP server returns for the same question.
 import { readFileSync } from 'node:fs';
-import { checkCss, getComponent, getRules, getTokens, listComponents, loadManifest } from './lib/query.mjs';
+import { checkCss, checkPalette, getComponent, getRules, getTokens, listComponents, loadManifest } from './lib/query.mjs';
 
 const USAGE = `usage: npm run ds -- <command> [--json]
   components            list every component
   component <Name>      one component (ItemPager, FilterChip, ...)
   tokens [filter]       tokens; filter by name, tier, note, value or component
   rules [id]            the standing rules
-  check [file | -]      check a CSS snippet (file, or stdin) against the rules`;
+  check [file | -]      check a CSS snippet (file, or stdin) against the rules
+  check-palette         measure every pin colour and coral (OKLCH L, contrast under white)`;
 
 const wrap = (s, indent = '  ', width = 92) => {
   const out = []; let line = '';
@@ -73,6 +75,22 @@ function formatCheck(r, name) {
   return [`${name}: ${r.errors} error${r.errors === 1 ? '' : 's'}, ${r.warnings} warning${r.warnings === 1 ? '' : 's'}`, ...lines].join('\n');
 }
 
+function formatPalette(r) {
+  const row = (t) => `  ${t.name.padEnd(16)} ${t.value}  L ${t.l.toFixed(1).padStart(4)}  C ${t.c.toFixed(3)}  H ${t.h.toFixed(1).padStart(5)}  ${t.contrastOnWhite.toFixed(2)}:1`;
+  const b = r.band;
+  return [
+    `category-lightness-band: pins OKLCH L ${b.pinMin}–${b.pinMax}, coral above ${b.coralAbove}, every pin ${b.minContrast}:1 under white`,
+    'pins, darkest first (contrast is under the white glyph)',
+    ...r.pins.map(row),
+    'coral (--current)',
+    ...(r.coral ? [row(r.coral)] : ['  (missing)']),
+    'exempt: structural neutrals',
+    ...r.exempt.map(row),
+    '',
+    r.ok ? 'ok: every pin is in the band and coral is above it' : `${r.findings.length} problem${r.findings.length === 1 ? '' : 's'}:\n${r.findings.map((f) => `  - ${f.message}`).join('\n')}`,
+  ].join('\n');
+}
+
 async function stdin() {
   const chunks = [];
   for await (const c of process.stdin) chunks.push(c);
@@ -114,6 +132,11 @@ switch (cmd) {
     if (!result.ok) status = 1;
     break;
   }
+  case 'check-palette':
+    result = checkPalette(m);
+    text = formatPalette(result);
+    if (!result.ok) status = 1;
+    break;
   default:
     console.error(USAGE);
     process.exit(cmd ? 2 : 0);
