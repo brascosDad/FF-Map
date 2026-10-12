@@ -14,6 +14,15 @@ import { FESTIVAL } from '../src/data/festival.js';
 import { whatsOnNow } from '../src/whatsOnNow.js';
 import { BASE, launch } from './lib/browser.mjs';
 
+// A colour token as the browser reports a computed fill: 'rgb(r, g, b)'. Read
+// from tokens.css, so a check that a pin wears its token follows the token
+// when the palette changes, and still fails when the pin wears something else.
+const TOKENS_CSS = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8');
+const tokenRgb = (name) => {
+  const hex = TOKENS_CSS.match(new RegExp(`${name}:\\s*#([0-9A-Fa-f]{6})`))[1];
+  return `rgb(${[0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`;
+};
+
 const OUT = '.e2e-out';
 mkdirSync(OUT, { recursive: true });
 
@@ -671,7 +680,7 @@ for (const [name, w, h, zooms] of [['iPhone SE', 375, 667, 2], ['mobile', 390, 8
              size: circle ? Math.round(circle.getBoundingClientRect().width) : 0 };
   });
   check(`${name}: the info booth draws as a pin in --pin-info`,
-    info.present && info.fill === 'rgb(64, 126, 181)' && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
+    info.present && info.fill === tokenRgb('--pin-info') && info.glyph && info.rects === 0 && Math.abs(info.size - 40) <= 1.5,
     info.present ? `${info.fill}, glyph ${info.glyph}, ${info.rects} rects, ${info.size}px` : 'no info pin drawn');
   // Desktop measures the drawn 40px circles (the visible gap); the phone
   // measures the 44px tap circles, the direct children of the pin groups.
@@ -1974,7 +1983,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
   await p.locator('g.ffc-pin--kids').first().click();
   await p.waitForTimeout(400);
   const bullet = await p.locator('.ffc-listrow__bullet').first().evaluate((e) => getComputedStyle(e).backgroundColor);
-  check('mobile: sheet bullets match the pin you opened', bullet === 'rgb(194, 91, 126)', `${bullet} (want --pin-kids)`);
+  check('mobile: sheet bullets match the pin you opened', bullet === tokenRgb('--pin-kids'), `${bullet} (want --pin-kids, ${tokenRgb('--pin-kids')})`);
   await p.close();
 }
 
@@ -2032,7 +2041,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
     })(),
   }));
   check('print: the sheet renders at /?print=1', pr.page);
-  check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === 'rgb(64, 126, 181)' && pr.infoGlyph && pr.infoRects === 0,
+  check('print: the info booth is a pin in --pin-info, not a square', pr.infoPin === tokenRgb('--pin-info') && pr.infoGlyph && pr.infoRects === 0,
     `${pr.infoPin}, glyph ${pr.infoGlyph}, ${pr.infoRects} rects`);
   // 58 + 27 + 54 numbered art booths, 11 Kidlandia. The two unnumbered
   // squares print with no number, and since 9/23 neither do the 16 food

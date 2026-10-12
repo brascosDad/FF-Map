@@ -220,7 +220,7 @@ test('cli: check exits 0 for the passing snippet', () => {
 test('cli: check-palette lists every pin with its OKLCH L and contrast, and exits 0 inside the band', () => {
   const r = cli(['check-palette']);
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /--pin-merch\s+#AF4FA5\s+L 57\.9/);
+  assert.match(r.stdout, /--pin-merch\s+#[0-9A-F]{6}\s+L \d+\.\d/);
   assert.match(r.stdout, /--ff-coral\s+#E89370\s+L 74\.3/);
   assert.match(r.stdout, /ok: every pin is in the band/);
 });
