@@ -9,7 +9,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { checkCss, getComponent, getRules, getTokens, listComponents, loadManifest } from '../lib/query.mjs';
+import { checkCss, checkPalette, getComponent, getRules, getTokens, listComponents, loadManifest } from '../lib/query.mjs';
 
 const str = (description) => ({ type: 'string', description });
 
@@ -34,7 +34,7 @@ export const TOOLS = [
   },
   {
     name: 'get_rules',
-    description: 'The standing rules (no-overlap, tap-floor, token-first, one-name, close-top-right, step-in-step-out, paper-number-row, coral-is-now): statement, why, what enforces it, and where in CLAUDE.md it comes from. Optionally one rule by id.',
+    description: 'The standing rules (no-overlap, tap-floor, token-first, one-name, close-top-right, step-in-step-out, paper-number-row, coral-is-now, category-lightness-band): statement, why, what enforces it, and where in CLAUDE.md it comes from. Optionally one rule by id.',
     inputSchema: { type: 'object', properties: { id: str('Optional rule id, e.g. no-overlap') }, additionalProperties: false },
     run: (m, a) => getRules(m, a.id),
   },
@@ -43,6 +43,12 @@ export const TOOLS = [
     description: 'Check a CSS snippet against the design system before it is written to a file. Reports raw hex or px values where a token exists, tokens that do not exist, and class names not in the Names table. Each finding cites the rule id. ok is false if there is any error.',
     inputSchema: { type: 'object', properties: { css: str('The CSS to check: rules, or a bare list of declarations') }, required: ['css'], additionalProperties: false },
     run: (m, a) => checkCss(m, a.css),
+  },
+  {
+    name: 'check_palette',
+    description: 'Measure every category pin colour (--pin-*) and coral (--ff-coral, which --current points at) the way the eye sees it: OKLCH lightness, chroma and hue, and contrast under the white glyph. Checks rule category-lightness-band: pins between OKLCH L 57 and 67, coral above 70, every pin at least 3:1; --cat-* neutrals are listed as exempt. ok is false with the measured values in each finding.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    run: (m) => checkPalette(m),
   },
 ];
 

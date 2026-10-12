@@ -270,6 +270,10 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   bold) say "Featured artist". No colour of its own — coral is "now", navy is selected, pin hues
   are categories — so the star is the whole signal and reads at 5.5pt. `FESTIVAL.featured` takes
   any number of booths.
+- **Category pins sit in one lightness band** (10/12): every `--pin-*` hue between OKLCH lightness
+  57 and 67, coral (`--current`) above 70, each pin at least 3:1 under its white glyph; the
+  structural neutrals (`--cat-*`) are exempt. Measured as the eye sees it (OKLCH, not HSL) by
+  `npm run ds -- check-palette`, and `npm run test:ds` fails outside it (rule `category-lightness-band`).
 - **Candler Park Dr numbers sit beside their squares on paper**, outward (west column left, east
   column right), level, `NUMBER_GAP` off the edge; the park rows and McLendon keep numbers above
   the square, where they have room (9/21).
