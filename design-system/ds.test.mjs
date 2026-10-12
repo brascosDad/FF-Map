@@ -165,7 +165,35 @@ test('category-lightness-band: every --pin-* hue sits in OKLCH L 57–67, coral 
   const r = checkPalette({ tokens });
   const table = [...r.pins, r.coral].filter(Boolean).map((t) => `${t.name} ${t.value} L ${t.l} ${t.contrastOnWhite}:1`).join('; ');
   assert.ok(r.pins.length >= 10, `expected the ten category pins, measured: ${table}`);
-  assert.ok(r.ok, `${r.findings.map((f) => f.message).join('\n')}\nmeasured: ${table}`);
+  const band = r.findings.filter((f) => f.rule === 'category-lightness-band');
+  assert.equal(band.length, 0, `${band.map((f) => f.message).join('\n')}\nmeasured: ${table}`);
+});
+
+/** tokens.css as { name, value } rows, read straight from the file, not the manifest. */
+const tokensCss = () => parseCss(readFileSync(join(ROOT, 'src/styles/tokens.css'), 'utf8')).filter((d) => !d.media && d.prop.startsWith('--')).map((d) => ({ name: d.prop, value: d.value }));
+
+test("category-hue-spacing: no two category pins closer than ΔE 9.5 in OKLab, beverage exempt as drinks' darker step", () => {
+  const r = checkPalette({ tokens: tokensCss() });
+  const spacing = r.findings.filter((f) => f.rule === 'category-hue-spacing');
+  const pairs = paletteDistances({ tokens: tokensCss() }).pairs.filter((p) => !p.exempt).slice(0, 5).map((p) => `${p.a}/${p.b} ${p.deltaE}`).join(', ');
+  assert.equal(spacing.length, 0, `${spacing.map((f) => f.message).join('\n')}\nclosest: ${pairs}`);
+  assert.ok(r.closest.deltaE >= 9.5);
+});
+
+test('category-hue-spacing fails the palette before this PR, naming each pair and its distance', () => {
+  const before = { '--pin-food': '#C97636', '--pin-drinks': '#B78B34', '--pin-restroom': '#3D9E6E', '--pin-water': '#3D8FA4', '--pin-info': '#407EB5',
+    '--pin-stage': '#8F71B7', '--pin-kids': '#C25B7E', '--pin-firstaid': '#C84B46', '--pin-merch': '#AF4FA5', '--pin-beverage': '#997332', '--ff-coral': '#E89370' };
+  const r = checkPalette({ tokens: Object.entries(before).map(([name, value]) => ({ name, value })) });
+  assert.equal(r.ok, false);
+  const msgs = r.findings.filter((f) => f.rule === 'category-hue-spacing').map((f) => f.message);
+  assert.deepEqual(r.findings.filter((f) => f.rule === 'category-hue-spacing').map((f) => f.pair.join(' ')), [
+    '--pin-food --pin-drinks', '--pin-water --pin-info', '--pin-kids --pin-firstaid', '--pin-kids --pin-merch', '--pin-stage --pin-merch']);
+  assert.match(msgs[0], /--pin-food #C97636 and --pin-drinks #B78B34 are ΔE 5\.9 apart \(hue gap 25\.9°\), closer than 9\.5/);
+  assert.match(msgs[1], /--pin-water #3D8FA4 and --pin-info #407EB5 are ΔE 6\.3 apart/);
+  // Beverage beside drinks is the declared family: never a finding.
+  assert.ok(!r.findings.some((f) => f.pair?.includes('--pin-beverage')));
+  // The same palette passes the lightness band: the two rules are separate questions.
+  assert.equal(r.findings.filter((f) => f.rule === 'category-lightness-band').length, 0);
 });
 
 test('check-palette fails a pin outside the band, coral at 70 or below, and a pin under 3:1', () => {
@@ -222,7 +250,8 @@ test('cli: check-palette lists every pin with its OKLCH L and contrast, and exit
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /--pin-merch\s+#[0-9A-F]{6}\s+L \d+\.\d/);
   assert.match(r.stdout, /--ff-coral\s+#E89370\s+L 74\.3/);
-  assert.match(r.stdout, /ok: every pin is in the band/);
+  assert.match(r.stdout, /ok: every pin is in the band, coral is above it, and every pair is far enough apart/);
+  assert.match(r.stdout, /closest pair: --pin-\w+ \/ --pin-\w+, ΔE \d+\.\d/);
 });
 
 // ---- door 2: the MCP server -----------------------------------------------------

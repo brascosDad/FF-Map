@@ -82,6 +82,7 @@ function formatPalette(r) {
   const b = r.band;
   return [
     `category-lightness-band: pins OKLCH L ${b.pinMin}–${b.pinMax}, coral above ${b.coralAbove}, every pin ${b.minContrast}:1 under white`,
+    `category-hue-spacing: no two pins closer than ΔE ${b.minDeltaE} (beverage exempt as drinks' darker step)`,
     'pins, darkest first (contrast is under the white glyph)',
     ...r.pins.map(row),
     'coral (--current)',
@@ -89,7 +90,8 @@ function formatPalette(r) {
     'exempt: structural neutrals',
     ...r.exempt.map(row),
     '',
-    r.ok ? 'ok: every pin is in the band and coral is above it' : `${r.findings.length} problem${r.findings.length === 1 ? '' : 's'}:\n${r.findings.map((f) => `  - ${f.message}`).join('\n')}`,
+    ...(r.closest ? [`closest pair: ${r.closest.a} / ${r.closest.b}, ΔE ${r.closest.deltaE} (hue gap ${r.closest.hueGap}°)`, ''] : []),
+    r.ok ? 'ok: every pin is in the band, coral is above it, and every pair is far enough apart' : `${r.findings.length} problem${r.findings.length === 1 ? '' : 's'}:\n${r.findings.map((f) => `  - ${f.message}`).join('\n')}`,
   ].join('\n');
 }
 

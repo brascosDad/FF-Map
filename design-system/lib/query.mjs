@@ -212,14 +212,15 @@ export function checkCss(m, css) {
 
 // ---- the palette ---------------------------------------------------------------
 
-/** Rule category-lightness-band, as numbers. */
-export const PALETTE = { pinMin: 57, pinMax: 67, coralAbove: 70, minContrast: 3 };
+/** Rules category-lightness-band and category-hue-spacing, as numbers. */
+export const PALETTE = { pinMin: 57, pinMax: 67, coralAbove: 70, minContrast: 3, minDeltaE: 9.5 };
 const r1 = (x) => Math.round(x * 10) / 10;
 const r2 = (x) => Math.round(x * 100) / 100;
 
 /**
  * Every --pin-* colour and --ff-coral, measured as the eye sees it (OKLCH) and
- * against the white glyph, and checked against category-lightness-band. Takes
+ * against the white glyph, and checked against category-lightness-band; every
+ * pair of pins checked against category-hue-spacing. Takes
  * anything with a tokens list of { name, value, resolved? } (the manifest, or
  * tokens.css parsed), so the test and both doors measure the same way.
  */
@@ -245,7 +246,11 @@ export function checkPalette(m) {
   else if (coral.l <= coralAbove) findings.push({ token: coral.name, rule: 'category-lightness-band',
     message: `--ff-coral ${coral.value} (--current) is OKLCH L ${coral.l}, not above ${coralAbove}: "now" could be read as a category` });
   if (!pins.length) findings.push({ token: '--pin-*', rule: 'category-lightness-band', message: 'no --pin-* colours found' });
-  return { ok: findings.length === 0, band: PALETTE, pins, coral, exempt, findings };
+  const { pairs } = paletteDistances(m);
+  const spaced = pairs.filter((p) => !p.exempt);
+  for (const p of spaced.filter((x) => x.deltaE < PALETTE.minDeltaE)) findings.push({ token: p.a, pair: [p.a, p.b], rule: 'category-hue-spacing',
+    message: `${p.a} ${p.aValue} and ${p.b} ${p.bValue} are ΔE ${p.deltaE} apart (hue gap ${p.hueGap}°), closer than ${PALETTE.minDeltaE}: with lightness held, hue is the only cue between them` });
+  return { ok: findings.length === 0, band: PALETTE, pins, coral, exempt, closest: spaced[0] || null, findings };
 }
 
 /** Colours the category pins have to stay clear of: the lawns' teal, coral ("now"), the structural slates. */
