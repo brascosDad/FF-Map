@@ -161,14 +161,31 @@ five pairs.
    distance, and reports the closest pair.
 6. 1.3.0, the CHANGELOG entry, one sentence in design-system.html §1, and the baselines.
 
-## Baselines
+## Baselines: all three changed, pin colours only
 
-The `update-visual-baselines` label is on the PR, so the runner re-renders all three. See
-*Baseline pixels* below for what changed. **The diff gate cannot see this change either.** Locally,
-pixelmatch at threshold 0.1 marks none of the re-coloured pins: the diff images show only text
-anti-aliasing, the same 1,148 / 6,854 / 68,595 px as on `main`. A whole-palette change passes the
-gate unnoticed, which is stronger evidence for the threshold question still open from PR #18. **Not
-changed here**, as the brief says.
+The `update-visual-baselines` label made the runner re-render, and it committed all three
+(a34e14b). I diffed every pixel against the previous baselines. For each changed pixel, the check
+was whether its change equals some fraction of one pin's old → new shift, which is what a pin fill,
+or a translucent tint of one over the map, does:
+
+| Baseline | Changed px | A pin colour, solid or as a tint | ≤3/255 rounding at edges | Unexplained |
+|---|---|---|---|---|
+| `phone-open` | 6,835 | 5,368 (stage, food, kids) | 1,465 | 2 |
+| `sheet-open` | 5,352 | 5,067 (food, kids, stage) | 282 | 3 |
+| `print` | 12,616 | 11,039 (food, water, restroom, kids, stage, info, first aid) | 1,575 | 2 |
+
+- The tints are the food-court area tint, the food-stall squares and the Kidlandia booth squares,
+  all drawn from `--pin-food` / `--pin-kids`.
+- The 2–3 unexplained pixels per image sit where two re-coloured things meet (a pin's edge over the
+  food tint), so they are a blend of two pin colours.
+- Merch shows up only as rounding: its own change is 1/255 per channel.
+- Drinks does not change. Nothing outside the pin colours moved.
+
+**The diff gate cannot see this change either.** Locally, pixelmatch at threshold 0.1 marks none of
+the re-coloured pins: the diff images show only this container's text anti-aliasing, the same
+1,148 / 6,854 / 68,595 px as on `main`. A whole-palette change passes the gate unnoticed, which is
+stronger evidence for the threshold question still open from PR #18. **Not changed here**, as the
+brief says.
 
 ## Questions, decisions, things to know
 
