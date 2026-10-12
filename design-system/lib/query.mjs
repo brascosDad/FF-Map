@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { contrastOnWhite, oklch, parseHex } from './color.mjs';
+import { contrastOnWhite, deltaE, hueGap, oklch, parseHex } from './color.mjs';
 import { parseCss, varRefs } from './css.mjs';
 
 export const MANIFEST_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'manifest.json');
@@ -246,4 +246,33 @@ export function checkPalette(m) {
     message: `--ff-coral ${coral.value} (--current) is OKLCH L ${coral.l}, not above ${coralAbove}: "now" could be read as a category` });
   if (!pins.length) findings.push({ token: '--pin-*', rule: 'category-lightness-band', message: 'no --pin-* colours found' });
   return { ok: findings.length === 0, band: PALETTE, pins, coral, exempt, findings };
+}
+
+/** Colours the category pins have to stay clear of: the lawns' teal, coral ("now"), the structural slates. */
+export const RESERVED = ['--ff-teal', '--ff-coral', '--cat-booth', '--cat-utility'];
+/** A pin that is a declared step of another pin's hue, not a hue of its own. */
+export const HUE_FAMILY = { '--pin-beverage': '--pin-drinks' };
+
+/**
+ * Every pair of category pins (--pin-* colours), closest first: ΔE in OKLab
+ * (×100, the lightness scale) and the plain hue angle between them. A pair
+ * with a declared family member (HUE_FAMILY) is marked exempt. Also where
+ * each reserved colour falls: its nearest pins.
+ */
+export function paletteDistances(m) {
+  const hex = (t) => t.resolved || t.value;
+  const pins = m.tokens.filter((t) => t.name.startsWith('--pin-') && t.tier !== 'component' && parseHex(hex(t))).map((t) => ({ name: t.name, value: hex(t) }));
+  const pairs = [];
+  for (let i = 0; i < pins.length; i++) for (let j = i + 1; j < pins.length; j++) {
+    const [a, b] = [pins[i], pins[j]];
+    const exempt = Boolean(HUE_FAMILY[a.name] || HUE_FAMILY[b.name]);
+    pairs.push({ a: a.name, b: b.name, aValue: a.value, bValue: b.value, deltaE: r1(deltaE(a.value, b.value)), hueGap: r1(hueGap(a.value, b.value)), ...(exempt ? { exempt: true } : {}) });
+  }
+  pairs.sort((x, y) => x.deltaE - y.deltaE || x.a.localeCompare(y.a));
+  const reserved = RESERVED.map((name) => m.tokens.find((t) => t.name === name)).filter((t) => t && parseHex(hex(t))).map((t) => {
+    const o = oklch(hex(t));
+    const nearest = pins.map((p) => ({ pin: p.name, deltaE: r1(deltaE(hex(t), p.value)), hueGap: r1(hueGap(hex(t), p.value)) })).sort((x, y) => x.deltaE - y.deltaE).slice(0, 2);
+    return { name: t.name, value: hex(t), l: r1(o.l), c: Math.round(o.c * 1000) / 1000, h: r1(o.h), nearest };
+  });
+  return { family: HUE_FAMILY, pairs, reserved };
 }

@@ -7,10 +7,11 @@
 //   rules [id]                    the standing rules
 //   check [file | -]              a CSS snippet (a file, or stdin) against the rules; exit 1 on an error
 //   check-palette                 every pin colour and coral in OKLCH, against category-lightness-band; exit 1 outside it
+//   palette-distances             every pair of category pins, closest first: ΔE (OKLab) and hue gap; and the reserved colours
 //
 // --json prints exactly what the MCP server returns for the same question.
 import { readFileSync } from 'node:fs';
-import { checkCss, checkPalette, getComponent, getRules, getTokens, listComponents, loadManifest } from './lib/query.mjs';
+import { checkCss, checkPalette, getComponent, paletteDistances, getRules, getTokens, listComponents, loadManifest } from './lib/query.mjs';
 
 const USAGE = `usage: npm run ds -- <command> [--json]
   components            list every component
@@ -18,7 +19,8 @@ const USAGE = `usage: npm run ds -- <command> [--json]
   tokens [filter]       tokens; filter by name, tier, note, value or component
   rules [id]            the standing rules
   check [file | -]      check a CSS snippet (file, or stdin) against the rules
-  check-palette         measure every pin colour and coral (OKLCH L, contrast under white)`;
+  check-palette         measure every pin colour and coral (OKLCH L, contrast under white)
+  palette-distances     every pair of category pins, closest first (ΔE in OKLab, hue gap)`;
 
 const wrap = (s, indent = '  ', width = 92) => {
   const out = []; let line = '';
@@ -91,6 +93,19 @@ function formatPalette(r) {
   ].join('\n');
 }
 
+function formatDistances(r) {
+  const pair = (p) => `  ${p.a.padEnd(15)} ${p.b.padEnd(15)} ΔE ${p.deltaE.toFixed(1).padStart(5)}   hue gap ${p.hueGap.toFixed(1).padStart(5)}°${p.exempt ? '   (exempt: declared family)' : ''}`;
+  return [
+    'category pins, closest first (ΔE is OKLab distance ×100, on the lightness scale)',
+    ...r.pairs.map(pair),
+    '',
+    'reserved colours, and the pins nearest them',
+    ...r.reserved.map((x) => `  ${x.name.padEnd(15)} ${x.value}  L ${x.l.toFixed(1)}  H ${x.h.toFixed(1).padStart(5)}   ${x.nearest.map((n) => `${n.pin} ΔE ${n.deltaE.toFixed(1)}`).join(', ')}`),
+    '',
+    `declared families (exempt from hue spacing): ${Object.entries(r.family).map(([k, v]) => `${k} is a step of ${v}`).join('; ')}`,
+  ].join('\n');
+}
+
 async function stdin() {
   const chunks = [];
   for await (const c of process.stdin) chunks.push(c);
@@ -132,6 +147,10 @@ switch (cmd) {
     if (!result.ok) status = 1;
     break;
   }
+  case 'palette-distances':
+    result = paletteDistances(m);
+    text = formatDistances(result);
+    break;
   case 'check-palette':
     result = checkPalette(m);
     text = formatPalette(result);

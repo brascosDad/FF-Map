@@ -10,8 +10,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { buildManifest, readDeprecation, readNames, serialise } from './build-manifest.mjs';
 import { parseCss, subjectClasses } from './lib/css.mjs';
-import { checkCss, checkPalette, getComponent, getRules, getTokens, loadManifest } from './lib/query.mjs';
-import { contrastOnWhite, oklch } from './lib/color.mjs';
+import { checkCss, checkPalette, getComponent, paletteDistances, getRules, getTokens, loadManifest } from './lib/query.mjs';
+import { contrastOnWhite, deltaE, hueGap, oklch } from './lib/color.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = join(ROOT, 'design-system/cli.mjs');
@@ -140,6 +140,23 @@ test('color: OKLCH and contrast match known values', () => {
   assert.equal(Math.round(oklch('#FF0000').h), 29);
   assert.equal(Math.round(contrastOnWhite('#000000') * 10) / 10, 21);
   assert.equal(Math.round(contrastOnWhite('#767676') * 100) / 100, 4.54);
+});
+
+test('color: ΔE is 0 for one colour, 100 from black to white, symmetric; hue gap takes the short way round', () => {
+  assert.equal(deltaE('#AF4FA5', '#AF4FA5'), 0);
+  assert.equal(Math.round(deltaE('#000000', '#FFFFFF')), 100);
+  assert.equal(deltaE('#C97636', '#B78B34'), deltaE('#B78B34', '#C97636'));
+  assert.equal(Math.round(hueGap('#C25B7E', '#AF4FA5')), 29);
+});
+
+test('palette-distances: every pair of category pins once, closest first, beverage marked as drinks\' family', () => {
+  const r = paletteDistances(m);
+  const n = m.tokens.filter((t) => t.name.startsWith('--pin-') && t.tier !== 'component' && (t.resolved || t.value).startsWith('#')).length;
+  assert.equal(r.pairs.length, (n * (n - 1)) / 2);
+  for (let i = 1; i < r.pairs.length; i++) assert.ok(r.pairs[i - 1].deltaE <= r.pairs[i].deltaE);
+  assert.ok(r.pairs.filter((p) => p.exempt).every((p) => [p.a, p.b].includes('--pin-beverage')));
+  assert.deepEqual(r.reserved.map((x) => x.name), ['--ff-teal', '--ff-coral', '--cat-booth', '--cat-utility']);
+  assert.deepEqual(cliJson(['palette-distances']), r);
 });
 
 test('category-lightness-band: every --pin-* hue sits in OKLCH L 57–67, coral above 70, each pin 3:1 under white', () => {
