@@ -58,8 +58,8 @@ test('manifest: tokens carry a tier, and every tier is used', () => {
   assert.equal(m.tokens.find((t) => t.name === '--chip-bg').tier, 'component');
 });
 
-test('manifest: the eight starting rules are there, each with a reason, a source and an enforcer', () => {
-  assert.deepEqual(m.rules.map((r) => r.id), ['no-overlap', 'tap-floor', 'token-first', 'one-name', 'close-top-right', 'step-in-step-out', 'paper-number-row', 'coral-is-now']);
+test('manifest: the nine rules are there, each with a reason, a source and an enforcer', () => {
+  assert.deepEqual(m.rules.map((r) => r.id), ['no-overlap', 'tap-floor', 'token-first', 'one-name', 'close-top-right', 'step-in-step-out', 'paper-number-row', 'coral-is-now', 'category-lightness-band']);
   for (const r of m.rules) for (const k of ['statement', 'reason', 'source']) assert.ok(r[k], `${r.id}.${k}`);
   for (const r of m.rules) assert.ok(r.enforcedBy.length, `${r.id} is enforced by something, or by "review"`);
 });
@@ -146,7 +146,7 @@ test('cli: components, tokens [filter], rules', () => {
   assert.match(t.stdout, /--tap-min/);
   assert.doesNotMatch(t.stdout, /--ff-cream/);
   assert.equal(cliJson(['tokens']).count, m.tokens.length);
-  assert.equal(cliJson(['rules']).count, 8);
+  assert.equal(cliJson(['rules']).count, 9);
   assert.equal(cli(['component', 'pager']).status, 1);
   assert.equal(cli(['nope']).status, 2);
 });

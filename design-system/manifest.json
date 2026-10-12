@@ -117,17 +117,17 @@
     {
       "name": "--pin-merch",
       "tier": "primitive",
-      "value": "#9E3F94",
+      "value": "#AF4FA5",
       "pointsAt": [],
-      "note": "Merch is its own destination (the festival's own booth, at the park entrance), so it takes its own hue rather than the services neutral. Magenta sits in the widest open gap on the wheel: 40 degrees from the stage lavender on one side and the kids rose on the other. 5.4:1 under the white glyph.",
+      "note": "Merch is its own destination (the festival's own booth, at the park entrance), so it takes its own hue rather than the services neutral. Magenta sits in the widest open gap on the wheel: 40 degrees from the stage lavender on one side and the kids rose on the other. Lifted from #9E3F94 (OKLCH L 52.7, the darkest pin) into the category band at the same hue and chroma (10/12): OKLCH L 57.9, 4.68:1 under the white glyph.",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-beverage",
       "tier": "primitive",
-      "value": "#8A6521",
+      "value": "#997332",
       "pointsAt": [],
-      "note": "Beverage stations are not beer (Jess's 2026 plan draws them apart), so they take their own hue in the drinks family: the same amber, a step darker, so a cup beside a mug reads as two things. 6.4:1 under the white glyph.",
+      "note": "Beverage stations are not beer (Jess's 2026 plan draws them apart), so they take their own hue in the drinks family: the same amber, a step darker, so a cup beside a mug reads as two things. Lifted from #8A6521 (OKLCH L 53.2) into the category band at the same hue and chroma (10/12): OKLCH L 58.0 against drinks' 66.3, still a clear step darker; 4.33:1 under the white glyph.",
       "file": "src/styles/tokens.css"
     },
     {
@@ -2517,6 +2517,16 @@
         "review"
       ],
       "source": "CLAUDE.md › coral is \"now\""
+    },
+    {
+      "id": "category-lightness-band",
+      "statement": "Category pins sit between OKLCH lightness 57 and 67; coral (--current) sits above 70; structural neutrals (--cat-*) are exempt.",
+      "reason": "Pins read as one family that varies only by hue, and \"now\" can never be mistaken for a category.",
+      "enforcedBy": [
+        "ds: category-lightness-band: every --pin-* hue sits in OKLCH L 57–67, coral above 70, each pin 3:1 under white",
+        "ds: npm run ds -- check-palette (and the MCP tool check_palette) answers the same question"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Category pins sit in one lightness band"
     }
   ]
 }
