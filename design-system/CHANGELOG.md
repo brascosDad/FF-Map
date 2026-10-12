@@ -4,6 +4,26 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.2.0 — 2026-10-12
+
+Minor: two token values change and a rule is added. Merch pins (and the
+hidden beverage pins) draw lighter.
+
+- **Tokens: `--pin-merch` #9E3F94 → #AF4FA5, `--pin-beverage` #8A6521 →
+  #997332.** Same hue and chroma, lightness lifted into the band the other
+  eight pins already sit in. Measured in OKLCH (as the eye sees it, not HSL):
+  merch L 52.7 → 57.9 (5.85:1 → 4.68:1 under the white glyph), beverage
+  L 53.2 → 58.0 (5.30:1 → 4.33:1). Beverage stays a clear step darker than
+  drinks (L 66.3). The print sheet reads the same tokens; it has no values of
+  its own.
+- **Rule `category-lightness-band`**: category pins sit between OKLCH L 57 and
+  67, coral (`--current`) above 70, every pin at least 3:1 under white; the
+  `--cat-*` neutrals are exempt. Enforced by `npm run test:ds`.
+- **Query layer: `check-palette`** (`npm run ds -- check-palette`) and the MCP
+  tool `check_palette`, which measure every pin and coral and answer the rule.
+  The measurement is `design-system/lib/color.mjs` (hex → OKLCH, contrast
+  against white; no dependency).
+
 ## 1.1.0 — 2026-10-09
 
 Minor: one component added, defined but not shipped. Nothing the visitor sees
