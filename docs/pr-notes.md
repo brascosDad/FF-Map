@@ -1,56 +1,101 @@
-# PR notes: WhatsOnNow, defined but not shipped
+# PR notes: a lightness band the system can check
 
-A "What's on now" card for the stage sheet: the act on one stage now and the one after it, from
-`stages.json`, read on festival time. Built, tested and documented, **behind `FESTIVAL.showNow:
-false`**. Nothing a visitor sees changes, and no visual baseline should move.
+The category pins were described as sharing "one band of lightness". Measured as the eye sees it
+(OKLCH L, not HSL), eight sat between 57.7 and 66.3 and two sat well below: merch 52.7, beverage
+53.2. This PR lifts those two into the band and turns the band into a rule the manifest states and
+`npm run test:ds` enforces. Design system 1.1.0 → **1.2.0**.
 
-This was the demo of asking the design system before building. The session record is
-`docs/demo/whats-on-now.json` (ask → answer → build → check, with the answers trimmed to what was
-used), and the picture at 390px is `docs/demo/whats-on-now-390.png`.
+## Measured (`npm run ds -- check-palette`, this branch)
 
-## What changed
+Contrast is under the white glyph. Darkest first.
 
-| Where | What |
-|---|---|
-| `src/whatsOnNow.js` | `whatsOnNow(stage, date, { days, timeZone })` returns `playing`, `between` or `before` (each with `now` / `next`), or `null` when it isn't a festival day or the music is over. It parses the lineup's own strings and keeps no second copy of the schedule. |
-| `src/data/festival.js` | `days` (`saturday: '2026-10-03'`, `sunday: '2026-10-04'`), `timeZone: 'America/New_York'`, `showNow: false` |
-| `src/components/WhatsOnNow.jsx`, `.ffc-whatsonnow` in `components.css` | The card. Coral (`--current`) is the left bar and the dot beside "Now" while an act is on. The text stays navy and slate, because coral on white is under 4.5:1. Two component knobs: `--now-accent`, `--now-bar`. |
-| `DetailSheet.jsx` | `StageSchedule` renders the card above the lineup only when `FESTIVAL.showNow` is on. |
-| `design-system.html` | A Names row, plus a §4 "defined but not shipped" row. |
-| `design-system/manifest.json` 1.1.0, `CHANGELOG.md` | The WhatsOnNow entry. A component can now carry a hand-written `flag`; `shipped` is then false and `ds component` prints "not shipped: behind FESTIVAL.showNow". `coral-is-now` names it as coral's one defined use. |
-| `scripts/e2e.mjs` | 9 checks: the logic against the real lineup on a fixed clock (playing, Noon, between sets, before, last set, after hours / day off, UTC vs Atlanta), the flag is false, and no card in the built app. |
-| `scripts/demo-whats-on-now.mjs` | Renders the 390px picture. Runs Vite dev, flips the flag for that one page in flight and holds the clock at Sat 1:45 PM. Nothing on disk changes. |
+| Token | Value | OKLCH L | C | H | Contrast |
+|---|---|---|---|---|---|
+| `--pin-info` | #407EB5 | 57.7 | 0.107 | 247.6 | 4.31:1 |
+| `--pin-merch` | **#AF4FA5** (was #9E3F94: L 52.7, C 0.163, H 331.9, 5.85:1) | **57.9** | 0.164 | 331.6 | 4.68:1 |
+| `--pin-beverage` | **#997332** (was #8A6521: L 53.2, C 0.095, H 78.8, 5.30:1) | **58.0** | 0.095 | 78.3 | 4.33:1 |
+| `--pin-firstaid` | #C84B46 | 58.1 | 0.161 | 25.7 | 4.61:1 |
+| `--pin-stage` | #8F71B7 | 60.5 | 0.108 | 303.0 | 4.03:1 |
+| `--pin-kids` | #C25B7E | 60.7 | 0.137 | 0.6 | 4.12:1 |
+| `--pin-water` | #3D8FA4 | 60.8 | 0.085 | 217.4 | 3.71:1 |
+| `--pin-restroom` | #3D9E6E | 62.9 | 0.117 | 158.6 | 3.33:1 |
+| `--pin-food` | #C97636 | 64.5 | 0.130 | 55.2 | 3.43:1 |
+| `--pin-drinks` | #B78B34 | 66.3 | 0.115 | 81.1 | 3.11:1 |
+| `--ff-coral` (`--current`) | #E89370 | 74.3 | 0.114 | 43.0 | 2.38:1 |
+| `--cat-booth` (exempt) | #47597A | 46.3 | 0.059 | 262.2 | 7.05:1 |
+| `--cat-utility` (exempt) | #6E7C93 | 58.3 | 0.039 | 260.3 | 4.23:1 |
+
+Before: pins spanned L 52.7–66.3 (13.6). After: 57.7–66.3 (8.6), all inside 57–67. Beverage (58.0)
+is still 8.3 below drinks (66.3), so a cup beside a mug reads as two things.
+
+## Commits (one per item)
+
+1. **Tokens.** `--pin-merch` and `--pin-beverage` changed. Their comments keep the original reasons
+   (merch's hue gap; beverage as a darker step of the drinks family) and now give the measured OKLCH
+   L and contrast. **Print has no values of its own.** The print sheet draws pins through `pins.js`
+   → `var(--pin-*)`, the same tokens, so it changes with them. A grep for the old hexes outside
+   `tokens.css` finds nothing.
+2. **`design-system/lib/color.mjs`**: `oklch(hex)` → `{ l, c, h }` (Ottosson's OKLab), plus
+   `luminance`, `contrast` and `contrastOnWhite` (WCAG 2.2). No new dependency.
+3. **Rule `category-lightness-band`** in the manifest, using the statement and reason from the brief.
+   `enforcedBy` names the test from item 4 word for word, plus the CLI/MCP door. Source:
+   `CLAUDE.md › Decided — don't reopen › Category pins sit in one lightness band`. The rule-count
+   tests went from eight to nine.
+4. **The check.** `checkPalette()` in `lib/query.mjs` is one implementation behind three doors:
+   - the test `category-lightness-band: every --pin-* hue sits in OKLCH L 57–67, coral above 70,
+     each pin 3:1 under white`. It reads `tokens.css` directly, so a stale manifest can't hide a bad
+     value, and its failure message lists every measured value.
+   - `npm run ds -- check-palette`, which exits 1 outside the band.
+   - the MCP tool `check_palette`.
+
+   Other tests cover OKLCH and contrast against known values, a failing palette (each of the three
+   failure messages), and the CLI and MCP returning identical answers. Checked by hand that the test
+   fails on the old merch value: `--pin-merch #9E3F94 is OKLCH L 52.7, outside the category band
+   57–67`, followed by the full measured table.
+5. **1.2.0.** Manifest regenerated and version bumped (`updated` 2026-10-12). CHANGELOG entry added.
+   In `design-system.html` §1, Category pins gained one sentence on the band.
+6. **Baselines.** See the finding below. The close-ups are committed under `docs/pr-shots/`:
+   `pin-merch-{before,after}.png` (the merch pin on the phone at open, 3×) and
+   `pin-family-{before,after}.png` (every pin glyph on its token from the design-system page, with
+   beverage beside drinks).
+
+## Findings, questions, skipped
+
+- **The visual gate cannot see this change.** `scripts/visual.mjs` runs pixelmatch at
+  `THRESHOLD = 0.1`, which lets through a per-pixel YIQ delta of about 352. Merch #9E3F94 →
+  #AF4FA5 is about 133, so the merch pin's pixels don't count as different. The local diff image
+  shows no red on the merch pin. The local diffs (phone-open 0.35%, sheet-open 2.08%, print 3.63%)
+  are this container's text rendering, the same kind as on `main`. So CI will very likely pass the
+  three baselines unchanged. The label was still added so the runner re-renders on purpose, as the
+  brief asks. If the Action commits nothing, that is why. The comment at `visual.mjs:41` says 0.1
+  "catches any real colour change", which is not true for a lightness step this size. Whether to
+  tighten it is Ernest's call. **Not changed here**: it would move every baseline's tolerance two
+  weeks after the festival.
+- **Beverage pins are not on either map.** Both beverage stations are `hidden: true` (round 5,
+  9/23), so the new beverage colour shows only on the design-system page until one is unhidden.
+- **Merch is 57.9, not 58.0.** #AF4FA5 measures L 57.948, so the token comment says 57.9. Hue and
+  chroma match to within hex rounding (merch H 331.9 → 331.6, C 0.163 → 0.164; beverage H 78.8 →
+  78.3, C unchanged).
+- **The old comments' contrast figures were wrong.** They said 5.4:1 (merch) and 6.4:1 (beverage).
+  Measured, the old values were 5.85:1 and 5.30:1. Replaced with the new measured values.
+- **Where the CLAUDE.md line went.** The brief said "the standing requirements, next to the coral
+  rule". The coral line ("coral is "now"") is under **Decided — don't reopen**, in the featured-booth
+  entry, so the new line went there, directly after it. If Ernest wants it as a numbered standing
+  requirement instead, move the line and change the rule's `source` to match. The manifest build
+  checks that the source phrase exists.
+- **Close to the edges:** info sits at 57.7 (0.7 above the floor). Drinks is at 3.11:1, just over
+  the 3:1 floor. A future tweak to either will trip the test, which is the point.
+- **`--cat-utility` happens to be inside the band (58.3).** It is exempt as a structural neutral and
+  is reported as exempt, not as a pin.
+- **For Cowork:** the header of `tokens.css` names `claude/color-tokens.md` as the source of truth
+  for pin hues ("Keep in sync"). That file isn't in this repo. Its merch and beverage values need
+  the two new hexes.
+- **Skipped on purpose (brief):** the drift `npm run manifest` reported in PR #16 is untouched. That
+  covers four classes missing from the Names table, four off-pattern class names, the raw 18px, and
+  the unused IconButton.
 
 ## Results
 
-- `npm run ds -- check` on the new CSS: no findings (before the Names row: 7 one-name errors for the
-  new class, 0 token errors).
-- `npm run test:ds`: 20/20. `npm run manifest -- --check`: current.
-- `npm run lint`: clean.
-- `npm run test:e2e`: 491/491. Visual: 3 advisory diffs, all text anti-aliasing (this container vs the
-  runner). CI has the verdict.
-
-## Questions and open decisions
-
-1. **The Saturday 3:00 Main Stage slot still reads "Mystery artist — revealed 9/26"** in
-   `stages.json`. The 9/26 reveal (Asydequest, kept under `_reveal`) was never moved into `act`, so
-   the live lineup shows the placeholder as well. That's Cowork's file and a committee fact, so I
-   haven't touched it. It also shows in the demo picture.
-2. **To ship the card:** set `showNow: true` in `src/data/festival.js`. Two things should be decided
-   first:
-   - `between` and `before` show "Between sets" / "First up". Ernest decides whether those states
-     show at all, or only `playing`.
-   - The festival is over, so the card would render nothing until next year's dates go into
-     `FESTIVAL.days`.
-3. **The time rule:** 10 and 11 are morning, and 1–9 are afternoon. It holds for a 10:30 AM–7 PM
-   lineup; an earlier or later set would need the rule changed (comment in `src/whatsOnNow.js`).
-4. **The `ff-design-system` MCP server** didn't connect in this cloud session because
-   `@modelcontextprotocol/sdk` wasn't in `node_modules` until `npm install`. The CLI gives the same
-   answers, so it was used for every query.
-
-## Skipped
-
-- Local `npm run pr-shots`: the `PR screenshots` Action writes the table on the PR.
-- CLAUDE.md: Cowork's file, and no "Open" item is resolved. Proposed line for Cowork: under
-  *Decided*, "WhatsOnNow is the one defined use of coral; it ships only by flipping
-  `FESTIVAL.showNow`."
+- `npm run test:ds`: 24/24. `npm run manifest -- --check`: current. `npm run lint`: clean.
+- `npm run test:e2e`: 491/491. Visual is advisory here: 3 diffs, all text anti-aliasing, none on
+  the merch pin. CI has the verdict.
