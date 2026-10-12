@@ -54,23 +54,26 @@ is still 8.3 below drinks (66.3), so a cup beside a mug reads as two things.
    57–67`, followed by the full measured table.
 5. **1.2.0.** Manifest regenerated and version bumped (`updated` 2026-10-12). CHANGELOG entry added.
    In `design-system.html` §1, Category pins gained one sentence on the band.
-6. **Baselines.** See the finding below. The close-ups are committed under `docs/pr-shots/`:
+6. **Baselines.** Re-rendered on the runner via the label: `phone-open` and `print` changed (merch only), `sheet-open` did not. See below. The close-ups are committed under `docs/pr-shots/`:
    `pin-merch-{before,after}.png` (the merch pin on the phone at open, 3×) and
    `pin-family-{before,after}.png` (every pin glyph on its token from the design-system page, with
    beverage beside drinks).
 
 ## Findings, questions, skipped
 
-- **The visual gate cannot see this change.** `scripts/visual.mjs` runs pixelmatch at
-  `THRESHOLD = 0.1`, which lets through a per-pixel YIQ delta of about 352. Merch #9E3F94 →
-  #AF4FA5 is about 133, so the merch pin's pixels don't count as different. The local diff image
-  shows no red on the merch pin. The local diffs (phone-open 0.35%, sheet-open 2.08%, print 3.63%)
-  are this container's text rendering, the same kind as on `main`. So CI will very likely pass the
-  three baselines unchanged. The label was still added so the runner re-renders on purpose, as the
-  brief asks. If the Action commits nothing, that is why. The comment at `visual.mjs:41` says 0.1
-  "catches any real colour change", which is not true for a lightness step this size. Whether to
-  tighten it is Ernest's call. **Not changed here**: it would move every baseline's tolerance two
-  weeks after the festival.
+- **Baselines: `phone-open` and `print` changed, `sheet-open` did not.** The Action re-rendered on
+  the runner and committed two (62302b0). Diffed pixel by pixel against the previous baselines,
+  every changed pixel is merch's:
+  - `phone-open`: 1,277 px inside one 41×41 box around the merch pin, almost all #9E4094 → #AF4FA5.
+  - `print`: 666 px, the merch pin on the map and its legend swatch, #9E3F94 → #AF4FA5.
+  - `sheet-open`: byte-identical, because the Kidlandia sheet covers the merch pin.
+- **The visual gate itself would not have caught this.** `scripts/visual.mjs` runs pixelmatch at
+  `THRESHOLD = 0.1`, which lets through a per-pixel YIQ delta of about 352. Merch's step is about
+  133. Against the old baselines the merch pin raised no diff locally. The comment at
+  `visual.mjs:41` says 0.1 "catches any real colour change", which isn't true for a lightness step
+  this size. The baselines are right now because they were re-rendered on purpose, not because the
+  diff flagged them. Whether to tighten the threshold is Ernest's call. **Not changed here**: it
+  would move every baseline's tolerance.
 - **Beverage pins are not on either map.** Both beverage stations are `hidden: true` (round 5,
   9/23), so the new beverage colour shows only on the design-system page until one is unhidden.
 - **Merch is 57.9, not 58.0.** #AF4FA5 measures L 57.948, so the token comment says 57.9. Hue and
@@ -97,5 +100,5 @@ is still 8.3 below drinks (66.3), so a cup beside a mug reads as two things.
 ## Results
 
 - `npm run test:ds`: 24/24. `npm run manifest -- --check`: current. `npm run lint`: clean.
-- `npm run test:e2e`: 491/491. Visual is advisory here: 3 diffs, all text anti-aliasing, none on
-  the merch pin. CI has the verdict.
+- `npm run test:e2e`: 491/491. Visual is advisory here: 3 diffs, all text anti-aliasing. CI has the
+  verdict, against the runner's re-rendered baselines.
