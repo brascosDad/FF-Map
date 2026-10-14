@@ -1,6 +1,7 @@
-// Colour measurement for the design system: a hex value to OKLCH, and its
-// WCAG contrast against white. No dependency; the maths is Björn Ottosson's
-// OKLab (https://bottosson.github.io/posts/oklab/) and WCAG 2.2's relative
+// Colour measurement for the design system: a hex value to OKLCH, the
+// perceptual distance between two (ΔE in OKLab), and WCAG contrast against
+// white. No dependency; the maths is Björn Ottosson's OKLab
+// (https://bottosson.github.io/posts/oklab/) and WCAG 2.2's relative
 // luminance.
 //
 // OKLCH lightness is how bright a colour looks, which HSL's lightness is not:
@@ -18,20 +19,44 @@ export function parseHex(hex) {
 
 const toLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 
-/** A hex colour → { l, c, h }: OKLCH lightness 0–100, chroma, hue in degrees. */
-export function oklch(hex) {
+/** A hex colour → OKLab { l, a, b }, with l on the same 0–100 scale as oklch(). */
+export function oklab(hex) {
   const rgb = parseHex(hex);
-  if (!rgb) throw new Error(`oklch: "${hex}" is not a hex colour`);
+  if (!rgb) throw new Error(`oklab: "${hex}" is not a hex colour`);
   const [r, g, b] = rgb.map(toLinear);
   const l_ = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m_ = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s_ = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  const L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
-  const A = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
-  const B = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
-  const C = Math.hypot(A, B);
-  const H = (Math.atan2(B, A) * 180) / Math.PI;
-  return { l: L * 100, c: C, h: C < 1e-4 ? 0 : (H + 360) % 360 };
+  return {
+    l: (0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_) * 100,
+    a: 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+    b: 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
+  };
+}
+
+/** A hex colour → { l, c, h }: OKLCH lightness 0–100, chroma, hue in degrees. */
+export function oklch(hex) {
+  const { l, a, b } = oklab(hex);
+  const C = Math.hypot(a, b);
+  const H = (Math.atan2(b, a) * 180) / Math.PI;
+  return { l, c: C, h: C < 1e-4 ? 0 : (H + 360) % 360 };
+}
+
+/**
+ * Perceptual distance between two hex colours: Euclidean distance in OKLab
+ * (ΔEok), scaled ×100 so it reads on the same scale as lightness (a ΔE of 1 is
+ * one point of OKLCH L; about 2 is the smallest difference most people notice
+ * side by side).
+ */
+export function deltaE(x, y) {
+  const p = oklab(x), q = oklab(y);
+  return Math.hypot((p.l - q.l) / 100, p.a - q.a, p.b - q.b) * 100;
+}
+
+/** The plain angle between two hex colours' OKLCH hues, 0–180 degrees. */
+export function hueGap(x, y) {
+  const d = Math.abs(oklch(x).h - oklch(y).h) % 360;
+  return d > 180 ? 360 - d : d;
 }
 
 /** WCAG relative luminance, 0–1. */

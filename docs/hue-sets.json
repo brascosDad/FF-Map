@@ -1,0 +1,113 @@
+{
+  "about": "Candidate category-pin palettes for the hue-spacing PR (design system 1.3.0). Ernest picks one; the one in use is whatever src/styles/tokens.css says. Every set keeps each pin in OKLCH L 57-67 and at least 3:1 under its white glyph, keeps the meaning anchors (first aid red 22-30 deg, food warm orange 45-62, restroom green, water blue, stage purple), keeps beverage as the darker step of drinks at the same hue (about 8 L darker, as today), and stays at least dE 10 from --ff-teal, --ff-coral and both --cat-* slates. Found by a constrained search over OKLCH (L, C, hue) per pin, then judged by eye on the swatch strips. Render: node scripts/hue-sets.mjs --render",
+  "pins": [
+    "firstaid",
+    "food",
+    "drinks",
+    "beverage",
+    "restroom",
+    "water",
+    "info",
+    "stage",
+    "merch",
+    "kids"
+  ],
+  "glyph": {
+    "firstaid": "firstaid",
+    "food": "food",
+    "drinks": "drinks",
+    "beverage": "beverage",
+    "restroom": "wc",
+    "water": "water",
+    "info": "info",
+    "stage": "stage",
+    "merch": "merch",
+    "kids": "kids"
+  },
+  "reserved": {
+    "--ff-teal": "#56AC9B",
+    "--ff-coral": "#E89370",
+    "--cat-booth": "#47597A",
+    "--cat-utility": "#6E7C93"
+  },
+  "current": {
+    "food": "#C97636",
+    "drinks": "#B78B34",
+    "restroom": "#3D9E6E",
+    "water": "#3D8FA4",
+    "info": "#407EB5",
+    "stage": "#8F71B7",
+    "kids": "#C25B7E",
+    "firstaid": "#C84B46",
+    "merch": "#AF4FA5",
+    "beverage": "#997332"
+  },
+  "sets": {
+    "a": {
+      "title": "least change (recommended)",
+      "note": "Every pin moves only as far as it must: the fewest visible changes from today's map, every pin still recognisably itself. Drinks does not move at all, so beverage stays its clear darker step (8.2 L apart, as today). Water goes a clearer cerulean and info a truer blue, kids lightens to rose, food brightens to orange. Chroma 0.11-0.17.",
+      "palette": {
+        "food": "#E36826",
+        "drinks": "#B78B34",
+        "restroom": "#1F9C5E",
+        "water": "#0397BD",
+        "info": "#4A75CE",
+        "stage": "#987BC3",
+        "kids": "#CB6F92",
+        "firstaid": "#C6484C",
+        "merch": "#AE4EA4",
+        "beverage": "#9E7200"
+      }
+    },
+    "b": {
+      "title": "vivid",
+      "note": "The same anchors at higher chroma (up to 0.20): the widest spacing of the three, and the loudest. Info is an electric blue, kids a hot pink, food a bright orange. Drinks stays as today.",
+      "palette": {
+        "food": "#ED6300",
+        "drinks": "#B78B34",
+        "restroom": "#409C50",
+        "water": "#159DD1",
+        "info": "#4D6EF1",
+        "stage": "#A083C0",
+        "kids": "#E952A0",
+        "firstaid": "#C24D50",
+        "merch": "#AC4DAB",
+        "beverage": "#9F7201"
+      }
+    },
+    "c": {
+      "title": "muted",
+      "note": "Chroma capped at 0.15, nearest the printed poster's tone. Clears the rule, with the least margin of the three.",
+      "palette": {
+        "food": "#D66E32",
+        "drinks": "#B18F30",
+        "restroom": "#4D945A",
+        "water": "#0498BF",
+        "info": "#4577CC",
+        "stage": "#947AC6",
+        "kids": "#D66591",
+        "firstaid": "#C24D4F",
+        "merch": "#AB529F",
+        "beverage": "#987607"
+      }
+    }
+  },
+  "rejected": {
+    "yellow": {
+      "title": "drinks into the yellow gap (rejected)",
+      "note": "Moving drinks to hue 100 into the empty 81-159 deg stretch measures smallest dE 11.9, no better than set B, and at L 65 a yellow is olive: drinks #A2900E and beverage #8C7C04 read as mustard and khaki, not amber beer. Shown for the record.",
+      "palette": {
+        "food": "#ED6300",
+        "drinks": "#B28626",
+        "restroom": "#2FA057",
+        "water": "#0F9AD1",
+        "info": "#3073F0",
+        "stage": "#9C76EB",
+        "kids": "#E34B99",
+        "firstaid": "#C24D50",
+        "merch": "#9D619D",
+        "beverage": "#9E7200"
+      }
+    }
+  }
+}

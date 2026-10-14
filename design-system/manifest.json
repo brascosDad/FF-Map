@@ -1,6 +1,6 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "updated": "2026-10-12",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
@@ -53,9 +53,9 @@
     {
       "name": "--pin-food",
       "tier": "primitive",
-      "value": "#C97636",
+      "value": "#E36826",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "warm orange, food at a glance. L 65.8, 44.8°, 3.35:1",
       "file": "src/styles/tokens.css"
     },
     {
@@ -63,71 +63,71 @@
       "tier": "primitive",
       "value": "#B78B34",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "amber: beer. Unchanged. L 66.3, 81.1°, 3.11:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-restroom",
       "tier": "primitive",
-      "value": "#3D9E6E",
+      "value": "#1F9C5E",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "green, the restroom convention. L 61.3, 155.5°, 3.51:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-water",
       "tier": "primitive",
-      "value": "#3D8FA4",
+      "value": "#0397BD",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "blue: water. L 62.9, 224.0°, 3.41:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-info",
       "tier": "primitive",
-      "value": "#407EB5",
+      "value": "#4A75CE",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "a deeper, truer blue than water, 39° round. L 57.6, 263.2°, 4.44:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-stage",
       "tier": "primitive",
-      "value": "#8F71B7",
+      "value": "#987BC3",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "purple, the stages (the deck uses it). L 63.8, 301.9°, 3.53:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-kids",
       "tier": "primitive",
-      "value": "#C25B7E",
+      "value": "#CB6F92",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "rose, Kidlandia and its booths. L 65.5, 356.8°, 3.37:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-firstaid",
       "tier": "primitive",
-      "value": "#C84B46",
+      "value": "#C6484C",
       "pointsAt": [],
-      "note": "Category pins (POI wayfinding) — unchanged",
+      "note": "red: first aid / EMS. L 57.5, 21.9°, 4.74:1",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-merch",
       "tier": "primitive",
-      "value": "#AF4FA5",
+      "value": "#AE4EA4",
       "pointsAt": [],
-      "note": "Merch is its own destination (the festival's own booth, at the park entrance), so it takes its own hue rather than the services neutral. Magenta sits in the widest open gap on the wheel: 40 degrees from the stage lavender on one side and the kids rose on the other. Lifted from #9E3F94 (OKLCH L 52.7, the darkest pin) into the category band at the same hue and chroma (10/12): OKLCH L 57.9, 4.68:1 under the white glyph.",
+      "note": "Merch is its own destination (the festival's own booth, at the park entrance), so it takes its own hue rather than the services neutral. Magenta sits in the widest open gap on the wheel, between the stage lavender and the kids rose. In the category band since 10/12 (it was #9E3F94, L 52.7). L 57.6, 331.6°, 4.75:1 under the white glyph.",
       "file": "src/styles/tokens.css"
     },
     {
       "name": "--pin-beverage",
       "tier": "primitive",
-      "value": "#997332",
+      "value": "#9E7200",
       "pointsAt": [],
-      "note": "Beverage stations are not beer (Jess's 2026 plan draws them apart), so they take their own hue in the drinks family: the same amber, a step darker, so a cup beside a mug reads as two things. Lifted from #8A6521 (OKLCH L 53.2) into the category band at the same hue and chroma (10/12): OKLCH L 58.0 against drinks' 66.3, still a clear step darker; 4.33:1 under the white glyph.",
+      "note": "Beverage stations are not beer (Jess's 2026 plan draws them apart), so they take their own hue in the drinks family: the same amber, a step darker, so a cup beside a mug reads as two things. A declared step of --pin-drinks, so exempt from category-hue-spacing (it shares drinks' hue on purpose). L 58.1 against drinks' 66.3, 81.6°, 4.32:1 under the white glyph. Both beverage stations are hidden today.",
       "file": "src/styles/tokens.css"
     },
     {
@@ -2527,6 +2527,16 @@
         "ds: npm run ds -- check-palette (and the MCP tool check_palette) answers the same question"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › Category pins sit in one lightness band"
+    },
+    {
+      "id": "category-hue-spacing",
+      "statement": "No two category pins (--pin-*) sit closer than ΔE 9.5, measured in OKLab (×100, on the lightness scale). --pin-beverage is exempt: it is a declared darker step of --pin-drinks and shares its hue on purpose.",
+      "reason": "With lightness held in one band, hue is the only cue between pins, so every pin has to be far enough from every other to tell apart at a glance. 9.5 sits between today's closest pairs before the change (5.9–9.0: food/drinks, water/info, kids/first aid, kids/merch, stage/merch) and the three candidate sets (9.9–11.8).",
+      "enforcedBy": [
+        "ds: category-hue-spacing: no two category pins closer than ΔE 9.5 in OKLab, beverage exempt as drinks' darker step",
+        "ds: npm run ds -- check-palette (and the MCP tool check_palette) answers the same question; npm run ds -- palette-distances lists every pair"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Category pins sit far enough apart to tell by hue"
     }
   ]
 }

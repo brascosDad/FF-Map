@@ -10,8 +10,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { buildManifest, readDeprecation, readNames, serialise } from './build-manifest.mjs';
 import { parseCss, subjectClasses } from './lib/css.mjs';
-import { checkCss, checkPalette, getComponent, getRules, getTokens, loadManifest } from './lib/query.mjs';
-import { contrastOnWhite, oklch } from './lib/color.mjs';
+import { checkCss, checkPalette, getComponent, paletteDistances, getRules, getTokens, loadManifest } from './lib/query.mjs';
+import { contrastOnWhite, deltaE, hueGap, oklch } from './lib/color.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = join(ROOT, 'design-system/cli.mjs');
@@ -59,8 +59,8 @@ test('manifest: tokens carry a tier, and every tier is used', () => {
   assert.equal(m.tokens.find((t) => t.name === '--chip-bg').tier, 'component');
 });
 
-test('manifest: the nine rules are there, each with a reason, a source and an enforcer', () => {
-  assert.deepEqual(m.rules.map((r) => r.id), ['no-overlap', 'tap-floor', 'token-first', 'one-name', 'close-top-right', 'step-in-step-out', 'paper-number-row', 'coral-is-now', 'category-lightness-band']);
+test('manifest: the ten rules are there, each with a reason, a source and an enforcer', () => {
+  assert.deepEqual(m.rules.map((r) => r.id), ['no-overlap', 'tap-floor', 'token-first', 'one-name', 'close-top-right', 'step-in-step-out', 'paper-number-row', 'coral-is-now', 'category-lightness-band', 'category-hue-spacing']);
   for (const r of m.rules) for (const k of ['statement', 'reason', 'source']) assert.ok(r[k], `${r.id}.${k}`);
   for (const r of m.rules) assert.ok(r.enforcedBy.length, `${r.id} is enforced by something, or by "review"`);
 });
@@ -142,13 +142,58 @@ test('color: OKLCH and contrast match known values', () => {
   assert.equal(Math.round(contrastOnWhite('#767676') * 100) / 100, 4.54);
 });
 
+test('color: ΔE is 0 for one colour, 100 from black to white, symmetric; hue gap takes the short way round', () => {
+  assert.equal(deltaE('#AF4FA5', '#AF4FA5'), 0);
+  assert.equal(Math.round(deltaE('#000000', '#FFFFFF')), 100);
+  assert.equal(deltaE('#C97636', '#B78B34'), deltaE('#B78B34', '#C97636'));
+  assert.equal(Math.round(hueGap('#C25B7E', '#AF4FA5')), 29);
+});
+
+test('palette-distances: every pair of category pins once, closest first, beverage marked as drinks\' family', () => {
+  const r = paletteDistances(m);
+  const n = m.tokens.filter((t) => t.name.startsWith('--pin-') && t.tier !== 'component' && (t.resolved || t.value).startsWith('#')).length;
+  assert.equal(r.pairs.length, (n * (n - 1)) / 2);
+  for (let i = 1; i < r.pairs.length; i++) assert.ok(r.pairs[i - 1].deltaE <= r.pairs[i].deltaE);
+  assert.ok(r.pairs.filter((p) => p.exempt).every((p) => [p.a, p.b].includes('--pin-beverage')));
+  assert.deepEqual(r.reserved.map((x) => x.name), ['--ff-teal', '--ff-coral', '--cat-booth', '--cat-utility']);
+  assert.deepEqual(cliJson(['palette-distances']), r);
+});
+
 test('category-lightness-band: every --pin-* hue sits in OKLCH L 57–67, coral above 70, each pin 3:1 under white', () => {
   // Straight from tokens.css, not the manifest, so a stale manifest cannot hide a bad value.
   const tokens = parseCss(readFileSync(join(ROOT, 'src/styles/tokens.css'), 'utf8')).filter((d) => !d.media && d.prop.startsWith('--')).map((d) => ({ name: d.prop, value: d.value }));
   const r = checkPalette({ tokens });
   const table = [...r.pins, r.coral].filter(Boolean).map((t) => `${t.name} ${t.value} L ${t.l} ${t.contrastOnWhite}:1`).join('; ');
   assert.ok(r.pins.length >= 10, `expected the ten category pins, measured: ${table}`);
-  assert.ok(r.ok, `${r.findings.map((f) => f.message).join('\n')}\nmeasured: ${table}`);
+  const band = r.findings.filter((f) => f.rule === 'category-lightness-band');
+  assert.equal(band.length, 0, `${band.map((f) => f.message).join('\n')}\nmeasured: ${table}`);
+});
+
+/** tokens.css as { name, value } rows, read straight from the file, not the manifest. */
+const tokensCss = () => parseCss(readFileSync(join(ROOT, 'src/styles/tokens.css'), 'utf8')).filter((d) => !d.media && d.prop.startsWith('--')).map((d) => ({ name: d.prop, value: d.value }));
+
+test("category-hue-spacing: no two category pins closer than ΔE 9.5 in OKLab, beverage exempt as drinks' darker step", () => {
+  const r = checkPalette({ tokens: tokensCss() });
+  const spacing = r.findings.filter((f) => f.rule === 'category-hue-spacing');
+  const pairs = paletteDistances({ tokens: tokensCss() }).pairs.filter((p) => !p.exempt).slice(0, 5).map((p) => `${p.a}/${p.b} ${p.deltaE}`).join(', ');
+  assert.equal(spacing.length, 0, `${spacing.map((f) => f.message).join('\n')}\nclosest: ${pairs}`);
+  assert.ok(r.closest.deltaE >= 9.5);
+});
+
+test('category-hue-spacing fails the palette before this PR, naming each pair and its distance', () => {
+  const before = { '--pin-food': '#C97636', '--pin-drinks': '#B78B34', '--pin-restroom': '#3D9E6E', '--pin-water': '#3D8FA4', '--pin-info': '#407EB5',
+    '--pin-stage': '#8F71B7', '--pin-kids': '#C25B7E', '--pin-firstaid': '#C84B46', '--pin-merch': '#AF4FA5', '--pin-beverage': '#997332', '--ff-coral': '#E89370' };
+  const r = checkPalette({ tokens: Object.entries(before).map(([name, value]) => ({ name, value })) });
+  assert.equal(r.ok, false);
+  const msgs = r.findings.filter((f) => f.rule === 'category-hue-spacing').map((f) => f.message);
+  assert.deepEqual(r.findings.filter((f) => f.rule === 'category-hue-spacing').map((f) => f.pair.join(' ')), [
+    '--pin-food --pin-drinks', '--pin-water --pin-info', '--pin-kids --pin-firstaid', '--pin-kids --pin-merch', '--pin-stage --pin-merch']);
+  assert.match(msgs[0], /--pin-food #C97636 and --pin-drinks #B78B34 are ΔE 5\.9 apart \(hue gap 25\.9°\), closer than 9\.5/);
+  assert.match(msgs[1], /--pin-water #3D8FA4 and --pin-info #407EB5 are ΔE 6\.3 apart/);
+  // Beverage beside drinks is the declared family: never a finding.
+  assert.ok(!r.findings.some((f) => f.pair?.includes('--pin-beverage')));
+  // The same palette passes the lightness band: the two rules are separate questions.
+  assert.equal(r.findings.filter((f) => f.rule === 'category-lightness-band').length, 0);
 });
 
 test('check-palette fails a pin outside the band, coral at 70 or below, and a pin under 3:1', () => {
@@ -181,7 +226,7 @@ test('cli: components, tokens [filter], rules', () => {
   assert.match(t.stdout, /--tap-min/);
   assert.doesNotMatch(t.stdout, /--ff-cream/);
   assert.equal(cliJson(['tokens']).count, m.tokens.length);
-  assert.equal(cliJson(['rules']).count, 9);
+  assert.equal(cliJson(['rules']).count, 10);
   assert.equal(cli(['component', 'pager']).status, 1);
   assert.equal(cli(['nope']).status, 2);
 });
@@ -203,9 +248,10 @@ test('cli: check exits 0 for the passing snippet', () => {
 test('cli: check-palette lists every pin with its OKLCH L and contrast, and exits 0 inside the band', () => {
   const r = cli(['check-palette']);
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /--pin-merch\s+#AF4FA5\s+L 57\.9/);
+  assert.match(r.stdout, /--pin-merch\s+#[0-9A-F]{6}\s+L \d+\.\d/);
   assert.match(r.stdout, /--ff-coral\s+#E89370\s+L 74\.3/);
-  assert.match(r.stdout, /ok: every pin is in the band/);
+  assert.match(r.stdout, /ok: every pin is in the band, coral is above it, and every pair is far enough apart/);
+  assert.match(r.stdout, /closest pair: --pin-\w+ \/ --pin-\w+, ΔE \d+\.\d/);
 });
 
 // ---- door 2: the MCP server -----------------------------------------------------
