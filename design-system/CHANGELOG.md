@@ -4,6 +4,31 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.3.0 — 2026-10-12
+
+Minor: nine pin colours change and a rule is added. Every category pin but
+drinks, and the food stalls and Kidlandia booths drawn in their colours,
+change on both maps and on paper.
+
+- **Tokens: hue set A ("least change") on every `--pin-*`.** With lightness
+  held in one band (1.2.0), hue was the only cue, and five pairs sat too close:
+  food/drinks ΔE 5.9, water/info 6.3, kids/first aid 7.3, kids/merch 8.4,
+  stage/merch 9.0 (ΔE in OKLab ×100). Set A moves each pin only as far as it
+  must, and drinks not at all, so beverage stays its 8-point darker step; the
+  smallest pair is now 10.3 (food/drinks). Every pin stays in OKLCH L 57–67
+  and ≥3:1 under white, the meaning anchors hold (first aid red, food
+  orange, restroom green, water blue, stage purple), and every pin is ≥ΔE 10
+  from `--ff-teal`, `--ff-coral` and both `--cat-*` slates. Old → new in
+  `docs/hue-sets.json`, with sets B (vivid) and C (muted) as alternatives.
+- **Rule `category-hue-spacing`**: no two category pins closer than ΔE 9.5;
+  `--pin-beverage` is exempt as the declared darker step of `--pin-drinks`.
+  Enforced by `npm run test:ds`.
+- **Query layer: `palette-distances`** (`npm run ds -- palette-distances`),
+  every pair of pins closest first with ΔE and hue gap, and where the reserved
+  colours fall. `check-palette` and the MCP tool `check_palette` now fail on
+  the new rule and name the pair. `design-system/lib/color.mjs` gains
+  `oklab`, `deltaE` and `hueGap`.
+
 ## 1.2.0 — 2026-10-12
 
 Minor: two token values change and a rule is added. Merch pins (and the

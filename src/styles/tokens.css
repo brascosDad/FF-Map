@@ -18,29 +18,36 @@
   --ff-teal: #56AC9B;
   --ff-coral: #E89370;
 
-  /* Category pins (POI wayfinding) — unchanged */
-  --pin-food: #C97636;
-  --pin-drinks: #B78B34;
-  --pin-restroom: #3D9E6E;
-  --pin-water: #3D8FA4;
-  --pin-info: #407EB5;
-  --pin-stage: #8F71B7;
-  --pin-kids: #C25B7E;
-  --pin-firstaid: #C84B46;
+  /* Category pins (POI wayfinding). Two rules hold the set together, both
+     measured as the eye sees colour (OKLCH, not HSL) and both tested by
+     `npm run test:ds` (`npm run ds -- check-palette` asks the same question):
+       category-lightness-band  every pin at OKLCH L 57-67, >=3:1 under white
+       category-hue-spacing     no two pins closer than ΔE 9.5 (OKLab x100)
+     With lightness held, hue is the only cue between pins. Set A of the hue-
+     spacing PR (10/12; the candidates are in docs/hue-sets.json): each pin
+     moved only as far as it had to. Each line: OKLCH L, hue, contrast under
+     the white glyph. */
+  --pin-food: #E36826;       /* warm orange, food at a glance. L 65.8, 44.8°, 3.35:1 */
+  --pin-drinks: #B78B34;     /* amber: beer. Unchanged. L 66.3, 81.1°, 3.11:1 */
+  --pin-restroom: #1F9C5E;   /* green, the restroom convention. L 61.3, 155.5°, 3.51:1 */
+  --pin-water: #0397BD;      /* blue: water. L 62.9, 224.0°, 3.41:1 */
+  --pin-info: #4A75CE;       /* a deeper, truer blue than water, 39° round. L 57.6, 263.2°, 4.44:1 */
+  --pin-stage: #987BC3;      /* purple, the stages (the deck uses it). L 63.8, 301.9°, 3.53:1 */
+  --pin-kids: #CB6F92;       /* rose, Kidlandia and its booths. L 65.5, 356.8°, 3.37:1 */
+  --pin-firstaid: #C6484C;   /* red: first aid / EMS. L 57.5, 21.9°, 4.74:1 */
   /* Merch is its own destination (the festival's own booth, at the park
      entrance), so it takes its own hue rather than the services neutral.
-     Magenta sits in the widest open gap on the wheel: 40 degrees from the
-     stage lavender on one side and the kids rose on the other. Lifted from
-     #9E3F94 (OKLCH L 52.7, the darkest pin) into the category band at the
-     same hue and chroma (10/12): OKLCH L 57.9, 4.68:1 under the white glyph. */
-  --pin-merch: #AF4FA5;
+     Magenta sits in the widest open gap on the wheel, between the stage
+     lavender and the kids rose. In the category band since 10/12 (it was
+     #9E3F94, L 52.7). L 57.6, 331.6°, 4.75:1 under the white glyph. */
+  --pin-merch: #AE4EA4;
   /* Beverage stations are not beer (Jess's 2026 plan draws them apart), so
      they take their own hue in the drinks family: the same amber, a step
-     darker, so a cup beside a mug reads as two things. Lifted from #8A6521
-     (OKLCH L 53.2) into the category band at the same hue and chroma (10/12):
-     OKLCH L 58.0 against drinks' 66.3, still a clear step darker; 4.33:1
-     under the white glyph. */
-  --pin-beverage: #997332;
+     darker, so a cup beside a mug reads as two things. A declared step of
+     --pin-drinks, so exempt from category-hue-spacing (it shares drinks'
+     hue on purpose). L 58.1 against drinks' 66.3, 81.6°, 4.32:1 under the
+     white glyph. Both beverage stations are hidden today. */
+  --pin-beverage: #9E7200;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
 
   /* Structural / neutral — unchanged */

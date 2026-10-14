@@ -243,6 +243,10 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   57 and 67, coral (`--current`) above 70, each pin at least 3:1 under its white glyph; the
   structural neutrals (`--cat-*`) are exempt. Measured as the eye sees it (OKLCH, not HSL) by
   `npm run ds -- check-palette`, and `npm run test:ds` fails outside it (rule `category-lightness-band`).
+- **Category pins sit far enough apart to tell by hue** (10/12): no two `--pin-*` colours closer than
+  ΔE 9.5 in OKLab (×100, the lightness scale); `--pin-beverage` is exempt as the declared darker step
+  of `--pin-drinks`. `npm run ds -- palette-distances` lists every pair; `npm run test:ds` fails under
+  the floor (rule `category-hue-spacing`). The candidate sets are in `docs/hue-sets.json`.
 - **Print legibility (9/23): a number on paper has to point at a list row.** The three food carts are **C1–C3**
   (`n` on the cart's pin, the one place; the print map, the print index and the phone card read
   it); food-stall numbers stay off the paper (the phone still numbers and opens them).
