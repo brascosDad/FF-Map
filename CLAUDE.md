@@ -206,7 +206,8 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
      the same pins always give the same map.
   6b. **Once shown, stays shown** (Ernest, 10/17): a pin on the map at a coarser stop is on it at
      every closer stop, and there it outranks anything it would collide with — zooming in never
-     takes a landmark away. (The Food Court pin still gives way to its own stalls at Detail.)
+     takes a landmark away. (An area's pin — Food Court, Kidlandia — still gives way to its own
+     booths at Detail; see the area-label rule below.)
   7. **Paper is one more stop where nothing waits**: a pin nudges within the cap, and if that is
      not enough it is **flagged, not placed** — drawn at its true location and listed in
      `docs/pr-notes.md` for Ernest to place by hand.
@@ -253,6 +254,12 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   selected while the sheet is open. One tapped pin wears the ring; a category row in the
   directory (no one pin) rings every pin of that category. e2e drives the Water and Restrooms
   flows at 375px.
+- **At Detail, an area's pin gives way to its booths, and its name label carries the tap**
+  (Ernest, 10/17). The Food Court and Kidlandia pins (`areaLabel` in `pins.js`) leave at Detail
+  like the art-market markers do; FOOD COURT, KIDLANDIA and each art market's ART MARKET are drawn
+  over their areas (AreaLabel, `.ffc-arealabel`), and a tap on the name opens the area's card. Each
+  label's hit rect is at least 44px each way and covers no booth's or pin's target (`labelAt` in
+  `pins.js` / `areas.js`); a label that can't fit gets said in the PR notes, never a smaller target.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
 - **The print sheet's type floor is 8pt** for everything in the side column and every label on the
@@ -546,7 +553,9 @@ reported to Will 9/13, no reply. Until fixed, the homepage band is the only phon
   station at the Acoustic Stage arrives a stop earlier and the Acoustic beer and Mr Softee wait
   for Detail. Ernest chose **once shown, stays shown** (rule 6b): the beer stand and merch stay
   from the opening view on, and the lawn and entrance water stations and the info booth wait for
-  Detail, as they did before.
+  Detail, as they did before. Same PR: **Kidlandia gives way to its K booths at Detail** like the
+  Food Court, and every area's name label there carries the tap (AreaLabel, rule
+  `area-label-tap`).
 
 ## Analytics
 

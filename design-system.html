@@ -144,6 +144,7 @@
       <tr><th>FilterChip</th><td>The category filter pill in the header.</td></tr>
       <tr><th>IconButton</th><td>Round, square and ghost icon buttons.</td></tr>
       <tr><th>ZoomControl</th><td>The in / out / reset stack.</td></tr>
+      <tr><th>AreaLabel</th><td>An area's name on the map at the Detail stop (FOOD COURT, KIDLANDIA, ART MARKET), drawn where the area's pin or marker has given way to its booths, and the tap that opens the area's card. Hit rect at least <code>--pin-hit</code> each way.</td></tr>
       <tr><th>MapPin</th><td>A category pin on the map. Drawn where the placement rules put it at each stop: its true location, or nudged within the cap (§6, Pin placement).</td></tr>
       <tr><th>Panel</th><td>The sheet and the docked panel. Parts: <b>Handle</b> · <b>Header</b> (back row, title line, close) · <b>Body</b> · <b>Footer</b>. Variants: <b>bottom sheet</b>, <b>docked panel</b>.</td></tr>
       <tr><th>ItemPager</th><td>Previous / "11 of 139" / next, in the Panel's footer. Pages between items. Nothing else is called a pager, stepper or booth nav.</td></tr>
@@ -412,7 +413,7 @@
   <h3>The three zoom stops</h3><div class="card"><table>
     <tr><th>1 · Overview</th><td>Area blobs, no individual booths. Pins flagged <code>overview</code> (stages, Food Court, Kidlandia, first aid, bike valet, beer, merch, the art-market markers) plus any chip's pins. The whole festival is in frame.</td></tr>
     <tr><th>2 · Booths</th><td>Blobs give way to the individual squares (no numbers). Amenity pins appear, except those the placement rules hold back (a higher-ranked pin is in the way; <code>npm run pin-layout</code> lists them). Art-market markers still show.</td></tr>
-    <tr><th>3 · Detail</th><td>Booth numbers and area names are drawn; the art-market markers have faded out so every booth is its own target; every pin shows at its true location; the Food Court pin gives way to its stalls.</td></tr>
+    <tr><th>3 · Detail</th><td>Booth numbers and area names are drawn; the art-market markers have faded out so every booth is its own target; every pin shows at its true location, except an area's pin (Food Court, Kidlandia), which gives way to its booths; each area's name (AreaLabel) is drawn over it and opens its card (rule <code>area-label-tap</code>).</td></tr>
   </table></div>
   <h3>Pin placement</h3><div class="card">
     <p style="margin-top:0">Which pins each stop shows, and where, is computed (<code>src/pinPlacement.js</code>) for each screen's own scale, from rules — not set pin by pin. <code>npm run pin-layout</code> prints the result for a 375px phone, the docked desktop and paper; <code>npm run ds -- rules</code> prints the rules.</p>

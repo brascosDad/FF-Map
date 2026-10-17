@@ -34,7 +34,7 @@ export const TOOLS = [
   },
   {
     name: 'get_rules',
-    description: 'The standing rules (no-overlap, true-location, nudge-cap, stays-shown, tap-floor, token-first, one-name, close-top-right, step-in-step-out, paper-number-row, coral-is-now, category-lightness-band, category-hue-spacing): statement, why, what enforces it, and where in CLAUDE.md it comes from. Optionally one rule by id.',
+    description: 'The standing rules (no-overlap, true-location, nudge-cap, stays-shown, area-label-tap, tap-floor, token-first, one-name, close-top-right, step-in-step-out, paper-number-row, coral-is-now, category-lightness-band, category-hue-spacing): statement, why, what enforces it, and where in CLAUDE.md it comes from. Optionally one rule by id.',
     inputSchema: { type: 'object', properties: { id: str('Optional rule id, e.g. no-overlap') }, additionalProperties: false },
     run: (m, a) => getRules(m, a.id),
   },

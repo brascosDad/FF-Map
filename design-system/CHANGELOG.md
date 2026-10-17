@@ -6,7 +6,9 @@ PR as the manifest, the Names table and the docs.
 
 ## 1.4.0 — 2026-10-17
 
-Minor: three rules are added and `no-overlap` changes who gives way. On a
+Minor: four rules, a component and three tokens are added, and `no-overlap`
+changes who gives way. At Detail the Kidlandia pin gives way to its booths,
+and every area's name is drawn there and takes a tap. On a
 375px phone's first zoom step the Acoustic Stage's water station arrives a
 stop earlier and the Acoustic beer and Mr Softee wait for Detail. Paper and
 the docked desktop draw the same as before.
@@ -31,6 +33,15 @@ the docked desktop draw the same as before.
   there (`STAYS_RANK`), so zooming in never takes a landmark away. The beer
   stand and merch stay from the opening view on; the water stations beside
   them wait for Detail. The Food Court pin still gives way to its stalls.
+- **Rule `area-label-tap`** (new): "At Detail, an area's pin gives way to
+  its booths, and its name label carries the tap." Kidlandia's pin now
+  leaves at Detail like the Food Court's; FOOD COURT, KIDLANDIA and the three
+  ART MARKET names are drawn there and open their cards, each over a hit rect
+  at least `--pin-hit` each way that covers no booth or pin target.
+- **Component `AreaLabel`** (`.ffc-arealabel`, part `__text`, variants
+  `--food`, `--kids`, `--art`; knob `--arealabel-ink`): in the Names table.
+- **Tokens**: `--kids-ink` (primitive, Kidlandia rose darkened for text,
+  5.3:1 on white), `--map-kids-label`, `--map-art-label` (semantic).
 - **Enforced by** e2e on a 375px phone, the docked desktop (new: every stop,
   each chip) and paper, and `design-system/placement.test.mjs` in
   `npm run test:ds`. `npm run pin-layout` shows what the rules do with

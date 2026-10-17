@@ -139,6 +139,14 @@
       "file": "src/styles/tokens.css"
     },
     {
+      "name": "--kids-ink",
+      "tier": "primitive",
+      "value": "#A3506F",
+      "pointsAt": [],
+      "note": "Kidlandia rose darkened for text on ground, 5.3:1 on white",
+      "file": "src/styles/tokens.css"
+    },
+    {
       "name": "--cat-booth",
       "tier": "primitive",
       "value": "#47597A",
@@ -674,6 +682,28 @@
         "--food-ink"
       ],
       "note": "Ink drawn ON the map. Separate from the panel text roles: these sit on green and cream rather than on white chrome.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-kids-label",
+      "tier": "semantic",
+      "value": "var(--kids-ink)",
+      "resolved": "#A3506F",
+      "pointsAt": [
+        "--kids-ink"
+      ],
+      "note": "The AreaLabel inks: an area's name at Detail, in its own family's colour.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-art-label",
+      "tier": "semantic",
+      "value": "var(--cat-booth)",
+      "resolved": "#47597A",
+      "pointsAt": [
+        "--cat-booth"
+      ],
+      "note": "The AreaLabel inks: an area's name at Detail, in its own family's colour.",
       "file": "src/styles/tokens.css"
     },
     {
@@ -1366,6 +1396,34 @@
       ]
     },
     {
+      "name": "--arealabel-ink",
+      "tier": "component",
+      "value": "var(--map-label)",
+      "resolved": "#5C6570",
+      "pointsAt": [
+        "--map-label"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-arealabel",
+          "value": "var(--map-label)"
+        },
+        {
+          "selector": ".ffc-arealabel--food",
+          "value": "var(--map-food-label)"
+        },
+        {
+          "selector": ".ffc-arealabel--kids",
+          "value": "var(--map-kids-label)"
+        },
+        {
+          "selector": ".ffc-arealabel--art",
+          "value": "var(--map-art-label)"
+        }
+      ]
+    },
+    {
       "name": "--panel-bg",
       "tier": "component",
       "value": "var(--surface-chrome-solid)",
@@ -1857,6 +1915,50 @@
       ],
       "knobs": [],
       "doNot": []
+    },
+    {
+      "name": "AreaLabel",
+      "description": "An area's name on the map at the Detail stop (FOOD COURT, KIDLANDIA, ART MARKET), drawn where the area's pin or marker has given way to its booths, and the tap that opens the area's card. Hit rect at least --pin-hit each way.",
+      "cssClass": ".ffc-arealabel",
+      "file": "src/components/MapCanvas.jsx",
+      "shipped": true,
+      "inStates": [
+        "S1"
+      ],
+      "rules": [
+        "area-label-tap",
+        "tap-floor",
+        "no-overlap"
+      ],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S1",
+          "name": "Map only"
+        }
+      ],
+      "cssParts": [
+        ".ffc-arealabel__text"
+      ],
+      "cssVariants": [
+        ".ffc-arealabel--art",
+        ".ffc-arealabel--food",
+        ".ffc-arealabel--kids"
+      ],
+      "tokens": [
+        "--map-art-label",
+        "--map-food-label",
+        "--map-halo",
+        "--map-kids-label",
+        "--map-label"
+      ],
+      "knobs": [
+        "--arealabel-ink"
+      ],
+      "doNot": [
+        "Do not shrink the hit rect below --pin-hit to fit a label between booths: move the label (labelAt) or say in the PR notes that it cannot fit.",
+        "Do not draw an area's name at Detail without the tap: the area's pin or marker has gone, and the name is the way in to its card."
+      ]
     },
     {
       "name": "MapPin",
@@ -2485,6 +2587,18 @@
         "ds: npm run test:ds (design-system/placement.test.mjs: stays-shown)"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › Once shown, stays shown"
+    },
+    {
+      "id": "area-label-tap",
+      "statement": "At Detail, an area's pin gives way to its booths, and its name label carries the tap. The Food Court and Kidlandia pins (areaLabel in src/assets/pins.js) and the three art-market markers leave at Detail; each area's name (FOOD COURT, KIDLANDIA, ART MARKET) is drawn over the area as an AreaLabel and opens that area's card. Its hit rect is at least --pin-hit (44px) each way and covers no booth's or pin's tap target; where it cannot fit, the PR notes say so -- the target is never shrunk.",
+      "reason": "Tappable areas behave the same way at Detail: the booths are the targets there, so a pin or marker sitting on them would take a booth's tap, and the area still needs one way in to its card. The name is that way in, and it already says where you are.",
+      "enforcedBy": [
+        "e2e: name label is drawn, a 44px target with the word inside it",
+        "e2e: name label opens the area's card",
+        "e2e: pin gives way to its booths",
+        "e2e: no two touch targets overlap at the"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › At Detail, an area's pin gives way to its booths, and its name label carries the tap"
     },
     {
       "id": "tap-floor",
