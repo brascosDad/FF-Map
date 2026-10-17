@@ -1,7 +1,7 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.3.0",
-  "updated": "2026-10-12",
+  "version": "1.4.0",
+  "updated": "2026-10-17",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
     "generated": [
@@ -14,7 +14,7 @@
     "handWritten": [
       "version, updated",
       "components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated + replacement (checked against the files)",
-      "rules (every enforcedBy test name and every source phrase is checked against the files)"
+      "rules (every enforcedBy test name, every source phrase and every constant's value is checked against the files)"
     ]
   },
   "tokens": [
@@ -1860,7 +1860,7 @@
     },
     {
       "name": "MapPin",
-      "description": "A category pin on the map.",
+      "description": "A category pin on the map. Drawn where the placement rules put it at each stop: its true location, or nudged within the cap (§6, Pin placement).",
       "cssClass": ".ffc-pin",
       "file": "src/components/MapCanvas.jsx",
       "shipped": true,
@@ -2428,21 +2428,52 @@
   "rules": [
     {
       "id": "no-overlap",
-      "statement": "No tap target overlaps another at any of the three zoom stops, on either map, or on paper. Circles may touch edge to edge; they may not cross. When two collide, either the lower-priority pin waits for a closer stop (from: 'detail' in pins.js) or the two are moved edge to edge.",
+      "statement": "No tap target overlaps another at any of the three zoom stops, on either map (a 375px phone and the docked desktop), or on paper. Circles may touch edge to edge; they may not cross. Who gives way is computed, not hand-set (src/pinPlacement.js): every pin has a rank (PIN_RANK in src/assets/pins.js; priority below); at a coarser stop the higher rank keeps its true location and the lower waits for a closer stop, and a waiting pin still holds its spot against anything ranked below it; two of the same rank split the difference, each moving half the overlap along the line between them, within nudge-cap; a split that would hit a third target sends both to wait. Rank, then listed order, so the same pins always give the same map. A filter chip still draws its whole category on top at any stop; overview: true / 'docked' only makes a pin a candidate for the opening view.",
       "priority": [
         "labelled destinations (stages, Food Court, Kidlandia)",
         "first aid / EMS",
-        "restrooms",
+        "restrooms and water",
         "info, merch, bike valet, beer",
-        "water, beverage stations, PTA, food carts"
+        "beverage stations, PTA, food carts"
       ],
-      "reason": "An overlap invites a wrong tap, and paper has no zoom to hide behind.",
+      "reason": "An overlap invites a wrong tap, and paper has no zoom to hide behind. Ranking water with the restrooms follows the festival's own chip use (restrooms 37, water 28, first aid 23).",
       "enforcedBy": [
         "e2e: no two touch targets overlap at the",
         "e2e: on, no two touch targets overlap at the",
-        "e2e: print: nothing covers anything else"
+        "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
+        "e2e: print: nothing covers anything else",
+        "ds: npm run test:ds (design-system/placement.test.mjs: rank, split, third target, determinism)"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › No element covers another"
+    },
+    {
+      "id": "true-location",
+      "statement": "A pin's stored x/y in src/assets/pins.js is its true location: where it sits at the Detail stop, where every pin shows and no two overlap. Nothing writes to it; a coarser stop may hold a pin back or nudge it (nudge-cap), and between stops a nudged pin glides with the zoom back to it. On paper nothing waits, so a pin that cannot sit at its true location nudges within the cap, or is flagged: drawn at its true location (data-flagged) and listed in docs/pr-notes.md for a person to place.",
+      "reason": "One place per pin that a person sets and can check against the grounds; every other position is derived from it by rules anyone can rerun (npm run pin-layout).",
+      "enforcedBy": [
+        "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
+        "e2e: no two touch targets overlap at the",
+        "e2e: print: a flagged pin is drawn at its true location, not moved",
+        "review"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › True location = the pin's stored x/y"
+    },
+    {
+      "id": "nudge-cap",
+      "statement": "No pin sits more than NUDGE_CAP map units from its true location, at any stop, on either map or on paper. A tie that would need more sends both pins to wait (on paper: the pin is flagged, never moved past the cap).",
+      "constant": {
+        "name": "NUDGE_CAP",
+        "value": 12.75,
+        "unit": "map units",
+        "file": "src/pinPlacement.js",
+        "derivation": "half of --pin-hit (22 CSS px) at the Detail stop on a 375px phone, where 44px is 25.5 map units"
+      },
+      "reason": "A pin that wanders is a pin in the wrong place: half a tap target is as far as one can move and still be read as standing where it is.",
+      "enforcedBy": [
+        "e2e: no pin is further than the nudge cap from its true location",
+        "ds: npm run test:ds (design-system/placement.test.mjs: the cap, and the cap's value)"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › Nudge cap"
     },
     {
       "id": "tap-floor",

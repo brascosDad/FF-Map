@@ -204,6 +204,14 @@ export function buildManifest() {
       else if (kind === 'ci' && !ci.includes(what)) problems.push(`rule ${r.id}: no step in ci.yml is named "${what}"`);
       else if (!['e2e', 'ci', 'ds'].includes(kind)) problems.push(`rule ${r.id}: enforcedBy "${e}" must be review, e2e: …, ci: … or ds: …`);
     }
+    // A rule that names a constant carries its value; the file has to agree.
+    if (r.constant) {
+      const { name, value, file } = r.constant;
+      const src = existsSync(join(ROOT, file || '')) ? read(file) : '';
+      const m = src.match(new RegExp(`export const ${name} = ([\\d.]+);`));
+      if (!m) problems.push(`rule ${r.id}: ${file} does not export ${name}`);
+      else if (Number(m[1]) !== value) problems.push(`rule ${r.id}: ${name} is ${m[1]} in ${file}, ${value} here`);
+    }
     const [file, ...parts] = (r.source || '').split(' › ');
     if (file !== 'CLAUDE.md' || !parts.length) problems.push(`rule ${r.id}: source must be "CLAUDE.md › <heading> › <phrase>"`);
     for (const p of parts) if (!claude.includes(p)) problems.push(`rule ${r.id}: "${p}" is not in CLAUDE.md`);
@@ -226,7 +234,7 @@ export function buildManifest() {
       handWritten: [
         'version, updated',
         'components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated + replacement (checked against the files)',
-        'rules (every enforcedBy test name and every source phrase is checked against the files)',
+        'rules (every enforcedBy test name, every source phrase and every constant\'s value is checked against the files)',
       ],
     },
     tokens,

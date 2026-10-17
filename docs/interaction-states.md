@@ -25,8 +25,8 @@ The docked panel (desktop, 1024px and up) has no peek, no handle and no ×: the 
 | Stop | What the map draws |
 |---|---|
 | **1 · Overview** | Area blobs, no individual booths. Pins flagged `overview` (stages, Food Court, Kidlandia, first aid, bike valet, beer, merch, the art-market markers) plus any chip's pins. The whole festival is in frame. |
-| **2 · Booths** | Blobs give way to the individual squares (no numbers). Amenity pins appear, except those held back with `from: 'detail'`. Art-market markers still show. |
-| **3 · Detail** | Booth numbers and area names are drawn; the art-market markers have faded out so every booth is its own target; `from: 'detail'` pins appear; the Food Court pin gives way to its stalls. |
+| **2 · Booths** | Blobs give way to the individual squares (no numbers). Amenity pins appear, except those the placement rules hold back (a higher-ranked pin is in the way; `npm run pin-layout` lists them). Art-market markers still show. |
+| **3 · Detail** | Booth numbers and area names are drawn; the art-market markers have faded out so every booth is its own target; every pin shows at its true location; the Food Court pin gives way to its stalls. |
 
 Changed by: the zoom buttons, double-tap on empty map (steps in; at Detail goes back to the overview), a pinch (follows the fingers, settles on the nearest stop), a chip going on (to the overview), reset, and a pin tap that needs a closer stop to reach the safe area.
 

@@ -2,9 +2,9 @@
 // placement rules rather than set by hand. One pure function, no React, no
 // DOM: MapCanvas runs it for the phone's (or the docked desktop's) three
 // stops, PrintSheet runs it once for paper, and scripts read it to report
-// what moved. The rules are the design system's `pin-rank`, `true-location`,
-// `nudge-cap` and `no-overlap` (design-system/manifest.json), and CLAUDE.md's
-// Decided section in words:
+// what moved. The rules are the design system's `no-overlap` (with its
+// priority list), `true-location` and `nudge-cap` (design-system/manifest.json),
+// and CLAUDE.md's Decided section ("Pin placement rules") in words:
 //
 //   1. Every pin has a rank (PIN_RANK in assets/pins.js, 1 is highest).
 //   2. A pin's stored x/y is its TRUE LOCATION. At Detail, the closest stop,

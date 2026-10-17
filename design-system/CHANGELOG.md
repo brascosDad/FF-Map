@@ -4,6 +4,34 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.4.0 — 2026-10-17
+
+Minor: two rules are added and `no-overlap` changes who gives way. On a
+375px phone's first zoom step, water stations and the info booth arrive a
+stop earlier; the beer stand, merch, the Acoustic beer and Mr Softee wait
+for Detail. Paper and the docked desktop draw the same as before.
+
+- **Rule `no-overlap`: placement is computed, not hand-set.** Every pin has a
+  rank (`PIN_RANK` in `src/assets/pins.js`); at a coarser stop the higher
+  rank keeps its true location and the lower waits for a closer stop (a
+  waiting pin still holds its spot against lower ranks); two of a rank split
+  the difference; rank, then listed order, so the same pins give the same
+  map. The `from: 'detail'` flags are gone. **Priority**: water moves up from
+  the bottom tier to rank with the restrooms — "restrooms and water".
+- **Rule `true-location`** (new): a pin's stored x/y is where it sits at
+  Detail, where every pin shows; nothing writes to it. Paper is one more stop
+  where nothing waits: a pin nudges within the cap or is flagged (drawn at
+  its true location, listed for a person to place).
+- **Rule `nudge-cap`** (new): no pin more than `NUDGE_CAP` = 12.75 map units
+  (half of `--pin-hit` at Detail on a 375px phone) from its true location, at
+  any stop. A rule may now carry a `constant` ({ name, value, unit, file,
+  derivation }); `npm run manifest` fails if the file disagrees with it.
+- **Enforced by** e2e on a 375px phone, the docked desktop (new: every stop,
+  each chip) and paper, and `design-system/placement.test.mjs` in
+  `npm run test:ds`. `npm run pin-layout` shows what the rules do with
+  today's pins. The Names table's MapPin row and §6 (new: Pin placement)
+  describe it; no component names change.
+
 ## 1.3.0 — 2026-10-12
 
 Minor: nine pin colours change and a rule is added. Every category pin but
