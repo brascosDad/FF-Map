@@ -17,7 +17,8 @@
     "pr-shots": "node scripts/pr-shots.mjs",
     "manifest": "node design-system/build-manifest.mjs",
     "ds": "node design-system/cli.mjs",
-    "test:ds": "node --test design-system/ds.test.mjs design-system/placement.test.mjs"
+    "test:ds": "node --test design-system/ds.test.mjs design-system/placement.test.mjs",
+    "pin-layout": "node scripts/pin-layout.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",
