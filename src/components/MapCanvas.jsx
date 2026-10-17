@@ -59,7 +59,28 @@ const NUMBER_PX = 9;
 const STREET_LABEL = 'var(--map-label)';
 const MAP_NUMBER = 'var(--map-number)';
 const MAP_HALO = 'var(--map-halo)';
-const FOOD_LABEL = 'var(--map-food-label)';
+
+// AreaLabel: an area's name at the Detail stop, and the tap that opens its
+// card (rule area-label-tap). The area's pin (Food Court, Kidlandia) or
+// marker (the three art markets) has given way to its booths there, so the
+// name takes over the job. The text is AREA_LABEL_PX, screen-constant like a
+// pin; the hit rect is at least the pin's hit size (--pin-hit) on each side
+// and wide enough for the word, centred on `at`. The width is estimated from
+// the letter count -- e2e checks the drawn word sits inside its rect.
+const AREA_LABEL_PX = 11;
+const AREA_LABEL_EM = 0.72;   // Manrope ExtraBold caps, average advance per letter
+function AreaLabel({ text, at, family, k, tapPx, dimmed, onTap, id }) {
+  const [x, y] = at;
+  const w = Math.max(tapPx, text.length * AREA_LABEL_PX * AREA_LABEL_EM) * k, h = tapPx * k;
+  return (
+    <g className={`ff-tap ffc-arealabel ffc-arealabel--${family}${dimmed ? ' ffc-dimmed' : ''}`} data-arealabel={id}
+       onClick={(e) => { e.stopPropagation(); onTap(); }}>
+      <rect x={x - w / 2} y={y - h / 2} width={w} height={h} fill="transparent" />
+      <text className="ffc-arealabel__text" x={x} y={y} fontSize={AREA_LABEL_PX * k} textAnchor="middle" dominantBaseline="central"
+            strokeWidth={3 * k}>{text.toUpperCase()}</text>
+    </g>
+  );
+}
 
 // The star that marks a featured booth (festival.js), drawn inside its own
 // square in the icon-on-colour, with the square at full opacity so the pair
@@ -227,9 +248,6 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, levelIdx =
         {/* Food court: blob at overview, individual stalls once you step in */}
         {showBlobs ? <Blobs paths={BLOBS.food} color={PIN_COLOR.food} />
           : <g className={`ff-foodbooths${clusterDim}`}>{boxes(BOOTHS.food, PIN_COLOR.food, { numbers: showNumbers, onTap: onBoothClick, k, selectedId: selectedBoothId, angle: BOOTH_ANGLE.food })}</g>}
-        {detail && (
-          <text x={872} y={228} fontSize={11 * k} fontWeight={800} fill={FOOD_LABEL} textAnchor="middle" stroke={MAP_HALO} strokeWidth={3 * k} paintOrder="stroke">FOOD COURT</text>
-        )}
 
         {AREAS.map((cl) => (
           <g key={cl.id} className={`ff-tap ff-area${clusterDim}`} data-area={cl.id} onClick={(e) => { e.stopPropagation(); onAreaClick(cl); }}>
@@ -274,10 +292,11 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, levelIdx =
             everything they might share a spot with; the rest are dimmed and,
             while the chip is on, take no taps (.ffc-dimmed). */}
         {MAP_PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
-          // The Food Court pin gives way to its stalls at Detail, chip or no
-          // chip; a food cart pin (King of Pops) is a place of its own and
-          // stays. Everything else is the placement's call (above).
-          if (detail && p.d === 'food') return null;
+          // An area's pin (areaLabel: the Food Court, Kidlandia) gives way to
+          // its booths at Detail, chip or no chip, and its name label below
+          // takes the tap; a food cart pin (King of Pops) is a place of its
+          // own and stays. Everything else is the placement's call (above).
+          if (detail && p.areaLabel) return null;
           if (!shownAt(p)) return null;
           const { x, y } = drawAt(p);
           // The class carries the category and the category carries the colour:
@@ -305,6 +324,18 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, levelIdx =
             </g>
           );
         })}
+
+        {/* Area names at Detail, each the tap that opens its area's card
+            (rule area-label-tap): the Food Court and Kidlandia from their
+            pins, the three art markets from AREAS. */}
+        {detail && MAP_PINS.filter((p) => p.areaLabel).map((p) => (
+          <AreaLabel key={p.d} id={p.d} text={p.areaLabel} at={p.labelAt || [p.x, p.y]} family={p.c} k={k} tapPx={sz.tap}
+                     dimmed={!!filter} onTap={() => onPinClick(p)} />
+        ))}
+        {detail && AREAS.map((cl) => (
+          <AreaLabel key={cl.id} id={cl.id} text={cl.label} at={cl.labelAt} family="art" k={k} tapPx={sz.tap}
+                     dimmed={!!filter} onTap={() => onAreaClick(cl)} />
+        ))}
 
       </svg>
     </div>

@@ -49,6 +49,7 @@
      white glyph. Both beverage stations are hidden today. */
   --pin-beverage: #9E7200;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
+  --kids-ink: #A3506F;    /* Kidlandia rose darkened for text on ground, 5.3:1 on white */
 
   /* Structural / neutral — unchanged */
   --cat-booth: #47597A;
@@ -147,6 +148,9 @@
   --map-number: var(--slate-800);             /* booth numbers */
   --map-halo: var(--ff-white);                /* stroke behind map text */
   --map-food-label: var(--food-ink);
+  /* The AreaLabel inks: an area's name at Detail, in its own family's colour. */
+  --map-kids-label: var(--kids-ink);
+  --map-art-label: var(--cat-booth);
 
   /* Glyph sitting on a filled category dot or pin. */
   --icon-on-color: var(--ff-white);

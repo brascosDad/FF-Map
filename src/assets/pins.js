@@ -61,6 +61,14 @@
 // rather than places (Ernest, round 3). The tap target is still the 44px
 // circle, and rule 1 applies to it.
 //
+// `areaLabel` marks an AREA's pin -- the Food Court and Kidlandia, the two
+// places that are a set of booths. At the Detail stop the pin gives way to
+// its booths and the area's name is drawn over the area instead, and that
+// name carries the tap: it opens the pin's card (rule area-label-tap). The
+// label sits at `labelAt` (default: the pin's own x/y), a spot where its 44px
+// target clears every booth and pin at Detail on a 375px phone -- the
+// art-market areas carry the same two fields in data/areas.js.
+//
 // `where` is the card's location line -- how someone confirms which of a
 // category's pins they tapped (Ernest, 9/22). Plain words from the map, one
 // line, on every visitor pin; the lines Ernest wrote carry TODO(Jess):
@@ -71,7 +79,7 @@
 // runs north-south (across an east-west one).
 export const PINS = [
   // Markers that carry a standing label on the map
-  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true, where: 'The car path north of the lawn, east of the Main Stage' },
+  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true, areaLabel: 'Food Court', labelAt: [872, 224], where: 'The car path north of the lawn, east of the Main Stage' },
   { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage', overview: true, where: 'North end of the lawn, below the pool' },
   // The Acoustic Stage sits where the export drew it until Mell Ave moved to
   // x 938.5 (Figma, 9/21) -- exactly where the pin was. The east end of
@@ -79,7 +87,7 @@ export const PINS = [
   // Achieve with Steve 858, booth 55 at 840 (Jess, Ernest, 9/22). The
   // barricade is between the stage and Mell; Mell itself stays open (9/24).
   { x: 885.0, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true, where: 'On McLendon Ave at Mell Ave, the east end of the McLendon art market' },
-  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true, where: 'The west lawn, off Candler Park Dr' },
+  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true, areaLabel: 'Kidlandia', where: 'The west lawn, off Candler Park Dr' },
 
   // The beer stand: the main one, on the field below the Main Stage -- the
   // landmark the food chair places Mr Softee against ("to the right of the

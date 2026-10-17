@@ -178,8 +178,9 @@ export const pinKey = (p) => `${p.c} (${p.x}, ${p.y})`;
  *   overview   candidates are the pins flagged `overview` (true, or 'docked'
  *              where the panel is docked); the rules decide among them
  *   first step every pin is a candidate
- *   Detail     every pin at its true location -- except the Food Court pin,
- *              which gives way to its own stalls there
+ *   Detail     every pin at its true location -- except an area's pin
+ *              (`areaLabel`: the Food Court, Kidlandia), which gives way to
+ *              its own booths there while its name label takes the tap
  */
 export function layoutMap({ pins, rankOf, tapR, markers = [], docked = false }) {
   const fixed = (r) => markers.map(([x, y]) => ({ x, y, r }));
@@ -188,7 +189,8 @@ export function layoutMap({ pins, rankOf, tapR, markers = [], docked = false }) 
   // stop is still on it at every closer stop, and there it outranks anything
   // it would collide with (STAYS_RANK, above rank 1). Zooming in never takes
   // a landmark away -- the beer stand and merch are on the opening view and
-  // stay, and the water stations beside them wait instead.
+  // stay, and the water stations beside them wait instead. (An area's pin
+  // still gives way to its booths at Detail: rule area-label-tap.)
   const shown = new Set();
   const items = (list, r) => list.map((p) => {
     const key = pinKey(p);
@@ -202,7 +204,7 @@ export function layoutMap({ pins, rankOf, tapR, markers = [], docked = false }) 
   return [
     place(pins.filter(onOverview), tapR[0], { fixed: fixed(tapR[0]) }),
     place(pins, tapR[1], { fixed: fixed(tapR[1]) }),
-    place(pins.filter((p) => p.d !== 'food'), tapR[2], { mode: 'all' }),
+    place(pins.filter((p) => !p.areaLabel), tapR[2], { mode: 'all' }),
   ];
 }
 

@@ -497,7 +497,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
       // Tap a pin, booth or area marker = open it. Double-tap anywhere else =
       // zoom in. A double-tap that lands on a tappable feature is two opens,
       // not a zoom, so the view doesn't jump out from under the sheet.
-      if (e.target.closest?.('.ff-pin, .ff-booth, .ff-marker')) return;
+      if (e.target.closest?.('.ff-pin, .ff-booth, .ff-marker, .ffc-arealabel')) return;
       if (levelRef.current >= LEVEL_RATIOS.length - 1) setLevel(0, e.clientX, e.clientY);
       else stepLevel(1, e.clientX, e.clientY);
     }

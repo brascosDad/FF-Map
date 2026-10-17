@@ -15,7 +15,13 @@
 //                previous screen, short, the way an iOS back button names it.
 //                Never derive it from `name` in a component; give the record
 //                one here.
-// `label` is the only text the map itself still draws for it. `blobs`/`clip`
+// `label` is the area's name on the map at the Detail stop, drawn at
+// `labelAt` -- where the marker has faded out and the booths are the targets,
+// the label is the tap that opens this card (rule area-label-tap). Each
+// labelAt is the nearest spot to the marker where a 44px target clears every
+// booth and pin at Detail on a 375px phone: on the lawn east of the Candler
+// Park Dr columns, between the McLendon rows, and on the lawn below the
+// car-path run. `blobs`/`clip`
 // are drawing concerns the panel ignores.
 // `range` is read off the booths themselves (data/booths.js, generated from
 // the chair's sheet), so it cannot say 82-142 after the sheet says 82-139.
@@ -28,14 +34,14 @@ import { BOOTHS, UNNUMBERED } from './booths';
 export const span = (booths) => `${booths[0].n}–${booths[booths.length - 1].n}`;
 
 export const AREAS = [
-  { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: null, shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market',
+  { id: 'cpd', blobs: BLOBS.cpd, clip: 'clip-cpd', booths: BOOTHS.cpd, mk: [411.5, 541.5], label: 'Art Market', labelAt: [447.5, 541.5], shortName: 'Candler Park Dr', name: 'Candler Park Dr · Art Market',
     range: `Booths ${span(BOOTHS.cpd)} · ${BOOTHS.cpd.length} booths` },
   // The McLendon marker sits in the run's east box (the export put it at
   // 666.4, just past the park entrance). At the phone overview the bike valet
   // pin is on screen too, and the two 44px targets have to clear on the
   // smallest phone we test: at 775 they clear by 4 units with the bike valet
   // at 712.4 (it moved east to make room for the merch tent on the corner).
-  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [775.0, 787.9], label: null, shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
+  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [775.0, 787.9], label: 'Art Market', labelAt: [772.9, 780.2], shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
     range: `Booths ${span(BOOTHS.mcl)} · ${BOOTHS.mcl.length} booths` },
   // The car-path marker sits up the path from where the export put it
   // (774.9, 509.3): first 25 units north so it cleared booth 29's number at
@@ -44,7 +50,7 @@ export const AREAS = [
   // stand's, which moved to Jess's spot at (728, 472) -- 83 units, where 81
   // is touching on a 375px phone. Still between the two rows, in the run's
   // north half.
-  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [801.0, 433.0], label: 'Art Market', shortName: 'In the Park', name: 'In the Park · Art Market',
+  { id: 'spine', blobs: BLOBS.spine, booths: BOOTHS.spine, mk: [801.0, 433.0], label: 'Art Market', labelAt: [785.4, 466.5], shortName: 'In the Park', name: 'In the Park · Art Market',
     range: `Booths ${span(BOOTHS.spine)} & ${span(BOOTHS.kid)} · ${BOOTHS.spine.length + BOOTHS.kid.length} booths` },
 ];
 
