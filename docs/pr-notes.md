@@ -18,27 +18,32 @@ an agent can query. One commit per item:
 8. **Design system 1.4.0**: `no-overlap` restated with the new priority; two new rules,
    `true-location` and `nudge-cap` (the cap is the rule's `constant`, checked against the code);
    a Pin placement table in §6; changelog.
+9. **Once shown, stays shown** (Ernest's answer to decision 1, option b): a pin on the map at a
+   coarser stop stays at every closer stop and outranks whatever it would collide with there
+   (`STAYS_RANK` in `src/pinPlacement.js`). Unit test, e2e check, and design-system rule
+   `stays-shown`; CLAUDE.md rule 6b.
 
 No stored x/y changed. Nothing ties, nothing is nudged and nothing is flagged with today's pins, so
 the split, the cap and the paper flag are tested on made-up pins.
 
 ## Which pins changed (375px phone)
 
-Only the phone's **first zoom step** changes. The overview, Detail, the docked desktop at every
-stop, and paper are pixel-identical to `main` (I checked the screenshots below byte for byte).
+Only the phone's **first zoom step** changes, and with once-shown-stays-shown only three pins move.
+The overview, Detail, the docked desktop at every stop, and paper are pixel-identical to `main`
+(I checked the screenshots below byte for byte).
 
 | Pin | Rank | Before: shown at | After: shown at | Why |
 |---|---|---|---|---|
-| Water, lawn beside Kidlandia (707.5, 455.5) | 3 | Detail | **first step**, Detail | Was held back by hand; water now outranks the beer stand |
-| Water, Acoustic Stage (888, 750) | 3 | Detail | **first step**, Detail | Outranks the Acoustic beer |
-| Water, McLendon entrance (645, 762) | 3 | Detail | **first step**, Detail | Outranks merch |
-| Info booth (637, 714.5) | 4 | Detail | **first step**, Detail | Clear of the entrance water (48 units, 46 needed); merch, its tie, is waiting |
-| **Beer stand** (728, 472) | 4 | overview, first step, Detail | overview, *—*, Detail | Gives way to the lawn water (26 units off) |
-| **Merch** (630, 740) | 4 | overview, first step, Detail | overview, *—*, Detail | Gives way to the entrance water (27 units off) |
-| Beer, Acoustic Stage (862, 750) | 4 | first step, Detail | Detail | Gives way to the Acoustic water |
-| Mr Softee, C3 (678, 476) | 5 | first step, Detail | Detail | Gives way to the lawn water (36 units off) |
-| Water, Kidlandia (552, 461) | 3 | Detail | Detail | No change: gives way to Kidlandia (rank 1) |
-| King of Pops, C1 (692.5, 377.5) | 5 | Detail | Detail | No change: gives way to first aid |
+| Water, Acoustic Stage (888, 750) | 3 | Detail | **first step**, Detail | Was held back by hand; water now outranks the Acoustic beer |
+| Beer, Acoustic Stage (862, 750) | 4 | first step, Detail | Detail | Gives way to the Acoustic water (26 units off). Not on the opening view, so stays-shown doesn't apply |
+| Mr Softee, C3 (678, 476) | 5 | first step, Detail | Detail | Sits on the lawn water's spot (36 units off). The water is itself waiting for the beer stand, but a waiting pin still holds its spot against lower ranks |
+| Beer stand (728, 472) | 4 | overview, first step, Detail | same | On the opening view, so it stays (stays-shown) |
+| Merch (630, 740) | 4 | overview, first step, Detail | same | On the opening view, so it stays (stays-shown) |
+| Water, lawn beside Kidlandia (707.5, 455.5) | 3 | Detail | Detail | Now waits by rule (the beer stand stays) rather than by hand |
+| Water, McLendon entrance (645, 762) | 3 | Detail | Detail | Now waits by rule (merch stays) |
+| Info booth (637, 714.5) | 4 | Detail | Detail | Now waits by rule (merch stays) |
+| Water, Kidlandia (552, 461) | 3 | Detail | Detail | Gives way to Kidlandia (rank 1) |
+| King of Pops, C1 (692.5, 377.5) | 5 | Detail | Detail | Gives way to first aid |
 
 Every other pin shows at the same stops as before. Docked desktop: every pin from the first step,
 before and after.
@@ -52,17 +57,18 @@ split-the-difference rule never fires with today's pins.
 | Stop | Before | After |
 |---|---|---|
 | Overview | merch | merch |
-| First step | merch | **info + water** (merch waits) |
+| First step | merch | merch (water and info wait: merch stays from the opening view) |
 | Detail | merch + info + water | merch + info + water |
 
-Docked desktop, before and after: merch / all three / all three. e2e asserts both.
+The entrance now behaves exactly as on `main`, but by rule instead of by hand. Docked desktop,
+before and after: merch / all three / all three. e2e asserts both.
 
 Screenshots of the entrance (wheel-zoomed on merch's spot, so the entrance stays in frame):
 
 | Stop | Before | After |
 |---|---|---|
 | Overview | `docs/pr-shots/entrance-phone-before-0.png` | `docs/pr-shots/entrance-phone-after-0.png` (identical) |
-| First step | `docs/pr-shots/entrance-phone-before-1.png` | `docs/pr-shots/entrance-phone-after-1.png` |
+| First step | `docs/pr-shots/entrance-phone-before-1.png` | `docs/pr-shots/entrance-phone-after-1.png` (only the Mr Softee square on the lawn and the Acoustic beer/water at the right edge differ) |
 | Detail | `docs/pr-shots/entrance-phone-before-2.png` | `docs/pr-shots/entrance-phone-after-2.png` (identical) |
 | Docked desktop, each stop | identical to after | `docs/pr-shots/entrance-desktop-{0,1,2}.png` |
 | Print sheet | identical to after | `docs/pr-shots/placement-print.png` |
@@ -81,21 +87,15 @@ someone places it by hand.
 
 **No baseline changes.** I expected `sheet-open` to go red, but CI passed all three visual checks
 (`phone-open`, `sheet-open`, `print`) against the existing baselines. The Kidlandia sheet opens at a
-view where nothing in frame changed. The local diffs (0.3–3.6%) were only this machine's text
+view where nothing in frame changed. Once shown, stays shown keeps that true: it only changes the first step. The local diffs (0.3–3.6%) were only this machine's text
 rendering. The `update-visual-baselines` label isn't needed.
 
 ## Decisions and questions for Ernest
 
-1. **Beer stand and merch disappear one step in.** They are on the opening view (the landmarks
-   from the 9/17 beta round), but at the first step a water station 26–27 units away now outranks
-   each one, so rule 3 hides them until Detail. This follows the rules exactly, but zooming in and
-   losing a landmark may feel odd. Options:
-   (a) keep as built;
-   (b) add a rule that a pin shown at a coarser stop stays at closer stops (it would then outrank
-   the water there, and the water would wait instead);
-   (c) move the two water stations far enough off. The lawn water would need 46 units from the
-   stand (it is 26.3); the entrance water would need 46 from merch (it is 26.6).
-   **I built (a)** because that is what the brief's rules say.
+1. **Beer stand and merch one step in — decided (Ernest, 10/17): option (b), once shown, stays
+   shown.** A pin on the map at a coarser stop stays at every closer stop and outranks anything
+   it would collide with there. The Food Court pin is the one exception: it still gives way to
+   its own stalls at Detail, as before. That exception is deliberate; say if you want it to stay.
 2. **Art-market markers** are not pins and have no rank. I treat them as fixed targets that never
    move or wait: any pin that would overlap one waits. That is how they were handled by hand
    before, and no pin is affected today.
