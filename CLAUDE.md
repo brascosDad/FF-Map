@@ -184,14 +184,31 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   24px with a spacing exception; the no-overlap rule below is how pins satisfy it.
 - **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
   may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
-  Circles may touch edge to edge; they may not cross. When two collide, one of two things happens:
-  the lower-priority pin **doesn't show until a closer stop** has room for it (`from: 'detail'`
-  in `pins.js`), or the two are **moved edge to edge**. Priority when something must wait:
-  labelled destinations (stages, Food Court, Kidlandia) → first aid / EMS → restrooms → info,
-  merch, bike valet, beer → water, beverage stations, PTA, food carts. Booth hit areas count as
-  targets at the Detail stop. The e2e suite measures every stop on a 375px phone, with each
-  filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
-  anything else — nudge edge to edge; paper has no zoom to hide behind. e2e checks the paper too.
+  Circles may touch edge to edge; they may not cross. Booth hit areas count as targets at the
+  Detail stop. The e2e suite measures every stop on a 375px phone and on the docked desktop, with
+  each filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
+  anything else; paper has no zoom to hide behind. e2e checks the paper too.
+- **Pin placement rules** (10/17; `src/pinPlacement.js` computes them, `npm run pin-layout` shows
+  the result — no more hand-set `from: 'detail'` flags or hand nudges):
+  1. **Every pin has a rank** (`PIN_RANK` in `pins.js`), highest first: labelled destinations
+     (stages, Food Court, Kidlandia) → first aid / EMS → restrooms and water → info, merch, bike
+     valet, beer → beverage stations, PTA, food carts. Water ranks with the restrooms (festival
+     chip use: restrooms 37, water 28, first aid 23).
+  2. **True location = the pin's stored x/y**, where it sits at Detail, where every pin shows.
+     No two overlap there. Nothing ever writes to a stored x/y.
+  3. **At every coarser stop the higher rank wins**: the lower-ranked pin waits for the next
+     closer stop, and a waiting pin still holds its spot against anything ranked below it.
+  4. **Tied pins split the difference**, each moving half the overlap along the line between them.
+  5. **Nudge cap: no pin sits more than `NUDGE_CAP` (12.75 map units, half of `--pin-hit` at
+     Detail on a 375px phone) from its true location**, at any stop; a tie that needs more makes
+     both wait. Between stops a nudged pin glides with the zoom.
+  6. A nudge must not create a new overlap; if it would, both pins wait. Rank, then listed order:
+     the same pins always give the same map.
+  7. **Paper is one more stop where nothing waits**: a pin nudges within the cap, and if that is
+     not enough it is **flagged, not placed** — drawn at its true location and listed in
+     `docs/pr-notes.md` for Ernest to place by hand.
+  8. A filter chip still draws its whole category on top at any stop; dimmed pins take no tap.
+     `overview: true` / `'docked'` decides only which pins are candidates for the opening view.
 - **Chips, pin taps and the sheet — the standing interaction model** (Ernest, iPhone, 9/22; phone
   and desktop, every chip):
   1. **Chip on:** every pin in that category shows, whatever the zoom, highlighted and drawn on
@@ -516,6 +533,17 @@ is Cowork's and Ernest's to fix.
 
 **Outside this repo:** iPhone header bug on the Squarespace site (nav unreachable on a phone),
 reported to Will 9/13, no reply. Until fixed, the homepage band is the only phone route to the map.
+
+**Shipped since:**
+- 10/17, pin placement rules (one PR, one commit per item): the **Pin placement rules** in Decided,
+  computed by `src/pinPlacement.js` for each screen's scale; rank in `pins.js`, the cap in the
+  design system (1.4.0, rules `true-location` and `nudge-cap`). With today's pins nothing ties,
+  nothing nudges and nothing is flagged on paper. What moved on the phone's first step: the water
+  stations at the lawn, the Acoustic Stage and the entrance, and the info booth, arrive a stop
+  earlier; the **beer stand and merch show at the overview, wait at the first step** (each gives
+  way to a water station) and come back at Detail; the Acoustic beer and Mr Softee now wait for
+  Detail too. Ernest decides whether that is what he wants (the question is in that PR's
+  `docs/pr-notes.md`).
 
 ## Analytics
 
