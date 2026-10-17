@@ -291,6 +291,25 @@ export const PINS = [
   { x: 411.5, y: 585.0, c: 'speedbump', print: true, hidden: true },
 ];
 
+// RANK: who keeps their spot when two pins' targets would overlap at a stop
+// (src/pinPlacement.js; the design system's `pin-rank` rule). 1 is highest.
+// The lower-ranked pin waits for a closer stop; two of the same rank split
+// the difference. Water ranks with the restrooms (the team, 10/17; festival
+// days' chip use: restrooms 37, water 28, first aid 23). The paper-only ops
+// marks rank last: they exist only on paper, where nothing waits, so their
+// rank only decides which of two moves.
+export const PIN_RANK = {
+  stage: 1, food: 1, kids: 1,               // labelled destinations
+  firstaid: 2,                              // first aid / EMS
+  wc: 3, water: 3,                          // restrooms and water
+  info: 4, merch: 4, bikevalet: 4, drinks: 4, // info, merch, bike valet, beer
+  beverage: 5, pta: 5, cart: 5,             // beverage stations, PTA, food carts
+  barricade: 5, generator: 5, dumpster: 5, speedbump: 5, iceTruck: 5, musicianTent: 5,
+};
+/** A pin's rank. A food cart is `c: 'food'` like the Food Court, but a cart
+ *  (it has a `vendor`), not the destination. */
+export const rankOf = (p) => PIN_RANK[p.vendor ? 'cart' : p.c];
+
 // Colours are references into the token layer, not hex literals. tokens.css is
 // the single source of truth; this file used to carry a second copy of the same
 // nine values, which is exactly the kind of duplication that drifts.
