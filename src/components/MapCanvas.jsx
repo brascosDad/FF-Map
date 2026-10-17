@@ -3,7 +3,9 @@ import { BLOBS } from '../assets/basemapBlobs';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
 import { featuredTitle } from '../data/festival';
-import { ACTIVE_PINS, CREAM, NAVY, PIN_COLOR, SLATE } from '../assets/pins';
+import { useMemo } from 'react';
+import { ACTIVE_PINS, CREAM, NAVY, PIN_COLOR, PINS, SLATE, rankOf } from '../assets/pins';
+import { layoutMap, pinKey } from '../pinPlacement';
 import { IconAt } from './Icon';
 
 // Side of one booth / food-truck square, in map units. The export draws its own
@@ -36,13 +38,15 @@ function pinPx() {
   return sizes;
 }
 
-// What the furthest-out view shows. At that zoom the whole festival is squeezed
-// into a phone screen, and pins hold one physical size, so the only question is
-// how many of them there are. Measured on a 390px phone with all of them: seven
-// pairs collide, and EVERY collision involves an amenity -- the destinations
-// never touch each other. So the overview carries the pins flagged
-// `overview: true` in assets/pins.js (destinations plus the landmarks testers
-// asked for), and the rest arrive when you zoom in or ask for them by chip.
+// What each stop shows, and where, is the placement rules' call
+// (src/pinPlacement.js): the overview's candidates are the pins flagged
+// `overview` in assets/pins.js, every pin is a candidate from the first step,
+// and where two targets would overlap the higher rank keeps its spot and the
+// lower waits for a closer stop -- or two of a rank split the difference.
+// The layout is computed for THIS screen's scale at each stop, so a wider
+// phone, a narrower one and the docked desktop each get the map that fits.
+// The visitor pins: the paper-only layer never reaches the phone.
+const MAP_PINS = ACTIVE_PINS.filter((p) => !p.print);
 
 const PIN_ICON_PX = 22;
 const STREET_PX = 13;
@@ -137,7 +141,7 @@ function SelectRing({ x, y, r, k }) {
   );
 }
 
-export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedPin = null, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
+export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, levelIdx = 0, levelPos = 0, stopUnitsPerPx = [1, 1, 1], docked = false, showBlobs, showNumbers, detail, unitsPerPx = 1, areaMarkerFade = 0, selectedBoothId, selectedPoiId, selectedPin = null, selectedAreaId, onPinClick, onAreaClick, onBoothClick }) {
   // k converts a CSS pixel into map units at the current zoom.
   const k = unitsPerPx;
   // One size at every level. The overview used to draw pins a step smaller,
@@ -153,10 +157,29 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
   // over the booths they used to cover -- a tap there has to reach the booth.
   const markerOut = areaMarkerFade >= 0.999;
   const markerStyle = { opacity: 1 - areaMarkerFade, pointerEvents: markerOut ? 'none' : undefined };
-  // A pin is on the overview if pins.js flags it (everywhere, or only where
-  // the panel is docked), or if you asked for its category by chip -- tapping
-  // "Restrooms" at the overview must show restrooms.
-  const onOverview = (p) => p.overview === true || (p.overview === 'docked' && docked) || filter === p.c;
+  // Each stop's placement, for this screen: the tap target's radius in map
+  // units at each stop is what decides who collides with whom.
+  const tapPx = Math.max(sz.pin, sz.tap) / 2;
+  const scaleKey = stopUnitsPerPx.join(',');
+  const layout = useMemo(() => layoutMap({
+    pins: MAP_PINS, rankOf, docked,
+    tapR: scaleKey.split(',').map((u) => tapPx * Number(u)),
+    markers: AREAS.map((a) => a.mk),
+  }), [scaleKey, tapPx, docked]);
+  // Where a pin is drawn: its spot at the stops either side of the view,
+  // interpolated by where the view is between them (levelPos follows a pinch
+  // and a fly continuously), so a nudged pin glides with the zoom instead of
+  // jumping at the snap. A stop where it is hidden lends its true location.
+  const lo = Math.floor(levelPos), hi = Math.min(lo + 1, layout.length - 1), t = levelPos - lo;
+  const spotAt = (s, p) => { const e = layout[s].get(pinKey(p)); return e?.shown ? e : p; };
+  const drawAt = (p) => {
+    const a = spotAt(lo, p), b = spotAt(hi, p);
+    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  };
+  // On the map at this stop: placed by the rules, or asked for by chip -- a
+  // chip draws its whole category at any stop ("Restrooms" at the overview
+  // must show restrooms).
+  const shownAt = (p) => filter === p.c || !!layout[levelIdx]?.get(pinKey(p))?.shown;
   // Dimming is a class, not an inline opacity: --opacity-dimmed is the token
   // that says how far "not what you asked for" fades, and it lives in one file.
   const dim = (cat) => (filter && filter !== cat ? ' ffc-dimmed' : '');
@@ -250,41 +273,35 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, overview, 
         {/* A filter chip's own pins draw last, so they sit on top of
             everything they might share a spot with; the rest are dimmed and,
             while the chip is on, take no taps (.ffc-dimmed). */}
-        {ACTIVE_PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
-          // Paper-only pins (print: true in pins.js -- the EMS / fire
-          // inspector layer) never reach the phone.
-          if (p.print) return null;
-          // The Food Court pin gives way to its stalls at Detail; a food cart
-          // pin (King of Pops) is a place of its own and stays.
+        {MAP_PINS.map((p, i) => ({ p, i })).sort((a, b) => (filter && a.p.c === filter) - (filter && b.p.c === filter)).map(({ p, i }) => {
+          // The Food Court pin gives way to its stalls at Detail, chip or no
+          // chip; a food cart pin (King of Pops) is a place of its own and
+          // stays. Everything else is the placement's call (above).
           if (detail && p.d === 'food') return null;
-          if (overview && !onOverview(p)) return null;
-          // Held back until Detail (from: 'detail' in pins.js) unless its
-          // chip asked for it. Only where the sheet is a bottom sheet: the
-          // docked map's first step draws 44px as 22 units, half the
-          // phone's 46, so there the first step already has the room.
-          if (p.from === 'detail' && !detail && !docked && filter !== p.c) return null;
+          if (!shownAt(p)) return null;
+          const { x, y } = drawAt(p);
           // The class carries the category and the category carries the colour:
           // .ffc-pin--wc sets --pin-fill, the circle reads it. No hex, and no
           // lookup table in JS either.
           return (
-            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}${dim(p.c)}`} onClick={(e) => { e.stopPropagation(); onPinClick(p); }}>
+            <g key={i} className={`ff-tap ff-pin ffc-pin ffc-pin--${p.c}${dim(p.c)}`} data-pin={PINS.indexOf(p)} data-rank={rankOf(p)} onClick={(e) => { e.stopPropagation(); onPinClick(p); }}>
               {/* The visible pin shrinks at the overview; the thing your finger
                   has to hit does not. This invisible circle holds the 44px
                   floor whatever the marker is drawn at. */}
-              <circle cx={p.x} cy={p.y} r={tapR} fill="transparent" />
+              <circle cx={x} cy={y} r={tapR} fill="transparent" />
               {/* A square pin (the King of Pops carts) is a booth-sized tick
                   in its category colour at full strength, no glyph -- ground
                   scale, like the stalls, under the same 44px target. */}
               {p.shape === 'square'
-                ? <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.6} fill="var(--pin-fill)" />
+                ? <rect x={x - TICK / 2} y={y - TICK / 2} width={TICK} height={TICK} rx={1.6} fill="var(--pin-fill)" />
                 : <g filter="url(#ds)">
-                    <circle cx={p.x} cy={p.y} r={pinR} fill="var(--pin-fill)" />
-                    <IconAt name={p.c} x={p.x} y={p.y} size={PIN_ICON_PX * k} />
+                    <circle cx={x} cy={y} r={pinR} fill="var(--pin-fill)" />
+                    <IconAt name={p.c} x={x} y={y} size={PIN_ICON_PX * k} />
                   </g>}
               {/* The tapped pin wears the ring. With no one pin selected (a
                   category row in the directory) every pin of the open card
                   does -- the honest answer to "where are the restrooms". */}
-              {(selectedPin ? p === selectedPin : p.d === selectedPoiId) && <SelectRing x={p.x} y={p.y} r={pinR} k={k} />}
+              {(selectedPin ? p === selectedPin : p.d === selectedPoiId) && <SelectRing x={x} y={y} r={pinR} k={k} />}
             </g>
           );
         })}

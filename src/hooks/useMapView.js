@@ -27,6 +27,11 @@ export const LEVEL_RATIOS = [1, 0.565, 0.315];
 // (The level names live in the comment above rather than an exported array --
 // nothing renders them now that the zoom readout is gone.)
 
+// Phone screens get the map drawn ~10% larger at the overview. The festival
+// still fits, but only just -- about 10 map units (~6px) of margin either side.
+// (Here rather than in App so scripts/pin-layout.mjs can size a phone's stops.)
+export const MOBILE_OVERVIEW_ZOOM = 1.1;
+
 // The festival footprint in map space, plus breathing room so the McLendon x
 // Candler Park Dr corner never sits flush against the edge.
 const FESTIVAL = { x: 385, y: 110, w: 670, h: 720 };
@@ -68,7 +73,7 @@ const REGION = {
  *  panel. The map still paints full-bleed underneath it (that is the Google
  *  Maps look), but the festival is fitted and centred into the part you can
  *  actually see, so nothing important ends up hidden behind the panel. */
-function fitOverview(px, py, insetRight = 0, zoom = 1) {
+export function fitOverview(px, py, insetRight = 0, zoom = 1) {
   const usable = Math.max(px - insetRight, 120);
   const w = Math.max(
     ((FESTIVAL.w + MARGIN * 2) * px) / usable,
@@ -533,6 +538,11 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   // when they lift.
   const levelPos = levelPosition(vb.w / fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current));
   const areaMarkerFade = Math.min(1, Math.max(0, (levelPos - MARKER_FADE_FROM) / (LEVEL_RATIOS.length - 1 - MARKER_FADE_FROM)));
+  // Map units per CSS pixel AT each stop on this screen -- what the pin
+  // placement rules (src/pinPlacement.js) size a tap target by. Rounded so a
+  // sub-pixel resize does not re-run the placement.
+  const base = fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current);
+  const stopUnitsPerPx = LEVEL_RATIOS.map((r) => Math.round((base * r * 1e4) / (sizeRef.current.px || 1)) / 1e4);
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, levelPos, stopUnitsPerPx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview };
 }
