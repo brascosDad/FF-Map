@@ -79,12 +79,10 @@ someone places it by hand.
 
 ## Visual baselines
 
-**Expect the visual check to go red on purpose.** `sheet-open` taps Kidlandia, which pans the
-phone to the first step, where the lawn water now shows and the beer stand and Mr Softee wait.
-`phone-open` (the overview) and `print` should come out unchanged; my local renders of those match
-`main` pixel for pixel, and the local diffs against the CI baselines (0.3% and 3.6%) are this
-machine's text rendering. Ernest adds the `update-visual-baselines` label after review. Look at the
-diff images first.
+**No baseline changes.** I expected `sheet-open` to go red, but CI passed all three visual checks
+(`phone-open`, `sheet-open`, `print`) against the existing baselines. The Kidlandia sheet opens at a
+view where nothing in frame changed. The local diffs (0.3–3.6%) were only this machine's text
+rendering. The `update-visual-baselines` label isn't needed.
 
 ## Decisions and questions for Ernest
 
