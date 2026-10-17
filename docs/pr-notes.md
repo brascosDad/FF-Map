@@ -22,15 +22,24 @@ an agent can query. One commit per item:
    coarser stop stays at every closer stop and outranks whatever it would collide with there
    (`STAYS_RANK` in `src/pinPlacement.js`). Unit test, e2e check, and design-system rule
    `stays-shown`; CLAUDE.md rule 6b.
+10. **Area labels carry the tap at Detail** (Ernest, 10/17), one rule in the manifest,
+    `area-label-tap`: "At Detail, an area's pin gives way to its booths, and its name label
+    carries the tap." Kidlandia now behaves like the Food Court. Its pin leaves at Detail, the K
+    booths are the targets, and KIDLANDIA is drawn over the area in the FOOD COURT style. Every
+    area's name at Detail opens its card: FOOD COURT, KIDLANDIA, and ART MARKET on each of the
+    three art-market areas. The names are drawn by a new component, AreaLabel (`.ffc-arealabel`),
+    over a hit rect at least 44px each way. e2e covers all five on a 375px phone and the docked
+    desktop.
 
 No stored x/y changed. Nothing ties, nothing is nudged and nothing is flagged with today's pins, so
 the split, the cap and the paper flag are tested on made-up pins.
 
 ## Which pins changed (375px phone)
 
-Only the phone's **first zoom step** changes, and with once-shown-stays-shown only three pins move.
-The overview, Detail, the docked desktop at every stop, and paper are pixel-identical to `main`
-(I checked the screenshots below byte for byte).
+On the phone's **first zoom step** only three pins move (table). At **Detail**, on the phone and
+the docked desktop, the Kidlandia pin gives way to its booths and the five area labels appear (next
+section). The overview and paper are pixel-identical to `main` (I checked the screenshots below byte
+for byte).
 
 | Pin | Rank | Before: shown at | After: shown at | Why |
 |---|---|---|---|---|
@@ -43,6 +52,7 @@ The overview, Detail, the docked desktop at every stop, and paper are pixel-iden
 | Water, McLendon entrance (645, 762) | 3 | Detail | Detail | Now waits by rule (merch stays) |
 | Info booth (637, 714.5) | 4 | Detail | Detail | Now waits by rule (merch stays) |
 | Water, Kidlandia (552, 461) | 3 | Detail | Detail | Gives way to Kidlandia (rank 1) |
+| **Kidlandia** (550.9, 422.3) | 1 | overview, first step, Detail | overview, first step | Gives way to its K booths at Detail; its name label takes the tap (area-label-tap) |
 | King of Pops, C1 (692.5, 377.5) | 5 | Detail | Detail | Gives way to first aid |
 
 Every other pin shows at the same stops as before. Docked desktop: every pin from the first step,
@@ -51,6 +61,37 @@ before and after.
 **Largest nudge at each stop:** 0 at all three stops on the 375px phone, 0 at all three on the
 docked desktop, 0 on paper. No two pins of the same rank collide at any stop, so the
 split-the-difference rule never fires with today's pins.
+
+## Area labels at Detail (area-label-tap)
+
+Each label's hit rect is at least 44px each way (`--pin-hit`), sized to the word, and placed at the
+nearest spot to the area's old pin or marker where the target clears every booth cell and every
+pin target at Detail on a 375px phone. **All five fit; none needed a smaller target.** The e2e
+no-overlap check now measures the label rects against pins, booth cells and each other, at every
+stop and with each chip on, on the phone and the docked desktop.
+
+| Area | Label | Where (`labelAt`) | Target on a 375px phone | Opens |
+|---|---|---|---|---|
+| Food Court | FOOD COURT | (872, 224), where it was drawn, centred 4 units up on its target | 79 × 44px | Food Court card |
+| Kidlandia | KIDLANDIA | (550.9, 422.3), the pin's own spot, west of the K column | 71 × 44px | Kidlandia card |
+| Candler Park Dr | ART MARKET | (447.5, 541.5), 36 units east of the old marker, on the path beside the park-side column (112–117) | 79 × 44px | Candler Park Dr · Art Market list |
+| McLendon Ave | ART MARKET | (772.9, 780.2), 8 units from the old marker, on McLendon east of the booth runs | 79 × 44px | McLendon Ave · Art Market list |
+| In the Park | ART MARKET | (785.4, 466.5), 37 units from the old marker, on the path between the two rows (37 / 10–11) | 79 × 44px | In the Park · Art Market list |
+
+Close-ups at Detail: `docs/pr-shots/arealabel-{food,kids,cpd,mcl,spine}-375.png`.
+
+Choices I made:
+- **The three art-market labels all say ART MARKET**, the spine's existing `label`. Their streets
+  are already named on the map, and the card that opens names the run ("McLendon Ave · Art
+  Market"). If you'd rather the label name the run (e.g. CANDLER PARK DR), it's one field per area
+  in `areas.js`, but those words are longer and would need their spots re-checked.
+- **Label colours**: FOOD COURT keeps `--map-food-label`. KIDLANDIA uses a new `--map-kids-label`,
+  which points at a new primitive, `--kids-ink` (the Kidlandia rose darkened for text, 5.3:1 on
+  white). ART MARKET uses `--map-art-label`, the booth slate.
+- **With a chip on** the labels dim and take no tap, like the booth squares.
+- Two existing e2e walks tapped or measured the Kidlandia pin after zooming in to Detail, where it
+  is now gone. The pinch size check measures the Main Stage pin instead, and the Close-position
+  walk opens the merch card. Neither check is any weaker.
 
 ## Entrance cluster (water, info, merch), 375px phone
 
@@ -69,7 +110,7 @@ Screenshots of the entrance (wheel-zoomed on merch's spot, so the entrance stays
 |---|---|---|
 | Overview | `docs/pr-shots/entrance-phone-before-0.png` | `docs/pr-shots/entrance-phone-after-0.png` (identical) |
 | First step | `docs/pr-shots/entrance-phone-before-1.png` | `docs/pr-shots/entrance-phone-after-1.png` (only the Mr Softee square on the lawn and the Acoustic beer/water at the right edge differ) |
-| Detail | `docs/pr-shots/entrance-phone-before-2.png` | `docs/pr-shots/entrance-phone-after-2.png` (identical) |
+| Detail | `docs/pr-shots/entrance-phone-before-2.png` | `docs/pr-shots/entrance-phone-after-2.png` (the entrance is identical; at the top left the Kidlandia pin is gone and its label shows) |
 | Docked desktop, each stop | identical to after | `docs/pr-shots/entrance-desktop-{0,1,2}.png` |
 | Print sheet | identical to after | `docs/pr-shots/placement-print.png` |
 
@@ -87,15 +128,18 @@ someone places it by hand.
 
 **No baseline changes.** I expected `sheet-open` to go red, but CI passed all three visual checks
 (`phone-open`, `sheet-open`, `print`) against the existing baselines. The Kidlandia sheet opens at a
-view where nothing in frame changed. Once shown, stays shown keeps that true: it only changes the first step. The local diffs (0.3–3.6%) were only this machine's text
-rendering. The `update-visual-baselines` label isn't needed.
+view where nothing in frame changed. Once shown, stays shown keeps that true: it only changes the
+first step. The local diffs (0.3–3.6%) were only this machine's text rendering. The area-label
+change only draws at Detail, and none of the three baselines is a Detail view, so I expect them to
+stay green; CI decides. If one does change, look at its diff before adding the
+`update-visual-baselines` label.
 
 ## Decisions and questions for Ernest
 
 1. **Beer stand and merch one step in — decided (Ernest, 10/17): option (b), once shown, stays
    shown.** A pin on the map at a coarser stop stays at every closer stop and outranks anything
-   it would collide with there. The Food Court pin is the one exception: it still gives way to
-   its own stalls at Detail, as before. That exception is deliberate; say if you want it to stay.
+   it would collide with there. The exception is an area's pin (Food Court, Kidlandia), which
+   gives way to its booths at Detail by rule `area-label-tap` (your 10/17 follow-up).
 2. **Art-market markers** are not pins and have no rank. I treat them as fixed targets that never
    move or wait: any pin that would overlap one waits. That is how they were handled by hand
    before, and no pin is affected today.
