@@ -2476,6 +2476,17 @@
       "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › Nudge cap"
     },
     {
+      "id": "stays-shown",
+      "statement": "Once shown, stays shown: a pin on the map at a coarser stop is on it at every closer stop, and there it outranks anything it would collide with (STAYS_RANK in src/pinPlacement.js, above rank 1), so it keeps its true location and the other pin waits. The one exception is the Food Court pin, which gives way to its own stalls at Detail.",
+      "reason": "Zooming in should add to the map, never take a landmark away. The beer stand and merch are on the opening view because beta testers reached for them first; at the first step a water station that outranks each of them would otherwise make them vanish (Ernest, 10/17).",
+      "enforcedBy": [
+        "e2e: a pin shown at a coarser stop is still shown at the",
+        "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
+        "ds: npm run test:ds (design-system/placement.test.mjs: stays-shown)"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › Once shown, stays shown"
+    },
+    {
       "id": "tap-floor",
       "statement": "--tap-min (44px) is the floor for every control (chips, close, zoom buttons, the ItemPager's buttons, the handle); --pin-hit (44px) is the hit area centred on every pin. The visible glyph may be smaller than its target; the target may not.",
       "reason": "44 CSS px is 44pt on iPhone, Apple's HIG minimum; WCAG 2.2 AA 2.5.8 asks for 24px with a spacing exception, which the no-overlap rule satisfies for pins.",

@@ -121,8 +121,9 @@ export const PINS = [
   { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', shape: 'square', n: 'C2', vendor: 'King of Pops', tag: 'entrance', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
   // Mr Softee: "Add an additional food icon here (this one is Mr Softee)"
   // (Jess's markup, 9/23), a food-cart square like King of Pops, on the lawn
-  // south-west of the beer stand. At the first step the lawn water outranks
-  // it (36 units off), so it waits for Detail.
+  // south-west of the beer stand. At the first step it sits on the lawn
+  // water's spot (36 units off; the water outranks it, though it is itself
+  // waiting for the stand), so it waits for Detail.
   { x: 678.0, y: 476.0, c: 'food', d: 'mrsoftee', shape: 'square', n: 'C3', vendor: 'Mr Softee', where: 'On the lawn beside Kidlandia, south-west of the beer stand' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
@@ -181,14 +182,17 @@ export const PINS = [
 
   // Water refill stations, per Jess's 2026 site plan (9/21, Ernest 9/22).
   // Water ranks with the restrooms (10/17): where a station sits close to
-  // a beer stand, merch, info or a cart, the station keeps its spot at the
-  // first step and the other waits; near Kidlandia or first aid the station
-  // waits. The Water chip shows every station at any stop.
+  // a beer stand, info or a cart, the station keeps its spot at the first
+  // step and the other waits; near Kidlandia or first aid -- or a landmark
+  // already on the opening view (the beer stand, merch: once shown, stays
+  // shown) -- the station waits. The Water chip shows every station at any
+  // stop.
   //
   // On the lawn just above-left of the beer stand (Ernest, round 3: 712, 459).
   // His spot is 20.6 units from the stand, under the 25.5 two Detail targets
   // need, so it sits edge to edge on his bearing, 5.7 units further out:
-  // 26.3 from the stand. On from the first step; the stand waits for Detail.
+  // 26.3 from the stand. The stand is on the opening view and stays, so at
+  // the first step this waits for Detail.
   { x: 707.5, y: 455.5, c: 'water', d: 'water', where: 'On the lawn beside Kidlandia, next to the beer stand' }, // TODO(Jess): confirm location
   // The water half of the beer + water pair north of the Acoustic Stage:
   // tight against the beer at (862, 750) -- edge to edge at Detail, 26
@@ -203,7 +207,8 @@ export const PINS = [
   // entrance tucked against the merch tent's lower-right side, edge to edge
   // at Detail (26.6 units on Ernest's bearing, where 25.5 is touching on a
   // 375px phone; his (636, 749) was 11 from merch). At the first zoom step it
-  // would sit on merch, and it outranks merch, so merch waits there.
+  // would sit on merch, which is on the opening view and stays, so this
+  // waits for Detail.
   { x: 645.0, y: 762.0, c: 'water', d: 'water', where: 'McLendon entrance, next to the merch tent' }, // TODO(Jess): confirm location
 
   // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
@@ -229,9 +234,9 @@ export const PINS = [
   // round-3 endpoint is (635, 721), 19.6 units from merch on a bearing a
   // little east of north; the two 44px targets need 25.5 at the phone's
   // Detail stop, so info sits at the closest point on that bearing where
-  // they are edge to edge: 26.4 units out. The two rank equal; at the
-  // phone's first step merch waits for the entrance water, so info shows
-  // there alone. Not on the opening view (no `overview` flag). Was (630, 694), 46
+  // they are edge to edge: 26.4 units out. At the phone's first step merch,
+  // on from the opening view, keeps its spot and info waits for Detail. Not
+  // on the opening view (no `overview` flag). Was (630, 694), 46
   // above merch, from 9/20 to 9/22. The export had it at (644.3, 733.3).
   { x: 637.0, y: 714.5, c: 'info', d: 'info', where: 'Just inside the McLendon entrance, east side of the path, above the merch tent' },
 

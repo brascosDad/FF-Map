@@ -204,6 +204,9 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
      both wait. Between stops a nudged pin glides with the zoom.
   6. A nudge must not create a new overlap; if it would, both pins wait. Rank, then listed order:
      the same pins always give the same map.
+  6b. **Once shown, stays shown** (Ernest, 10/17): a pin on the map at a coarser stop is on it at
+     every closer stop, and there it outranks anything it would collide with — zooming in never
+     takes a landmark away. (The Food Court pin still gives way to its own stalls at Detail.)
   7. **Paper is one more stop where nothing waits**: a pin nudges within the cap, and if that is
      not enough it is **flagged, not placed** — drawn at its true location and listed in
      `docs/pr-notes.md` for Ernest to place by hand.
@@ -537,13 +540,13 @@ reported to Will 9/13, no reply. Until fixed, the homepage band is the only phon
 **Shipped since:**
 - 10/17, pin placement rules (one PR, one commit per item): the **Pin placement rules** in Decided,
   computed by `src/pinPlacement.js` for each screen's scale; rank in `pins.js`, the cap in the
-  design system (1.4.0, rules `true-location` and `nudge-cap`). With today's pins nothing ties,
-  nothing nudges and nothing is flagged on paper. What moved on the phone's first step: the water
-  stations at the lawn, the Acoustic Stage and the entrance, and the info booth, arrive a stop
-  earlier; the **beer stand and merch show at the overview, wait at the first step** (each gives
-  way to a water station) and come back at Detail; the Acoustic beer and Mr Softee now wait for
-  Detail too. Ernest decides whether that is what he wants (the question is in that PR's
-  `docs/pr-notes.md`).
+  design system (1.4.0, rules `true-location`, `nudge-cap` and `stays-shown`). With today's pins
+  nothing ties, nothing nudges and nothing is flagged on paper. What moved on the phone's first
+  step: the water
+  station at the Acoustic Stage arrives a stop earlier and the Acoustic beer and Mr Softee wait
+  for Detail. Ernest chose **once shown, stays shown** (rule 6b): the beer stand and merch stay
+  from the opening view on, and the lawn and entrance water stations and the info booth wait for
+  Detail, as they did before.
 
 ## Analytics
 

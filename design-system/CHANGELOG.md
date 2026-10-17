@@ -6,10 +6,10 @@ PR as the manifest, the Names table and the docs.
 
 ## 1.4.0 — 2026-10-17
 
-Minor: two rules are added and `no-overlap` changes who gives way. On a
-375px phone's first zoom step, water stations and the info booth arrive a
-stop earlier; the beer stand, merch, the Acoustic beer and Mr Softee wait
-for Detail. Paper and the docked desktop draw the same as before.
+Minor: three rules are added and `no-overlap` changes who gives way. On a
+375px phone's first zoom step the Acoustic Stage's water station arrives a
+stop earlier and the Acoustic beer and Mr Softee wait for Detail. Paper and
+the docked desktop draw the same as before.
 
 - **Rule `no-overlap`: placement is computed, not hand-set.** Every pin has a
   rank (`PIN_RANK` in `src/assets/pins.js`); at a coarser stop the higher
@@ -26,6 +26,11 @@ for Detail. Paper and the docked desktop draw the same as before.
   (half of `--pin-hit` at Detail on a 375px phone) from its true location, at
   any stop. A rule may now carry a `constant` ({ name, value, unit, file,
   derivation }); `npm run manifest` fails if the file disagrees with it.
+- **Rule `stays-shown`** (new, Ernest's call): a pin shown at a coarser stop
+  stays at every closer stop and outranks anything it would collide with
+  there (`STAYS_RANK`), so zooming in never takes a landmark away. The beer
+  stand and merch stay from the opening view on; the water stations beside
+  them wait for Detail. The Food Court pin still gives way to its stalls.
 - **Enforced by** e2e on a 375px phone, the docked desktop (new: every stop,
   each chip) and paper, and `design-system/placement.test.mjs` in
   `npm run test:ds`. `npm run pin-layout` shows what the rules do with
