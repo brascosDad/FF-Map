@@ -3,7 +3,7 @@
 // the split, the cap and the paper flag honest. `npm run test:ds` runs them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { NUDGE_CAP, placeStop } from '../src/pinPlacement.js';
+import { NUDGE_CAP, STAYS_RANK, layoutMap, placeStop } from '../src/pinPlacement.js';
 
 const pin = (key, x, y, rank, r = 10) => ({ key, x, y, rank, r });
 const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -95,4 +95,26 @@ test('the cap is half of --pin-hit at Detail on a 375px phone', () => {
   // 44px at Detail on a 375px phone is 25.5 map units (CLAUDE.md), so half
   // the target is 12.75.
   assert.equal(NUDGE_CAP, 12.75);
+});
+
+test('stays-shown: a pin on the opening view stays at every closer stop and outranks what it meets there', () => {
+  // A rank-4 landmark on the overview, and a rank-3 station 26 units off that
+  // is not an overview candidate: at the first step (targets 46 across) the
+  // two collide, and the landmark keeps its spot; the station waits.
+  const pins = [
+    { c: 'merch', d: 'merch', x: 0, y: 0, overview: true },
+    { c: 'water', d: 'water', x: 26, y: 0 },
+  ];
+  const rankOf = (p) => ({ merch: 4, water: 3 })[p.c];
+  const [o, f, d] = layoutMap({ pins, rankOf, tapR: [40, 23, 12.75] });
+  const key = (p) => `${p.c} (${p.x}, ${p.y})`;
+  assert.equal(o.get(key(pins[0])).shown, true);
+  assert.equal(f.get(key(pins[0])).shown, true);
+  assert.equal(f.get(key(pins[1])).shown, false);
+  assert.ok(d.get(key(pins[0])).shown && d.get(key(pins[1])).shown);
+  // Without the overview flag, plain rank decides: the station wins.
+  const [, g] = layoutMap({ pins: [{ ...pins[0], overview: false }, pins[1]], rankOf, tapR: [40, 23, 12.75] });
+  assert.equal(g.get(key(pins[1])).shown, true);
+  assert.equal(g.get(key(pins[0])).shown, false);
+  assert.ok(STAYS_RANK < 1);
 });

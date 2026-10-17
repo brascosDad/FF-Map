@@ -13,7 +13,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { FESTIVAL } from '../src/data/festival.js';
 import { whatsOnNow } from '../src/whatsOnNow.js';
 import { PINS, rankOf } from '../src/assets/pins.js';
-import { NUDGE_CAP } from '../src/pinPlacement.js';
+import { NUDGE_CAP, STAYS_RANK } from '../src/pinPlacement.js';
 import { BASE, launch } from './lib/browser.mjs';
 
 // A colour token as the browser reports a computed fill: 'rgb(r, g, b)'. Read
@@ -585,8 +585,10 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
 // group carries data-pin (its index in PINS, whose x/y is the true location)
 // and data-rank; its first circle is the tap target, drawn where the pin is.
 // On a 375px phone and the docked desktop, at each stop, settled: no pin sits
-// further than NUDGE_CAP from its true location; no lower-ranked pin is drawn
-// over the true location of a higher-ranked candidate that is waiting; the
+// further than NUDGE_CAP from its true location; a pin shown at a coarser
+// stop is still shown (once shown, stays shown -- and there it outranks
+// everything); no lower-ranked pin is drawn over the true location of a
+// higher-ranked candidate that is waiting; the
 // entrance cluster (water, info, merch) shows what the rules give it; and on
 // the docked desktop, as on the phone, no two targets overlap at any stop,
 // with each chip on too. Paper is checked with the print sheet below.
@@ -594,11 +596,12 @@ const PLACE_STOPS = ['overview', 'first step', 'Detail'];
 const pinIdx = (c, x) => PINS.findIndex((q) => q.c === c && (x == null || q.x === x));
 const ENTRANCE = { water: pinIdx('water', 645), info: pinIdx('info'), merch: pinIdx('merch') };
 // What each stop shows of the cluster. Phone: merch is the opening view's
-// landmark; one step in the water outranks it (26.6 units off, where two
-// targets need 46) and info, clear of the water, shows alone; at Detail all
-// three, edge to edge. Docked: the first step has room for all three.
+// landmark and stays one step in, where it outranks the water (26.6 units
+// off, where two targets need 46) and info (25.5 off), so both wait; at
+// Detail all three, edge to edge. Docked: the first step has room for all
+// three.
 const ENTRANCE_SPEC = {
-  phone: [['merch'], ['water', 'info'], ['water', 'info', 'merch']],
+  phone: [['merch'], ['merch'], ['water', 'info', 'merch']],
   docked: [['merch'], ['water', 'info', 'merch'], ['water', 'info', 'merch']],
 };
 const drawnPins = (p) => p.evaluate(() => [...document.querySelectorAll('svg.ff-map g.ff-pin[data-pin]')].map((g) => {
@@ -609,9 +612,18 @@ for (const [name, w, h, kind] of [['iPhone SE', 375, 667, 'phone'], ['desktop', 
   const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
+  let before = new Set();   // what the coarser stops showed
   for (let stop = 0; stop < 3; stop++) {
     if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
     const drawn = await drawnPins(p);
+    // Once shown, stays shown -- except the Food Court pin, which gives way
+    // to its own stalls at Detail.
+    const now = new Set(drawn.map((d) => d.i));
+    const gone = [...before].filter((i) => !now.has(i) && !(stop === 2 && PINS[i].d === 'food'));
+    if (stop) check(`${name}: a pin shown at a coarser stop is still shown at the ${PLACE_STOPS[stop]}`, gone.length === 0,
+      gone.map((i) => `${PINS[i].c} #${i}`).join(' | ') || `${before.size} carried in`);
+    // A carried-in pin outranks everything at this stop (STAYS_RANK).
+    const rankAt = (i) => (before.has(i) ? STAYS_RANK : rankOf(PINS[i]));
     const far = drawn.filter((d) => Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y) > NUDGE_CAP + 0.01);
     check(`${name}: no pin is further than the nudge cap from its true location at the ${PLACE_STOPS[stop]}`, drawn.length > 0 && far.length === 0,
       far.map((d) => `${PINS[d.i].c} #${d.i} ${Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y).toFixed(1)}`).join(' | ') || `${drawn.length} pins`);
@@ -624,12 +636,13 @@ for (const [name, w, h, kind] of [['iPhone SE', 375, 667, 'phone'], ['desktop', 
       && (stop ? true : q.overview === true || (q.overview === 'docked' && kind === 'docked')) && !(stop === 2 && q.d === 'food'));
     const over = [];
     for (const { q, i } of waiting) for (const d of drawn) {
-      if (d.rank > rankOf(q) && Math.hypot(d.x - q.x, d.y - q.y) < 2 * r - 0.01) over.push(`${PINS[d.i].c} #${d.i} (rank ${d.rank}) over waiting ${q.c} #${i} (rank ${rankOf(q)})`);
+      if (rankAt(d.i) > rankAt(i) && Math.hypot(d.x - q.x, d.y - q.y) < 2 * r - 0.01) over.push(`${PINS[d.i].c} #${d.i} (rank ${rankAt(d.i)}) over waiting ${q.c} #${i} (rank ${rankAt(i)})`);
     }
     check(`${name}: no lower-ranked pin shows over a higher-ranked one that waits, at the ${PLACE_STOPS[stop]}`, over.length === 0, over.join(' | ') || `${waiting.length} waiting`);
     const cluster = Object.entries(ENTRANCE).filter(([, i]) => shown.has(i)).map(([k]) => k).sort();
     const want = [...ENTRANCE_SPEC[kind][stop]].sort();
     check(`${name}: the entrance cluster at the ${PLACE_STOPS[stop]} is ${want.join(' + ')}`, cluster.join() === want.join(), cluster.join(' + ') || '(none)');
+    before = new Set([...before, ...now]);
   }
   if (kind === 'docked') {
     for (const chip of [null, 'Restrooms', 'First aid', 'Water']) {

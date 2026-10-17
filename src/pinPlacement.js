@@ -19,6 +19,9 @@
 //      needs more makes both pins wait.
 //   6. A nudge may not create a new overlap: if moving apart would hit a
 //      third target, both pins wait. One split per pin per stop.
+//   6b. Once shown, stays shown: a pin on the map at a coarser stop is on it
+//      at every closer stop, and outranks whatever it would collide with
+//      there (layoutMap; the design system's `stays-shown` rule).
 //   7. Paper is one more stop, where nothing can wait: a pin that cannot
 //      sit at its true location nudges alone within the cap, and if no spot
 //      within the cap is clear it is FLAGGED -- drawn at its true location
@@ -158,6 +161,10 @@ function nearestClear(it, cap, ok) {
   return null;
 }
 
+/** The rank a pin takes at a stop when it was already shown at a coarser
+ *  one: above every real rank (1 is the highest), so it keeps its spot. */
+export const STAYS_RANK = 0;
+
 /** A pin's name in a report: its category and true location. */
 export const pinKey = (p) => `${p.c} (${p.x}, ${p.y})`;
 
@@ -175,13 +182,27 @@ export const pinKey = (p) => `${p.c} (${p.x}, ${p.y})`;
  *              which gives way to its own stalls there
  */
 export function layoutMap({ pins, rankOf, tapR, markers = [], docked = false }) {
-  const items = (list, r) => list.map((p) => ({ key: pinKey(p), x: p.x, y: p.y, rank: rankOf(p), r }));
   const fixed = (r) => markers.map(([x, y]) => ({ x, y, r }));
   const onOverview = (p) => p.overview === true || (p.overview === 'docked' && docked);
+  // Once shown, stays shown (Ernest, 10/17): a pin on the map at a coarser
+  // stop is still on it at every closer stop, and there it outranks anything
+  // it would collide with (STAYS_RANK, above rank 1). Zooming in never takes
+  // a landmark away -- the beer stand and merch are on the opening view and
+  // stay, and the water stations beside them wait instead.
+  const shown = new Set();
+  const items = (list, r) => list.map((p) => {
+    const key = pinKey(p);
+    return { key, x: p.x, y: p.y, rank: shown.has(key) ? STAYS_RANK : rankOf(p), r };
+  });
+  const place = (list, r, opts) => {
+    const m = placeStop(items(list, r), opts);
+    for (const [k, v] of m) if (v.shown) shown.add(k);
+    return m;
+  };
   return [
-    placeStop(items(pins.filter(onOverview), tapR[0]), { fixed: fixed(tapR[0]) }),
-    placeStop(items(pins, tapR[1]), { fixed: fixed(tapR[1]) }),
-    placeStop(items(pins.filter((p) => p.d !== 'food'), tapR[2]), { mode: 'all' }),
+    place(pins.filter(onOverview), tapR[0], { fixed: fixed(tapR[0]) }),
+    place(pins, tapR[1], { fixed: fixed(tapR[1]) }),
+    place(pins.filter((p) => p.d !== 'food'), tapR[2], { mode: 'all' }),
   ];
 }
 
