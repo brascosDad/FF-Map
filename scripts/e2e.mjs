@@ -12,6 +12,8 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { FESTIVAL } from '../src/data/festival.js';
 import { whatsOnNow } from '../src/whatsOnNow.js';
+import { PINS, rankOf } from '../src/assets/pins.js';
+import { NUDGE_CAP } from '../src/pinPlacement.js';
 import { BASE, launch } from './lib/browser.mjs';
 
 // A colour token as the browser reports a computed fill: 'rgb(r, g, b)'. Read
@@ -489,6 +491,37 @@ for (const [name, w, h] of SIZES) {
   await p.close();
 }
 
+// Every live tap target on the map -- a pin's 44px circle, an area marker's
+// -- against every other; and where booth numbers are drawn (Detail) against
+// every booth's own hit cell too. Edge to edge is fine (-0.5px tolerance);
+// crossing is not. A pin the placement rules hold back at a stop is not on
+// the map and cannot collide; a faded marker or a dimmed pin takes no tap, so
+// it is not a target either.
+const targetOverlaps = (p) => p.evaluate(() => {
+  const live = (el) => { const cs = getComputedStyle(el); return cs.pointerEvents !== 'none' && +cs.opacity > 0; };
+  const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area__mk > circle')]
+    .filter((c) => live(c.parentElement))
+    .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal.replace(/ff-tap |ffc-pin |ff-pin |ff-area__mk/g, '').trim() || 'area' }; });
+  const out = [];
+  for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
+    const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
+    if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n} x ${cs[j].n} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+  }
+  // Booth hit cells only exist as targets where numbers are drawn (Detail).
+  const numbers = [...document.querySelectorAll('svg.ff-map text')].some((t) => /^\d+$/.test(t.textContent));
+  if (numbers) {
+    for (const rect of document.querySelectorAll('svg.ff-map g.ff-booth rect[fill="transparent"]')) {
+      const b = rect.getBoundingClientRect(), id = rect.closest('[data-booth]').dataset.booth;
+      for (const c of cs) {
+        const nx = Math.max(b.left, Math.min(c.x, b.right)), ny = Math.max(b.top, Math.min(c.y, b.bottom));
+        const d = Math.hypot(c.x - nx, c.y - ny);
+        if (d < c.r - 0.5) out.push(`${c.n} x ${id} by ${(c.r - d).toFixed(1)}px`);
+      }
+    }
+  }
+  return out;
+});
+
 // ---- the phone's opening state (beta round 1, 9/17) ----
 // Bike valet and the beer stand are landmarks and were reached for first; the
 // merch tent is the festival's own, at the gate. All three show at open, on
@@ -522,35 +555,10 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   // ---- no element covers another, at any stop (Ernest, 9/22) ----
   // Every live tap target on the map -- a pin's 44px circle, an area marker's
   // -- against every other, at each of the three stops; and at Detail against
-  // every booth's own hit cell too. Edge to edge is fine (-0.5px tolerance);
-  // crossing is not. Pins hidden at a stop (from: 'detail') are not on the
-  // map and cannot collide; a faded marker or a dimmed pin takes no tap, so
-  // it is not a target either. Then the same with each filter chip on, at
-  // each stop: the chip's pins are the only live targets then.
-  const overlaps = () => p.evaluate(() => {
-    const live = (el) => { const cs = getComputedStyle(el); return cs.pointerEvents !== 'none' && +cs.opacity > 0; };
-    const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area__mk > circle')]
-      .filter((c) => live(c.parentElement))
-      .map((c) => { const r = c.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, r: r.width / 2, n: c.parentElement.className.baseVal.replace(/ff-tap |ffc-pin |ff-pin |ff-area__mk/g, '').trim() || 'area' }; });
-    const out = [];
-    for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
-      const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
-      if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n} x ${cs[j].n} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
-    }
-    // Booth hit cells only exist as targets where numbers are drawn (Detail).
-    const numbers = [...document.querySelectorAll('svg.ff-map text')].some((t) => /^\d+$/.test(t.textContent));
-    if (numbers) {
-      for (const rect of document.querySelectorAll('svg.ff-map g.ff-booth rect[fill="transparent"]')) {
-        const b = rect.getBoundingClientRect(), id = rect.closest('[data-booth]').dataset.booth;
-        for (const c of cs) {
-          const nx = Math.max(b.left, Math.min(c.x, b.right)), ny = Math.max(b.top, Math.min(c.y, b.bottom));
-          const d = Math.hypot(c.x - nx, c.y - ny);
-          if (d < c.r - 0.5) out.push(`${c.n} x ${id} by ${(c.r - d).toFixed(1)}px`);
-        }
-      }
-    }
-    return out;
-  });
+  // every booth's own hit cell too (targetOverlaps, above). Then the same
+  // with each filter chip on, at each stop: the chip's pins are the only
+  // live targets then.
+  const overlaps = () => targetOverlaps(p);
   const STOPS = ['overview', 'first step', 'Detail'];
   for (let stop = 0; stop < 3; stop++) {
     if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
@@ -567,6 +575,73 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     }
     await p.locator('.ffc-chip', { hasText: chip }).click();
     await p.waitForTimeout(650);
+  }
+  await p.close();
+}
+
+// ---- pin placement rules (10/17): rank, true location, ties split, nudge cap ----
+// src/pinPlacement.js decides, for this screen's scale, which pins each stop
+// shows and where. These read the drawn map back against the rules: a pin's
+// group carries data-pin (its index in PINS, whose x/y is the true location)
+// and data-rank; its first circle is the tap target, drawn where the pin is.
+// On a 375px phone and the docked desktop, at each stop, settled: no pin sits
+// further than NUDGE_CAP from its true location; no lower-ranked pin is drawn
+// over the true location of a higher-ranked candidate that is waiting; the
+// entrance cluster (water, info, merch) shows what the rules give it; and on
+// the docked desktop, as on the phone, no two targets overlap at any stop,
+// with each chip on too. Paper is checked with the print sheet below.
+const PLACE_STOPS = ['overview', 'first step', 'Detail'];
+const pinIdx = (c, x) => PINS.findIndex((q) => q.c === c && (x == null || q.x === x));
+const ENTRANCE = { water: pinIdx('water', 645), info: pinIdx('info'), merch: pinIdx('merch') };
+// What each stop shows of the cluster. Phone: merch is the opening view's
+// landmark; one step in the water outranks it (26.6 units off, where two
+// targets need 46) and info, clear of the water, shows alone; at Detail all
+// three, edge to edge. Docked: the first step has room for all three.
+const ENTRANCE_SPEC = {
+  phone: [['merch'], ['water', 'info'], ['water', 'info', 'merch']],
+  docked: [['merch'], ['water', 'info', 'merch'], ['water', 'info', 'merch']],
+};
+const drawnPins = (p) => p.evaluate(() => [...document.querySelectorAll('svg.ff-map g.ff-pin[data-pin]')].map((g) => {
+  const c = g.querySelector(':scope > circle');
+  return { i: +g.dataset.pin, rank: +g.dataset.rank, x: +c.getAttribute('cx'), y: +c.getAttribute('cy'), r: +c.getAttribute('r') };
+}));
+for (const [name, w, h, kind] of [['iPhone SE', 375, 667, 'phone'], ['desktop', 1440, 900, 'docked']]) {
+  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
+  await p.goto(BASE, { waitUntil: 'networkidle' });
+  await p.waitForTimeout(700);
+  for (let stop = 0; stop < 3; stop++) {
+    if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+    const drawn = await drawnPins(p);
+    const far = drawn.filter((d) => Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y) > NUDGE_CAP + 0.01);
+    check(`${name}: no pin is further than the nudge cap from its true location at the ${PLACE_STOPS[stop]}`, drawn.length > 0 && far.length === 0,
+      far.map((d) => `${PINS[d.i].c} #${d.i} ${Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y).toFixed(1)}`).join(' | ') || `${drawn.length} pins`);
+    // The candidates at this stop: the overview's are the pins flagged for it;
+    // from the first step every visitor pin; the Food Court pin is not one
+    // at Detail (its stalls are).
+    const r = drawn[0]?.r || 0;
+    const shown = new Set(drawn.map((d) => d.i));
+    const waiting = PINS.map((q, i) => ({ q, i })).filter(({ q, i }) => !q.hidden && !q.print && !shown.has(i)
+      && (stop ? true : q.overview === true || (q.overview === 'docked' && kind === 'docked')) && !(stop === 2 && q.d === 'food'));
+    const over = [];
+    for (const { q, i } of waiting) for (const d of drawn) {
+      if (d.rank > rankOf(q) && Math.hypot(d.x - q.x, d.y - q.y) < 2 * r - 0.01) over.push(`${PINS[d.i].c} #${d.i} (rank ${d.rank}) over waiting ${q.c} #${i} (rank ${rankOf(q)})`);
+    }
+    check(`${name}: no lower-ranked pin shows over a higher-ranked one that waits, at the ${PLACE_STOPS[stop]}`, over.length === 0, over.join(' | ') || `${waiting.length} waiting`);
+    const cluster = Object.entries(ENTRANCE).filter(([, i]) => shown.has(i)).map(([k]) => k).sort();
+    const want = [...ENTRANCE_SPEC[kind][stop]].sort();
+    check(`${name}: the entrance cluster at the ${PLACE_STOPS[stop]} is ${want.join(' + ')}`, cluster.join() === want.join(), cluster.join(' + ') || '(none)');
+  }
+  if (kind === 'docked') {
+    for (const chip of [null, 'Restrooms', 'First aid', 'Water']) {
+      if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
+      else { await p.locator('.zoomctl button[aria-label="Reset to overview"]').click(); await p.waitForTimeout(650); }
+      for (let stop = 0; stop < 3; stop++) {
+        if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+        const o = await targetOverlaps(p);
+        check(`${name}: docked, ${chip ? `with ${chip} on, ` : ''}no two touch targets overlap at the ${PLACE_STOPS[stop]}`, o.length === 0, o.join(' | '));
+      }
+      if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
+    }
   }
   await p.close();
 }
@@ -828,7 +903,7 @@ for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1280, 900]]) {
   await p.waitForTimeout(700);
   const title = async () => (await p.locator('.sheet .ffc-panel__titleline h3').allTextContents()).join('|');
   // The first pin of that category that is on screen: some water stations
-  // wait for Detail (from: 'detail'), and the rest sit wherever the plan
+  // wait for Detail (the placement rules), and the rest sit wherever the plan
   // puts them, not necessarily in the middle of a phone's first step.
   // `pick` returns the index of that pin too, so a later tap can go to the
   // SAME pin wherever the map has moved it since.
@@ -2104,6 +2179,25 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['mobile', 390, 844], ['sho
     return out;
   });
   check('print: nothing covers anything else', cover.length === 0, cover.join(' | '));
+
+  // Paper is one more stop for the placement rules (10/17): nothing waits,
+  // so a pin may be nudged -- never further than the cap -- and one that no
+  // spot within the cap could clear is flagged (data-flagged) and drawn at
+  // its true location for a person to place, never moved past the cap.
+  const paper = await p.evaluate(() => [...document.querySelectorAll('.print-map .print-pin[data-pin]')].map((g) => {
+    const c = g.querySelector(':scope > circle'), sq = g.querySelector(':scope > rect');
+    if (!c && !sq) return null;   // a street mark (barricade, speed bump) is not placed
+    const x = c ? +c.getAttribute('cx') : +sq.getAttribute('x') + +sq.getAttribute('width') / 2;
+    const y = c ? +c.getAttribute('cy') : +sq.getAttribute('y') + +sq.getAttribute('height') / 2;
+    return { i: +g.dataset.pin, x, y, flagged: g.dataset.flagged === 'true' };
+  }).filter(Boolean));
+  const off = (d) => Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y);
+  const paperFar = paper.filter((d) => off(d) > NUDGE_CAP + 0.01);
+  check('print: no pin is further than the nudge cap from its true location', paper.length > 0 && paperFar.length === 0,
+    paperFar.map((d) => `${PINS[d.i].c} #${d.i} ${off(d).toFixed(1)}`).join(' | ') || `${paper.length} pins, largest nudge ${Math.max(0, ...paper.map(off)).toFixed(2)}`);
+  const flagged = paper.filter((d) => d.flagged);
+  check('print: a flagged pin is drawn at its true location, not moved', flagged.every((d) => off(d) < 0.01),
+    flagged.length ? flagged.map((d) => `${PINS[d.i].c} #${d.i} flagged (see docs/pr-notes.md)`).join(' | ') : 'none flagged');
   await p.close();
 }
 
