@@ -12,7 +12,8 @@
 import { TRACE_BASE } from '../assets/basemapTrace';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { AREAS, BOOTH_ANGLE } from '../data/areas';
-import { ACTIVE_PINS, CREAM, PIN_COLOR, PIN_INK, SLATE } from '../assets/pins';
+import { ACTIVE_PINS, CREAM, PIN_COLOR, PIN_INK, PINS, SLATE, rankOf } from '../assets/pins';
+import { layoutPaper, pinKey } from '../pinPlacement';
 import { LEGEND, PRINT_SITE_LEGEND } from '../data/directory';
 import Icon, { IconAt } from '../components/Icon';
 import { FESTIVAL, featuredTitle } from '../data/festival';
@@ -167,6 +168,21 @@ PRINT_SHAPES.speedbump = ({ x, y, swatch }) => (
   </>
 );
 
+// Paper is one more stop for the placement rules (src/pinPlacement.js), at
+// the print scale: every disc and cart square is placed by rank against every
+// other, and since nothing on paper can wait for a closer stop, a pin that
+// cannot sit at its true location nudges within the cap -- or, if no spot
+// within the cap is clear, is flagged (drawn where it is, data-flagged, and
+// listed in docs/pr-notes.md by `npm run pin-layout` for a person to place).
+// A disc's footprint is its radius; a cart square's is its half-diagonal.
+// The street marks (PRINT_SHAPES) sit across their streets, off the lawns
+// the pins are on, and are not placed.
+const PAPER = layoutPaper({
+  pins: ACTIVE_PINS.filter((p) => !PRINT_SHAPES[p.c]),
+  rankOf,
+  r: (p) => (p.shape === 'square' ? (TICK / 2) * Math.SQRT2 : PIN_R),
+});
+
 // Candler Park Dr's two columns: the west (street-side) column's numbers go
 // left, the east (park-side) column's go right -- decided by which side of
 // the run's midline a square sits, so a re-pull that moves a column still
@@ -205,8 +221,14 @@ function PrintMap() {
       {/* Every pin, the paper-only ones included (print: true in pins.js --
           the EMS / fire-inspector layer the phone skips). A category in
           PRINT_SHAPES is drawn as its own mark rather than a disc. */}
-      {ACTIVE_PINS.map((p, i) => (
-        <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`}>
+      {ACTIVE_PINS.map((pin, i) => {
+        // Drawn where the paper placement put it (its true location, unless
+        // nudged); everything below reads x/y from here.
+        const at = PAPER.get(pinKey(pin));
+        const p = at ? { ...pin, x: at.x, y: at.y } : pin;
+        return (
+        <g key={i} className={`print-pin print-pin--${p.c}${p.print ? ' print-pin--print-only' : ''}`} data-pin={PINS.indexOf(pin)} data-rank={rankOf(pin)}
+           data-flagged={at?.flagged || undefined}>
           {p.shape === 'square'
             ? <>
                 <rect x={p.x - TICK / 2} y={p.y - TICK / 2} width={TICK} height={TICK} rx={1.4} fill={PIN_COLOR[p.c]} />
@@ -230,7 +252,8 @@ function PrintMap() {
                   stroke={HALO} strokeWidth={2.4} paintOrder="stroke">{LABEL_TEXT[p.d]}</text>
           )}
         </g>
-      ))}
+        );
+      })}
 
       {/* North. The basemap is drawn north-up (Candler Park Dr runs down the
           west edge, McLendon along the south), as the 2025 sheet's arrow had it. */}
