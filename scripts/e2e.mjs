@@ -630,6 +630,7 @@ const settle = (p, ms = 250) => p.waitForTimeout(ms);
 const PLACE_STOPS = ['level 1', 'level 2', 'level 3'];
 const pinIdx = (c, x) => PINS.findIndex((q) => q.c === c && (x == null || q.x === x));
 const ENTRANCE = { water: pinIdx('water', 645), info: pinIdx('info'), merch: pinIdx('merch') };
+const LEVEL1_LANDMARKS = [PINS.findIndex((q) => q.c === 'drinks' && q.overview === true), pinIdx('bikevalet')];
 // What each level shows of the cluster. Phone: merch is the opening view's
 // landmark and stays at level 2, where it outranks the water (26.7 units
 // off, where two targets need 48) and info, so both wait; at level 3 all
@@ -702,6 +703,15 @@ async function placementChecks(open, d, check) {
       if (rankAt(x.i) > rankAt(i) && Math.hypot(x.x - q.x, x.y - q.y) < reach - 0.01) over.push(`${PINS[x.i].c} #${x.i} (rank ${rankAt(x.i)}) over waiting ${q.c} #${i} (rank ${rankAt(i)})`);
     }
     check(`no lower-ranked pin shows over a higher-ranked one that waits, at the ${PLACE_STOPS[stop]}`, over.length === 0, over.join(' | ') || `${waiting.length} waiting`);
+    // Level 1 on every screen: the beer stand and the bike valet show with
+    // the three art-market markers (10/18 -- under 375px they used to wait
+    // for a marker; the markers moved along their runs instead).
+    if (stop === 0) {
+      const want = LEVEL1_LANDMARKS.filter((i) => !shown.has(i));
+      const markers = await p.locator('svg.ff-map g.ff-area__mk').evaluateAll((els) => els.filter((g) => +getComputedStyle(g).opacity > 0.5).length);
+      check('level 1 shows the beer stand, the bike valet and all three art-market markers', want.length === 0 && markers === 3,
+        want.length ? `waiting: ${want.map((i) => PINS[i].c).join(', ')}` : `${markers} markers`);
+    }
     if ((w === 375 && !d.textZoom) || d.docked) {
       const cluster = Object.entries(ENTRANCE).filter(([, i]) => shown.has(i)).map(([k]) => k).sort();
       const want = [...ENTRANCE_SPEC[kind][stop]].sort();
@@ -950,16 +960,20 @@ console.log('  booth cell at level 3 (CSS px): ' + [...new Map(boothCellPx.map((
 
 // ---- the area markers leave at the Detail stop ----
 // Ernest, iPhone 9/20: at the closest stop the art-market marker sat on booths
-// 96-98 and 113-115 (Candler Park Dr) and 60-62 (McLendon), so those could not
-// be reached. At Detail the three markers are invisible and keep no tap
+// 96-98 and 113-115 (Candler Park Dr) and 60-62 (McLendon; the marker is over
+// 76-78 since 10/18), so those could not be reached. At Detail the three markers are invisible and keep no tap
 // target: a tap on each of those booths' squares, and on its number, reaches
 // the booth. One step out brings the marker back, a 44px target again.
+// The McLendon marker moved west on 10/18: the three booths under it now,
+// read from the data (the marker's mk in areas.js, the booths' x).
+const MCL_MK_X = Number(readFileSync(new URL('../src/data/areas.js', import.meta.url), 'utf8').match(/id: 'mcl'[^\n]*mk: \[([\d.]+),/)[1]);
+const MCL_UNDER_MARKER = [...BOOTHS.mcl].sort((a, b) => Math.abs(a.x - MCL_MK_X) - Math.abs(b.x - MCL_MK_X)).slice(0, 3).map((b) => b.id).sort();
 for (const [name, w, h] of [['mobile', 390, 800], ['desktop', 1440, 900]]) {
   // The pan between the two steps: at the overview both markers sit near an
   // edge of the screen (the phone overview crops the west; McLendon is the
   // south edge), and the booths under them have to be on screen at Detail.
   for (const [area, ids, nx, ny] of [['cpd', ['cpd-096', 'cpd-097', 'cpd-098', 'cpd-113', 'cpd-114', 'cpd-115'], 180, 0],
-                                     ['mcl', ['mcl-060', 'mcl-061', 'mcl-062'], 0, -160]]) {
+                                     ['mcl', MCL_UNDER_MARKER, 0, -160]]) {
     const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
     await p.goto(BASE, { waitUntil: 'networkidle' });
     await p.waitForTimeout(700);

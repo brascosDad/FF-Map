@@ -35,8 +35,162 @@ an agent can query. One commit per item:
     five true locations moved apart, tests at six widths, and design system 1.5.0. This round has
     its own section below.
 
-Rounds 1–3 changed no stored x/y; round 4 moved five, each by under a map unit. Nothing ties, nothing is nudged and nothing is flagged with today's pins, so
-the split, the cap and the paper flag are tested on made-up pins.
+12. **Round 5 (Ernest, 10/18)**: a device test matrix on WebKit and Chromium, the booth tap
+    exception written down as rule `booth-tap-equivalent` (WCAG 2.5.8) with an e2e walk to every
+    booth, and two art-market markers moved along their runs so level 1 is whole on narrow
+    phones. Design system 1.6.0. Its own section below.
+
+Rounds 1–3 changed no stored x/y; round 4 moved five, each by under a map unit; round 5 moved
+none (only two markers, which are not pins). Since round 5, merch and the bike valet tie at
+level 1 on phones under 375px and split the difference (see Pin nudges); otherwise nothing ties,
+nothing is nudged and nothing is flagged, so the cap and the paper flag are tested on made-up pins.
+
+## Round 5 (10/18): device matrix, the booth tap exception, level 1 on narrow phones
+
+### 1. Device test matrix
+
+`scripts/lib/devices.mjs` is the matrix, one line per phone class. A new phone is one more line:
+
+| Profile (as the test output names it) | Laid out at (CSS px) | Pixel ratio |
+|---|---|---|
+| iPhone SE (1st gen) / Display Zoom | 320 × 568 | 2 |
+| Galaxy A-series | 360 × 780 | 3 |
+| iPhone SE | 375 × 667 | 2 |
+| iPhone SE / big text | 300 × 534 (375 at 125%) | 2.5 |
+| iPhone 15 | 393 × 852 | 3 |
+| iPhone 15 / big text | 314 × 682 (393 at 125%) | 3.75 |
+| Pixel | 412 × 915 | 2.625 |
+| iPhone 15 Pro Max | 430 × 932 | 3 |
+| Desktop (docked panel) | 1440 × 900 | 1 |
+
+Every profile runs on **WebKit** (iPhone Safari, and iPhone Chrome, which is WebKit underneath on
+iOS) and **Chromium** (Android Chrome). Every phone profile has touch on (`hasTouch`, `isMobile`).
+The output names each run, e.g. "iPhone 15 / big text · WebKit: …". The checks per run:
+
+- **Placement:** rank, nudge cap, stays-shown, the level 3 scale floor, level 1 showing the beer
+  stand, the bike valet and the three markers, and no overlap with the 2px gap at levels 2 and 3,
+  with no chip and with each chip on. The entrance cluster is checked on iPhone SE and the desktop.
+- **Area labels:** at level 3 each of the five names is a 44px target and opens its card.
+- **Tap sizes:** chips, zoom buttons, the sheet's close, a booth row, the back row and the
+  ItemPager's buttons are each at least `--tap-min` both ways. A phone chip is measured with its
+  `::after`, which carries its target.
+- **Every booth reachable** (item 2).
+
+**How 125% text was emulated.** Playwright has no text-size setting. A phone with its text
+zoomed lays the page out on fewer, bigger CSS pixels, so the profile uses a viewport of width ÷
+1.25 with the pixel ratio × 1.25. The 375 phone becomes 300 CSS px and the 393 phone becomes 314.
+314 is what Ernest's iPhone reported. This is page zoom: everything scales together, the map
+included. It is not iOS Dynamic Type, which can grow some text more than others.
+
+**WebKit runs on CI, not in this container.** The remote Claude Code container ships Chromium only
+and asks not to download browsers, so here the WebKit half is skipped with a printed notice. On CI,
+`ci.yml` now installs WebKit, and a missing WebKit fails the run. **The WebKit results are CI's.**
+Locally, all 9 Chromium profiles pass.
+
+**What emulation does not cover.** This is the case study's "next step: real devices":
+
+- **It is not a real phone.** Playwright's WebKit is a desktop build of the engine, not iOS Safari.
+  iPhone Chrome is a WebKit view inside Google's app. Neither is emulated with its own chrome.
+- **Browser chrome and the viewport:** Safari's collapsing address bar and bottom toolbar,
+  `100vh` vs. the visible height as the bars move, the home-indicator safe area, and the notch or
+  Dynamic Island. The emulated viewport is fixed.
+- **Real touch:** finger size and contact area, palm rejection, the system back-swipe from the
+  screen edge, iOS's double-tap and long-press behaviours, scroll momentum and rubber-banding.
+  Tests send synthetic pointer and touch events at exact points.
+- **OS settings beyond text size:** Dynamic Type by category, Bold Text, Reduce Transparency,
+  Increase Contrast, Smart Invert and Dark Mode, Android font and display size set separately,
+  VoiceOver and TalkBack, Zoom, Switch Control. The test runs set reduced motion so a zoom lands
+  at once, so real animation timing is not covered either.
+- **Hardware and network:** slow CPUs and thermal throttling, memory pressure evicting the
+  tab, real fonts per OS, colour rendering, sunlight on the screen, and flaky festival cellular
+  (offline behaviour is tested separately, once, on Chromium).
+- **Other browsers:** Samsung Internet, Firefox, in-app browsers (Instagram, Facebook, Gmail),
+  where the QR or a social link may open the map.
+
+### 2. The booth tap exception, made explicit (WCAG 2.5.8)
+
+The new rule **`booth-tap-equivalent`** is in the manifest, CLAUDE.md, design-system.html (Target
+spacing and the level 3 row) and the changelog. A booth's own cell keeps its size, and booths are
+exempt from `--pin-hit` and `--tap-min`. The reason is WCAG 2.2 SC 2.5.8's **Equivalent**
+exception: every booth's card is also reached by targets that meet the floor. That path is the
+art market's marker (44px), or its name label at level 3, then the run's list (BoothRow,
+`--tap-min` high), then the card. The ItemPager (44px buttons) steps booth to booth. `tap-floor`
+now names the exception and points at the rule. BoothRow and ItemPager list it. Enforced by:
+`opens its card from level 1 by 44px taps: marker, its row, back`, `marker is a 44px target that
+opens its booth list`, `a booth cell keeps its own size at level 3`, `the Food Court pin is a
+44px target that opens the Food Court card`, and the existing ItemPager size check.
+
+**The e2e walk.** For every booth in the data, on every profile, the test does this:
+
+1. Start at level 1 and tap the run's marker, after checking that the marker is what is found at
+   that point.
+2. Tap the booth's row, check that the card's title is that booth's, then tap back.
+
+Every target tapped is measured. A failure names the booth id. That covers 152 booths: Candler
+Park Dr 58, McLendon 27, In the Park 54, the 11 Kidlandia booths (rows in the In the Park list)
+and the two unnumbered spots (rows in their run's list). All 152 pass on every Chromium profile.
+
+**Booth cell at level 3** (the 9.4-unit hit cell, measured in the browser):
+
+| Profile | CSS width | Cell |
+|---|---|---|
+| iPhone SE / big text | 300 | 16.2px |
+| iPhone 15 / big text | 314 | 16.2px |
+| iPhone SE (1st gen) / Display Zoom | 320 | 16.2px |
+| Galaxy A-series | 360 | 16.2px |
+| iPhone SE | 375 | 16.2px |
+| iPhone 15 | 393 | 17.0px |
+| Pixel | 412 | 17.8px |
+| iPhone 15 Pro Max | 430 | 18.6px |
+| Desktop (docked panel) | 1440 | 33.2px |
+
+At 375 and narrower the level 3 scale floor holds the cell at 16.2px. A wider phone shows level 3
+at its own ratio, so its cell is bigger.
+
+### 3. Level 1 on narrow phones
+
+Two art-market markers moved **along their own runs**. Markers are not pins, so no true location
+changed:
+
+| Marker | Was | Now | Why |
+|---|---|---|---|
+| McLendon | (775, 787.9), east box | **(492, 787.9)**, west half, over booths 76–78 | Its level 1 target crossed the bike valet's under 375px. Anywhere west of x 538 on the run's line clears the valet, merch and the entrance water at levels 1 and 2 down to 300px; 492 is the middle of that stretch. |
+| In the Park | (801, 433) | **(813.3, 415.9)**, 21 units further up the path's axis | Its target crossed the beer stand's under 375px. Still between the two rows, in the run's north half. |
+| Candler Park Dr | (411.5, 541.5) | unchanged | |
+
+**Result:** on every profile, from 300px up, level 1 shows the beer stand, the bike valet and all
+three markers (new e2e check). Level 2 holds back as many pins as before at every width (300: 10,
+314/320/360: 9, 375: 8, 393 and wider: 7, desktop: 0). On phones under 375px it is now the **lawn
+water** that waits at level 2, not the beer stand: the beer stand shows from level 1, so stays-shown
+lets it outrank the water, the same as on the 375 phone.
+
+**One new tie: merch and the bike valet at level 1, under 375px.** With nothing holding the bike
+valet back any more, its level 1 target meets merch's (both rank 4, 83 units apart). By rule 4
+they split the difference: each moves half the overlap apart along the line between them. That
+is 0.73 units at 360px, 6.01 at 320, 6.92 at 314 and 9.18 at 300, all within the 12.75 cap. At
+level 2 both are back at their true locations, and they glide between the two. This is the
+first real tie the rules have split. At 375 and wider there is no tie.
+
+**What else the moves touch:**
+
+- At level 3 the McLendon ART MARKET label stays where it was (772.9, 780.2). Markers fade out
+  there, so nothing new can collide.
+- On the desktop, the directory's McLendon row now flies the map to the west half of the run. It
+  showed the east end before. At that zoom the whole run does not fit either way.
+- The e2e "markers leave at level 3" check now reads which booths are under the McLendon marker
+  from the data (76–78), instead of the old 60–62.
+
+### Questions (round 5)
+
+9. **Food stalls have no list path.** The 16 food stalls are booths in the data, but no list
+   leads to a stall's card. The equivalent path the test checks for them is the Food Court pin,
+   then the Food Court card, which lists the trucks. A stall's own card says only "Stall N · Food
+   Court", since no truck is assigned to a stall. I think that meets the exception in substance,
+   because the card adds nothing beyond "this is the Food Court". If you want it to hold to the
+   letter, the fix is a stall list in the Food Court card, like the art lists. Say which you want.
+10. **The ItemPager is still hidden at peek** (open since 10/6). The equivalent path does not need
+    it, because the list rows are the path. But on a phone on its side, which is capped at peek,
+    the only way between booths is back to the list.
 
 ## Round 4 (10/18): narrow phones, the level 3 floor and the 2px gap
 
@@ -236,6 +390,13 @@ someone places it by hand.
 
 ## Visual baselines
 
+**Round 5: I expect `phone-open` to go red, and maybe `sheet-open`.** Both are level 1 at 390px,
+and the McLendon and in-park markers moved: the McLendon marker is now at the west end of the
+run, and the in-park one is 21 units further up the path. `print` doesn't draw the markers, so it
+should stay green. If CI shows the change, look at the diff images, then add the
+`update-visual-baselines` label. The diff should be the two markers and nothing else, since at 390
+nothing ties.
+
 **Round 4: no baseline changes.** I expected `print` to go red, because the five moved pins are
 drawn on paper at their new spots. CI passed it within the visual check's tolerance (121 pixels
 differ, all from moves under a point). `phone-open` and `sheet-open` passed unchanged, since they
@@ -257,8 +418,7 @@ stay green; CI decides. If one does change, look at its diff before adding the
    gives way to its booths at Detail by rule `area-label-tap` (your 10/17 follow-up).
 2. **Art-market markers** are not pins and have no rank. I treat them as fixed targets that never
    move or wait: any pin that would overlap one waits. That is how they were handled by hand
-   before. At 375px and wider no pin is affected. At 314 and 320px the beer stand and the bike
-   valet wait at level 1 because of them (question 8).
+   before. Since round 5 no pin waits for a marker at level 1 on any profile (question 8).
 3. **Paper-only ops marks** (generators, dumpsters, the ice truck, the musicians' tent) aren't in
    the priority list. I ranked them 5, the bottom tier. On paper nothing waits, so the rank only
    decides which of two moves. Barricades and speed bumps are street marks, not discs, so they
@@ -283,9 +443,8 @@ stay green; CI decides. If one does change, look at its diff before adding the
 8. **(Round 4) Level 1 on narrow phones.** At 314 and 320px the beer stand and the bike valet
    don't show at level 1, because their targets would overlap the art-market markers there. The
    beer stand also waits at level 2 for the lawn water, so on those phones it first appears at
-   level 3. On `main` they were drawn overlapping. To keep them at level 1 on narrow phones, the
-   options are: let the markers give way to them at level 1, move the markers, or accept it as
-   built.
+   level 3. On `main` they were drawn overlapping. **Done in round 5: the markers moved along
+   their runs.** Both show at level 1 from 300px up (see Round 5, item 3).
 
 ## Skipped / not done
 
@@ -298,4 +457,10 @@ stay green; CI decides. If one does change, look at its diff before adding the
 
 ## Pin nudges
 
-None, on either map or on paper.
+**Phone, level 1, under 375px wide only (round 5):** merch (630, 740) and the bike valet
+(712.4, 730.1) tie at rank 4 and split the difference along the line between them. Each moves
+0.73 units at 360px, 6.01 at 320, 6.92 at 314 (iPhone 15 / big text) and 9.18 at 300 (iPhone SE /
+big text), all under the 12.75 cap. Both are at their true locations at levels 2 and 3, and at
+level 1 on 375px and wider. `npm run pin-layout` shows the 320 case.
+
+None on the desktop, and none on paper.
