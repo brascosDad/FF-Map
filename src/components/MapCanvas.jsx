@@ -34,7 +34,7 @@ function pinPx() {
     const n = parseFloat(cs.getPropertyValue(name));
     return Number.isFinite(n) ? n : fallback;
   };
-  sizes = { pin: px('--pin-size', 40), tap: px('--pin-hit', 44) };
+  sizes = { pin: px('--pin-size', 40), tap: px('--pin-hit', 44), gap: px('--pin-gap', 2) };
   return sizes;
 }
 
@@ -185,8 +185,10 @@ export default function MapCanvas({ mapRef, wrapRef, viewBox, filter, levelIdx =
   const layout = useMemo(() => layoutMap({
     pins: MAP_PINS, rankOf, docked,
     tapR: scaleKey.split(',').map((u) => tapPx * Number(u)),
+    // --pin-gap at levels 2 and 3 only: the opening view keeps its spacing.
+    gap: scaleKey.split(',').map((u, s) => (s ? sz.gap * Number(u) : 0)),
     markers: AREAS.map((a) => a.mk),
-  }), [scaleKey, tapPx, docked]);
+  }), [scaleKey, tapPx, sz.gap, docked]);
   // Where a pin is drawn: its spot at the stops either side of the view,
   // interpolated by where the view is between them (levelPos follows a pinch
   // and a fly continuously), so a nudged pin glides with the zoom instead of

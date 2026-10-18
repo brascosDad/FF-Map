@@ -171,7 +171,8 @@ export const pinKey = (p) => `${p.c} (${p.x}, ${p.y})`;
 /**
  * The phone's (or the docked desktop's) three stops. `pins` are the visitor
  * pins (no paper-only, no hidden ones), `tapR` the tap target's radius in map
- * units at each stop for this screen, `markers` the art-market markers'
+ * units at each stop for this screen, `gap` the --pin-gap in map units at
+ * each stop (0 at level 1, so the opening view is spaced as before), `markers` the art-market markers'
  * centres, which are targets at the overview and the first step and gone at
  * Detail. Returns one Map per stop, keyed by pinKey.
  *
@@ -182,7 +183,11 @@ export const pinKey = (p) => `${p.c} (${p.x}, ${p.y})`;
  *              (`areaLabel`: the Food Court, Kidlandia), which gives way to
  *              its own booths there while its name label takes the tap
  */
-export function layoutMap({ pins, rankOf, tapR, markers = [], docked = false }) {
+export function layoutMap({ pins, rankOf, tapR, gap = [0, 0, 0], markers = [], docked = false }) {
+  // The minimum gap between two targets (--pin-gap, levels 2 and 3 only):
+  // each target counts as half the gap wider, so two of them collide unless
+  // their circles are a full gap apart.
+  const reach = tapR.map((r, s) => r + (gap[s] || 0) / 2);
   const fixed = (r) => markers.map(([x, y]) => ({ x, y, r }));
   const onOverview = (p) => p.overview === true || (p.overview === 'docked' && docked);
   // Once shown, stays shown (Ernest, 10/17): a pin on the map at a coarser
@@ -202,9 +207,9 @@ export function layoutMap({ pins, rankOf, tapR, markers = [], docked = false }) 
     return m;
   };
   return [
-    place(pins.filter(onOverview), tapR[0], { fixed: fixed(tapR[0]) }),
-    place(pins, tapR[1], { fixed: fixed(tapR[1]) }),
-    place(pins.filter((p) => !p.areaLabel), tapR[2], { mode: 'all' }),
+    place(pins.filter(onOverview), reach[0], { fixed: fixed(reach[0]) }),
+    place(pins, reach[1], { fixed: fixed(reach[1]) }),
+    place(pins.filter((p) => !p.areaLabel), reach[2], { mode: 'all' }),
   ];
 }
 

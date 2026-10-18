@@ -213,6 +213,11 @@
                   and the e2e no-overlap rule measures it, at every stop. */
   --tap-min: 44px;
   --pin-hit: 44px;
+  /* The least air between two pins' hit areas at levels 2 and 3 (Ernest,
+     10/18): touching edge to edge read as one target on a phone. Not at
+     level 1, so the opening view is spaced as it was. src/pinPlacement.js
+     counts it in every collision and e2e measures it. */
+  --pin-gap: 2px;
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
      where 28 read as too small. The tap area is 44 either way. ONE size at
      every zoom level: the overview used to draw pins a step smaller (34), and
