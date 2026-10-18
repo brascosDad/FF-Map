@@ -118,3 +118,31 @@ test('stays-shown: a pin on the opening view stays at every closer stop and outr
   assert.equal(g.get(key(pins[0])).shown, false);
   assert.ok(STAYS_RANK < 1);
 });
+
+test('--pin-gap: at levels 2 and 3 two targets need the gap between them, at level 1 they may touch', async () => {
+  // Two rank-3 pins 21 units apart with 10-unit targets: touching-plus-one
+  // passes with no gap, and collides once a 2-unit gap is asked for.
+  const pins = [{ c: 'a', d: 'a', x: 0, y: 0, overview: true }, { c: 'b', d: 'b', x: 21, y: 0, overview: true }];
+  const rankOf = (p) => ({ a: 3, b: 4 })[p.c];
+  const key = (p) => `${p.c} (${p.x}, ${p.y})`;
+  const [noGap] = layoutMap({ pins, rankOf, tapR: [10, 10, 10], gap: [0, 0, 0] });
+  assert.equal(noGap.get(key(pins[1])).shown, true);
+  const [, withGap] = layoutMap({ pins: pins.map((p) => ({ ...p, overview: false })), rankOf, tapR: [10, 10, 10], gap: [0, 2, 2] });
+  assert.equal(withGap.get(key(pins[1])).shown, false);
+});
+
+test('level 3 scale floor: no screen shows more map units per px at level 3 than the 375px reference', async () => {
+  const { LEVEL3_MAX_UNITS_PER_PX, LEVEL_RATIOS, REFERENCE_PHONE_PX, MOBILE_OVERVIEW_ZOOM, fitOverview, stopUnitsPerPx } = await import('../src/hooks/useMapView.js');
+  // The constant is the reference phone's own level 3, to a hair above.
+  const ref = (fitOverview(REFERENCE_PHONE_PX, 667, 0, MOBILE_OVERVIEW_ZOOM) * LEVEL_RATIOS[2]) / REFERENCE_PHONE_PX;
+  assert.ok(LEVEL3_MAX_UNITS_PER_PX >= ref && LEVEL3_MAX_UNITS_PER_PX - ref < 1e-4, `${LEVEL3_MAX_UNITS_PER_PX} vs ${ref}`);
+  for (const w of [280, 314, 320, 360, 375, 390, 430]) {
+    const u = stopUnitsPerPx(w, Math.round(w * 2.1), 0, MOBILE_OVERVIEW_ZOOM);
+    assert.ok(u[2] <= LEVEL3_MAX_UNITS_PER_PX + 1e-9, `${w}px: ${u[2]}`);
+    // Levels 1 and 2 keep their ratio.
+    assert.ok(Math.abs(u[1] / u[0] - LEVEL_RATIOS[1]) < 1e-9);
+  }
+  // A screen wide enough is not touched: level 3 keeps 0.315.
+  const d = stopUnitsPerPx(1440, 900, 400, 1);
+  assert.ok(Math.abs(d[2] / d[0] - LEVEL_RATIOS[2]) < 1e-9);
+});

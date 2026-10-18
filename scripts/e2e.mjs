@@ -14,12 +14,15 @@ import { FESTIVAL } from '../src/data/festival.js';
 import { whatsOnNow } from '../src/whatsOnNow.js';
 import { PINS, rankOf } from '../src/assets/pins.js';
 import { NUDGE_CAP, STAYS_RANK } from '../src/pinPlacement.js';
+import { LEVEL3_MAX_UNITS_PER_PX, LEVEL_RATIOS } from '../src/hooks/useMapView.js';
 import { BASE, launch } from './lib/browser.mjs';
 
 // A colour token as the browser reports a computed fill: 'rgb(r, g, b)'. Read
 // from tokens.css, so a check that a pin wears its token follows the token
 // when the palette changes, and still fails when the pin wears something else.
 const TOKENS_CSS = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8');
+// --pin-gap, the least air between two pin targets at levels 2 and 3.
+const PIN_GAP_PX = Number(TOKENS_CSS.match(/--pin-gap:\s*([\d.]+)px/)[1]);
 const tokenRgb = (name) => {
   const hex = TOKENS_CSS.match(new RegExp(`${name}:\\s*#([0-9A-Fa-f]{6})`))[1];
   return `rgb(${[0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`;
@@ -498,7 +501,10 @@ for (const [name, w, h] of SIZES) {
 // the map and cannot collide; a faded marker or a dimmed pin takes no tap, so
 // it is not a target either. At Detail an area's name label (AreaLabel) is a
 // target too: its hit rect against every pin, booth cell and other label.
-const targetOverlaps = (p) => p.evaluate(() => {
+// `gap` (CSS px) is --pin-gap at levels 2 and 3: pin targets, markers and
+// labels must stand that far apart; booth cells, packed edge to edge by
+// design, are held only to not crossing.
+const targetOverlaps = (p, gap = 0) => p.evaluate((gap) => {
   const live = (el) => { const cs = getComputedStyle(el); return cs.pointerEvents !== 'none' && +cs.opacity > 0; };
   const cs = [...document.querySelectorAll('svg.ff-map g.ff-pin > circle, svg.ff-map g.ff-area__mk > circle')]
     .filter((c) => live(c.parentElement))
@@ -506,7 +512,7 @@ const targetOverlaps = (p) => p.evaluate(() => {
   const out = [];
   for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
     const d = Math.hypot(cs[i].x - cs[j].x, cs[i].y - cs[j].y);
-    if (d < cs[i].r + cs[j].r - 0.5) out.push(`${cs[i].n} x ${cs[j].n} by ${(cs[i].r + cs[j].r - d).toFixed(1)}px`);
+    if (d < cs[i].r + cs[j].r + gap - 0.5) out.push(`${cs[i].n} x ${cs[j].n} by ${(cs[i].r + cs[j].r + gap - d).toFixed(1)}px${gap ? ' (with the gap)' : ''}`);
   }
   // Booth hit cells only exist as targets where numbers are drawn (Detail).
   const numbers = [...document.querySelectorAll('svg.ff-map text')].some((t) => /^\d+$/.test(t.textContent));
@@ -528,13 +534,14 @@ const targetOverlaps = (p) => p.evaluate(() => {
   labels.forEach((l, i) => {
     for (const c of cs) {
       const nx = Math.max(l.b.left, Math.min(c.x, l.b.right)), ny = Math.max(l.b.top, Math.min(c.y, l.b.bottom));
-      if (Math.hypot(c.x - nx, c.y - ny) < c.r - 0.5) out.push(`${l.n} x ${c.n}`);
+      if (Math.hypot(c.x - nx, c.y - ny) < c.r + gap - 0.5) out.push(`${l.n} x ${c.n}`);
     }
     for (const c of cells) if (cross(l.b, c.b)) out.push(`${l.n} x ${c.n}`);
-    for (const m of labels.slice(i + 1)) if (cross(l.b, m.b)) out.push(`${l.n} x ${m.n}`);
+    const grow = (b) => ({ left: b.left - gap, right: b.right + gap, top: b.top - gap, bottom: b.bottom + gap });
+    for (const m of labels.slice(i + 1)) if (cross(grow(l.b), m.b)) out.push(`${l.n} x ${m.n}`);
   });
   return out;
-});
+}, gap);
 
 // ---- the phone's opening state (beta round 1, 9/17) ----
 // Bike valet and the beer stand are landmarks and were reached for first; the
@@ -572,11 +579,11 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   // every booth's own hit cell too (targetOverlaps, above). Then the same
   // with each filter chip on, at each stop: the chip's pins are the only
   // live targets then.
-  const overlaps = () => targetOverlaps(p);
+  const overlaps = (gap) => targetOverlaps(p, gap);
   const STOPS = ['overview', 'first step', 'Detail'];
   for (let stop = 0; stop < 3; stop++) {
     if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
-    const o = await overlaps();
+    const o = await overlaps(stop ? PIN_GAP_PX : 0);
     check(`${name}: no two touch targets overlap at the ${STOPS[stop]}`, o.length === 0, o.join(' | '));
   }
   for (const chip of ['Restrooms', 'First aid', 'Water']) {
@@ -584,7 +591,7 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
     await p.waitForTimeout(650);
     for (let stop = 0; stop < 3; stop++) {
       if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
-      const o = await overlaps();
+      const o = await overlaps(stop ? PIN_GAP_PX : 0);
       check(`${name}: with ${chip} on, no two touch targets overlap at the ${STOPS[stop]}`, o.length === 0, o.join(' | '));
     }
     await p.locator('.ffc-chip', { hasText: chip }).click();
@@ -593,27 +600,33 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
-// ---- pin placement rules (10/17): rank, true location, ties split, nudge cap ----
-// src/pinPlacement.js decides, for this screen's scale, which pins each stop
-// shows and where. These read the drawn map back against the rules: a pin's
-// group carries data-pin (its index in PINS, whose x/y is the true location)
-// and data-rank; its first circle is the tap target, drawn where the pin is.
-// On a 375px phone and the docked desktop, at each stop, settled: no pin sits
-// further than NUDGE_CAP from its true location; a pin shown at a coarser
-// stop is still shown (once shown, stays shown -- and there it outranks
-// everything); no lower-ranked pin is drawn over the true location of a
-// higher-ranked candidate that is waiting; the
-// entrance cluster (water, info, merch) shows what the rules give it; and on
-// the docked desktop, as on the phone, no two targets overlap at any stop,
-// with each chip on too. Paper is checked with the print sheet below.
-const PLACE_STOPS = ['overview', 'first step', 'Detail'];
+// ---- pin placement rules (10/17, 10/18): rank, true location, ties split, nudge cap, gap, floor ----
+// src/pinPlacement.js decides, for this screen's scale, which pins each
+// level shows and where. These read the drawn map back against the rules: a
+// pin's group carries data-pin (its index in PINS, whose x/y is the true
+// location) and data-rank; its first circle is the tap target, drawn where
+// the pin is. On phones 314, 320, 375, 390 and 430 px wide (Ernest's iPhone
+// reports ~314 with its text zoomed) and the docked desktop, at each level,
+// settled:
+//   - level 3 never shows more map units per px than the 375px reference
+//     (LEVEL3_MAX_UNITS_PER_PX); levels 1 and 2 keep their ratios
+//   - no two targets overlap, and at levels 2 and 3 they stand --pin-gap
+//     apart -- with no chip on and with each chip on
+//   - no pin sits further than NUDGE_CAP from its true location
+//   - a pin shown at a coarser level is still shown (once shown, stays
+//     shown -- and there it outranks everything)
+//   - no lower-ranked pin is drawn over the true location of a higher-ranked
+//     candidate that is waiting
+//   - on the 375px phone and the docked desktop, the entrance cluster (water,
+//     info, merch) shows what the rules give it.
+// Paper is checked with the print sheet below.
+const PLACE_STOPS = ['level 1', 'level 2', 'level 3'];
 const pinIdx = (c, x) => PINS.findIndex((q) => q.c === c && (x == null || q.x === x));
 const ENTRANCE = { water: pinIdx('water', 645), info: pinIdx('info'), merch: pinIdx('merch') };
-// What each stop shows of the cluster. Phone: merch is the opening view's
-// landmark and stays one step in, where it outranks the water (26.6 units
-// off, where two targets need 46) and info (25.5 off), so both wait; at
-// Detail all three, edge to edge. Docked: the first step has room for all
-// three.
+// What each level shows of the cluster. Phone: merch is the opening view's
+// landmark and stays at level 2, where it outranks the water (26.7 units
+// off, where two targets need 48) and info, so both wait; at level 3 all
+// three, 2px apart. Docked: level 2 has room for all three.
 const ENTRANCE_SPEC = {
   phone: [['merch'], ['merch'], ['water', 'info', 'merch']],
   docked: [['merch'], ['water', 'info', 'merch'], ['water', 'info', 'merch']],
@@ -622,53 +635,75 @@ const drawnPins = (p) => p.evaluate(() => [...document.querySelectorAll('svg.ff-
   const c = g.querySelector(':scope > circle');
   return { i: +g.dataset.pin, rank: +g.dataset.rank, x: +c.getAttribute('cx'), y: +c.getAttribute('cy'), r: +c.getAttribute('r') };
 }));
-for (const [name, w, h, kind] of [['iPhone SE', 375, 667, 'phone'], ['desktop', 1440, 900, 'docked']]) {
+const unitsPerPx = (p) => p.evaluate(() => {
+  const svg = document.querySelector('svg.ff-map');
+  return +svg.getAttribute('viewBox').split(' ')[2] / svg.getBoundingClientRect().width;
+});
+const PLACE_SCREENS = [314, 320, 375, 390, 430].map((w) => [`${w}px phone`, w, Math.round(w * 2.1), 'phone'])
+  .concat([['desktop', 1440, 900, 'docked']]);
+for (const [name, w, h, kind] of PLACE_SCREENS) {
   const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
   await p.goto(BASE, { waitUntil: 'networkidle' });
   await p.waitForTimeout(700);
-  let before = new Set();   // what the coarser stops showed
+  let before = new Set();   // what the coarser levels showed
+  const upp = [];
   for (let stop = 0; stop < 3; stop++) {
     if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+    upp.push(await unitsPerPx(p));
     const drawn = await drawnPins(p);
     // Once shown, stays shown -- except an area's pin (the Food Court,
-    // Kidlandia), which gives way to its own booths at Detail.
+    // Kidlandia), which gives way to its own booths at level 3.
     const now = new Set(drawn.map((d) => d.i));
     const gone = [...before].filter((i) => !now.has(i) && !(stop === 2 && PINS[i].areaLabel));
     if (stop) check(`${name}: a pin shown at a coarser stop is still shown at the ${PLACE_STOPS[stop]}`, gone.length === 0,
       gone.map((i) => `${PINS[i].c} #${i}`).join(' | ') || `${before.size} carried in`);
-    // A carried-in pin outranks everything at this stop (STAYS_RANK).
+    // A carried-in pin outranks everything at this level (STAYS_RANK).
     const rankAt = (i) => (before.has(i) ? STAYS_RANK : rankOf(PINS[i]));
     const far = drawn.filter((d) => Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y) > NUDGE_CAP + 0.01);
     check(`${name}: no pin is further than the nudge cap from its true location at the ${PLACE_STOPS[stop]}`, drawn.length > 0 && far.length === 0,
       far.map((d) => `${PINS[d.i].c} #${d.i} ${Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y).toFixed(1)}`).join(' | ') || `${drawn.length} pins`);
-    // The candidates at this stop: the overview's are the pins flagged for it;
-    // from the first step every visitor pin; an area's pin is not one at
-    // Detail (its booths are, and its name label).
+    // The candidates at this level: level 1's are the pins flagged for it;
+    // from level 2 every visitor pin; an area's pin is not one at level 3
+    // (its booths are, and its name label). Two collide inside two radii
+    // plus, at levels 2 and 3, the gap.
     const r = drawn[0]?.r || 0;
+    const reach = 2 * r + (stop ? PIN_GAP_PX * (r / 22) : 0);
     const shown = new Set(drawn.map((d) => d.i));
     const waiting = PINS.map((q, i) => ({ q, i })).filter(({ q, i }) => !q.hidden && !q.print && !shown.has(i)
       && (stop ? true : q.overview === true || (q.overview === 'docked' && kind === 'docked')) && !(stop === 2 && q.areaLabel));
     const over = [];
     for (const { q, i } of waiting) for (const d of drawn) {
-      if (rankAt(d.i) > rankAt(i) && Math.hypot(d.x - q.x, d.y - q.y) < 2 * r - 0.01) over.push(`${PINS[d.i].c} #${d.i} (rank ${rankAt(d.i)}) over waiting ${q.c} #${i} (rank ${rankAt(i)})`);
+      if (rankAt(d.i) > rankAt(i) && Math.hypot(d.x - q.x, d.y - q.y) < reach - 0.01) over.push(`${PINS[d.i].c} #${d.i} (rank ${rankAt(d.i)}) over waiting ${q.c} #${i} (rank ${rankAt(i)})`);
     }
     check(`${name}: no lower-ranked pin shows over a higher-ranked one that waits, at the ${PLACE_STOPS[stop]}`, over.length === 0, over.join(' | ') || `${waiting.length} waiting`);
-    const cluster = Object.entries(ENTRANCE).filter(([, i]) => shown.has(i)).map(([k]) => k).sort();
-    const want = [...ENTRANCE_SPEC[kind][stop]].sort();
-    check(`${name}: the entrance cluster at the ${PLACE_STOPS[stop]} is ${want.join(' + ')}`, cluster.join() === want.join(), cluster.join(' + ') || '(none)');
+    if (w === 375 || kind === 'docked') {
+      const cluster = Object.entries(ENTRANCE).filter(([, i]) => shown.has(i)).map(([k]) => k).sort();
+      const want = [...ENTRANCE_SPEC[kind][stop]].sort();
+      check(`${name}: the entrance cluster at the ${PLACE_STOPS[stop]} is ${want.join(' + ')}`, cluster.join() === want.join(), cluster.join(' + ') || '(none)');
+    }
     before = new Set([...before, ...now]);
   }
-  if (kind === 'docked') {
-    for (const chip of [null, 'Restrooms', 'First aid', 'Water']) {
-      if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
-      else { await p.locator('.zoomctl button[aria-label="Reset to overview"]').click(); await p.waitForTimeout(650); }
-      for (let stop = 0; stop < 3; stop++) {
-        if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
-        const o = await targetOverlaps(p);
-        check(`${name}: docked, ${chip ? `with ${chip} on, ` : ''}no two touch targets overlap at the ${PLACE_STOPS[stop]}`, o.length === 0, o.join(' | '));
-      }
-      if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
+  // The level 3 scale floor: never more units per px than the reference
+  // phone; levels 1 and 2 keep their ratios. On a screen wide enough not to
+  // need it, level 3 keeps its ratio too.
+  const ratio = (a, b) => upp[a] / upp[b];
+  check(`${name}: level 3 shows no more map units per px than the 375px reference phone`, upp[2] <= LEVEL3_MAX_UNITS_PER_PX + 1e-4,
+    `${upp[2].toFixed(4)} units/px (floor ${LEVEL3_MAX_UNITS_PER_PX})`);
+  const wide = upp[0] * LEVEL_RATIOS[2] <= LEVEL3_MAX_UNITS_PER_PX + 1e-4;
+  check(`${name}: levels 1 and 2 keep their ratios, and level 3 is pulled in only where the floor needs it`,
+    Math.abs(ratio(1, 0) - LEVEL_RATIOS[1]) < 0.005 && (wide ? Math.abs(ratio(2, 0) - LEVEL_RATIOS[2]) < 0.005 : Math.abs(upp[2] - LEVEL3_MAX_UNITS_PER_PX) < 0.002),
+    `level 2 / level 1 ${ratio(1, 0).toFixed(3)}, level 3 / level 1 ${ratio(2, 0).toFixed(3)}${wide ? '' : ' (held at the floor)'}`);
+  // No overlap, and the 2px gap at levels 2 and 3, with no chip and with
+  // each chip on.
+  for (const chip of [null, 'Restrooms', 'First aid', 'Water']) {
+    if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
+    else { await p.locator('.zoomctl button[aria-label="Reset to overview"]').click(); await p.waitForTimeout(650); }
+    for (let stop = 0; stop < 3; stop++) {
+      if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+      const o = await targetOverlaps(p, stop ? PIN_GAP_PX : 0);
+      check(`${name}: ${chip ? `with ${chip} on, ` : ''}no two touch targets overlap at the ${PLACE_STOPS[stop]}${stop ? `, and every two stand ${PIN_GAP_PX}px apart` : ''}`, o.length === 0, o.join(' | '));
     }
+    if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
   }
   await p.close();
 }
