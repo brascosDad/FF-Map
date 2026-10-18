@@ -236,11 +236,10 @@ someone places it by hand.
 
 ## Visual baselines
 
-**Round 4: expect `print` to go red.** The five moved pins are drawn on paper at their new true
-locations, each under a map unit (under a point) away. `phone-open` is level 1 at 390px, and
-`sheet-open` opens Kidlandia's card from level 1 at 390px. Level 1 and level 2 at 390px don't change
-this round, so I expect both to stay green. If `print` goes red, its diff should show only those
-five pins nudged slightly; look at it before adding the `update-visual-baselines` label.
+**Round 4: no baseline changes.** I expected `print` to go red, because the five moved pins are
+drawn on paper at their new spots. CI passed it within the visual check's tolerance (121 pixels
+differ, all from moves under a point). `phone-open` and `sheet-open` passed unchanged, since they
+are level 1 at 390px. The `update-visual-baselines` label isn't needed.
 
 **Earlier rounds: no baseline changes.** I expected `sheet-open` to go red, but CI passed all three visual checks
 (`phone-open`, `sheet-open`, `print`) against the existing baselines. The Kidlandia sheet opens at a
