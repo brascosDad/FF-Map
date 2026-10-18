@@ -861,10 +861,22 @@ const titleIs = (p, want) => p.waitForFunction((want) => [...document.querySelec
 // Tap the middle of a target, after checking it is the thing found there and
 // measuring it. Returns its size, or null when something else is on top.
 async function tapTarget(p, locator, inside) {
-  const b = await locator.boundingBox();
+  // Wait for the target to hold still (a list restoring its scroll after
+  // back, a sheet settling), then check that the point to be tapped is THIS
+  // target -- not a neighbour that slid under it -- and tap it.
+  let b = await locator.boundingBox();
+  for (let i = 0; b && i < 10; i++) {
+    await p.waitForTimeout(80);
+    const c = await locator.boundingBox();
+    if (c && Math.abs(c.x - b.x) < 0.5 && Math.abs(c.y - b.y) < 0.5) break;
+    b = c;
+  }
   if (!b) return null;
   const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
-  const ok = await p.evaluate(({ cx, cy, inside }) => !!document.elementFromPoint(cx, cy)?.closest(inside), { cx, cy, inside });
+  const ok = await locator.evaluate((el, { cx, cy, inside }) => {
+    const hit = document.elementFromPoint(cx, cy)?.closest(inside);
+    return !!hit && (hit === el || hit.contains(el) || el.contains(hit));
+  }, { cx, cy, inside });
   if (!ok) return null;
   await p.mouse.click(cx, cy);
   return { w: b.width, h: b.height };
@@ -879,7 +891,8 @@ async function boothReachChecks(open, d, check) {
     await p.screenshot({ path: file }).catch(() => {});
     const titles = await p.locator('.ffc-panel__titleline h3, .ffc-panel__masthead h3').allTextContents().catch(() => []);
     const view = await p.locator('svg.ff-map').getAttribute('viewBox').catch(() => '?');
-    return `sheet shows [${titles.join(' | ')}]; viewBox ${view}; render ${file}`;
+    const ev = await p.evaluate(() => (window.__ev || []).join(' ')).catch(() => '?');
+    return `sheet shows [${titles.join(' | ')}]; viewBox ${view}; events ${ev}; render ${file}`;
   };
   // Each run starts on a fresh page at level 1, so one run's state (an open
   // sheet, a pan) cannot decide the next one's.
@@ -959,6 +972,16 @@ await Promise.all(ENGINES.map(async (engine) => {
       const open = async () => {
         const p = await newDevicePage(b, contextFor(d));
         p.on('pageerror', (e) => pageErrors.push(`${label}: ${e.message}`));
+        // The last pointer events and what they landed on, for a step that
+        // does not land (boothReachChecks' evidence).
+        await p.addInitScript(() => {
+          window.__ev = [];
+          const name = (t) => (t && t.closest ? (t.closest('[data-area],[data-pin],[data-booth],.ffc-boothrow,button,svg') || t) : t);
+          const tag = (el) => (el ? `${el.tagName?.toLowerCase()}${el.dataset?.area ? `[area=${el.dataset.area}]` : ''}${el.dataset?.pin ? `[pin=${el.dataset.pin}]` : ''}${el.dataset?.booth ? `[booth=${el.dataset.booth}]` : ''}${typeof el.className === 'string' && el.className ? `.${el.className.split(' ')[0]}` : ''}` : '-');
+          for (const type of ['pointerdown', 'pointerup', 'click', 'dblclick']) {
+            addEventListener(type, (e) => { window.__ev.push(`${type}${e.detail > 1 ? `x${e.detail}` : ''}@${Math.round(e.clientX)},${Math.round(e.clientY)}>${tag(name(e.target))}`); if (window.__ev.length > 12) window.__ev.shift(); }, true);
+          }
+        });
         await p.goto(BASE, { waitUntil: 'networkidle' });
         await settle(p, 500);
         return p;
