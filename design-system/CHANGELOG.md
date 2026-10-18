@@ -4,6 +4,28 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.5.0 — 2026-10-18
+
+Minor: a rule and a token are added, and `no-overlap` asks for a gap. On a
+phone narrower than 375px (or with its text zoomed) level 3 zooms further
+in; on every phone some pins arrive at level 2 or 3 a level later than
+before, and five pins moved by under a map unit. Level 1 is unchanged.
+
+- **Rule `level3-scale-floor`** (new): level 3 never shows more map units
+  per CSS px than the 375px reference phone (`LEVEL3_MAX_UNITS_PER_PX` =
+  0.5804, the rule's `constant`). "True locations are spaced once, for the
+  reference phone; no screen may show them closer together than that."
+- **Token `--pin-gap`** (2px), and **`no-overlap`** asks for it: at levels 2
+  and 3 every two targets (pins, markers, area labels) stand that far apart.
+  Not at level 1. Booth cells are held only to not crossing.
+- **Five true locations** moved apart on the reference phone so level 3
+  clears the gap: lawn water, Acoustic beer, King of Pops C1, entrance water
+  and info, 0.10 to 0.80 units each (pins.js).
+- **Names**: zoom levels are LEVEL 1, 2, 3 in docs and notes (the code keeps
+  overview / first step / Detail). No component names change.
+- Enforced by e2e on phones 314, 320, 375, 390 and 430 px wide and the docked
+  desktop, and `npm run test:ds`.
+
 ## 1.4.0 — 2026-10-17
 
 Minor: four rules, a component and three tokens are added, and `no-overlap`

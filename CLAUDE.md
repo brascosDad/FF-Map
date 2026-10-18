@@ -188,6 +188,13 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   Detail stop. The e2e suite measures every stop on a 375px phone and on the docked desktop, with
   each filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
   anything else; paper has no zoom to hide behind. e2e checks the paper too.
+- **Zoom levels are named LEVEL 1, 2, 3** (Ernest, 10/18): level 1 = the opening view (the
+  code's overview), level 2 = the middle step, level 3 = all the way in (the code's Detail).
+- **Level 3 scale floor** (Ernest, 10/18): true locations are spaced once, for the reference phone;
+  no screen may show them closer together than that. Level 3 never shows more map units per CSS px
+  than a 375px phone does (`LEVEL3_MAX_UNITS_PER_PX` = 0.5804 in `useMapView.js`); a narrower
+  screen, or a phone with its text zoomed, zooms level 3 further in. Levels 1 and 2 keep their
+  ratios.
 - **Pin placement rules** (10/17; `src/pinPlacement.js` computes them, `npm run pin-layout` shows
   the result — no more hand-set `from: 'detail'` flags or hand nudges):
   1. **Every pin has a rank** (`PIN_RANK` in `pins.js`), highest first: labelled destinations
@@ -199,6 +206,10 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   3. **At every coarser stop the higher rank wins**: the lower-ranked pin waits for the next
      closer stop, and a waiting pin still holds its spot against anything ranked below it.
   4. **Tied pins split the difference**, each moving half the overlap along the line between them.
+  4b. **A 2px gap between targets at levels 2 and 3** (`--pin-gap`, Ernest 10/18): two pin
+     targets (or a pin and a marker or area label) collide unless that far apart. Not at level
+     1, so the opening view is spaced as before. Booth cells, packed edge to edge, are held only
+     to not crossing.
   5. **Nudge cap: no pin sits more than `NUDGE_CAP` (12.75 map units, half of `--pin-hit` at
      Detail on a 375px phone) from its true location**, at any stop; a tie that needs more makes
      both wait. Between stops a nudged pin glides with the zoom.
@@ -284,7 +295,8 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   e2e proves those booths take the tap at Detail on phone and desktop.
 - **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): info sits directly
   on top of merch, edge to edge — 26.4 units out on Ernest's round-3 bearing (a little east of
-  north), the two 44px targets touching at the phone's Detail stop, which is where info arrives
+  north; 26.7 since 10/18, the 2px gap), the two 44px targets 2px apart at the phone's Detail
+  stop, which is where info arrives
   on the phone. On the desktop it arrives at the first step (a 12px gap between the 40px pins),
   no longer on the opening view, where 44px is 40 units. Don't move it back up.
 - **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the
@@ -555,7 +567,10 @@ reported to Will 9/13, no reply. Until fixed, the homepage band is the only phon
   from the opening view on, and the lawn and entrance water stations and the info booth wait for
   Detail, as they did before. Same PR: **Kidlandia gives way to its K booths at Detail** like the
   Food Court, and every area's name label there carries the tap (AreaLabel, rule
-  `area-label-tap`).
+  `area-label-tap`). Round 4 (10/18, design system 1.5.0): the **level 3 scale floor** and the
+  **2px `--pin-gap`** at levels 2 and 3; five true locations moved apart by under a map unit
+  each (lawn water, Acoustic beer, King of Pops C1, entrance water, info: listed in pins.js and
+  that PR's notes).
 
 ## Analytics
 

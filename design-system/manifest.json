@@ -1,7 +1,7 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.4.0",
-  "updated": "2026-10-17",
+  "version": "1.5.0",
+  "updated": "2026-10-18",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
     "generated": [
@@ -1033,6 +1033,14 @@
       "value": "44px",
       "pointsAt": [],
       "note": "Two tap-size rules (Ernest, 10/6; 44 CSS px = 44pt on iPhone, Apple's HIG minimum). --tap-min the floor for every CONTROL: chips, the sheet's close, the zoom buttons, the ItemPager's buttons. It replaces the 40px floor the zoom stack and the ItemPager used to sit on. --pin-hit the invisible hit area centred on every map pin. The visible marker (--pin-size) is unchanged; MapCanvas draws this circle and the e2e no-overlap rule measures it, at every stop.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-gap",
+      "tier": "semantic",
+      "value": "2px",
+      "pointsAt": [],
+      "note": "The least air between two pins' hit areas at levels 2 and 3 (Ernest, 10/18): touching edge to edge read as one target on a phone. Not at level 1, so the opening view is spaced as it was. src/pinPlacement.js counts it in every collision and e2e measures it.",
       "file": "src/styles/tokens.css"
     },
     {
@@ -2530,7 +2538,7 @@
   "rules": [
     {
       "id": "no-overlap",
-      "statement": "No tap target overlaps another at any of the three zoom stops, on either map (a 375px phone and the docked desktop), or on paper. Circles may touch edge to edge; they may not cross. Who gives way is computed, not hand-set (src/pinPlacement.js): every pin has a rank (PIN_RANK in src/assets/pins.js; priority below); at a coarser stop the higher rank keeps its true location and the lower waits for a closer stop, and a waiting pin still holds its spot against anything ranked below it; two of the same rank split the difference, each moving half the overlap along the line between them, within nudge-cap; a split that would hit a third target sends both to wait. Rank, then listed order, so the same pins always give the same map. A filter chip still draws its whole category on top at any stop; overview: true / 'docked' only makes a pin a candidate for the opening view.",
+      "statement": "No tap target overlaps another at any of the three zoom stops, on either map (a 375px phone and the docked desktop), or on paper. Circles may touch edge to edge at level 1 (the opening view); at levels 2 and 3 every two targets -- pins, markers, area labels -- stand --pin-gap (2px) apart. Booth cells, packed edge to edge, are held only to not crossing. Who gives way is computed, not hand-set (src/pinPlacement.js): every pin has a rank (PIN_RANK in src/assets/pins.js; priority below); at a coarser stop the higher rank keeps its true location and the lower waits for a closer stop, and a waiting pin still holds its spot against anything ranked below it; two of the same rank split the difference, each moving half the overlap along the line between them, within nudge-cap; a split that would hit a third target sends both to wait. Rank, then listed order, so the same pins always give the same map. A filter chip still draws its whole category on top at any stop; overview: true / 'docked' only makes a pin a candidate for the opening view.",
       "priority": [
         "labelled destinations (stages, Food Court, Kidlandia)",
         "first aid / EMS",
@@ -2542,6 +2550,7 @@
       "enforcedBy": [
         "e2e: no two touch targets overlap at the",
         "e2e: on, no two touch targets overlap at the",
+        "e2e: and every two stand",
         "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
         "e2e: print: nothing covers anything else",
         "ds: npm run test:ds (design-system/placement.test.mjs: rank, split, third target, determinism)"
@@ -2599,6 +2608,24 @@
         "e2e: no two touch targets overlap at the"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › At Detail, an area's pin gives way to its booths, and its name label carries the tap"
+    },
+    {
+      "id": "level3-scale-floor",
+      "statement": "Level 3 never shows more map units per CSS px than the 375px reference phone does at level 3 (LEVEL3_MAX_UNITS_PER_PX). A narrower screen, or a phone with its text zoomed, takes level 3 further in to hold the floor; levels 1 and 2 keep their ratios, and the reference phone and anything wider are unchanged.",
+      "constant": {
+        "name": "LEVEL3_MAX_UNITS_PER_PX",
+        "value": 0.5804,
+        "unit": "map units per CSS px",
+        "file": "src/hooks/useMapView.js",
+        "derivation": "the festival's 760 units / MOBILE_OVERVIEW_ZOOM 1.1 x level 3's 0.315 / a 375px phone = 0.58036, rounded up"
+      },
+      "reason": "True locations are spaced once, for the reference phone; no screen may show them closer together than that.",
+      "enforcedBy": [
+        "e2e: level 3 shows no more map units per px than the 375px reference phone",
+        "e2e: levels 1 and 2 keep their ratios, and level 3 is pulled in only where the floor needs it",
+        "ds: npm run test:ds (design-system/placement.test.mjs: level 3 scale floor)"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Level 3 scale floor"
     },
     {
       "id": "tap-floor",
