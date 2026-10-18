@@ -59,3 +59,40 @@ list is the standing part.
   level 1 the beer stand and the bike valet waited for the art-market markers. All of it was
   green, because no check ran at 314. Result: the level 3 scale floor (round 4), the device
   matrix with two big-text profiles, and the markers moved (round 5).
+
+## The human review gate
+
+Every PR description has a section **"For Ernest to look at"**: 3–6 questions about *this* PR,
+each one answerable by looking at the preview on his phone. Each item gives the level, the place
+and what to look at, then two boxes:
+
+```
+1. **Level 2, Acoustic Stage (south-east corner):** is a beer pin showing beside the stage?
+   - [ ] Yes
+   - [ ] No
+```
+
+- Each question asks what he **sees**, never "is this correct?".
+- The expected answers are mixed, so they are not all Yes. They are recorded in
+  `docs/pr-notes.md` under "Expected answers (human-review)", not in the description, so the
+  description doesn't give them away.
+- `docs/pr-notes.md` ends with its own "For Ernest to look at" section. It lists the judgment
+  calls he has to accept for this PR, and which of the five "Where Ernest looks" items apply.
+
+The **human-review** check (`.github/workflows/human-review.yml`, `scripts/human-review.mjs`)
+reads both:
+
+| What it finds | Result |
+|---|---|
+| Either "For Ernest to look at" section is missing, or the expected answers are missing | fail |
+| An item with no box ticked, or both | fail: "unanswered" |
+| An answer that differs from the expected one | fail, naming the item and asking: is the map wrong, or the expectation? It passes once the map is fixed and the answer changes, or once Ernest adds a line under that item starting `Expected was wrong:` |
+| Every item answered and matching | pass |
+
+It runs again whenever the description is edited, so ticking a box re-runs it.
+
+**What it verifies, and what it doesn't.** It verifies that he looked at specific things and saw
+what the PR expected. It does **not** verify his judgment, and it can't tell how carefully he
+looked. A wrong expectation is a finding too: the PR's author misread the map. On a **private
+repo on GitHub's free plan**, a required check can't block the merge button, so there it is a
+hard reminder, not a lock.

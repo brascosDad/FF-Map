@@ -35,6 +35,8 @@ jobs:
         run: npm run manifest -- --check
       - name: design-system tests
         run: npm run test:ds
+      - name: human-review parser tests
+        run: npm run test:review
       # Chromium for every render, WebKit for the device matrix's iPhone runs
       # (scripts/lib/devices.mjs): e2e fails on CI if WebKit is missing.
       - run: npx playwright install --with-deps chromium webkit

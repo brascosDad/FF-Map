@@ -40,6 +40,12 @@ an agent can query. One commit per item:
     booth, and two art-market markers moved along their runs so level 1 is whole on narrow
     phones. Design system 1.6.0. Its own section below.
 
+13. **Round 6 (Ernest, 10/18): where the human is in the loop.** `docs/checks-and-review.md`
+    gives every check's job and what it can't see, and says where Ernest looks on every PR. The
+    visual diff's comment now says its job is layout, not colour. The **human-review** check reads
+    the PR description's "For Ernest to look at" answers against the expected answers below.
+    Design system 1.7.0 adds the governance rule `human-review`.
+
 Rounds 1–3 changed no stored x/y; round 4 moved five, each by under a map unit; round 5 moved
 none (only two markers, which are not pins). Since round 5, merch and the bike valet tie at
 level 1 on phones under 375px and split the difference (see Pin nudges); otherwise nothing ties,
@@ -464,3 +470,72 @@ big text), all under the 12.75 cap. Both are at their true locations at levels 2
 level 1 on 375px and wider. `npm run pin-layout` shows the 320 case.
 
 None on the desktop, and none on paper.
+
+## Round 6 (10/18): checks and review
+
+- **Visual diff** (`scripts/visual.mjs`): THRESHOLD 0.1 and MAX_DIFF 0.001 stay, as decided. The
+  comment no longer says 0.1 "catches any real colour change"; PR #18's merch change passed
+  under it. The check's job is layout in its three snapshots. Colour is checked at the token.
+- **`docs/checks-and-review.md`**: one row per check (job, what it can't see, where it runs),
+  "Where Ernest looks (every PR)" with the two 10/18 examples, and the human review gate. It is
+  linked from CLAUDE.md (standing requirement 7) and design-system.html §7.
+- **The human-review check**: `.github/workflows/human-review.yml` runs
+  `scripts/human-review.mjs` on open, push, reopen and every description edit. Its parser has
+  unit tests (`npm run test:review`, a CI step). **It stays red on this PR until Ernest answers
+  the six items in the description.** That is the gate working, not a failure to fix.
+- **Checkbox format**: each item has its Yes and No boxes on two lines (`- [ ] Yes` / `- [ ] No`),
+  not one line, because GitHub only makes a box tappable at the start of a list item. That way he
+  can tick them in the GitHub app. The check also reads the one-line form `[ ] Yes  [ ] No`.
+- **Design system 1.7.0**: governance rule `human-review`, enforced by the human-review check.
+
+## Expected answers (human-review)
+
+The answers expected for the items in the PR description's "For Ernest to look at", checked by
+the human-review check. They are true on every phone profile in the matrix (300 to 430px), so
+big text does not change them.
+
+1. Yes — the McLendon marker moved west to (492, 787.9), over booths 76–78, west of the merch
+   tent at (630, 740).
+2. No — the Acoustic beer (861.2, 750) waits for level 3 on every phone: under 375px for the
+   stage, from 375px for the water station.
+3. Yes — the bike valet shows at level 1 on every profile since round 5. Under 375px it and merch
+   split a tie, up to 9.2 units apart.
+4. No — the Food Court card lists the trucks, not the 16 stalls (question 9).
+5. Yes — the 2px `--pin-gap` at level 3 (round 4). The visible discs are smaller than their
+   44px targets, so the visible gap is wider than 2px.
+6. No — at level 2 the info booth waits for merch (merch is on from level 1 and stays shown). It
+   arrives at level 3.
+
+## For Ernest to look at
+
+**Judgment calls to accept for this PR** (each one is yours; a green check means only that it
+held):
+
+1. **The level 3 scale floor** (round 4): narrow and text-zoomed phones zoom level 3 further in,
+   instead of the true locations being spaced again for them.
+2. **The 2px gap leaves booth cells out** (question 7): with it, three pins and the ART MARKET
+   labels would have to move.
+3. **The booth tap exception** (`booth-tap-equivalent`): a booth cell stays about 16px because
+   the list is the full-size way in. **The food stalls have no list** (question 9): accept the
+   Food Court card as their way in, or ask for a stall list.
+4. **The two marker moves** (round 5): the McLendon marker is now at the west end of its run, and
+   the desktop directory's McLendon row flies there.
+5. **The first real tie**: under 375px, merch and the bike valet split up to 9.2 units at level 1.
+   On those phones the lawn water now waits at level 2 instead of the beer stand.
+6. **What the matrix stands for**: 125% text is emulated as page zoom, and the WebKit results are
+   CI's (this container has no WebKit). Real-device testing is the next step (Round 5, "What
+   emulation does not cover").
+7. **The human-review gate itself**: the questions, the expected answers above, and that on a
+   private repo on the free plan it reminds rather than locks.
+
+**Which "Where Ernest looks" items apply** (`docs/checks-and-review.md`):
+
+- **1. Your phone, levels 1–3:** yes. Look at the McLendon entrance (merch, the bike valet, info),
+  the Acoustic Stage, the lawn by the beer stand, and the McLendon and in-park markers.
+- **2. Real-world truth:** barely. Round 4 moved five pins by under a map unit, and round 5 moved
+  only markers, which stand for a whole run, not a spot on the ground.
+- **3. Judgment calls:** yes, the seven above.
+- **4. A red visual check:** probably. `phone-open` (level 1 at 390px) should show the two markers
+  moved. Open the diff, and confirm it is only the markers, before adding the label.
+- **5. Print:** yes. Round 4's five moved pins are drawn on paper.
+
