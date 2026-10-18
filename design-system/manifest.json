@@ -1,6 +1,6 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "updated": "2026-10-18",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
@@ -2735,6 +2735,17 @@
         "ds: npm run ds -- check-palette (and the MCP tool check_palette) answers the same question; npm run ds -- palette-distances lists every pair"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › Category pins sit far enough apart to tell by hue"
+    },
+    {
+      "id": "human-review",
+      "statement": "Green checks mean the rules held; they don't mean the map is right. Every automated check has a written job and a written list of what it can't see (docs/checks-and-review.md), and the human review points are explicit: every PR description carries \"For Ernest to look at\" -- 3 to 6 observation questions about that PR, each answerable by looking at the preview on a phone, with a Yes and a No box -- and docs/pr-notes.md carries the expected answers and the judgment calls he has to accept. The human-review check fails until every item is answered and matches, or he writes \"Expected was wrong:\" under it.",
+      "reason": "So nobody's job becomes \"look for green and merge\". No check judges whether something reads well, is in the right real-world spot, or ranks the right things first; on 10/18 only a person caught the Acoustic beer and water nearly touching with every check green, and a text-zoomed iPhone behaving unlike the 375px test phone. The gate verifies that he looked at specific things, not his judgment; on a private repo on GitHub's free plan it is a hard reminder, not a lock.",
+      "enforcedBy": [
+        "ci: human-review",
+        "ci: human-review parser tests",
+        "review"
+      ],
+      "source": "CLAUDE.md › Standing requirements — every PR, not just the one that asks › Green checks mean the rules held, not that the map is right"
     }
   ]
 }

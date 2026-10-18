@@ -17,7 +17,7 @@
 //     flag (the switch a built-but-not-shipped component waits behind: shipped is then false)
 //     cssClass must exist in components.css; file must exist and use the class;
 //     every id in inStates must be a state in the doc;
-//   rules[].enforcedBy      "e2e: <text of a check in scripts/e2e.mjs>", "ci: <step>", "ds: ..." or "review"
+//   rules[].enforcedBy      "e2e: <text of a check in scripts/e2e.mjs>", "ci: <step or job in .github/workflows/>", "ds: ..." or "review"
 //   rules[].source          "CLAUDE.md › <heading> › <phrase>": every part must be in CLAUDE.md
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -194,14 +194,14 @@ export function buildManifest() {
   const unlisted = [...new Set(comps.flatMap((d) => subjectClasses(d.selector || '')).map(rootOf))].filter((r) => !roots.has(r)).sort().map((r) => `.${r}`);
 
   // Rules: hand-written, but every pointer in them has to be real.
-  const e2e = read('scripts/e2e.mjs'), claude = read('CLAUDE.md').replace(/\s+/g, ' '), ci = read('.github/workflows/ci.yml');
+  const e2e = read('scripts/e2e.mjs'), claude = read('CLAUDE.md').replace(/\s+/g, ' '), ci = readdirSync(join(ROOT, '.github/workflows')).filter((f) => f.endsWith('.yml')).map((f) => read(`.github/workflows/${f}`)).join('\n');
   for (const r of prev.rules || []) {
     for (const e of r.enforcedBy || []) {
       const [kind, ...rest] = e.split(/:\s*/);
       const what = rest.join(': ');
       if (e === 'review') continue;
       if (kind === 'e2e' && !e2e.includes(what)) problems.push(`rule ${r.id}: no check in scripts/e2e.mjs contains "${what}"`);
-      else if (kind === 'ci' && !ci.includes(what)) problems.push(`rule ${r.id}: no step in ci.yml is named "${what}"`);
+      else if (kind === 'ci' && !ci.includes(what)) problems.push(`rule ${r.id}: no step or job in .github/workflows/ is named "${what}"`);
       else if (!['e2e', 'ci', 'ds'].includes(kind)) problems.push(`rule ${r.id}: enforcedBy "${e}" must be review, e2e: …, ci: … or ds: …`);
     }
     // A rule that names a constant carries its value; the file has to agree.

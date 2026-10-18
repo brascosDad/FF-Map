@@ -4,6 +4,22 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.7.0 — 2026-10-18
+
+Minor: a governance rule is added. Nothing on screen changes.
+
+- **Rule `human-review`** (new): green checks mean the rules held, not that
+  the map is right. Every check's job and blind spots are written down in
+  `docs/checks-and-review.md`. Every PR asks Ernest 3–6 observation
+  questions ("For Ernest to look at"), and the **human-review** check
+  (`.github/workflows/human-review.yml`) fails until each is answered and
+  matches the expected answer in `docs/pr-notes.md`, or he writes
+  "Expected was wrong:" under it.
+- `npm run manifest` now accepts a `ci:` pointer to any workflow's step or
+  job, not only `ci.yml`'s.
+- The visual diff's comment says its job is layout; colour is the palette
+  rules' job (no threshold change).
+
 ## 1.6.0 — 2026-10-18
 
 Minor: a rule is added and `tap-floor` names its one exception. Nothing on
