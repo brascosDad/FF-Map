@@ -88,6 +88,20 @@ zoomed lays the page out on fewer, bigger CSS pixels, so the profile uses a view
 314 is what Ernest's iPhone reported. This is page zoom: everything scales together, the map
 included. It is not iOS Dynamic Type, which can grow some text more than others.
 
+**WebKit on CI (10/18): every check passes on both engines, 1387 of 1387.** Getting there took
+four test fixes and no app change; each is its own commit:
+
+- Each booth-walk run now starts on a fresh page, so no run depends on closing the last one's sheet.
+- A row is tapped only once it holds still, and only if the tap point hits that very row. On the
+  iPhone SE in WebKit, booth 137's row once opened booth 136 while the list was still settling
+  after back.
+- A row whose tap point is still settling is scrolled to and tried again.
+- The test no longer keeps dragging a map that cannot pan. On the docked desktop in WebKit, the
+  Candler Park Dr marker tap opened nothing. A pointer-event log showed why: the second of two
+  identical drags never delivered its pointerup, so the tap's press was swallowed as part of a
+  drag. That comes from Playwright's synthetic mouse drags on WebKit; a person's tap is not
+  affected. The log stays in the suite for any future miss.
+
 **WebKit runs on CI, not in this container.** The remote Claude Code container ships Chromium only
 and asks not to download browsers, so here the WebKit half is skipped with a printed notice. On CI,
 `ci.yml` now installs WebKit, and a missing WebKit fails the run. **The WebKit results are CI's.**
