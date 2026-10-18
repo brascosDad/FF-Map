@@ -15,7 +15,8 @@ import { whatsOnNow } from '../src/whatsOnNow.js';
 import { PINS, rankOf } from '../src/assets/pins.js';
 import { NUDGE_CAP, STAYS_RANK } from '../src/pinPlacement.js';
 import { LEVEL3_MAX_UNITS_PER_PX, LEVEL_RATIOS } from '../src/hooks/useMapView.js';
-import { BASE, launch } from './lib/browser.mjs';
+import { BASE, launch, launchEngine, newDevicePage } from './lib/browser.mjs';
+import { DEVICES, ENGINES, contextFor, cssWidth } from './lib/devices.mjs';
 
 // A colour token as the browser reports a computed fill: 'rgb(r, g, b)'. Read
 // from tokens.css, so a check that a pin wears its token follows the token
@@ -600,26 +601,31 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['iPhone 16', 393, 852]]) {
   await p.close();
 }
 
-// ---- pin placement rules (10/17, 10/18): rank, true location, ties split, nudge cap, gap, floor ----
-// src/pinPlacement.js decides, for this screen's scale, which pins each
-// level shows and where. These read the drawn map back against the rules: a
-// pin's group carries data-pin (its index in PINS, whose x/y is the true
-// location) and data-rank; its first circle is the tap target, drawn where
-// the pin is. On phones 314, 320, 375, 390 and 430 px wide (Ernest's iPhone
-// reports ~314 with its text zoomed) and the docked desktop, at each level,
-// settled:
-//   - level 3 never shows more map units per px than the 375px reference
-//     (LEVEL3_MAX_UNITS_PER_PX); levels 1 and 2 keep their ratios
-//   - no two targets overlap, and at levels 2 and 3 they stand --pin-gap
-//     apart -- with no chip on and with each chip on
-//   - no pin sits further than NUDGE_CAP from its true location
-//   - a pin shown at a coarser level is still shown (once shown, stays
-//     shown -- and there it outranks everything)
-//   - no lower-ranked pin is drawn over the true location of a higher-ranked
-//     candidate that is waiting
-//   - on the 375px phone and the docked desktop, the entrance cluster (water,
-//     info, merch) shows what the rules give it.
-// Paper is checked with the print sheet below.
+// ---- the device matrix (10/18): the map's own checks on two engines and nine screens ----
+// scripts/lib/devices.mjs is the matrix: one line per phone class (the
+// 320-430px phones, two of them again with their text at 125%, and the
+// docked desktop), each run on WebKit (iPhone Safari, and iPhone Chrome,
+// which is WebKit underneath) and Chromium (Android). Every check below runs
+// on every profile x engine and is named after both in the output
+// ("iPhone 15 / big text · WebKit: ..."). WebKit is installed on CI
+// (ci.yml); where it is not (the remote Claude Code container ships
+// Chromium only) the WebKit half is skipped with a notice, never silently.
+//
+// The checks, per profile:
+//   placement   rank, true location, nudge cap, stays-shown, the level 3
+//               scale floor, and no overlap with the --pin-gap at levels 2
+//               and 3, with no chip and with each chip on
+//   area labels at level 3 each area's name label is a 44px target that
+//               opens its card (rule area-label-tap)
+//   tap sizes   every control is at least --tap-min each way: the chips,
+//               the zoom buttons, the sheet's close and back, a booth row,
+//               the ItemPager's buttons
+//
+// Profiles run a few at a time per engine (MATRIX_POOL), and each prints its
+// lines together when it is done. Pages run with reduced motion, so a zoom
+// or a sheet lands at once and a short settle is enough.
+const MATRIX_POOL = 3;
+const settle = (p, ms = 250) => p.waitForTimeout(ms);
 const PLACE_STOPS = ['level 1', 'level 2', 'level 3'];
 const pinIdx = (c, x) => PINS.findIndex((q) => q.c === c && (x == null || q.x === x));
 const ENTRANCE = { water: pinIdx('water', 645), info: pinIdx('info'), merch: pinIdx('merch') };
@@ -639,47 +645,66 @@ const unitsPerPx = (p) => p.evaluate(() => {
   const svg = document.querySelector('svg.ff-map');
   return +svg.getAttribute('viewBox').split(' ')[2] / svg.getBoundingClientRect().width;
 });
-const PLACE_SCREENS = [314, 320, 375, 390, 430].map((w) => [`${w}px phone`, w, Math.round(w * 2.1), 'phone'])
-  .concat([['desktop', 1440, 900, 'docked']]);
-for (const [name, w, h, kind] of PLACE_SCREENS) {
-  const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
-  await p.goto(BASE, { waitUntil: 'networkidle' });
-  await p.waitForTimeout(700);
+const zoomStep = async (p) => { await p.locator('.zoomctl button[aria-label="Zoom in"]').click(); await settle(p); };
+const resetView = async (p) => { await p.locator('.zoomctl button[aria-label="Reset to overview"]').click(); await settle(p); };
+// The middle of the map a visitor can see: under the header and chips, above
+// a bottom sheet, left of the docked panel.
+const mapMiddle = async (p, d) => {
+  const wrap = await p.locator('.mapwrap').boundingBox();
+  return { x: wrap.x + (d.docked ? (wrap.width - reserveFor(wrap.width, true)) / 2 : wrap.width / 2), y: wrap.y + wrap.height * 0.55 };
+};
+// Drag the map until the element's centre is in the middle of the visible
+// map, a few strokes if the first one runs into a pan limit.
+async function bringToMiddle(p, d, locator) {
+  for (let i = 0; i < 4; i++) {
+    const b = await locator.boundingBox();
+    if (!b) return null;
+    const m = await mapMiddle(p, d), dx = m.x - (b.x + b.width / 2), dy = m.y - (b.y + b.height / 2);
+    if (Math.hypot(dx, dy) < 30) return b;
+    await drag(p, dx, dy);
+    await settle(p, 150);
+  }
+  return locator.boundingBox();
+}
+
+async function placementChecks(open, d, check) {
+  const p = await open();
+  const w = cssWidth(d), kind = d.docked ? 'docked' : 'phone';
   let before = new Set();   // what the coarser levels showed
   const upp = [];
   for (let stop = 0; stop < 3; stop++) {
-    if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+    if (stop) await zoomStep(p);
     upp.push(await unitsPerPx(p));
     const drawn = await drawnPins(p);
     // Once shown, stays shown -- except an area's pin (the Food Court,
     // Kidlandia), which gives way to its own booths at level 3.
-    const now = new Set(drawn.map((d) => d.i));
+    const now = new Set(drawn.map((x) => x.i));
     const gone = [...before].filter((i) => !now.has(i) && !(stop === 2 && PINS[i].areaLabel));
-    if (stop) check(`${name}: a pin shown at a coarser stop is still shown at the ${PLACE_STOPS[stop]}`, gone.length === 0,
+    if (stop) check(`a pin shown at a coarser stop is still shown at the ${PLACE_STOPS[stop]}`, gone.length === 0,
       gone.map((i) => `${PINS[i].c} #${i}`).join(' | ') || `${before.size} carried in`);
     // A carried-in pin outranks everything at this level (STAYS_RANK).
     const rankAt = (i) => (before.has(i) ? STAYS_RANK : rankOf(PINS[i]));
-    const far = drawn.filter((d) => Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y) > NUDGE_CAP + 0.01);
-    check(`${name}: no pin is further than the nudge cap from its true location at the ${PLACE_STOPS[stop]}`, drawn.length > 0 && far.length === 0,
-      far.map((d) => `${PINS[d.i].c} #${d.i} ${Math.hypot(d.x - PINS[d.i].x, d.y - PINS[d.i].y).toFixed(1)}`).join(' | ') || `${drawn.length} pins`);
+    const far = drawn.filter((x) => Math.hypot(x.x - PINS[x.i].x, x.y - PINS[x.i].y) > NUDGE_CAP + 0.01);
+    check(`no pin is further than the nudge cap from its true location at the ${PLACE_STOPS[stop]}`, drawn.length > 0 && far.length === 0,
+      far.map((x) => `${PINS[x.i].c} #${x.i} ${Math.hypot(x.x - PINS[x.i].x, x.y - PINS[x.i].y).toFixed(1)}`).join(' | ') || `${drawn.length} pins`);
     // The candidates at this level: level 1's are the pins flagged for it;
     // from level 2 every visitor pin; an area's pin is not one at level 3
     // (its booths are, and its name label). Two collide inside two radii
     // plus, at levels 2 and 3, the gap.
     const r = drawn[0]?.r || 0;
     const reach = 2 * r + (stop ? PIN_GAP_PX * (r / 22) : 0);
-    const shown = new Set(drawn.map((d) => d.i));
+    const shown = new Set(drawn.map((x) => x.i));
     const waiting = PINS.map((q, i) => ({ q, i })).filter(({ q, i }) => !q.hidden && !q.print && !shown.has(i)
       && (stop ? true : q.overview === true || (q.overview === 'docked' && kind === 'docked')) && !(stop === 2 && q.areaLabel));
     const over = [];
-    for (const { q, i } of waiting) for (const d of drawn) {
-      if (rankAt(d.i) > rankAt(i) && Math.hypot(d.x - q.x, d.y - q.y) < reach - 0.01) over.push(`${PINS[d.i].c} #${d.i} (rank ${rankAt(d.i)}) over waiting ${q.c} #${i} (rank ${rankAt(i)})`);
+    for (const { q, i } of waiting) for (const x of drawn) {
+      if (rankAt(x.i) > rankAt(i) && Math.hypot(x.x - q.x, x.y - q.y) < reach - 0.01) over.push(`${PINS[x.i].c} #${x.i} (rank ${rankAt(x.i)}) over waiting ${q.c} #${i} (rank ${rankAt(i)})`);
     }
-    check(`${name}: no lower-ranked pin shows over a higher-ranked one that waits, at the ${PLACE_STOPS[stop]}`, over.length === 0, over.join(' | ') || `${waiting.length} waiting`);
-    if (w === 375 || kind === 'docked') {
+    check(`no lower-ranked pin shows over a higher-ranked one that waits, at the ${PLACE_STOPS[stop]}`, over.length === 0, over.join(' | ') || `${waiting.length} waiting`);
+    if ((w === 375 && !d.textZoom) || d.docked) {
       const cluster = Object.entries(ENTRANCE).filter(([, i]) => shown.has(i)).map(([k]) => k).sort();
       const want = [...ENTRANCE_SPEC[kind][stop]].sort();
-      check(`${name}: the entrance cluster at the ${PLACE_STOPS[stop]} is ${want.join(' + ')}`, cluster.join() === want.join(), cluster.join(' + ') || '(none)');
+      check(`the entrance cluster at the ${PLACE_STOPS[stop]} is ${want.join(' + ')}`, cluster.join() === want.join(), cluster.join(' + ') || '(none)');
     }
     before = new Set([...before, ...now]);
   }
@@ -687,34 +712,36 @@ for (const [name, w, h, kind] of PLACE_SCREENS) {
   // phone; levels 1 and 2 keep their ratios. On a screen wide enough not to
   // need it, level 3 keeps its ratio too.
   const ratio = (a, b) => upp[a] / upp[b];
-  check(`${name}: level 3 shows no more map units per px than the 375px reference phone`, upp[2] <= LEVEL3_MAX_UNITS_PER_PX + 1e-4,
+  check('level 3 shows no more map units per px than the 375px reference phone', upp[2] <= LEVEL3_MAX_UNITS_PER_PX + 1e-4,
     `${upp[2].toFixed(4)} units/px (floor ${LEVEL3_MAX_UNITS_PER_PX})`);
   const wide = upp[0] * LEVEL_RATIOS[2] <= LEVEL3_MAX_UNITS_PER_PX + 1e-4;
-  check(`${name}: levels 1 and 2 keep their ratios, and level 3 is pulled in only where the floor needs it`,
+  check('levels 1 and 2 keep their ratios, and level 3 is pulled in only where the floor needs it',
     Math.abs(ratio(1, 0) - LEVEL_RATIOS[1]) < 0.005 && (wide ? Math.abs(ratio(2, 0) - LEVEL_RATIOS[2]) < 0.005 : Math.abs(upp[2] - LEVEL3_MAX_UNITS_PER_PX) < 0.002),
     `level 2 / level 1 ${ratio(1, 0).toFixed(3)}, level 3 / level 1 ${ratio(2, 0).toFixed(3)}${wide ? '' : ' (held at the floor)'}`);
   // No overlap, and the 2px gap at levels 2 and 3, with no chip and with
   // each chip on.
   for (const chip of [null, 'Restrooms', 'First aid', 'Water']) {
-    if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
-    else { await p.locator('.zoomctl button[aria-label="Reset to overview"]').click(); await p.waitForTimeout(650); }
+    if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await settle(p); }
+    else await resetView(p);
     for (let stop = 0; stop < 3; stop++) {
-      if (stop) { await p.locator('.zoomctl button').first().click(); await p.waitForTimeout(650); }
+      if (stop) await zoomStep(p);
       const o = await targetOverlaps(p, stop ? PIN_GAP_PX : 0);
-      check(`${name}: ${chip ? `with ${chip} on, ` : ''}no two touch targets overlap at the ${PLACE_STOPS[stop]}${stop ? `, and every two stand ${PIN_GAP_PX}px apart` : ''}`, o.length === 0, o.join(' | '));
+      check(`${chip ? `with ${chip} on, ` : ''}no two touch targets overlap at the ${PLACE_STOPS[stop]}${stop ? `, and every two stand ${PIN_GAP_PX}px apart` : ''}`, o.length === 0, o.join(' | '));
     }
-    if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await p.waitForTimeout(650); }
+    if (chip) { await p.locator('.ffc-chip', { hasText: chip }).first().click(); await settle(p); }
   }
   await p.close();
 }
 
-// ---- at Detail, an area's pin gives way to its booths and its name label carries the tap ----
+// ---- at level 3, an area's pin gives way to its booths and its name label carries the tap ----
 // Rule area-label-tap (10/17). For the Food Court, Kidlandia and each of the
-// three art-market areas: step in to Detail over the area, and its name label
-// is drawn, its hit rect at least 44px each way with the word inside it, the
-// area's pin is gone (Food Court, Kidlandia), and a tap on the label opens
-// the area's card. That the label covers no booth or pin target is the
-// no-overlap check (targetOverlaps). Phone and docked desktop.
+// three art-market areas: bring the area's pin or marker to the middle at
+// level 1, step in to level 3 with the zoom buttons (they zoom about the
+// middle; a wheel is not a phone gesture and WebKit's is unreliable), bring
+// the name label to the middle, and it is drawn, its hit rect at least 44px
+// each way with the word inside it, the area's pin is gone (Food Court,
+// Kidlandia), and a tap on the label opens the area's card. That the label
+// covers no booth or pin target is the no-overlap check (targetOverlaps).
 const AREA_LABELS = [
   ['food', 'g.ff-pin[data-pin="' + PINS.findIndex((q) => q.d === 'food' && q.areaLabel) + '"] > circle', /Food/i, PINS.findIndex((q) => q.d === 'food' && q.areaLabel)],
   ['kids', 'g.ff-pin[data-pin="' + PINS.findIndex((q) => q.d === 'kids') + '"] > circle', /Kidlandia/i, PINS.findIndex((q) => q.d === 'kids')],
@@ -722,22 +749,13 @@ const AREA_LABELS = [
   ['mcl', 'g.ff-area[data-area="mcl"] .ff-marker circle', /McLendon/, null],
   ['spine', 'g.ff-area[data-area="spine"] .ff-marker circle', /In the Park/, null],
 ];
-for (const [name, w, h] of [['iPhone SE', 375, 667], ['desktop', 1440, 900]]) {
+async function areaLabelChecks(open, d, check) {
   for (const [id, anchor, title, pinIdx] of AREA_LABELS) {
-    const p = await browser.newPage({ viewport: { width: w, height: h } });
-    await p.goto(BASE, { waitUntil: 'networkidle' });
-    await p.waitForTimeout(700);
-    // Wheel in twice over the area's pin or marker: a wheel step zooms about
-    // the pointer, so the area stays under it on the way to Detail.
-    const a = await p.locator(`svg.ff-map ${anchor}`).boundingBox();
-    await p.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
-    await p.mouse.wheel(0, -100); await p.waitForTimeout(700);
-    await p.mouse.wheel(0, -100); await p.waitForTimeout(700);
+    const p = await open();
+    await bringToMiddle(p, d, p.locator(`svg.ff-map ${anchor}`));
+    await zoomStep(p); await zoomStep(p);
     const label = p.locator(`svg.ff-map g.ffc-arealabel[data-arealabel="${id}"]`);
-    // Bring the label to the middle of the map, clear of the header and chips.
-    const wrap = await p.locator('.mapwrap').boundingBox();
-    const lb0 = await label.locator(':scope > rect').boundingBox();
-    if (lb0) await drag(p, wrap.x + wrap.width * (w >= 1024 ? 0.3 : 0.5) - (lb0.x + lb0.width / 2), wrap.y + wrap.height * 0.55 - (lb0.y + lb0.height / 2));
+    if (await label.count()) await bringToMiddle(p, d, label.locator(':scope > rect'));
     const r = await p.evaluate(({ id, pinIdx }) => {
       const g = document.querySelector(`svg.ff-map g.ffc-arealabel[data-arealabel="${id}"]`);
       if (!g) return { drawn: false };
@@ -748,18 +766,91 @@ for (const [name, w, h] of [['iPhone SE', 375, 667], ['desktop', 1440, 900]]) {
                hit, cx: rb.x + rb.width / 2, cy: rb.y + rb.height / 2,
                pinGone: pinIdx == null || !document.querySelector(`svg.ff-map g.ff-pin[data-pin="${pinIdx}"]`) };
     }, { id, pinIdx });
-    check(`${name}: at Detail the ${id} name label is drawn, a 44px target with the word inside it`,
+    check(`at level 3 the ${id} name label is drawn, a 44px target with the word inside it`,
       r.drawn && r.w >= 43.5 && r.h >= 43.5 && r.inside, r.drawn ? `"${r.text}" ${r.w.toFixed(0)}x${r.h.toFixed(0)}px, word inside ${r.inside}` : 'no label');
-    if (pinIdx != null) check(`${name}: at Detail the ${id} pin gives way to its booths`, r.pinGone);
+    if (pinIdx != null) check(`at level 3 the ${id} pin gives way to its booths`, r.pinGone);
     if (r.drawn) {
       await p.mouse.click(r.cx, r.cy);
-      await p.waitForTimeout(600);
+      await settle(p, 400);
       const t = await p.locator('.ffc-panel__titleline h3').first().textContent().catch(() => '');
-      check(`${name}: a tap on the ${id} name label opens the area's card`, r.hit === id && title.test(t || ''), `tap reached ${r.hit}; card "${t}"`);
+      check(`a tap on the ${id} name label opens the area's card`, r.hit === id && title.test(t || ''), `tap reached ${r.hit}; card "${t}"`);
     }
     await p.close();
   }
 }
+
+// ---- every control is at least --tap-min each way ----
+// The chips and the zoom buttons at open; then open the car-path market's
+// list from its marker: the sheet's close and a booth row; then a booth from
+// that row: the back row and the ItemPager's two buttons.
+const TAP_MIN_PX = Number(TOKENS_CSS.match(/--tap-min:\s*([\d.]+)px/)[1]);
+// A phone chip's pill is painted shorter than the floor and its ::after
+// carries the target (components.css): measure whichever is bigger.
+const sizeOf = (p, sel) => p.locator(sel).evaluateAll((els) => els.filter((e) => e.getClientRects().length)
+  .map((e) => {
+    const b = e.getBoundingClientRect(), a = getComputedStyle(e, '::after');
+    const ah = a.content !== 'none' && a.position === 'absolute' ? parseFloat(a.height) || 0 : 0;
+    return { w: b.width, h: Math.max(b.height, ah), t: (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 18) };
+  }));
+async function tapSizeChecks(open, d, check) {
+  const p = await open();
+  const small = (list) => list.filter((s) => s.w < TAP_MIN_PX - 0.5 || s.h < TAP_MIN_PX - 0.5);
+  const say = (list) => small(list).map((s) => `"${s.t}" ${s.w.toFixed(0)}x${s.h.toFixed(0)}`).join(' | ') || `${list.length} measured`;
+  for (const [what, sel] of [['every filter chip', '.ffc-chip'], ['every zoom button', '.zoomctl button']]) {
+    const s = await sizeOf(p, sel);
+    check(`${what} is at least ${TAP_MIN_PX}px each way`, s.length > 0 && small(s).length === 0, say(s));
+  }
+  const mk = await bringToMiddle(p, d, p.locator('svg.ff-map g.ff-area[data-area="spine"] .ff-area__mk > circle'));
+  await p.mouse.click(mk.x + mk.width / 2, mk.y + mk.height / 2);
+  await settle(p, 400);
+  // The docked panel closes from its back row; a bottom sheet from its ×.
+  for (const [what, sel] of [["the sheet's close", d.docked ? '.ffc-panel__back' : '.ffc-panel__close'], ['a booth row', '.ffc-boothrow']]) {
+    const s = (await sizeOf(p, sel)).slice(0, 1);
+    check(`${what} is at least ${TAP_MIN_PX}px each way`, s.length > 0 && small(s).length === 0, say(s));
+  }
+  await p.locator('.ffc-boothrow').first().click();
+  await settle(p, 400);
+  for (const [what, sel] of [['the back row', '.ffc-panel__back'], ['each ItemPager button', '.ffc-itempager button']]) {
+    const s = await sizeOf(p, sel);
+    check(`${what} is at least ${TAP_MIN_PX}px each way`, s.length > 0 && small(s).length === 0, say(s));
+  }
+  await p.close();
+}
+
+const MATRIX_CHECKS = [placementChecks, areaLabelChecks, tapSizeChecks];
+const ENGINE_NAME = { webkit: 'WebKit', chromium: 'Chromium' };
+const matrixSkipped = [];
+await Promise.all(ENGINES.map(async (engine) => {
+  const b = engine === 'chromium' ? browser : await launchEngine(engine);
+  if (!b) {
+    matrixSkipped.push(engine);
+    console.log(`  skip  device matrix on ${ENGINE_NAME[engine]}: not installed here (CI installs it; locally: npx playwright install webkit)`);
+    return;
+  }
+  const queue = [...DEVICES];
+  await Promise.all(Array.from({ length: MATRIX_POOL }, async () => {
+    for (let d = queue.shift(); d; d = queue.shift()) {
+      const label = `${d.name} · ${ENGINE_NAME[engine]}`;
+      const lines = [`  ${label} (${cssWidth(d)} CSS px wide${d.textZoom ? `, text at ${d.textZoom * 100}%` : ''})`];
+      const local = (name, pass, detail = '') => {
+        results.push({ name: `${label}: ${name}`, pass, detail });
+        lines.push(`    ${pass ? 'pass' : 'FAIL'}  ${name}${detail ? `  — ${detail}` : ''}`);
+      };
+      const open = async () => {
+        const p = await newDevicePage(b, contextFor(d));
+        p.on('pageerror', (e) => pageErrors.push(`${label}: ${e.message}`));
+        await p.goto(BASE, { waitUntil: 'networkidle' });
+        await settle(p, 500);
+        return p;
+      };
+      for (const run of MATRIX_CHECKS) {
+        try { await run(open, d, local); } catch (e) { local(run.name, false, `threw: ${String(e.message).split('\n')[0]}`); }
+      }
+      console.log(lines.join('\n'));
+    }
+  }));
+  if (b !== browser) await b.close();
+}));
 
 // ---- the area markers leave at the Detail stop ----
 // Ernest, iPhone 9/20: at the closest stop the art-market marker sat on booths
