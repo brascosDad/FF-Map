@@ -662,10 +662,14 @@ async function bringToMiddle(p, d, locator) {
     const b = await locator.boundingBox();
     if (!b) return null;
     const m = await mapMiddle(p, d), dx = m.x - (b.x + b.width / 2), dy = m.y - (b.y + b.height / 2);
-    if (Math.hypot(dx, dy) < 30) return b;
+    if (Math.hypot(dx, dy) < 30) break;
     await drag(p, dx, dy);
     await settle(p, 150);
   }
+  // Let the drags go quiet before the next tap: two quick drags from the same
+  // spot can read as a double click (WebKit counts the presses), and a tap
+  // inside that window is not a fresh tap.
+  await settle(p, 600);
   return locator.boundingBox();
 }
 
@@ -874,7 +878,8 @@ async function boothReachChecks(open, d, check) {
     mkdirSync(`${OUT}/matrix`, { recursive: true });
     await p.screenshot({ path: file }).catch(() => {});
     const titles = await p.locator('.ffc-panel__titleline h3, .ffc-panel__masthead h3').allTextContents().catch(() => []);
-    return `sheet shows [${titles.join(' | ')}]; render ${file}`;
+    const view = await p.locator('svg.ff-map').getAttribute('viewBox').catch(() => '?');
+    return `sheet shows [${titles.join(' | ')}]; viewBox ${view}; render ${file}`;
   };
   // Each run starts on a fresh page at level 1, so one run's state (an open
   // sheet, a pan) cannot decide the next one's.
