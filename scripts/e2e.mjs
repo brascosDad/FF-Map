@@ -866,17 +866,31 @@ async function tapTarget(p, locator, inside) {
   return { w: b.width, h: b.height };
 }
 async function boothReachChecks(open, d, check) {
-  const p = await open();
   const under = (s) => s.w < TAP_MIN_PX - 0.5 || s.h < TAP_MIN_PX - 0.5;
+  // What was on screen when a step did not land: the sheet's titles, and a
+  // render in .e2e-out/matrix/ (CI keeps .e2e-out when something fails).
+  const evidence = async (p, step) => {
+    const file = `${OUT}/matrix/${`${d.name}-${p.context().browser().browserType().name()}-${step}`.replace(/[^a-z0-9]+/gi, '-')}.png`;
+    mkdirSync(`${OUT}/matrix`, { recursive: true });
+    await p.screenshot({ path: file }).catch(() => {});
+    const titles = await p.locator('.ffc-panel__titleline h3, .ffc-panel__masthead h3').allTextContents().catch(() => []);
+    return `sheet shows [${titles.join(' | ')}]; render ${file}`;
+  };
+  // Each run starts on a fresh page at level 1, so one run's state (an open
+  // sheet, a pan) cannot decide the next one's.
   for (const [id, list] of Object.entries(BOOTH_LISTS)) {
-    await resetView(p);
+    const p = await open();
     const mkSel = `svg.ff-map g.ff-area[data-area="${id}"] .ff-area__mk > circle`;
     await bringToMiddle(p, d, p.locator(mkSel));
     const mk = await tapTarget(p, p.locator(mkSel), `g.ff-area[data-area="${id}"]`);
     const listOpen = mk && await titleIs(p, AREA_TITLE[id]);
     check(`level 1: the ${id} marker is a 44px target that opens its booth list`, !!listOpen && !under(mk),
       mk ? `${mk.w.toFixed(0)}x${mk.h.toFixed(0)}px` : 'marker not tappable');
-    if (!listOpen) { check(`every ${id} booth reachable by 44px taps`, false, `list did not open: ${list.map((b) => b.id).join(' ')}`); continue; }
+    if (!listOpen) {
+      check(`every ${id} booth reachable by 44px taps`, false, `list did not open (${await evidence(p, id)}): ${list.map((b) => b.id).join(' ')}`);
+      await p.close();
+      continue;
+    }
     const rows = p.locator('.ffc-boothrow');
     const n = await rows.count();
     const unreachable = [], small = [];
@@ -887,7 +901,7 @@ async function boothReachChecks(open, d, check) {
       const r = await tapTarget(p, row, '.ffc-boothrow');
       if (!r) { unreachable.push(`${b.id} (row covered)`); continue; }
       if (under(r)) small.push(`${b.id} row ${r.w.toFixed(0)}x${r.h.toFixed(0)}`);
-      if (!(await titleIs(p, cardTitle(b)))) { unreachable.push(`${b.id} (card did not open)`); await resetView(p); break; }
+      if (!(await titleIs(p, cardTitle(b)))) { unreachable.push(`${b.id} (card did not open; ${await evidence(p, b.id)})`); break; }
       const back = await tapTarget(p, p.locator('.ffc-panel__back').first(), '.ffc-panel__back');
       if (!back) { unreachable.push(`${b.id} (no back row)`); break; }
       if (under(back)) small.push(`${b.id} back ${back.w.toFixed(0)}x${back.h.toFixed(0)}`);
@@ -897,28 +911,25 @@ async function boothReachChecks(open, d, check) {
       n === list.length && unreachable.length === 0 && small.length === 0,
       [n === list.length ? '' : `${n} rows for ${list.length} booths`, unreachable.length ? `unreachable: ${unreachable.join(' ')}` : '', small.length ? `under ${TAP_MIN_PX}px: ${small.join(' | ')}` : '']
         .filter(Boolean).join('; ') || `${list.length} cards opened`);
-    const close = d.docked ? '.ffc-panel__back' : '.ffc-panel__close';
-    await p.locator(close).first().click();
-    await settle(p);
+    await p.close();
   }
   // The food stalls: the Food Court pin at level 1, a 44px target, opens
   // the Food Court card (see above).
-  await resetView(p);
+  const p = await open();
   const foodSel = `svg.ff-map g.ff-pin[data-pin="${PINS.findIndex((q) => q.d === 'food' && q.areaLabel)}"] > circle`;
   await bringToMiddle(p, d, p.locator(foodSel));
   const food = await tapTarget(p, p.locator(foodSel), 'g.ff-pin');
   check(`level 1: the Food Court pin is a 44px target that opens the Food Court card (the ${BOOTHS.food.length} stalls have no list of their own)`,
     !!food && !under(food) && await titleIs(p, 'Food Court'), food ? `${food.w.toFixed(0)}x${food.h.toFixed(0)}px` : 'pin not tappable');
-  // A booth cell at level 3, measured.
-  const close = d.docked ? '.ffc-panel__back' : '.ffc-panel__close';
-  await p.locator(close).first().click().catch(() => {});
-  await resetView(p);
-  await zoomStep(p); await zoomStep(p);
-  const cell = await p.locator('svg.ff-map g.ff-booth[data-booth="cpd-090"] rect[fill="transparent"]').boundingBox();
+  // A booth cell at level 3, measured, on a fresh page.
+  await p.close();
+  const q = await open();
+  await zoomStep(q); await zoomStep(q);
+  const cell = await q.locator('svg.ff-map g.ff-booth[data-booth="cpd-090"] rect[fill="transparent"]').boundingBox();
   boothCellPx.push([`${d.name}`, cssWidth(d), cell ? Math.min(cell.width, cell.height) : NaN]);
   check('a booth cell keeps its own size at level 3 (rule booth-tap-equivalent)', !!cell && cell.width < TAP_MIN_PX,
     cell ? `${cell.width.toFixed(1)}px` : 'not drawn');
-  await p.close();
+  await q.close();
 }
 
 const MATRIX_CHECKS = [placementChecks, areaLabelChecks, tapSizeChecks, boothReachChecks];
