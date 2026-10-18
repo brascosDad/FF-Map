@@ -21,3 +21,41 @@ and merge".
 **No check judges** whether something reads well, whether a pin is in the right real-world spot,
 whether copy is true, or whether the ranks put the right things first. That is what the next
 section is for.
+
+## Where Ernest looks (every PR)
+
+Each item is something to do, with a place to look and what to look for. The PR's "For Ernest to
+look at" section (the gate below) turns the ones this PR touches into specific questions. This
+list is the standing part.
+
+1. **On your own phone, at levels 1, 2 and 3, in the areas the PR touched.** Open the Vercel
+   preview with your phone set the way you use it (big text included). At each level, pan to each
+   area the PR names. Look for crowding, pins that nearly touch, a pin that comes and goes as you
+   zoom, a label over something, anything that reads wrong *even if the rules allow it*. The rules
+   only say what may not happen. Whether it looks right is your call.
+2. **Real-world truth.** For any moved pin, new name or new copy, check it against the
+   committee's own sources: Jess's 2026 site plan for where things are, Courtney's sheet for booths
+   and names, `stages.json`'s thread for the lineup. No check knows where the beer stand really
+   is.
+3. **Judgment calls.** Every new rank, rule, exception or trade-off is yours to accept. The PR
+   lists them under "For Ernest to look at" in `docs/pr-notes.md`. A green check on a rule only
+   shows the rule held, not that it was the right rule.
+4. **Any red visual check.** Open the diff image (CI's `e2e-out` artifact, `.e2e-out/visual/`) and
+   confirm it shows **only the intended change** *before* adding the `update-visual-baselines`
+   label. The label accepts whatever rendered, so a mistake in the diff goes into the baseline.
+5. **Print.** Open the print PDF (`npm run print`, or `?print=1` on the preview) from the PR
+   before it goes to anyone: the printer, Jess, the committee.
+
+### What only a person caught (10/18)
+
+- **Beer and water at the Acoustic Stage, nearly touching, with every check green.** At level 3
+  the Acoustic beer stand and the water station beside the stage were edge to edge. The no-overlap
+  rule allows that (circles may touch), so e2e, the unit tests and the visual diff all passed.
+  Ernest saw two pins reading as one blob on his phone. Result: the 2px `--pin-gap` at levels 2
+  and 3, and the beer moved 0.8 units (round 4).
+- **His phone was not the test phone.** The suite measured a 375px phone. Ernest's iPhone, with
+  its text zoomed, reports about 314 CSS px. There, more map units fit in every pixel: five pairs
+  of pins overlapped at level 3 (on `main` too), the Acoustic water waited at level 2, and at
+  level 1 the beer stand and the bike valet waited for the art-market markers. All of it was
+  green, because no check ran at 314. Result: the level 3 scale floor (round 4), the device
+  matrix with two big-text profiles, and the markers moved (round 5).
