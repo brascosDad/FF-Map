@@ -4,6 +4,25 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.6.0 — 2026-10-18
+
+Minor: a rule is added and `tap-floor` names its one exception. Nothing on
+screen changes.
+
+- **Rule `booth-tap-equivalent`** (new): a booth's own cell on the map keeps
+  its size (9.4 map units, about 16px at level 3 on a phone) and is exempt
+  from `--pin-hit` / `--tap-min` under WCAG 2.2 SC 2.5.8's Equivalent
+  exception, because every booth's card is also reached by targets that
+  meet the floor: the art market's marker (or its name label at level 3) →
+  the run's list (BoothRow, `--tap-min` high) → the card, the ItemPager
+  stepping booth to booth. The food stalls have no list; the Food Court
+  card is their way in.
+- **`tap-floor`** says so and points at the new rule.
+- **BoothRow** and **ItemPager** list the rule.
+- Enforced by e2e on the device matrix (`scripts/lib/devices.mjs`: WebKit
+  and Chromium, 320–430px phones, two with their text at 125%, and the
+  docked desktop), which walks the path for every booth in the data.
+
 ## 1.5.0 — 2026-10-18
 
 Minor: a rule and a token are added, and `no-overlap` asks for a gap. On a

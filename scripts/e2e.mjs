@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { FESTIVAL } from '../src/data/festival.js';
 import { whatsOnNow } from '../src/whatsOnNow.js';
 import { PINS, rankOf } from '../src/assets/pins.js';
+import { BOOTHS, UNNUMBERED } from '../src/data/booths.js';
 import { NUDGE_CAP, STAYS_RANK } from '../src/pinPlacement.js';
 import { LEVEL3_MAX_UNITS_PER_PX, LEVEL_RATIOS } from '../src/hooks/useMapView.js';
 import { BASE, launch, launchEngine, newDevicePage } from './lib/browser.mjs';
@@ -817,7 +818,100 @@ async function tapSizeChecks(open, d, check) {
   await p.close();
 }
 
-const MATRIX_CHECKS = [placementChecks, areaLabelChecks, tapSizeChecks];
+// ---- every booth is reachable from level 1 by 44px taps alone (rule booth-tap-equivalent) ----
+// A booth's own cell is 9.4 map units, about 16px at level 3 on a phone:
+// kept that size on purpose (bigger would overlap the neighbours and let the
+// wrong booth win the tap). WCAG 2.2 SC 2.5.8 exempts a target whose function
+// is reachable through an equivalent control that meets the size, and this
+// proves that path for EVERY booth in the data: from level 1, tap the art
+// market's marker (a 44px target), then the booth's row in the list
+// (--tap-min high), and that booth's card opens; the back row (44px) returns
+// to the list. Every target tapped is measured, and is what elementFromPoint
+// finds at the point tapped. Kidlandia's booths are rows in the In the Park
+// list, the two unnumbered spots rows in their own run's list. The food
+// stalls have no list -- their card says only "Stall N · Food Court", and the
+// Food Court card (its pin, 44px) lists the trucks -- so for them the path
+// checked is the Food Court pin to its card, and the gap is a question in
+// docs/pr-notes.md. Also reports each profile's booth cell size at level 3.
+const BOOTH_LISTS = {
+  cpd: [...BOOTHS.cpd, ...UNNUMBERED.filter((u) => u.group === 'cpd')],
+  mcl: [...BOOTHS.mcl, ...UNNUMBERED.filter((u) => u.group === 'mcl')],
+  spine: [...BOOTHS.spine, ...BOOTHS.kid, ...UNNUMBERED.filter((u) => u.group === 'spine')],
+};
+const AREA_TITLE = { cpd: 'Candler Park Dr · Art Market', mcl: 'McLendon Ave · Art Market', spine: 'In the Park · Art Market' };
+const cardTitle = (b) => (b.n == null ? b.biz : `Booth ${b.n}`);
+const boothCellPx = [];
+// The title the sheet shows now (the layer coming in, not one fading out).
+const titleIs = (p, want) => p.waitForFunction((want) => [...document.querySelectorAll('.ffc-panel__titleline h3')]
+  .some((h) => h.textContent.trim() === want && !h.closest('.ffc-panel__layer--out')), want, { timeout: 3000 }).then(() => true, () => false);
+// Tap the middle of a target, after checking it is the thing found there and
+// measuring it. Returns its size, or null when something else is on top.
+async function tapTarget(p, locator, inside) {
+  const b = await locator.boundingBox();
+  if (!b) return null;
+  const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+  const ok = await p.evaluate(({ cx, cy, inside }) => !!document.elementFromPoint(cx, cy)?.closest(inside), { cx, cy, inside });
+  if (!ok) return null;
+  await p.mouse.click(cx, cy);
+  return { w: b.width, h: b.height };
+}
+async function boothReachChecks(open, d, check) {
+  const p = await open();
+  const under = (s) => s.w < TAP_MIN_PX - 0.5 || s.h < TAP_MIN_PX - 0.5;
+  for (const [id, list] of Object.entries(BOOTH_LISTS)) {
+    await resetView(p);
+    const mkSel = `svg.ff-map g.ff-area[data-area="${id}"] .ff-area__mk > circle`;
+    await bringToMiddle(p, d, p.locator(mkSel));
+    const mk = await tapTarget(p, p.locator(mkSel), `g.ff-area[data-area="${id}"]`);
+    const listOpen = mk && await titleIs(p, AREA_TITLE[id]);
+    check(`level 1: the ${id} marker is a 44px target that opens its booth list`, !!listOpen && !under(mk),
+      mk ? `${mk.w.toFixed(0)}x${mk.h.toFixed(0)}px` : 'marker not tappable');
+    if (!listOpen) { check(`every ${id} booth reachable by 44px taps`, false, `list did not open: ${list.map((b) => b.id).join(' ')}`); continue; }
+    const rows = p.locator('.ffc-boothrow');
+    const n = await rows.count();
+    const unreachable = [], small = [];
+    for (let i = 0; i < list.length; i++) {
+      const b = list[i], row = rows.nth(i);
+      if (i >= n) { unreachable.push(b.id); continue; }
+      await row.scrollIntoViewIfNeeded();
+      const r = await tapTarget(p, row, '.ffc-boothrow');
+      if (!r) { unreachable.push(`${b.id} (row covered)`); continue; }
+      if (under(r)) small.push(`${b.id} row ${r.w.toFixed(0)}x${r.h.toFixed(0)}`);
+      if (!(await titleIs(p, cardTitle(b)))) { unreachable.push(`${b.id} (card did not open)`); await resetView(p); break; }
+      const back = await tapTarget(p, p.locator('.ffc-panel__back').first(), '.ffc-panel__back');
+      if (!back) { unreachable.push(`${b.id} (no back row)`); break; }
+      if (under(back)) small.push(`${b.id} back ${back.w.toFixed(0)}x${back.h.toFixed(0)}`);
+      if (!(await titleIs(p, AREA_TITLE[id]))) { unreachable.push(`${b.id} (back did not return to the list)`); break; }
+    }
+    check(`every ${id} booth (${list.length}) opens its card from level 1 by 44px taps: marker, its row, back`,
+      n === list.length && unreachable.length === 0 && small.length === 0,
+      [n === list.length ? '' : `${n} rows for ${list.length} booths`, unreachable.length ? `unreachable: ${unreachable.join(' ')}` : '', small.length ? `under ${TAP_MIN_PX}px: ${small.join(' | ')}` : '']
+        .filter(Boolean).join('; ') || `${list.length} cards opened`);
+    const close = d.docked ? '.ffc-panel__back' : '.ffc-panel__close';
+    await p.locator(close).first().click();
+    await settle(p);
+  }
+  // The food stalls: the Food Court pin at level 1, a 44px target, opens
+  // the Food Court card (see above).
+  await resetView(p);
+  const foodSel = `svg.ff-map g.ff-pin[data-pin="${PINS.findIndex((q) => q.d === 'food' && q.areaLabel)}"] > circle`;
+  await bringToMiddle(p, d, p.locator(foodSel));
+  const food = await tapTarget(p, p.locator(foodSel), 'g.ff-pin');
+  check(`level 1: the Food Court pin is a 44px target that opens the Food Court card (the ${BOOTHS.food.length} stalls have no list of their own)`,
+    !!food && !under(food) && await titleIs(p, 'Food Court'), food ? `${food.w.toFixed(0)}x${food.h.toFixed(0)}px` : 'pin not tappable');
+  // A booth cell at level 3, measured.
+  const close = d.docked ? '.ffc-panel__back' : '.ffc-panel__close';
+  await p.locator(close).first().click().catch(() => {});
+  await resetView(p);
+  await zoomStep(p); await zoomStep(p);
+  const cell = await p.locator('svg.ff-map g.ff-booth[data-booth="cpd-090"] rect[fill="transparent"]').boundingBox();
+  boothCellPx.push([`${d.name}`, cssWidth(d), cell ? Math.min(cell.width, cell.height) : NaN]);
+  check('a booth cell keeps its own size at level 3 (rule booth-tap-equivalent)', !!cell && cell.width < TAP_MIN_PX,
+    cell ? `${cell.width.toFixed(1)}px` : 'not drawn');
+  await p.close();
+}
+
+const MATRIX_CHECKS = [placementChecks, areaLabelChecks, tapSizeChecks, boothReachChecks];
 const ENGINE_NAME = { webkit: 'WebKit', chromium: 'Chromium' };
 const matrixSkipped = [];
 await Promise.all(ENGINES.map(async (engine) => {
@@ -851,6 +945,8 @@ await Promise.all(ENGINES.map(async (engine) => {
   }));
   if (b !== browser) await b.close();
 }));
+// The booth cell at level 3 on each profile, for docs/pr-notes.md.
+console.log('  booth cell at level 3 (CSS px): ' + [...new Map(boothCellPx.map(([n, w, px]) => [n, `${n} (${w}) ${px.toFixed(1)}`])).values()].join(' · '));
 
 // ---- the area markers leave at the Detail stop ----
 // Ernest, iPhone 9/20: at the closest stop the art-market marker sat on booths

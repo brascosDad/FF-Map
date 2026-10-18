@@ -1,6 +1,6 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "updated": "2026-10-18",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
@@ -2163,7 +2163,8 @@
       ],
       "rules": [
         "tap-floor",
-        "step-in-step-out"
+        "step-in-step-out",
+        "booth-tap-equivalent"
       ],
       "notCalled": [
         "pager",
@@ -2213,7 +2214,8 @@
         "S3"
       ],
       "rules": [
-        "step-in-step-out"
+        "step-in-step-out",
+        "booth-tap-equivalent"
       ],
       "notCalled": [],
       "states": [
@@ -2629,7 +2631,7 @@
     },
     {
       "id": "tap-floor",
-      "statement": "--tap-min (44px) is the floor for every control (chips, close, zoom buttons, the ItemPager's buttons, the handle); --pin-hit (44px) is the hit area centred on every pin. The visible glyph may be smaller than its target; the target may not.",
+      "statement": "--tap-min (44px) is the floor for every control (chips, close, zoom buttons, the ItemPager's buttons, the handle); --pin-hit (44px) is the hit area centred on every pin. The visible glyph may be smaller than its target; the target may not. The one exception is a booth's own cell on the map, which keeps its size because every booth's card is reached by targets that do meet the floor: rule booth-tap-equivalent.",
       "reason": "44 CSS px is 44pt on iPhone, Apple's HIG minimum; WCAG 2.2 AA 2.5.8 asks for 24px with a spacing exception, which the no-overlap rule satisfies for pins.",
       "enforcedBy": [
         "e2e: zoom button is --tap-min (44px)",
@@ -2638,6 +2640,19 @@
         "e2e: the handle is a 44px grab area"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › Pins are touch targets. 44×44 CSS px is the floor."
+    },
+    {
+      "id": "booth-tap-equivalent",
+      "statement": "A booth's own cell on the map keeps its size -- 9.4 map units, about 16 CSS px at level 3 on a phone -- and is exempt from --pin-hit and --tap-min, because every booth's card is also reached by targets that meet the floor: from level 1, the art market's marker (44px; at level 3 its name label, rule area-label-tap) opens the run's booth list, whose rows (BoothRow) are at least --tap-min high; a row opens that booth's card; the back row returns to the list, and the ItemPager's buttons (--tap-min) step booth to booth. Kidlandia's booths are rows in the In the Park list, the two unnumbered spots rows in their own run's list. The food stalls have no list: a stall's card says only \"Stall N · Food Court\", and the Food Court pin (44px) opens the card that lists the trucks.",
+      "reason": "WCAG 2.2 SC 2.5.8 Target Size (Minimum), the Equivalent exception: a target smaller than 24px passes when the same function is available through another control on the same page that meets the size. Booths are packed edge to edge at a ~9-unit pitch; a 44px target per booth would overlap its neighbours and let the wrong booth win the tap (no-overlap), so the cell stays its own size and the list is the full-size way to every booth.",
+      "enforcedBy": [
+        "e2e: opens its card from level 1 by 44px taps: marker, its row, back",
+        "e2e: marker is a 44px target that opens its booth list",
+        "e2e: a booth cell keeps its own size at level 3 (rule booth-tap-equivalent)",
+        "e2e: the Food Court pin is a 44px target that opens the Food Court card",
+        "e2e: B2 both ItemPager buttons are --tap-min"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Booths are the one exception to the tap floor"
     },
     {
       "id": "token-first",

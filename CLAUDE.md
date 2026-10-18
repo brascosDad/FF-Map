@@ -182,6 +182,12 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   for every **control** — chips, the sheet's close ×, the zoom buttons, the ItemPager's buttons, the
   handle — and `--pin-hit` (44px) is the hit area centred on every **pin**. WCAG 2.2 AA 2.5.8 asks for
   24px with a spacing exception; the no-overlap rule below is how pins satisfy it.
+- **Booths are the one exception to the tap floor** (Ernest, 10/18; WCAG 2.2 SC 2.5.8, the
+  Equivalent exception): a booth's own cell on the map stays ~16px at level 3, because every
+  booth's card is also reached by 44px targets — the art market's marker (or its name label at
+  level 3) → the run's list (rows `--tap-min` high) → the card, with the ItemPager stepping booth
+  to booth. e2e walks that path for every booth on every device profile. The food stalls have no
+  list; the Food Court card is their way in (rule `booth-tap-equivalent`).
 - **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
   may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
   Circles may touch edge to edge; they may not cross. Booth hit areas count as targets at the
