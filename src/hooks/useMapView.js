@@ -73,6 +73,19 @@ const REGION = {
  *  panel. The map still paints full-bleed underneath it (that is the Google
  *  Maps look), but the festival is fitted and centred into the part you can
  *  actually see, so nothing important ends up hidden behind the panel. */
+/**
+ * The level 3 scale floor, in map units per CSS pixel: what a 375px phone
+ * (REFERENCE_PHONE_PX, at MOBILE_OVERVIEW_ZOOM) shows at level 3 -- the
+ * festival's 760 units / 1.1 x 0.315 / 375 = 0.5804. True locations
+ * (pins.js) are spaced once, for that reference phone; no screen may show
+ * them closer together than that. A narrower screen (or a phone with its
+ * text zoomed, which reports fewer CSS px) takes level 3 further in to hold
+ * the floor; levels 1 and 2 keep their ratios. The design system's
+ * `level3-scale-floor` rule names it, and npm run manifest checks the value.
+ */
+export const LEVEL3_MAX_UNITS_PER_PX = 0.5804;
+export const REFERENCE_PHONE_PX = 375;
+
 export function fitOverview(px, py, insetRight = 0, zoom = 1) {
   const usable = Math.max(px - insetRight, 120);
   const w = Math.max(
@@ -81,6 +94,21 @@ export function fitOverview(px, py, insetRight = 0, zoom = 1) {
   );
   // zoom > 1 draws the map bigger by showing less of it.
   return w / zoom;
+}
+
+/** The three stops' width ratios on THIS screen: LEVEL_RATIOS, with level 3
+ *  pulled in where the screen is narrow enough that 0.315 would show more
+ *  than LEVEL3_MAX_UNITS_PER_PX. */
+export function stopRatios(px, py, insetRight = 0, zoom = 1) {
+  const base = fitOverview(px, py, insetRight, zoom);
+  const last = LEVEL_RATIOS.length - 1;
+  return LEVEL_RATIOS.map((r, i) => (i === last ? Math.min(r, (LEVEL3_MAX_UNITS_PER_PX * px) / base) : r));
+}
+
+/** Map units per CSS pixel at each stop on this screen. */
+export function stopUnitsPerPx(px, py, insetRight = 0, zoom = 1) {
+  const base = fitOverview(px, py, insetRight, zoom);
+  return stopRatios(px, py, insetRight, zoom).map((r) => (base * r) / px);
 }
 
 function homeFor(px, py, insetRight = 0, zoom = 1) {
@@ -157,8 +185,8 @@ const MARKER_FADE_FROM = 1.5;
 /** The view's position between the stops for a width ratio r = vb.w / base:
  *  0 at the overview, 1, 2 at the stops, log-interpolated between (a zoom is
  *  a ratio), clamped to the stops' range. */
-function levelPosition(r) {
-  const L = LEVEL_RATIOS.map(Math.log), x = Math.log(r);
+function levelPosition(r, ratios = LEVEL_RATIOS) {
+  const L = ratios.map(Math.log), x = Math.log(r);
   if (!(x < L[0])) return 0;
   for (let i = 0; i < L.length - 1; i++) if (x >= L[i + 1]) return i + (L[i] - x) / (L[i] - L[i + 1]);
   return L.length - 1;
@@ -202,7 +230,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     idx = Math.min(Math.max(idx, 0), LEVEL_RATIOS.length - 1);
     setVb((prev) => {
       const { px, py } = sizeRef.current;
-      const nw = fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[idx];
+      const nw = fitOverview(px, py, insetRef.current, zoomRef.current) * stopRatios(px, py, insetRef.current, zoomRef.current)[idx];
       const af = nw / prev.w;
       const p = (cx != null && cy != null) ? toSvg(cx, cy) : { x: prev.x + prev.w / 2, y: prev.y + prev.h / 2 };
       const next = { x: p.x - (p.x - prev.x) * af, y: p.y - (p.y - prev.y) * af, w: nw, h: (nw * py) / px };
@@ -283,7 +311,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const idx = Math.min(Math.max(levelRef.current, minLevel), LEVEL_RATIOS.length - 1);
     const { px, py } = sizeRef.current;
     const from = vbRef.current;
-    const nw = idx === levelRef.current ? from.w : fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[idx];
+    const nw = idx === levelRef.current ? from.w : fitOverview(px, py, insetRef.current, zoomRef.current) * stopRatios(px, py, insetRef.current, zoomRef.current)[idx];
     const nh = px > 0 ? (nw * py) / px : from.h;
     const insetMap = px > 0 ? (insetRef.current * nw) / px : 0;
     const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - nh / 2, w: nw, h: nh }, px, insetRef.current, safeRef.current);
@@ -305,8 +333,9 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     if (!px || !py) return;
     const top = safeRef.current.top + SAFE_CLEARANCE, bottom = safeRef.current.bottom + SAFE_CLEARANCE;
     const base = fitOverview(px, py, insetRef.current, zoomRef.current);
+    const ratios = stopRatios(px, py, insetRef.current, zoomRef.current);
     for (let idx = Math.max(levelRef.current, minLevel); idx < LEVEL_RATIOS.length; idx++) {
-      const nw = base * LEVEL_RATIOS[idx], nh = (nw * py) / px, u = nw / px;
+      const nw = base * ratios[idx], nh = (nw * py) / px, u = nw / px;
       const insetMap = (insetRef.current * nw) / px;
       const bandMid = top + (py - top - bottom) / 2;
       const to = clampPan({ x: x - (nw - insetMap) / 2, y: y - bandMid * u, w: nw, h: nh }, px, insetRef.current, safeRef.current);
@@ -334,12 +363,13 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
     const { px, py } = sizeRef.current;
     const cur = vbRef.current;
     const base = fitOverview(px, py, insetRef.current, zoomRef.current);
+    const ratios = stopRatios(px, py, insetRef.current, zoomRef.current);
     let idx = 0, best = Infinity;
-    LEVEL_RATIOS.forEach((r, i) => {
+    ratios.forEach((r, i) => {
       const d = Math.abs(Math.log(cur.w) - Math.log(base * r));
       if (d < best) { best = d; idx = i; }
     });
-    const nw = base * LEVEL_RATIOS[idx];
+    const nw = base * ratios[idx];
     const p = toSvg(cx, cy);
     const af = nw / cur.w;
     const to = clampPan({ x: p.x - (p.x - cur.x) * af, y: p.y - (p.y - cur.y) * af, w: nw, h: (nw * py) / px }, px, insetRef.current, safeRef.current);
@@ -378,7 +408,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         return;
       }
       setVb((prev) => {
-        const w = fitOverview(px, py, insetRef.current, zoomRef.current) * LEVEL_RATIOS[levelRef.current];
+        const w = fitOverview(px, py, insetRef.current, zoomRef.current) * stopRatios(px, py, insetRef.current, zoomRef.current)[levelRef.current];
         const h = (w * py) / px;
         return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h }, px, insetRef.current, safeRef.current);
       });
@@ -439,7 +469,7 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         // Spread the fingers and the map grows: the viewBox shrinks by the
         // same ratio, held between the two end stops with a little give.
         const wMax = base * LEVEL_RATIOS[0] * PINCH_OVERSHOOT;
-        const wMin = (base * LEVEL_RATIOS[LEVEL_RATIOS.length - 1]) / PINCH_OVERSHOOT;
+        const wMin = (base * stopRatios(px, py, insetRef.current, zoomRef.current)[LEVEL_RATIOS.length - 1]) / PINCH_OVERSHOOT;
         const nw = Math.min(wMax, Math.max(wMin, pinch.vb.w * (pinch.d / d)));
         const nh = (nw * py) / px;
         // Keep the map point that was under the fingers under the fingers.
@@ -536,13 +566,13 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   // that fades with the zoom rather than swapping at a stop (the area
   // markers), so a pinch drives the fade under the fingers and nothing pops
   // when they lift.
-  const levelPos = levelPosition(vb.w / fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current));
+  const scr = [sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current];
+  const levelPos = levelPosition(vb.w / fitOverview(...scr), stopRatios(...scr));
   const areaMarkerFade = Math.min(1, Math.max(0, (levelPos - MARKER_FADE_FROM) / (LEVEL_RATIOS.length - 1 - MARKER_FADE_FROM)));
   // Map units per CSS pixel AT each stop on this screen -- what the pin
   // placement rules (src/pinPlacement.js) size a tap target by. Rounded so a
   // sub-pixel resize does not re-run the placement.
-  const base = fitOverview(sizeRef.current.px || 1, sizeRef.current.py || 1, insetRef.current, zoomRef.current);
-  const stopUnitsPerPx = LEVEL_RATIOS.map((r) => Math.round((base * r * 1e4) / (sizeRef.current.px || 1)) / 1e4);
+  const stopUnitsPerPxHere = stopUnitsPerPx(...scr).map((u) => Math.round(u * 1e4) / 1e4);
 
-  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, levelPos, stopUnitsPerPx, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview };
+  return { mapRef, wrapRef, suppressClickRef, viewBox: viewBoxStr, levelIdx, levelPos, stopUnitsPerPx: stopUnitsPerPxHere, overview, detail, unitsPerPx, areaMarkerFade, setLevel, stepLevel, centerOn, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview };
 }
