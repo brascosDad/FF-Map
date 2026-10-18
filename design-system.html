@@ -628,6 +628,7 @@
   <div class="card"><table>
     <tr><th>Propose</th><td>A pull request that changes a token, a component, a name or a rule. It carries, <b>together</b>: the CSS, <code>design-system/manifest.json</code> (run <code>npm run manifest</code>; hand-write only <code>cssClass</code>, <code>file</code>, <code>inStates</code>, <code>rules</code>, <code>doNot</code> and the rules themselves), the <b>Names table</b> in §3 if a name is added, renamed or removed, this page, <code>docs/interaction-states.md</code> if a state changed, a line in <code>design-system/CHANGELOG.md</code> and the version bump. A value that is not a token becomes one, here, before it is used.</td></tr>
     <tr><th>Review</th><td>CI: <b>manifest is current</b> (the committed manifest is what a fresh generation produces), <code>npm run test:ds</code>, lint and the e2e suite. New CSS goes through <code>npm run ds -- check</code>. Open questions and skipped items go in <code>docs/pr-notes.md</code>.</td></tr>
+    <tr><th>What review means</th><td>Green checks mean the rules held; they don't mean the map is right. Each check's job, what it can't see, and where Ernest looks on every PR are in <code>docs/checks-and-review.md</code>.</td></tr>
     <tr><th>Adopt</th><td><b>Ernest approves and merges.</b> Nothing is part of the system until it is merged, and no agent merges its own proposal.</td></tr>
   </table></div>
 

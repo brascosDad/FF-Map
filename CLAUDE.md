@@ -61,6 +61,10 @@ of `design-system.html` §3 is the list (ItemPager, Handle, Header, BoothRow, Ar
 check it before adding a class or a word for something, and fix a stray old name when you see one.
 The component is **ItemPager** — never "pager", "stepper" or "booth nav".
 
+**7. Green checks mean the rules held, not that the map is right** (Ernest, 10/18). Every
+automated check has a written job and a written list of what it can't see, and the human review
+points are explicit: `docs/checks-and-review.md`. Read it before trusting a green PR.
+
 **4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
 phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
 any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
