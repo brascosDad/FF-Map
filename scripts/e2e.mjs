@@ -665,6 +665,12 @@ async function bringToMiddle(p, d, locator) {
     if (Math.hypot(dx, dy) < 30) break;
     await drag(p, dx, dy);
     await settle(p, 150);
+    // A map that cannot pan here (the docked desktop's level 1 shows the
+    // whole festival) does not move: stop rather than drag again. CI's event
+    // log showed WebKit dropping the pointerup of a second identical drag,
+    // which left the next tap's press swallowed as part of a drag.
+    const a = await locator.boundingBox();
+    if (!a || Math.hypot(a.x - b.x, a.y - b.y) < 2) break;
   }
   // Let the drags go quiet before the next tap: two quick drags from the same
   // spot can read as a double click (WebKit counts the presses), and a tap
@@ -915,8 +921,13 @@ async function boothReachChecks(open, d, check) {
     for (let i = 0; i < list.length; i++) {
       const b = list[i], row = rows.nth(i);
       if (i >= n) { unreachable.push(b.id); continue; }
-      await row.scrollIntoViewIfNeeded();
-      const r = await tapTarget(p, row, '.ffc-boothrow');
+      // Scroll the row into view, the way a thumb would, and try again if
+      // the list was still settling (restoring its scroll after back).
+      let r = null;
+      for (let t = 0; !r && t < 3; t++) {
+        await row.scrollIntoViewIfNeeded();
+        r = await tapTarget(p, row, '.ffc-boothrow');
+      }
       if (!r) { unreachable.push(`${b.id} (row covered)`); continue; }
       if (under(r)) small.push(`${b.id} row ${r.w.toFixed(0)}x${r.h.toFixed(0)}`);
       if (!(await titleIs(p, cardTitle(b)))) { unreachable.push(`${b.id} (card did not open; ${await evidence(p, b.id)})`); break; }
