@@ -1000,7 +1000,17 @@ await Promise.all(ENGINES.map(async (engine) => {
           }
         });
         await p.goto(BASE, { waitUntil: 'networkidle' });
-        await settle(p, 500);
+        // Start only once the opening view has settled (its viewBox and the
+        // map's drawn width hold still): under load -- CI runs profiles side
+        // by side -- WebKit's docked desktop once measured level 1 before the
+        // layout had landed, and the ratio checks read nonsense.
+        let last = '';
+        for (let i = 0; i < 25; i++) {
+          await settle(p, 200);
+          const vb = await p.locator('svg.ff-map').evaluate((svg) => `${svg.getAttribute('viewBox')} ${svg.getBoundingClientRect().width}`).catch(() => '');
+          if (vb && vb === last) break;
+          last = vb;
+        }
         return p;
       };
       for (const run of MATRIX_CHECKS) {
