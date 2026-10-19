@@ -681,6 +681,18 @@ async function bringToMiddle(p, d, locator) {
 
 async function placementChecks(open, d, check) {
   const p = await open();
+  // The map opens at level 1: the view it opens with is the one Reset gives.
+  // (Twice on CI, WebKit's docked desktop opened 1.9x further out than level
+  // 1 and stayed there; this says so plainly, with what it saw.)
+  const view = () => p.evaluate(() => {
+    const svg = document.querySelector('svg.ff-map');
+    return { vb: svg.getAttribute('viewBox'), w: Math.round(svg.getBoundingClientRect().width), iw: innerWidth };
+  });
+  const atOpen = await view(), uppOpen = await unitsPerPx(p);
+  await resetView(p);
+  const atReset = await view(), uppReset = await unitsPerPx(p);
+  check('the map opens at level 1 (the same view Reset gives)', Math.abs(uppOpen / uppReset - 1) < 0.005,
+    `opened ${atOpen.vb} on ${atOpen.w}px (window ${atOpen.iw}); Reset ${atReset.vb} on ${atReset.w}px`);
   const w = cssWidth(d), kind = d.docked ? 'docked' : 'phone';
   let before = new Set();   // what the coarser levels showed
   const upp = [];
