@@ -1,0 +1,211 @@
+{
+ "note": "Where each named element sits in the baseline PNG beside this file. Written with it by scripts/visual.mjs; do not hand-edit.",
+ "hash": "39b661e6691d0dc88745dbb3b5202b795736fc17d86bab61aba39ec227c4b41b",
+ "pinWidth": 40,
+ "elements": [
+  {
+   "kind": "pin",
+   "id": "0",
+   "shape": "circle",
+   "key": "pin:0",
+   "box": {
+    "x": 253.9,
+    "y": 301.7,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "pin",
+   "id": "1",
+   "shape": "circle",
+   "key": "pin:1",
+   "box": {
+    "x": 186.9,
+    "y": 299.5,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "pin",
+   "id": "2",
+   "shape": "circle",
+   "key": "pin:2",
+   "box": {
+    "x": 268.1,
+    "y": 587.1,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "pin",
+   "id": "3",
+   "shape": "circle",
+   "key": "pin:3",
+   "box": {
+    "x": 79.5,
+    "y": 375.1,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "pin",
+   "id": "4",
+   "shape": "circle",
+   "key": "pin:4",
+   "box": {
+    "x": 179.5,
+    "y": 403.1,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "pin",
+   "id": "11",
+   "shape": "circle",
+   "key": "pin:11",
+   "box": {
+    "x": 124.2,
+    "y": 554.4,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "pin",
+   "id": "27",
+   "shape": "circle",
+   "key": "pin:27",
+   "box": {
+    "x": 170.7,
+    "y": 548.8,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "marker",
+   "id": "cpd",
+   "shape": "circle",
+   "key": "marker:cpd",
+   "box": {
+    "x": 0.9,
+    "y": 442.4,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "marker",
+   "id": "mcl",
+   "shape": "circle",
+   "key": "marker:mcl",
+   "box": {
+    "x": 46.3,
+    "y": 581.4,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "marker",
+   "id": "spine",
+   "shape": "circle",
+   "key": "marker:spine",
+   "box": {
+    "x": 227.7,
+    "y": 371.5,
+    "w": 40,
+    "h": 40
+   }
+  },
+  {
+   "kind": "chip",
+   "id": "Restrooms",
+   "shape": "rect",
+   "key": "chip:Restrooms",
+   "box": {
+    "x": 12,
+    "y": 47,
+    "w": 105.6,
+    "h": 30
+   }
+  },
+  {
+   "kind": "chip",
+   "id": "First aid",
+   "shape": "rect",
+   "key": "chip:First aid",
+   "box": {
+    "x": 125.6,
+    "y": 47,
+    "w": 88,
+    "h": 30
+   }
+  },
+  {
+   "kind": "chip",
+   "id": "Water",
+   "shape": "rect",
+   "key": "chip:Water",
+   "box": {
+    "x": 221.6,
+    "y": 47,
+    "w": 77,
+    "h": 30
+   }
+  },
+  {
+   "kind": "button",
+   "id": "Zoom in",
+   "shape": "rect",
+   "key": "button:Zoom in",
+   "box": {
+    "x": 333,
+    "y": 695,
+    "w": 44,
+    "h": 44
+   }
+  },
+  {
+   "kind": "button",
+   "id": "Zoom out",
+   "shape": "rect",
+   "key": "button:Zoom out",
+   "box": {
+    "x": 333,
+    "y": 739,
+    "w": 44,
+    "h": 44
+   }
+  },
+  {
+   "kind": "button",
+   "id": "Reset to overview",
+   "shape": "rect",
+   "key": "button:Reset to overview",
+   "box": {
+    "x": 333,
+    "y": 783,
+    "w": 44,
+    "h": 44
+   }
+  },
+  {
+   "kind": "ui",
+   "id": "brand",
+   "shape": "rect",
+   "key": "ui:brand",
+   "box": {
+    "x": 14,
+    "y": 12,
+    "w": 173.6,
+    "h": 21
+   }
+  }
+ ]
+}

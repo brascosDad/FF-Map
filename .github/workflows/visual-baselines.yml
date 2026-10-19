@@ -1,22 +1,31 @@
-# Re-render the visual baselines (tests/visual/*.png) on the CI runner and
-# commit them to the PR branch. The baselines are this runner's renders --
-# every OS and Chromium build rasterises text a little differently, so the
-# machine that judges the PR is the one that writes them.
+# Accept a visual change: the "accept-visual-changes" label on a PR means "I
+# accept the changes I was shown" -- the PR's latest from → to comment, which
+# CI posts when a visual case changes (scripts/visual-comment.mjs).
 #
-# Two ways to run it:
-#   - put the "update-visual-baselines" label on the PR (the label is removed
-#     when the commit lands), or
-#   - Actions tab -> "Update visual baselines" -> Run workflow, on the branch.
+# So this re-renders the three cases on the CI runner, the same way CI did
+# (the PR's merge commit), and compares each changed render's hash with the
+# one recorded in that comment (scripts/visual.mjs --accept):
+#   - every changed case matches what was shown -> commit tests/visual/*.png
+#     and their element records (*.json) to the branch, say so on the PR, and
+#     start CI so the PR gets its verdict on the new baselines;
+#   - anything differs (the branch changed since, or there was no from → to
+#     yet) -> update nothing, post a fresh from → to and ask again.
+# Either way the label comes off, so putting it on again is the next "yes".
 #
-# The commit is made with the workflow token, so it does not trigger CI by
-# itself; this workflow then starts CI on the branch itself (a workflow
-# dispatch is the one thing that token may start), so the PR gets its green
-# verdict on the new baselines without another push. Same-repo branches only:
-# a fork's PR cannot be pushed to.
-name: Update visual baselines
+# The old label name, "update-visual-baselines", works the same way for one
+# release (it accepts against the from → to too) and then goes. There is no
+# "Run workflow" button any more: accepting without having been shown the
+# change is exactly what this replaced.
+#
+# The baselines are this runner's renders -- every OS and Chromium build
+# rasterises text a little differently, so the machine that judges the PR is
+# the one that writes them. The commit is made with the workflow token, so it
+# does not trigger CI by itself; the last step starts CI on the branch (a
+# workflow dispatch is the one thing that token may start). Same-repo branches
+# only: a fork's PR cannot be pushed to.
+name: Accept visual changes
 
 on:
-  workflow_dispatch:
   pull_request:
     types: [labeled]
 
@@ -25,52 +34,84 @@ permissions:
   pull-requests: write
   actions: write
 
+concurrency:
+  group: accept-visual-${{ github.event.pull_request.number }}
+
 jobs:
-  baselines:
+  accept:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.label.name == 'update-visual-baselines' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      (github.event.label.name == 'accept-visual-changes' ||
+       github.event.label.name == 'update-visual-baselines') &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.head_ref }}
+      SENDER: ${{ github.event.sender.login }}
     steps:
+      # The merge commit, which is what CI rendered for the from → to.
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Render the baselines
-        run: npm run test:visual -- --update
-      - name: Prove they pass on this runner
-        run: node scripts/test.mjs --visual-only
-      - name: Commit them to the branch
+      - run: npm run build
+      - name: What was shown (the latest from → to)
+        run: node scripts/visual-comment.mjs expected "$RUNNER_TEMP/shown.json"
+      - name: Render, and compare with what was shown
+        run: node scripts/test.mjs --visual-only --accept="$RUNNER_TEMP/shown.json"
+      - name: Verdict
+        id: verdict
+        run: echo "result=$(node -p "require('./.e2e-out/visual/accept.json').result")" >> "$GITHUB_OUTPUT"
+      - name: Commit the accepted baselines to the branch
         id: commit
+        if: steps.verdict.outputs.result != 'reask'
         run: |
+          mkdir "$RUNNER_TEMP/accepted"
+          cp tests/visual/*.png tests/visual/*.json "$RUNNER_TEMP/accepted/"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$HEAD_REF"
+          git checkout -f -B "$HEAD_REF" "origin/$HEAD_REF"
+          cp "$RUNNER_TEMP"/accepted/* tests/visual/
           git add tests/visual
           if git diff --cached --quiet; then
             echo "baselines unchanged"
           else
-            git commit -m "Visual baselines: re-rendered on the CI runner"
+            if [ "${{ steps.verdict.outputs.result }}" = accepted ]; then
+              msg="Visual baselines: accepted as shown in the from → to (label by @$SENDER)"
+            else
+              msg="Visual baselines: element records re-read on the CI runner"
+            fi
+            git commit -m "$msg"
             # The screenshots Action may have pushed to this branch meanwhile
             # (it touches docs/pr-shots only, so the rebase is trivial).
-            git pull --rebase origin "${{ github.head_ref || github.ref_name }}"
-            git push
+            git pull --rebase origin "$HEAD_REF"
+            git push origin "HEAD:$HEAD_REF"
             echo "pushed=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
+      - name: Say so on the PR
+        if: steps.verdict.outputs.result == 'accepted' && steps.commit.outputs.pushed == 'true'
+        run: node scripts/visual-comment.mjs accepted
+        env:
+          COMMIT: ${{ steps.commit.outputs.sha }}
       - name: Run CI on the new baselines
         if: steps.commit.outputs.pushed == 'true'
-        run: gh workflow run ci.yml --ref "${{ github.head_ref || github.ref_name }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --ref "$HEAD_REF"
+      - name: Not what was shown -- post a fresh from → to and ask again
+        if: steps.verdict.outputs.result == 'reask'
+        run: node scripts/visual-comment.mjs post --reask
       - name: Take the label off
-        if: github.event_name == 'pull_request'
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            await github.rest.issues.removeLabel({ owner, repo, issue_number: context.issue.number, name: 'update-visual-baselines' }).catch(() => {});
+            for (const name of ['accept-visual-changes', 'update-visual-baselines'])
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: context.issue.number, name }).catch(() => {});
