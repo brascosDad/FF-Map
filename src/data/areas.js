@@ -44,7 +44,7 @@ export const AREAS = [
   // entrance water at level 1 and level 2 on every screen down to 300px;
   // 492 is the middle of the clear stretch. A marker is not a pin, so no
   // true location moved. It leaves at level 3 like the others.
-  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [492.0, 700.0], label: 'Art Market', labelAt: [772.9, 780.2], shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
+  { id: 'mcl', blobs: BLOBS.mcl, clip: 'clip-mcl', booths: BOOTHS.mcl, mk: [492.0, 787.9], label: 'Art Market', labelAt: [772.9, 780.2], shortName: 'McLendon Ave', name: 'McLendon Ave · Art Market',
     range: `Booths ${span(BOOTHS.mcl)} · ${BOOTHS.mcl.length} booths` },
   // The car-path marker sits up the path from where the export put it
   // (774.9, 509.3): first 25 units north so it cleared booth 29's number at
