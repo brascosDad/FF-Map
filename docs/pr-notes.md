@@ -8,7 +8,7 @@ Two changes to the visual check (`scripts/visual.mjs`), nothing on the map itsel
    thin dashed line between them when they don't overlap. Appeared = dashed outline only;
    vanished = ghost with dashed outline; anything no named element explains = a dashed outline
    round the area. No red/green. Each change gets one plain line in **pin-widths**
-   ("McLendon Ave art marker moved about 2 pin-widths north-east"). The pixel percentage is
+   ("McLendon Ave art marker moved about 1¼ pin-widths north"). The pixel percentage is
    still the pass/fail trigger and appears nowhere a person reads.
 2. **The label accepts what was shown.** `update-visual-baselines` → **`accept-visual-changes`**
    (the old name still works, the same way, for one release). The comment records a sha256 of
@@ -46,8 +46,20 @@ Two changes to the visual check (`scripts/visual.mjs`), nothing on the map itsel
 
 ## Proof: a real from → to
 
-On the PR: a scratch commit moved the McLendon Ave art marker, CI failed and posted its from → to
-comment, then the scratch commit was reverted. Links in the PR description.
+- Scratch commit 56d69d8 moved the McLendon Ave art marker 88 map units north. CI run 88 failed
+  on the visual check (only there) and posted
+  [the from → to comment](https://github.com/brascosDad/FF-Map/pull/22#issuecomment-6275413220):
+  one line, "McLendon Ave art marker moved about 1¼ pin-widths north", and the picture (a copy is
+  `docs/pr-shots/from-to-demo-phone-open.png`). Old and new overlap, so there is no connector line;
+  the ghost peeks out below. Only the phone at open changed: in the sheet-open view the sheet
+  covers that corner, and paper doesn't draw the marker.
+- No other element was named, so the element records generated in this container held up on the
+  runner (no spurious moves from text drift).
+- The scratch commit is reverted; `src/` is identical to the feature commit, and CI on the feature
+  commit (run 87) is green.
+- Not exercised live: the label. Labelling here would have accepted the scratch move into the
+  baselines. The accept/stale/nothing paths were run in this container against real renders (see
+  above).
 
 ## CLAUDE.md wording for Cowork to apply
 
@@ -90,7 +102,8 @@ npm run test:from-to  # unit tests for the from → to wording and the accept ch
    with a dashed outline at the new one.
 2. No — there is no red or green anywhere in the from → to picture.
 3. Yes — the comment's line measures the move in pin-widths.
-4. No — the CI check on the PR's final commit (after the revert) posted no new from → to comment.
+4. No — after the revert nothing visible differs from the baselines, so CI posts no second from →
+   to comment.
 
 ## For Ernest to look at
 

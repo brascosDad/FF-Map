@@ -100,7 +100,8 @@ async function comments() {
 // plumbing so the checkout's working tree and branch are never touched.
 // Returns the commit sha. Retries when another run moved the branch.
 function publish(files) {
-  const git = (args, input) => execFileSync('git', args, { input, encoding: 'utf8' }).trim();
+  // stderr piped: the first post ever has no branch to fetch, which git reports as fatal.
+  const git = (args, input) => execFileSync('git', args, { input, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
   const who = { GIT_AUTHOR_NAME: 'github-actions[bot]', GIT_AUTHOR_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com' };
   Object.assign(process.env, who, { GIT_COMMITTER_NAME: who.GIT_AUTHOR_NAME, GIT_COMMITTER_EMAIL: who.GIT_AUTHOR_EMAIL });
   const tree = git(['mktree'], files.map(({ name, path }) => `100644 blob ${git(['hash-object', '-w', path])}\t${name}\n`).join(''));
