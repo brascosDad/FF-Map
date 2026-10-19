@@ -1,34 +1,21 @@
-# PR notes: trim CLAUDE.md now the festival is over (PR #20)
+# PR notes: remove two passages duplicated in CLAUDE.md
 
-Docs only. `CLAUDE.md` keeps standing rules and decisions; the dated 2026 build log moves to
-`docs/history-2026.md` and the analytics reference to `docs/analytics.md`. Nothing is deleted.
-The PR description has the full list of what moved.
+Docs only. Cowork's merge of `main` into PR #20 (10/19) pasted two passages into `CLAUDE.md`
+twice: standing requirement **4** (visual baselines) appeared again after requirement 7, and the
+**Pinch zoom** rule appeared again after the area-label rule. This removes the second copy of
+each; the first copies are unchanged. 11 lines removed, nothing else touched.
 
-## Merge with PR #21 (10/19)
-
-This branch was opened 10/13; PR #21 (pin placement) merged 10/19 and also edited `CLAUDE.md`,
-so the two conflicted. Resolved by keeping this PR's trim and folding in everything #21 added:
-
-- Standing requirement **7** (green checks mean the rules held, not that the map is right).
-- Under Decided: the **booth tap exception**, **zoom levels named 1, 2, 3**, the **level 3 scale
-  floor**, the **pin placement rules** (rank, true location, ties split, 2px gap, nudge cap, once
-  shown stays shown, paper), the **area-label** rule, and the merch/info spacing update.
-- #21's "Shipped since" log → the end of `docs/history-2026.md`, like the rest of the history.
-
-Checked by script: every line #21 added to `CLAUDE.md` is either in the new `CLAUDE.md` or in
-`docs/history-2026.md`; nothing this PR trimmed came back.
+How it slipped through: the check after the merge looked for lines that went missing, not lines
+that appeared twice. The check now run is "no paragraph appears twice": it passes.
 
 ## Questions, skipped items, nudges
 
-None. No code, data or rendering changes; the visual baselines should stay green.
+None. No code, data or rendering changes.
 
 ## Expected answers (human-review)
 
-1. Yes — the Pin placement rules (8 numbered rules, from "Every pin has a rank") are under
-   "Decided — don't reopen" in `CLAUDE.md`.
-2. Yes — `docs/history-2026.md` ends with "After the festival: pin placement rules (PR #21)".
+1. Yes — `CLAUDE.md`'s standing requirements run 1 to 7, each once, with no second "4." after 7.
 
 ## For Ernest to look at
 
-1. **`CLAUDE.md`, Decided:** are the Pin placement rules still there (they came from PR #21)?
-2. **`docs/history-2026.md`, the end:** does it finish with the pin placement PR's log?
+1. **`CLAUDE.md`, standing requirements:** do they run 1 to 7, each once?

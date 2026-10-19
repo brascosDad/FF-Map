@@ -79,15 +79,6 @@ The component is **ItemPager** — never "pager", "stepper" or "booth nav".
 automated check has a written job and a written list of what it can't see, and the human review
 points are explicit: `docs/checks-and-review.md`. Read it before trusting a green PR.
 
-**4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
-phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
-any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
-label on the PR, the Action re-renders on the runner and commits the PNGs to the branch, and
-the PR description says which baselines changed and why. The baselines are the **CI runner's**
-renders — other machines rasterise text differently, so `npm run test:visual` locally shows the
-diffs but CI has the verdict. `tests/visual/README.md` has the steps. Never update a baseline
-without looking at the diff image first.
-
 ## Data — where the truth actually lives
 
 Upstream sources are other people's documents. They move. Re-read them rather than trusting a
@@ -261,8 +252,6 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   over their areas (AreaLabel, `.ffc-arealabel`), and a tap on the name opens the area's card. Each
   label's hit rect is at least 44px each way and covers no booth's or pin's target (`labelAt` in
   `pins.js` / `areas.js`); a label that can't fit gets said in the PR notes, never a smaller target.
-- Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
-  Still three stops; the pinch is just a nicer way between them.
 - **The print sheet's type floor is 8pt** for everything in the side column and every label on the
   map. The one exception is booth numbers (~5.5pt), which the row pitch dictates.
 - **Pins hold one on-screen size at every zoom, through a pinch and through the settle.** Only the
