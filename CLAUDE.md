@@ -25,9 +25,9 @@ Two Claude sessions work on this repo, plus Ernest.
 | **Claude (Cowork)** | `CLAUDE.md`, `src/data/*` inputs, `design/` sources, the printed poster, committee email, research |
 | **Ernest** | merges, Figma, account settings (Vercel, Squarespace), all committee decisions |
 
-Cowork can read this repo but **cannot push**. It reaches the repo through Ernest, or by writing
-into his local clone at `~/Projects/FF-Map` when that folder is connected to its session. So if a
-data file changed underneath you, that's why.
+Cowork can push to this repo (since 10/19) and opens its own small PRs for the files it owns;
+Ernest still reviews and merges them. So if `CLAUDE.md` or a data file changed underneath you,
+that's why.
 
 
 **Don't restructure, rename, or refactor beyond the task asked.** Propose structural changes first.
@@ -55,14 +55,15 @@ runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, 
 "Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
 push. Don't hand-edit that table; the Action rewrites it on each push.
 
-**4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
-phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
-any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
-label on the PR, the Action re-renders on the runner and commits the PNGs to the branch, and
-the PR description says which baselines changed and why. The baselines are the **CI runner's**
-renders — other machines rasterise text differently, so `npm run test:visual` locally shows the
-diffs but CI has the verdict. `tests/visual/README.md` has the steps. Never update a baseline
-without looking at the diff image first.
+**4. Visual changes are judged by eye, and accepted as shown.** CI diffs three renders (the phone
+at open, the phone with a bottom sheet open, the print sheet) against `tests/visual/*.png`. A
+change fails CI, and CI posts a **from → to** comment on the PR: each change drawn on the new
+render (faded = was, solid with a dashed outline = is) and one plain line per change in
+pin-widths. That comment is what Ernest judges. The **`accept-visual-changes`** label means "I
+accept the changes I was shown": the Action commits the new baselines only if the branch still
+renders exactly what the comment showed (a hash of each render is in it); if the branch changed
+since, nothing is updated and a fresh from → to is posted. The baselines are the **CI runner's**
+renders, so `npm run test:visual` locally is advisory. `tests/visual/README.md` has the steps.
 
 **5. Reporting, every PR (Ernest, 9/22):** every question, open decision, skipped item and pin
 nudge goes into `docs/pr-notes.md` on the branch, overwritten each PR — the PR description can
@@ -78,6 +79,13 @@ The component is **ItemPager** — never "pager", "stepper" or "booth nav".
 **7. Green checks mean the rules held, not that the map is right** (Ernest, 10/18). Every
 automated check has a written job and a written list of what it can't see, and the human review
 points are explicit: `docs/checks-and-review.md`. Read it before trusting a green PR.
+
+**8. Ask Ernest only what needs a human** (Ernest, 10/19). The PR's "For Ernest to look at" items
+are for judgment: does it look right on his phone, is it true on the ground, is this the call he
+wants. Anything a script, a test or CI can verify (a comment was posted, a file contains a
+passage, a count, a check ran) you check yourself and report in `docs/pr-notes.md`; don't turn it
+into a question for him. Each item says exactly where to look, with a direct link when it is a
+file. Fewer, better questions over a long list.
 
 ## Data — where the truth actually lives
 
@@ -129,7 +137,8 @@ previous read and name every changed row in the PR.
 npm run dev        # local
 npm run lint       # oxlint
 npm run test:e2e   # required green before any PR: builds, runs the behaviour suite, then the visual diffs
-npm run test:visual   # just the visual diffs, advisory off CI; to accept a change, label the PR update-visual-baselines
+npm run test:visual   # just the visual diffs, with from → to images in .e2e-out/visual/; advisory off CI. To accept a change: Ernest labels the PR accept-visual-changes after reading CI's from → to comment
+npm run test:from-to  # unit tests for the from → to wording and the accept check
 npm run pr-shots   # before/after screenshots (main vs branch) into docs/pr-shots/, prints the PR table
 npm run print      # writes the 11x17 print PDF + 300dpi PNG
 npm run sync       # git pull --ff-only && npm install
