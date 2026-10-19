@@ -208,6 +208,12 @@ first real tie the rules have split. At 375 and wider there is no tie.
    Court", since no truck is assigned to a stall. I think that meets the exception in substance,
    because the card adds nothing beyond "this is the Food Court". If you want it to hold to the
    letter, the fix is a stall list in the Food Court card, like the art lists. Say which you want.
+11. **A list may shift by a row just after back** (seen once on CI, iPhone 15 profile, Chromium,
+    at the end of the In the Park list). The test tapped K10's row as the pop was finishing,
+    and the row under the point became K9's. The likely cause is the leaving layer being
+    removed 270ms after the pop, so near the end of a long list the scroll position settles by
+    about one row. The test now waits for the pop to finish. Whether a person ever taps that
+    fast is for you to judge on your phone; if it happens, the fix is in DetailSheet's pop.
 10. **The ItemPager is still hidden at peek** (open since 10/6). The equivalent path does not need
     it, because the list rows are the path. But on a phone on its side, which is capped at peek,
     the only way between booths is back to the list.

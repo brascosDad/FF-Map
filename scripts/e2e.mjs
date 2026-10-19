@@ -887,6 +887,7 @@ async function tapTarget(p, locator, inside) {
   await p.mouse.click(cx, cy);
   return { w: b.width, h: b.height };
 }
+const popSettled = (p) => p.waitForFunction(() => !document.querySelector('.ffc-panel__layer--out'), null, { timeout: 3000 }).catch(() => {});
 async function boothReachChecks(open, d, check) {
   const under = (s) => s.w < TAP_MIN_PX - 0.5 || s.h < TAP_MIN_PX - 0.5;
   // What was on screen when a step did not land: the sheet's titles, and a
@@ -931,10 +932,15 @@ async function boothReachChecks(open, d, check) {
       if (!r) { unreachable.push(`${b.id} (row covered)`); continue; }
       if (under(r)) small.push(`${b.id} row ${r.w.toFixed(0)}x${r.h.toFixed(0)}`);
       if (!(await titleIs(p, cardTitle(b)))) { unreachable.push(`${b.id} (card did not open; ${await evidence(p, b.id)})`); break; }
+      await popSettled(p);
       const back = await tapTarget(p, p.locator('.ffc-panel__back').first(), '.ffc-panel__back');
       if (!back) { unreachable.push(`${b.id} (no back row)`); break; }
       if (under(back)) small.push(`${b.id} back ${back.w.toFixed(0)}x${back.h.toFixed(0)}`);
       if (!(await titleIs(p, AREA_TITLE[id]))) { unreachable.push(`${b.id} (back did not return to the list)`); break; }
+      // Let the pop finish: while the leaving layer is still drawn the list
+      // can shift by a row when it goes (seen at the end of the In the Park
+      // list on CI), so the next row is tapped only once it has gone.
+      await popSettled(p);
     }
     check(`every ${id} booth (${list.length}) opens its card from level 1 by 44px taps: marker, its row, back`,
       n === list.length && unreachable.length === 0 && small.length === 0,
