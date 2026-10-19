@@ -217,12 +217,13 @@ first real tie the rules have split. At 375 and wider there is no tie.
     removed 270ms after the pop, so near the end of a long list the scroll position settles by
     about one row. The test now waits for the pop to finish. Whether a person ever taps that
     fast is for you to judge on your phone; if it happens, the fix is in DetailSheet's pop.
-12. **WebKit's docked desktop sometimes opens zoomed out** (2 of the last 4 CI runs, never on
-    Chromium). Its opening view measured 1.9 times further out than level 1 and stayed there, so
-    level 1 had the beer stand and bike valet waiting. Reset fixed it. A new check, "the map opens
-    at level 1", now says so plainly and prints the view it saw, and the rest of the run starts
-    from Reset. If it is real, desktop Safari would show the map small with landmarks missing until
-    the first zoom. Could you open the preview in Safari on a Mac once and see?
+12. **WebKit's docked desktop sometimes opened zoomed out: found and fixed (an app change).**
+    In 3 of 5 CI runs it opened laid out for a 390×800 phone, 1.9 times further out than level 1,
+    with landmarks waiting, until the first tap. The new check "the map opens at level 1" printed
+    the view: `useMapView` seeds its size as a phone and took the real size only from the
+    ResizeObserver's first callback, which headless WebKit sometimes delivered late. It now also
+    measures the map at mount (`2d750c1`). CI since: 1405/1405 on WebKit and Chromium. Desktop
+    Safari on a fast Mac probably never showed it. If you have a minute, open the preview there once.
 
 ## Round 4 (10/18): narrow phones, the level 3 floor and the 2px gap
 
