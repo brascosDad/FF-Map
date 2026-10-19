@@ -75,6 +75,19 @@ of `design-system.html` §3 is the list (ItemPager, Handle, Header, BoothRow, Ar
 check it before adding a class or a word for something, and fix a stray old name when you see one.
 The component is **ItemPager** — never "pager", "stepper" or "booth nav".
 
+**7. Green checks mean the rules held, not that the map is right** (Ernest, 10/18). Every
+automated check has a written job and a written list of what it can't see, and the human review
+points are explicit: `docs/checks-and-review.md`. Read it before trusting a green PR.
+
+**4. Visual changes are gated by baselines.** CI diffs three renders — the phone at open, the
+phone with a bottom sheet open, and the print sheet — against `tests/visual/*.png`. A change to
+any of them fails CI until the baseline is updated on purpose: put the `update-visual-baselines`
+label on the PR, the Action re-renders on the runner and commits the PNGs to the branch, and
+the PR description says which baselines changed and why. The baselines are the **CI runner's**
+renders — other machines rasterise text differently, so `npm run test:visual` locally shows the
+diffs but CI has the verdict. `tests/visual/README.md` has the steps. Never update a baseline
+without looking at the diff image first.
+
 ## Data — where the truth actually lives
 
 Upstream sources are other people's documents. They move. Re-read them rather than trusting a
@@ -151,16 +164,54 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   for every **control** — chips, the sheet's close ×, the zoom buttons, the ItemPager's buttons, the
   handle — and `--pin-hit` (44px) is the hit area centred on every **pin**. WCAG 2.2 AA 2.5.8 asks for
   24px with a spacing exception; the no-overlap rule below is how pins satisfy it.
+- **Booths are the one exception to the tap floor** (Ernest, 10/18; WCAG 2.2 SC 2.5.8, the
+  Equivalent exception): a booth's own cell on the map stays ~16px at level 3, because every
+  booth's card is also reached by 44px targets — the art market's marker (or its name label at
+  level 3) → the run's list (rows `--tap-min` high) → the card, with the ItemPager stepping booth
+  to booth. e2e walks that path for every booth on every device profile. The food stalls have no
+  list; the Food Court card is their way in (rule `booth-tap-equivalent`).
 - **No element covers another, at any zoom stop, on either map** (Ernest, 9/22). No tap target
   may overlap another tap target at any of the three stops — an overlap invites a wrong tap.
-  Circles may touch edge to edge; they may not cross. When two collide, one of two things happens:
-  the lower-priority pin **doesn't show until a closer stop** has room for it (`from: 'detail'`
-  in `pins.js`), or the two are **moved edge to edge**. Priority when something must wait:
-  labelled destinations (stages, Food Court, Kidlandia) → first aid / EMS → restrooms → info,
-  merch, bike valet, beer → water, beverage stations, PTA, food carts. Booth hit areas count as
-  targets at the Detail stop. The e2e suite measures every stop on a 375px phone, with each
-  filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
-  anything else — nudge edge to edge; paper has no zoom to hide behind. e2e checks the paper too.
+  Circles may touch edge to edge; they may not cross. Booth hit areas count as targets at the
+  Detail stop. The e2e suite measures every stop on a 375px phone and on the docked desktop, with
+  each filter chip on as well. **The print sheet follows the same rule**: nothing on paper covers
+  anything else; paper has no zoom to hide behind. e2e checks the paper too.
+- **Zoom levels are named LEVEL 1, 2, 3** (Ernest, 10/18): level 1 = the opening view (the
+  code's overview), level 2 = the middle step, level 3 = all the way in (the code's Detail).
+- **Level 3 scale floor** (Ernest, 10/18): true locations are spaced once, for the reference phone;
+  no screen may show them closer together than that. Level 3 never shows more map units per CSS px
+  than a 375px phone does (`LEVEL3_MAX_UNITS_PER_PX` = 0.5804 in `useMapView.js`); a narrower
+  screen, or a phone with its text zoomed, zooms level 3 further in. Levels 1 and 2 keep their
+  ratios.
+- **Pin placement rules** (10/17; `src/pinPlacement.js` computes them, `npm run pin-layout` shows
+  the result — no more hand-set `from: 'detail'` flags or hand nudges):
+  1. **Every pin has a rank** (`PIN_RANK` in `pins.js`), highest first: labelled destinations
+     (stages, Food Court, Kidlandia) → first aid / EMS → restrooms and water → info, merch, bike
+     valet, beer → beverage stations, PTA, food carts. Water ranks with the restrooms (festival
+     chip use: restrooms 37, water 28, first aid 23).
+  2. **True location = the pin's stored x/y**, where it sits at Detail, where every pin shows.
+     No two overlap there. Nothing ever writes to a stored x/y.
+  3. **At every coarser stop the higher rank wins**: the lower-ranked pin waits for the next
+     closer stop, and a waiting pin still holds its spot against anything ranked below it.
+  4. **Tied pins split the difference**, each moving half the overlap along the line between them.
+  4b. **A 2px gap between targets at levels 2 and 3** (`--pin-gap`, Ernest 10/18): two pin
+     targets (or a pin and a marker or area label) collide unless that far apart. Not at level
+     1, so the opening view is spaced as before. Booth cells, packed edge to edge, are held only
+     to not crossing.
+  5. **Nudge cap: no pin sits more than `NUDGE_CAP` (12.75 map units, half of `--pin-hit` at
+     Detail on a 375px phone) from its true location**, at any stop; a tie that needs more makes
+     both wait. Between stops a nudged pin glides with the zoom.
+  6. A nudge must not create a new overlap; if it would, both pins wait. Rank, then listed order:
+     the same pins always give the same map.
+  6b. **Once shown, stays shown** (Ernest, 10/17): a pin on the map at a coarser stop is on it at
+     every closer stop, and there it outranks anything it would collide with — zooming in never
+     takes a landmark away. (An area's pin — Food Court, Kidlandia — still gives way to its own
+     booths at Detail; see the area-label rule below.)
+  7. **Paper is one more stop where nothing waits**: a pin nudges within the cap, and if that is
+     not enough it is **flagged, not placed** — drawn at its true location and listed in
+     `docs/pr-notes.md` for Ernest to place by hand.
+  8. A filter chip still draws its whole category on top at any stop; dimmed pins take no tap.
+     `overview: true` / `'docked'` decides only which pins are candidates for the opening view.
 - **Chips, pin taps and the sheet — the standing interaction model** (Ernest, iPhone, 9/22; phone
   and desktop, every chip):
   1. **Chip on:** every pin in that category shows, whatever the zoom, highlighted and drawn on
@@ -204,6 +255,14 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   flows at 375px.
 - Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
   Still three stops; the pinch is just a nicer way between them.
+- **At Detail, an area's pin gives way to its booths, and its name label carries the tap**
+  (Ernest, 10/17). The Food Court and Kidlandia pins (`areaLabel` in `pins.js`) leave at Detail
+  like the art-market markers do; FOOD COURT, KIDLANDIA and each art market's ART MARKET are drawn
+  over their areas (AreaLabel, `.ffc-arealabel`), and a tap on the name opens the area's card. Each
+  label's hit rect is at least 44px each way and covers no booth's or pin's target (`labelAt` in
+  `pins.js` / `areas.js`); a label that can't fit gets said in the PR notes, never a smaller target.
+- Pinch zoom follows the fingers and settles on the nearest of the three stops when they lift.
+  Still three stops; the pinch is just a nicer way between them.
 - **The print sheet's type floor is 8pt** for everything in the side column and every label on the
   map. The one exception is booth numbers (~5.5pt), which the row pitch dictates.
 - **Pins hold one on-screen size at every zoom, through a pinch and through the settle.** Only the
@@ -226,7 +285,8 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
   e2e proves those booths take the tap at Detail on phone and desktop.
 - **Merch and info are one spot with two jobs** ("the same place!", Jess 9/20): info sits directly
   on top of merch, edge to edge — 26.4 units out on Ernest's round-3 bearing (a little east of
-  north), the two 44px targets touching at the phone's Detail stop, which is where info arrives
+  north; 26.7 since 10/18, the 2px gap), the two 44px targets 2px apart at the phone's Detail
+  stop, which is where info arrives
   on the phone. On the desktop it arrives at the first step (a 12px gap between the 40px pins),
   no longer on the opening view, where 44px is 40 units. Don't move it back up.
 - **Print sheet, 9/20:** no run ranges on the map (one plain "Art Market" on the car-path run, the

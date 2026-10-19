@@ -39,7 +39,12 @@ const CI = Boolean(process.env.CI);
 // far more than this.
 const MAX_DIFF = 0.001;
 // pixelmatch's own per-pixel colour threshold (0..1); 0.1 ignores sub-pixel
-// font hinting, catches any real colour change.
+// font hinting. It does NOT catch every colour change: PR #18 moved merch from
+// #9E3F94 to #AF4FA5 and passed under it. That is by design (decided 10/18,
+// both values kept): this check's job is LAYOUT -- something moved, appeared
+// or vanished in its three snapshots. Colour is checked at the token, by the
+// palette rules (npm run ds -- check-palette, npm run test:ds), not at the
+// pixel. What this check cannot see: docs/checks-and-review.md.
 const THRESHOLD = 0.1;
 
 const phone = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1, reducedMotion: 'reduce' };

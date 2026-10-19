@@ -1,7 +1,7 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.3.0",
-  "updated": "2026-10-12",
+  "version": "1.7.0",
+  "updated": "2026-10-18",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
     "generated": [
@@ -14,7 +14,7 @@
     "handWritten": [
       "version, updated",
       "components[].cssClass, file, inStates, rules, notCalled, doNot, deprecated + replacement (checked against the files)",
-      "rules (every enforcedBy test name and every source phrase is checked against the files)"
+      "rules (every enforcedBy test name, every source phrase and every constant's value is checked against the files)"
     ]
   },
   "tokens": [
@@ -136,6 +136,14 @@
       "value": "#A86F36",
       "pointsAt": [],
       "note": "food orange darkened for text on ground",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--kids-ink",
+      "tier": "primitive",
+      "value": "#A3506F",
+      "pointsAt": [],
+      "note": "Kidlandia rose darkened for text on ground, 5.3:1 on white",
       "file": "src/styles/tokens.css"
     },
     {
@@ -677,6 +685,28 @@
       "file": "src/styles/tokens.css"
     },
     {
+      "name": "--map-kids-label",
+      "tier": "semantic",
+      "value": "var(--kids-ink)",
+      "resolved": "#A3506F",
+      "pointsAt": [
+        "--kids-ink"
+      ],
+      "note": "The AreaLabel inks: an area's name at Detail, in its own family's colour.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--map-art-label",
+      "tier": "semantic",
+      "value": "var(--cat-booth)",
+      "resolved": "#47597A",
+      "pointsAt": [
+        "--cat-booth"
+      ],
+      "note": "The AreaLabel inks: an area's name at Detail, in its own family's colour.",
+      "file": "src/styles/tokens.css"
+    },
+    {
       "name": "--icon-on-color",
       "tier": "semantic",
       "value": "var(--ff-white)",
@@ -1003,6 +1033,14 @@
       "value": "44px",
       "pointsAt": [],
       "note": "Two tap-size rules (Ernest, 10/6; 44 CSS px = 44pt on iPhone, Apple's HIG minimum). --tap-min the floor for every CONTROL: chips, the sheet's close, the zoom buttons, the ItemPager's buttons. It replaces the 40px floor the zoom stack and the ItemPager used to sit on. --pin-hit the invisible hit area centred on every map pin. The visible marker (--pin-size) is unchanged; MapCanvas draws this circle and the e2e no-overlap rule measures it, at every stop.",
+      "file": "src/styles/tokens.css"
+    },
+    {
+      "name": "--pin-gap",
+      "tier": "semantic",
+      "value": "2px",
+      "pointsAt": [],
+      "note": "The least air between two pins' hit areas at levels 2 and 3 (Ernest, 10/18): touching edge to edge read as one target on a phone. Not at level 1, so the opening view is spaced as it was. src/pinPlacement.js counts it in every collision and e2e measures it.",
       "file": "src/styles/tokens.css"
     },
     {
@@ -1362,6 +1400,34 @@
         {
           "selector": ".ffc-pin--merch",
           "value": "var(--pin-merch)"
+        }
+      ]
+    },
+    {
+      "name": "--arealabel-ink",
+      "tier": "component",
+      "value": "var(--map-label)",
+      "resolved": "#5C6570",
+      "pointsAt": [
+        "--map-label"
+      ],
+      "file": "src/styles/components.css",
+      "declaredIn": [
+        {
+          "selector": ".ffc-arealabel",
+          "value": "var(--map-label)"
+        },
+        {
+          "selector": ".ffc-arealabel--food",
+          "value": "var(--map-food-label)"
+        },
+        {
+          "selector": ".ffc-arealabel--kids",
+          "value": "var(--map-kids-label)"
+        },
+        {
+          "selector": ".ffc-arealabel--art",
+          "value": "var(--map-art-label)"
         }
       ]
     },
@@ -1859,8 +1925,52 @@
       "doNot": []
     },
     {
+      "name": "AreaLabel",
+      "description": "An area's name on the map at the Detail stop (FOOD COURT, KIDLANDIA, ART MARKET), drawn where the area's pin or marker has given way to its booths, and the tap that opens the area's card. Hit rect at least --pin-hit each way.",
+      "cssClass": ".ffc-arealabel",
+      "file": "src/components/MapCanvas.jsx",
+      "shipped": true,
+      "inStates": [
+        "S1"
+      ],
+      "rules": [
+        "area-label-tap",
+        "tap-floor",
+        "no-overlap"
+      ],
+      "notCalled": [],
+      "states": [
+        {
+          "id": "S1",
+          "name": "Map only"
+        }
+      ],
+      "cssParts": [
+        ".ffc-arealabel__text"
+      ],
+      "cssVariants": [
+        ".ffc-arealabel--art",
+        ".ffc-arealabel--food",
+        ".ffc-arealabel--kids"
+      ],
+      "tokens": [
+        "--map-art-label",
+        "--map-food-label",
+        "--map-halo",
+        "--map-kids-label",
+        "--map-label"
+      ],
+      "knobs": [
+        "--arealabel-ink"
+      ],
+      "doNot": [
+        "Do not shrink the hit rect below --pin-hit to fit a label between booths: move the label (labelAt) or say in the PR notes that it cannot fit.",
+        "Do not draw an area's name at Detail without the tap: the area's pin or marker has gone, and the name is the way in to its card."
+      ]
+    },
+    {
       "name": "MapPin",
-      "description": "A category pin on the map.",
+      "description": "A category pin on the map. Drawn where the placement rules put it at each stop: its true location, or nudged within the cap (§6, Pin placement).",
       "cssClass": ".ffc-pin",
       "file": "src/components/MapCanvas.jsx",
       "shipped": true,
@@ -2053,7 +2163,8 @@
       ],
       "rules": [
         "tap-floor",
-        "step-in-step-out"
+        "step-in-step-out",
+        "booth-tap-equivalent"
       ],
       "notCalled": [
         "pager",
@@ -2103,7 +2214,8 @@
         "S3"
       ],
       "rules": [
-        "step-in-step-out"
+        "step-in-step-out",
+        "booth-tap-equivalent"
       ],
       "notCalled": [],
       "states": [
@@ -2428,25 +2540,98 @@
   "rules": [
     {
       "id": "no-overlap",
-      "statement": "No tap target overlaps another at any of the three zoom stops, on either map, or on paper. Circles may touch edge to edge; they may not cross. When two collide, either the lower-priority pin waits for a closer stop (from: 'detail' in pins.js) or the two are moved edge to edge.",
+      "statement": "No tap target overlaps another at any of the three zoom stops, on either map (a 375px phone and the docked desktop), or on paper. Circles may touch edge to edge at level 1 (the opening view); at levels 2 and 3 every two targets -- pins, markers, area labels -- stand --pin-gap (2px) apart. Booth cells, packed edge to edge, are held only to not crossing. Who gives way is computed, not hand-set (src/pinPlacement.js): every pin has a rank (PIN_RANK in src/assets/pins.js; priority below); at a coarser stop the higher rank keeps its true location and the lower waits for a closer stop, and a waiting pin still holds its spot against anything ranked below it; two of the same rank split the difference, each moving half the overlap along the line between them, within nudge-cap; a split that would hit a third target sends both to wait. Rank, then listed order, so the same pins always give the same map. A filter chip still draws its whole category on top at any stop; overview: true / 'docked' only makes a pin a candidate for the opening view.",
       "priority": [
         "labelled destinations (stages, Food Court, Kidlandia)",
         "first aid / EMS",
-        "restrooms",
+        "restrooms and water",
         "info, merch, bike valet, beer",
-        "water, beverage stations, PTA, food carts"
+        "beverage stations, PTA, food carts"
       ],
-      "reason": "An overlap invites a wrong tap, and paper has no zoom to hide behind.",
+      "reason": "An overlap invites a wrong tap, and paper has no zoom to hide behind. Ranking water with the restrooms follows the festival's own chip use (restrooms 37, water 28, first aid 23).",
       "enforcedBy": [
         "e2e: no two touch targets overlap at the",
         "e2e: on, no two touch targets overlap at the",
-        "e2e: print: nothing covers anything else"
+        "e2e: and every two stand",
+        "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
+        "e2e: print: nothing covers anything else",
+        "ds: npm run test:ds (design-system/placement.test.mjs: rank, split, third target, determinism)"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › No element covers another"
     },
     {
+      "id": "true-location",
+      "statement": "A pin's stored x/y in src/assets/pins.js is its true location: where it sits at the Detail stop, where every pin shows and no two overlap. Nothing writes to it; a coarser stop may hold a pin back or nudge it (nudge-cap), and between stops a nudged pin glides with the zoom back to it. On paper nothing waits, so a pin that cannot sit at its true location nudges within the cap, or is flagged: drawn at its true location (data-flagged) and listed in docs/pr-notes.md for a person to place.",
+      "reason": "One place per pin that a person sets and can check against the grounds; every other position is derived from it by rules anyone can rerun (npm run pin-layout).",
+      "enforcedBy": [
+        "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
+        "e2e: no two touch targets overlap at the",
+        "e2e: print: a flagged pin is drawn at its true location, not moved",
+        "review"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › True location = the pin's stored x/y"
+    },
+    {
+      "id": "nudge-cap",
+      "statement": "No pin sits more than NUDGE_CAP map units from its true location, at any stop, on either map or on paper. A tie that would need more sends both pins to wait (on paper: the pin is flagged, never moved past the cap).",
+      "constant": {
+        "name": "NUDGE_CAP",
+        "value": 12.75,
+        "unit": "map units",
+        "file": "src/pinPlacement.js",
+        "derivation": "half of --pin-hit (22 CSS px) at the Detail stop on a 375px phone, where 44px is 25.5 map units"
+      },
+      "reason": "A pin that wanders is a pin in the wrong place: half a tap target is as far as one can move and still be read as standing where it is.",
+      "enforcedBy": [
+        "e2e: no pin is further than the nudge cap from its true location",
+        "ds: npm run test:ds (design-system/placement.test.mjs: the cap, and the cap's value)"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › Nudge cap"
+    },
+    {
+      "id": "stays-shown",
+      "statement": "Once shown, stays shown: a pin on the map at a coarser stop is on it at every closer stop, and there it outranks anything it would collide with (STAYS_RANK in src/pinPlacement.js, above rank 1), so it keeps its true location and the other pin waits. The one exception is the Food Court pin, which gives way to its own stalls at Detail.",
+      "reason": "Zooming in should add to the map, never take a landmark away. The beer stand and merch are on the opening view because beta testers reached for them first; at the first step a water station that outranks each of them would otherwise make them vanish (Ernest, 10/17).",
+      "enforcedBy": [
+        "e2e: a pin shown at a coarser stop is still shown at the",
+        "e2e: no lower-ranked pin shows over a higher-ranked one that waits",
+        "ds: npm run test:ds (design-system/placement.test.mjs: stays-shown)"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Pin placement rules › Once shown, stays shown"
+    },
+    {
+      "id": "area-label-tap",
+      "statement": "At Detail, an area's pin gives way to its booths, and its name label carries the tap. The Food Court and Kidlandia pins (areaLabel in src/assets/pins.js) and the three art-market markers leave at Detail; each area's name (FOOD COURT, KIDLANDIA, ART MARKET) is drawn over the area as an AreaLabel and opens that area's card. Its hit rect is at least --pin-hit (44px) each way and covers no booth's or pin's tap target; where it cannot fit, the PR notes say so -- the target is never shrunk.",
+      "reason": "Tappable areas behave the same way at Detail: the booths are the targets there, so a pin or marker sitting on them would take a booth's tap, and the area still needs one way in to its card. The name is that way in, and it already says where you are.",
+      "enforcedBy": [
+        "e2e: name label is drawn, a 44px target with the word inside it",
+        "e2e: name label opens the area's card",
+        "e2e: pin gives way to its booths",
+        "e2e: no two touch targets overlap at the"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › At Detail, an area's pin gives way to its booths, and its name label carries the tap"
+    },
+    {
+      "id": "level3-scale-floor",
+      "statement": "Level 3 never shows more map units per CSS px than the 375px reference phone does at level 3 (LEVEL3_MAX_UNITS_PER_PX). A narrower screen, or a phone with its text zoomed, takes level 3 further in to hold the floor; levels 1 and 2 keep their ratios, and the reference phone and anything wider are unchanged.",
+      "constant": {
+        "name": "LEVEL3_MAX_UNITS_PER_PX",
+        "value": 0.5804,
+        "unit": "map units per CSS px",
+        "file": "src/hooks/useMapView.js",
+        "derivation": "the festival's 760 units / MOBILE_OVERVIEW_ZOOM 1.1 x level 3's 0.315 / a 375px phone = 0.58036, rounded up"
+      },
+      "reason": "True locations are spaced once, for the reference phone; no screen may show them closer together than that.",
+      "enforcedBy": [
+        "e2e: level 3 shows no more map units per px than the 375px reference phone",
+        "e2e: levels 1 and 2 keep their ratios, and level 3 is pulled in only where the floor needs it",
+        "ds: npm run test:ds (design-system/placement.test.mjs: level 3 scale floor)"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Level 3 scale floor"
+    },
+    {
       "id": "tap-floor",
-      "statement": "--tap-min (44px) is the floor for every control (chips, close, zoom buttons, the ItemPager's buttons, the handle); --pin-hit (44px) is the hit area centred on every pin. The visible glyph may be smaller than its target; the target may not.",
+      "statement": "--tap-min (44px) is the floor for every control (chips, close, zoom buttons, the ItemPager's buttons, the handle); --pin-hit (44px) is the hit area centred on every pin. The visible glyph may be smaller than its target; the target may not. The one exception is a booth's own cell on the map, which keeps its size because every booth's card is reached by targets that do meet the floor: rule booth-tap-equivalent.",
       "reason": "44 CSS px is 44pt on iPhone, Apple's HIG minimum; WCAG 2.2 AA 2.5.8 asks for 24px with a spacing exception, which the no-overlap rule satisfies for pins.",
       "enforcedBy": [
         "e2e: zoom button is --tap-min (44px)",
@@ -2455,6 +2640,19 @@
         "e2e: the handle is a 44px grab area"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › Pins are touch targets. 44×44 CSS px is the floor."
+    },
+    {
+      "id": "booth-tap-equivalent",
+      "statement": "A booth's own cell on the map keeps its size -- 9.4 map units, about 16 CSS px at level 3 on a phone -- and is exempt from --pin-hit and --tap-min, because every booth's card is also reached by targets that meet the floor: from level 1, the art market's marker (44px; at level 3 its name label, rule area-label-tap) opens the run's booth list, whose rows (BoothRow) are at least --tap-min high; a row opens that booth's card; the back row returns to the list, and the ItemPager's buttons (--tap-min) step booth to booth. Kidlandia's booths are rows in the In the Park list, the two unnumbered spots rows in their own run's list. The food stalls have no list: a stall's card says only \"Stall N · Food Court\", and the Food Court pin (44px) opens the card that lists the trucks.",
+      "reason": "WCAG 2.2 SC 2.5.8 Target Size (Minimum), the Equivalent exception: a target smaller than 24px passes when the same function is available through another control on the same page that meets the size. Booths are packed edge to edge at a ~9-unit pitch; a 44px target per booth would overlap its neighbours and let the wrong booth win the tap (no-overlap), so the cell stays its own size and the list is the full-size way to every booth.",
+      "enforcedBy": [
+        "e2e: opens its card from level 1 by 44px taps: marker, its row, back",
+        "e2e: marker is a 44px target that opens its booth list",
+        "e2e: a booth cell keeps its own size at level 3 (rule booth-tap-equivalent)",
+        "e2e: the Food Court pin is a 44px target that opens the Food Court card",
+        "e2e: B2 both ItemPager buttons are --tap-min"
+      ],
+      "source": "CLAUDE.md › Decided — don't reopen › Booths are the one exception to the tap floor"
     },
     {
       "id": "token-first",
@@ -2537,6 +2735,17 @@
         "ds: npm run ds -- check-palette (and the MCP tool check_palette) answers the same question; npm run ds -- palette-distances lists every pair"
       ],
       "source": "CLAUDE.md › Decided — don't reopen › Category pins sit far enough apart to tell by hue"
+    },
+    {
+      "id": "human-review",
+      "statement": "Green checks mean the rules held; they don't mean the map is right. Every automated check has a written job and a written list of what it can't see (docs/checks-and-review.md), and the human review points are explicit: every PR description carries \"For Ernest to look at\" -- 3 to 6 observation questions about that PR, each answerable by looking at the preview on a phone, with a Yes and a No box -- and docs/pr-notes.md carries the expected answers and the judgment calls he has to accept. The human-review check fails until every item is answered and matches, or he writes \"Expected was wrong:\" under it.",
+      "reason": "So nobody's job becomes \"look for green and merge\". No check judges whether something reads well, is in the right real-world spot, or ranks the right things first; on 10/18 only a person caught the Acoustic beer and water nearly touching with every check green, and a text-zoomed iPhone behaving unlike the 375px test phone. The gate verifies that he looked at specific things, not his judgment; on a private repo on GitHub's free plan it is a hard reminder, not a lock.",
+      "enforcedBy": [
+        "ci: human-review",
+        "ci: human-review parser tests",
+        "review"
+      ],
+      "source": "CLAUDE.md › Standing requirements — every PR, not just the one that asks › Green checks mean the rules held, not that the map is right"
     }
   ]
 }

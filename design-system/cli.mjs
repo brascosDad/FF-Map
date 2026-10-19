@@ -65,6 +65,7 @@ function formatRules(r) {
     `${x.id}`,
     wrap(x.statement),
     ...(x.priority ? ['  priority, highest first:', ...x.priority.map((p, i) => `    ${i + 1}. ${p}`)] : []),
+    ...(x.constant ? [wrap(`constant: ${x.constant.name} = ${x.constant.value} ${x.constant.unit} (${x.constant.file}): ${x.constant.derivation}`)] : []),
     wrap(`why: ${x.reason}`),
     wrap(`enforced by: ${x.enforcedBy.join(' | ')}`),
     wrap(`source: ${x.source}`),

@@ -4,6 +4,107 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.7.0 — 2026-10-18
+
+Minor: a governance rule is added. Nothing on screen changes.
+
+- **Rule `human-review`** (new): green checks mean the rules held, not that
+  the map is right. Every check's job and blind spots are written down in
+  `docs/checks-and-review.md`. Every PR asks Ernest 3–6 observation
+  questions ("For Ernest to look at"), and the **human-review** check
+  (`.github/workflows/human-review.yml`) fails until each is answered and
+  matches the expected answer in `docs/pr-notes.md`, or he writes
+  "Expected was wrong:" under it.
+- `npm run manifest` now accepts a `ci:` pointer to any workflow's step or
+  job, not only `ci.yml`'s.
+- The visual diff's comment says its job is layout; colour is the palette
+  rules' job (no threshold change).
+
+## 1.6.0 — 2026-10-18
+
+Minor: a rule is added and `tap-floor` names its one exception. Nothing on
+screen changes.
+
+- **Rule `booth-tap-equivalent`** (new): a booth's own cell on the map keeps
+  its size (9.4 map units, about 16px at level 3 on a phone) and is exempt
+  from `--pin-hit` / `--tap-min` under WCAG 2.2 SC 2.5.8's Equivalent
+  exception, because every booth's card is also reached by targets that
+  meet the floor: the art market's marker (or its name label at level 3) →
+  the run's list (BoothRow, `--tap-min` high) → the card, the ItemPager
+  stepping booth to booth. The food stalls have no list; the Food Court
+  card is their way in.
+- **`tap-floor`** says so and points at the new rule.
+- **BoothRow** and **ItemPager** list the rule.
+- Enforced by e2e on the device matrix (`scripts/lib/devices.mjs`: WebKit
+  and Chromium, 320–430px phones, two with their text at 125%, and the
+  docked desktop), which walks the path for every booth in the data.
+
+## 1.5.0 — 2026-10-18
+
+Minor: a rule and a token are added, and `no-overlap` asks for a gap. On a
+phone narrower than 375px (or with its text zoomed) level 3 zooms further
+in; on every phone some pins arrive at level 2 or 3 a level later than
+before, and five pins moved by under a map unit. Level 1 is unchanged.
+
+- **Rule `level3-scale-floor`** (new): level 3 never shows more map units
+  per CSS px than the 375px reference phone (`LEVEL3_MAX_UNITS_PER_PX` =
+  0.5804, the rule's `constant`). "True locations are spaced once, for the
+  reference phone; no screen may show them closer together than that."
+- **Token `--pin-gap`** (2px), and **`no-overlap`** asks for it: at levels 2
+  and 3 every two targets (pins, markers, area labels) stand that far apart.
+  Not at level 1. Booth cells are held only to not crossing.
+- **Five true locations** moved apart on the reference phone so level 3
+  clears the gap: lawn water, Acoustic beer, King of Pops C1, entrance water
+  and info, 0.10 to 0.80 units each (pins.js).
+- **Names**: zoom levels are LEVEL 1, 2, 3 in docs and notes (the code keeps
+  overview / first step / Detail). No component names change.
+- Enforced by e2e on phones 314, 320, 375, 390 and 430 px wide and the docked
+  desktop, and `npm run test:ds`.
+
+## 1.4.0 — 2026-10-17
+
+Minor: four rules, a component and three tokens are added, and `no-overlap`
+changes who gives way. At Detail the Kidlandia pin gives way to its booths,
+and every area's name is drawn there and takes a tap. On a
+375px phone's first zoom step the Acoustic Stage's water station arrives a
+stop earlier and the Acoustic beer and Mr Softee wait for Detail. Paper and
+the docked desktop draw the same as before.
+
+- **Rule `no-overlap`: placement is computed, not hand-set.** Every pin has a
+  rank (`PIN_RANK` in `src/assets/pins.js`); at a coarser stop the higher
+  rank keeps its true location and the lower waits for a closer stop (a
+  waiting pin still holds its spot against lower ranks); two of a rank split
+  the difference; rank, then listed order, so the same pins give the same
+  map. The `from: 'detail'` flags are gone. **Priority**: water moves up from
+  the bottom tier to rank with the restrooms — "restrooms and water".
+- **Rule `true-location`** (new): a pin's stored x/y is where it sits at
+  Detail, where every pin shows; nothing writes to it. Paper is one more stop
+  where nothing waits: a pin nudges within the cap or is flagged (drawn at
+  its true location, listed for a person to place).
+- **Rule `nudge-cap`** (new): no pin more than `NUDGE_CAP` = 12.75 map units
+  (half of `--pin-hit` at Detail on a 375px phone) from its true location, at
+  any stop. A rule may now carry a `constant` ({ name, value, unit, file,
+  derivation }); `npm run manifest` fails if the file disagrees with it.
+- **Rule `stays-shown`** (new, Ernest's call): a pin shown at a coarser stop
+  stays at every closer stop and outranks anything it would collide with
+  there (`STAYS_RANK`), so zooming in never takes a landmark away. The beer
+  stand and merch stay from the opening view on; the water stations beside
+  them wait for Detail. The Food Court pin still gives way to its stalls.
+- **Rule `area-label-tap`** (new): "At Detail, an area's pin gives way to
+  its booths, and its name label carries the tap." Kidlandia's pin now
+  leaves at Detail like the Food Court's; FOOD COURT, KIDLANDIA and the three
+  ART MARKET names are drawn there and open their cards, each over a hit rect
+  at least `--pin-hit` each way that covers no booth or pin target.
+- **Component `AreaLabel`** (`.ffc-arealabel`, part `__text`, variants
+  `--food`, `--kids`, `--art`; knob `--arealabel-ink`): in the Names table.
+- **Tokens**: `--kids-ink` (primitive, Kidlandia rose darkened for text,
+  5.3:1 on white), `--map-kids-label`, `--map-art-label` (semantic).
+- **Enforced by** e2e on a 375px phone, the docked desktop (new: every stop,
+  each chip) and paper, and `design-system/placement.test.mjs` in
+  `npm run test:ds`. `npm run pin-layout` shows what the rules do with
+  today's pins. The Names table's MapPin row and §6 (new: Pin placement)
+  describe it; no component names change.
+
 ## 1.3.0 — 2026-10-12
 
 Minor: nine pin colours change and a rule is added. Every category pin but

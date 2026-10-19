@@ -268,3 +268,25 @@ is Cowork's and Ernest's to fix.
 
 **Outside this repo:** iPhone header bug on the Squarespace site (nav unreachable on a phone),
 reported to Will 9/13, no reply. Until fixed, the homepage band is the only phone route to the map.
+
+## After the festival: pin placement rules (PR #21, 10/17–10/19)
+
+- 10/17, pin placement rules (one PR, one commit per item): the **Pin placement rules** in Decided,
+  computed by `src/pinPlacement.js` for each screen's scale; rank in `pins.js`, the cap in the
+  design system (1.4.0, rules `true-location`, `nudge-cap` and `stays-shown`). With today's pins
+  nothing ties, nothing nudges and nothing is flagged on paper. What moved on the phone's first
+  step: the water
+  station at the Acoustic Stage arrives a stop earlier and the Acoustic beer and Mr Softee wait
+  for Detail. Ernest chose **once shown, stays shown** (rule 6b): the beer stand and merch stay
+  from the opening view on, and the lawn and entrance water stations and the info booth wait for
+  Detail, as they did before. Same PR: **Kidlandia gives way to its K booths at Detail** like the
+  Food Court, and every area's name label there carries the tap (AreaLabel, rule
+  `area-label-tap`). Round 4 (10/18, design system 1.5.0): the **level 3 scale floor** and the
+  **2px `--pin-gap`** at levels 2 and 3; five true locations moved apart by under a map unit
+  each (lawn water, Acoustic beer, King of Pops C1, entrance water, info: listed in pins.js and
+  that PR's notes). Round 5 (10/18, design system 1.6.0): the e2e **device matrix** (`scripts/lib/devices.mjs`,
+  one line per phone: 320–430px, two at 125% text, the docked desktop; WebKit and Chromium, WebKit
+  on CI only); the **booth tap exception** as rule `booth-tap-equivalent`, with e2e reaching every
+  booth's card from level 1 by 44px taps; the **McLendon marker at (492, 787.9)** and the
+  **in-park marker at (813.3, 415.9)**, moved along their runs so the beer stand and bike valet
+  show at level 1 on narrow phones (there merch and the bike valet now split a tie, up to 9.2 units).

@@ -175,6 +175,22 @@
 .ffc-pin--merch { --pin-fill: var(--pin-merch); }
 .ffc-pin:active { opacity: 0.9; }
 
+/* ===== AreaLabel ==========================================================
+   An area's name, drawn on the map at the Detail stop over the area itself --
+   FOOD COURT, KIDLANDIA, ART MARKET -- and the tap that opens the area's card
+   there, since the area's pin (or marker) has given way to its booths (rule
+   area-label-tap). SVG: the group carries .ffc-arealabel--<family>, the text
+   reads var(--arealabel-ink), and an invisible rect is the hit area, at least
+   --pin-hit on each side, drawn by MapCanvas. Placed where that rect clears
+   every booth's and pin's tap target (labelAt in pins.js / areas.js).
+   States: default · dimmed (.ffc-dimmed, a chip is on).
+========================================================================== */
+.ffc-arealabel { --arealabel-ink: var(--map-label); cursor: pointer; }
+.ffc-arealabel--food { --arealabel-ink: var(--map-food-label); }
+.ffc-arealabel--kids { --arealabel-ink: var(--map-kids-label); }
+.ffc-arealabel--art { --arealabel-ink: var(--map-art-label); }
+.ffc-arealabel__text { fill: var(--arealabel-ink); stroke: var(--map-halo); paint-order: stroke; font-weight: 800; }
+
 /* ===== Panel ==============================================================
    One component, two variants, chosen by viewport. Shared anatomy:
 

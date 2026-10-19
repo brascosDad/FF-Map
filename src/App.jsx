@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMapView } from './hooks/useMapView';
+import { MOBILE_OVERVIEW_ZOOM, useMapView } from './hooks/useMapView';
 import { useLayerHistory } from './hooks/useLayerHistory';
 import MapCanvas from './components/MapCanvas';
 import FilterChips from './components/FilterChips';
@@ -22,9 +22,6 @@ const PANEL_AT = '(min-width: 1024px)';
 const LANDSCAPE_PHONE = '(orientation: landscape) and (max-height: 500px)';
 const PANEL_W = 360;  // --panel-width
 const GAP = 20;       // --ff-gap / --space-5
-// Phone screens get the map drawn ~10% larger at the overview. The festival
-// still fits, but only just -- about 10 map units (~6px) of margin either side.
-const MOBILE_OVERVIEW_ZOOM = 1.1;
 
 // What an opened thing is called in analytics (CLAUDE.md, "Analytics"), in the
 // map's own vocabulary. A pin's category is its `c` key -- the chips' and
@@ -68,7 +65,7 @@ export default function App() {
   // The panel floats over a full-bleed map, so tell the map how much of its
   // right edge is covered and it will fit the festival into what is left.
   const insetRight = docked ? PANEL_W + GAP * 2 : 0;
-  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview } =
+  const { mapRef, wrapRef, suppressClickRef, viewBox, levelIdx, levelPos, stopUnitsPerPx, overview, detail, unitsPerPx, areaMarkerFade, stepLevel, ensureVisible, focusOn, revealAt, setSafeInsets, settleTick, resetToOverview } =
     useMapView({ insetRight, overviewZoom: docked ? 1 : MOBILE_OVERVIEW_ZOOM });
 
   // Analytics loads after the map has drawn, never before (src/analytics.js).
@@ -323,7 +320,9 @@ export default function App() {
           wrapRef={wrapRef}
           viewBox={viewBox}
           filter={filter}
-          overview={overview}
+          levelIdx={levelIdx}
+          levelPos={levelPos}
+          stopUnitsPerPx={stopUnitsPerPx}
           docked={docked}
           showBlobs={overview && !docked}
           unitsPerPx={unitsPerPx}
