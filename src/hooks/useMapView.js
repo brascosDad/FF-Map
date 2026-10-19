@@ -388,9 +388,8 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
   // takes the new size so nothing gets cropped.
   useEffect(() => {
     const wrap = wrapRef.current;
-    if (!wrap || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(([entry]) => {
-      const { width: px, height: py } = entry.contentRect;
+    if (!wrap) return;
+    const fit = (px, py) => {
       if (!px || !py) return;
       const prevSize = sizeRef.current;
       if (Math.abs(px - prevSize.px) < 1 && Math.abs(py - prevSize.py) < 1) return;
@@ -412,7 +411,15 @@ export function useMapView({ insetRight = 0, overviewZoom = 1 } = {}) {
         const h = (w * py) / px;
         return clampPan({ x: prev.x + prev.w / 2 - w / 2, y: prev.y + prev.h / 2 - h / 2, w, h }, px, insetRef.current, safeRef.current);
       });
-    });
+    };
+    // Take the real size now, at mount, rather than waiting for the observer's
+    // first callback: the seeded size is a phone's, and a browser can deliver
+    // that callback late (WebKit, headless, on CI: the docked desktop opened
+    // laid out for 390x800 until the first tap). The observer then keeps it.
+    const r = wrap.getBoundingClientRect();
+    fit(r.width, r.height);
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => fit(entry.contentRect.width, entry.contentRect.height));
     ro.observe(wrap);
     return () => ro.disconnect();
   }, []);
