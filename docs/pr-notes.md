@@ -64,8 +64,8 @@ Two changes to the visual check (`scripts/visual.mjs`), nothing on the map itsel
 ## CLAUDE.md wording for Cowork to apply
 
 I haven't edited `CLAUDE.md` (Cowork's file). Note: `main`'s log shows **PR #20 already merged**
-(8bace47, "Merge pull request #20 … trim-context-file"), so the trim is in. `CLAUDE.md` on `main`
-also has **standing requirement 4 twice** (once after 6/7). Replace both with the one below.
+(8bace47, "Merge pull request #20 … trim-context-file"), so the trim is in, and PR #23 (merged
+into this branch) removed the duplicated requirement 4. Replace the one that's left with this.
 
 **Standing requirement 4:**
 
