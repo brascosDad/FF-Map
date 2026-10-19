@@ -423,12 +423,11 @@ someone places it by hand.
 
 ## Visual baselines
 
-**Round 5: I expect `phone-open` to go red, and maybe `sheet-open`.** Both are level 1 at 390px,
-and the McLendon and in-park markers moved: the McLendon marker is now at the west end of the
-run, and the in-park one is 21 units further up the path. `print` doesn't draw the markers, so it
-should stay green. If CI shows the change, look at the diff images, then add the
-`update-visual-baselines` label. The diff should be the two markers and nothing else, since at 390
-nothing ties.
+**Round 5–6: all three baselines re-rendered (`c506832`, the `update-visual-baselines` label, 10/19).**
+`phone-open` (0.83%) and `sheet-open` (0.25%) changed because the McLendon and in-park markers moved
+(round 5, item 3); they were the same size on every CI run since, including after the app fix.
+`print` was within tolerance throughout (121 pixels, round 4's sub-unit pin moves) and was
+re-rendered along with them.
 
 **Round 4: no baseline changes.** I expected `print` to go red, because the five moved pins are
 drawn on paper at their new spots. CI passed it within the visual check's tolerance (121 pixels
