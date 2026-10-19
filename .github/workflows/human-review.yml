@@ -1,0 +1,45 @@
+# The human review gate (docs/checks-and-review.md): the PR description's
+# "For Ernest to look at" items, each with a Yes and a No box, against the
+# expected answers in docs/pr-notes.md. Red until every item is answered and
+# matches, or Ernest says under an item that the expectation was wrong.
+#
+# It runs again when the description is edited, which is how a tick lands.
+# It verifies that he looked at specific things, not his judgment. On a
+# private repo on GitHub's free plan a required check cannot block the merge
+# button, so there it is a hard reminder, not a lock.
+#
+# The description is read from the API (the event's copy can be stale on a
+# re-run) into a file and only parsed: it is never put into a shell command.
+name: human-review
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: human-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  human-review:
+    name: human-review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read the PR description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: gh api "repos/$REPO/pulls/$PR" --jq '.body // ""' > "$RUNNER_TEMP/pr-body.md"
+      - name: Check the answers
+        run: node scripts/human-review.mjs --body "$RUNNER_TEMP/pr-body.md"

@@ -5,7 +5,7 @@
 // asks us not to download another; GitHub Actions and a laptop install one
 // with `npx playwright install chromium`. PLAYWRIGHT_CHROMIUM overrides both.
 import { existsSync } from 'node:fs';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 
 const PRESET = '/opt/pw-browsers/chromium';
 
@@ -23,3 +23,29 @@ export function launch(options = {}) {
 
 /** Where the built app is being served for a script run. */
 export const BASE = process.env.E2E_BASE || 'http://localhost:4310';
+
+/**
+ * Launch one engine for the device matrix (scripts/lib/devices.mjs).
+ * 'chromium' is launch() above. 'webkit' is Playwright's own WebKit (iPhone
+ * Safari, and iPhone Chrome, which is WebKit underneath): CI installs it
+ * (ci.yml); where it is not installed -- the remote Claude Code container,
+ * which ships Chromium only -- this returns null off CI, so the caller can
+ * say it skipped, and throws on CI, where a missing engine is a failure.
+ */
+export async function launchEngine(name) {
+  if (name === 'chromium') return launch();
+  if (name !== 'webkit') throw new Error(`unknown engine ${name}`);
+  if (!existsSync(webkit.executablePath())) {
+    if (process.env.CI) throw new Error('WebKit is not installed: npx playwright install --with-deps webkit');
+    return null;
+  }
+  return webkit.launch();
+}
+
+/** A page for a device-matrix profile. WebKit takes no Chromium host rules, so
+ *  the analytics service is blocked here per page, for both engines alike. */
+export async function newDevicePage(browser, contextOptions) {
+  const p = await browser.newPage(contextOptions);
+  await p.route('**/cloud.umami.is/**', (r) => r.abort());
+  return p;
+}

@@ -59,8 +59,8 @@ test('manifest: tokens carry a tier, and every tier is used', () => {
   assert.equal(m.tokens.find((t) => t.name === '--chip-bg').tier, 'component');
 });
 
-test('manifest: the ten rules are there, each with a reason, a source and an enforcer', () => {
-  assert.deepEqual(m.rules.map((r) => r.id), ['no-overlap', 'tap-floor', 'token-first', 'one-name', 'close-top-right', 'step-in-step-out', 'paper-number-row', 'coral-is-now', 'category-lightness-band', 'category-hue-spacing']);
+test('manifest: the fifteen rules are there, each with a reason, a source and an enforcer', () => {
+  assert.deepEqual(m.rules.map((r) => r.id), ['no-overlap', 'true-location', 'nudge-cap', 'stays-shown', 'area-label-tap', 'level3-scale-floor', 'tap-floor', 'booth-tap-equivalent', 'token-first', 'one-name', 'close-top-right', 'step-in-step-out', 'paper-number-row', 'coral-is-now', 'category-lightness-band', 'category-hue-spacing', 'human-review']);
   for (const r of m.rules) for (const k of ['statement', 'reason', 'source']) assert.ok(r[k], `${r.id}.${k}`);
   for (const r of m.rules) assert.ok(r.enforcedBy.length, `${r.id} is enforced by something, or by "review"`);
 });
@@ -88,6 +88,7 @@ test('query: a component answers by name, class, or a name it is never called', 
   assert.ok(getComponent(m, 'FilterChp').didYouMean.includes('FilterChip'));
   assert.ok(getTokens(m, 'ItemPager').tokens.some((t) => t.name === '--tap-min'));
   assert.equal(getRules(m, 'no-overlap').rules[0].priority.length, 5);
+  assert.match(getRules(m, 'no-overlap').rules[0].priority[2], /water/);
 });
 
 test('query: check fails the snippet that breaks rules, and cites a rule on every finding', () => {
@@ -123,6 +124,15 @@ test('deprecation: a comment starting "Deprecated: use --x" marks a token; check
   const r = checkCss(old, '.ffc-itempager { color: var(--text-muted); }');
   assert.equal(r.ok, true);
   assert.deepEqual(r.findings.map((f) => [f.rule, f.severity, f.suggest[0]]).sort(), [['one-name', 'warning', 'Panel'], ['token-first', 'warning', '--text-body']]);
+});
+
+test('manifest: the nudge cap names the constant the placement code uses, at its value', async () => {
+  const { NUDGE_CAP } = await import('../src/pinPlacement.js');
+  const { PIN_RANK } = await import('../src/assets/pins.js');
+  const cap = getRules(m, 'nudge-cap').rules[0].constant;
+  assert.deepEqual([cap.name, cap.value, cap.file], ['NUDGE_CAP', NUDGE_CAP, 'src/pinPlacement.js']);
+  // The priority list and PIN_RANK agree on how many tiers there are.
+  assert.equal(Math.max(...Object.values(PIN_RANK)), getRules(m, 'no-overlap').rules[0].priority.length);
 });
 
 test('governance: the changelog\'s newest entry is the manifest\'s version', () => {
@@ -226,7 +236,8 @@ test('cli: components, tokens [filter], rules', () => {
   assert.match(t.stdout, /--tap-min/);
   assert.doesNotMatch(t.stdout, /--ff-cream/);
   assert.equal(cliJson(['tokens']).count, m.tokens.length);
-  assert.equal(cliJson(['rules']).count, 10);
+  assert.equal(cliJson(['rules']).count, 17);
+  assert.match(cli(['rules', 'nudge-cap']).stdout, /constant: NUDGE_CAP = 12.75 map units/);
   assert.equal(cli(['component', 'pager']).status, 1);
   assert.equal(cli(['nope']).status, 2);
 });

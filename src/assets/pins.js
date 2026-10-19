@@ -15,27 +15,31 @@
 // tent at the gate. `overview: 'docked'` keeps a pin on the opening view only
 // where the panel is docked (desktop), whose overview draws the map at half
 // the phone's scale and has room the phone does not. Everything else arrives
-// at the first zoom step or when its chip is tapped. Before adding one, check
-// the spacing: scripts/e2e.mjs asserts that no two overview targets overlap
-// on a 375px phone.
+// at the first zoom step or when its chip is tapped. The flag only makes a
+// pin a CANDIDATE for the opening view; the placement rules below decide
+// among the candidates.
 //
-// STANDING RULE (Ernest, 9/22): no tap target may overlap another tap target at
-// any zoom stop, on either map -- an overlap invites a wrong tap. Circles may
-// touch edge to edge; they may not cross. When two collide, one of two things
-// happens: the lower-priority pin waits for a closer stop (`from: 'detail'`
-// below), or the two are moved edge to edge. Priority when something must
-// wait: labelled destinations (stages, Food Court, Kidlandia) > first aid /
-// EMS > restrooms > info, merch, bike valet, beer > water, beverage stations,
-// PTA, food carts. scripts/e2e.mjs measures every stop on a 375px phone.
+// PLACEMENT (Ernest, 9/22; made rules 10/17 -- src/pinPlacement.js, and the
+// design system's no-overlap, pin-rank, true-location and nudge-cap rules):
+// no tap target may overlap another at any zoom stop, on either map, or on
+// paper. Circles may touch edge to edge; they may not cross.
+//   - A pin's x/y below is its TRUE LOCATION: where it sits at the Detail
+//     stop, where every pin shows. Nothing ever writes to it.
+//   - Every pin has a rank (PIN_RANK, below the list). At a coarser stop the
+//     higher rank keeps its true location and the lower one waits for a
+//     closer stop; two of the same rank split the difference, each moving
+//     half the overlap, never more than NUDGE_CAP (12.75 units) from its true
+//     location -- past that, or into a third target, both wait.
+//   - Paper is one more stop where nothing can wait: a pin nudges within the
+//     cap, or is flagged for a person to place.
+// So there is no per-pin "wait for Detail" flag any more: what used to be
+// `from: 'detail'` is computed, for each screen's own scale. To see what
+// waits and what moves, run `npm run pin-layout`. scripts/e2e.mjs measures
+// every stop on a 375px phone and the docked desktop, and the paper.
 //
-// `from: 'detail'` holds a pin back until the Detail stop, the closest one,
-// where its 44px target has room -- on the phone. Where the panel is docked
-// the first step's 44px is 22 units against the phone's 46, so there the pin
-// arrives at the first step (and `overview: 'docked'` still puts it on that
-// opening view). Everything else arrives at the first zoom step (or at the
-// overview, per `overview` above). A filter chip overrides it: the chip's
-// category is always drawn, on top, and while a chip is on the dimmed pins
-// cannot be tapped.
+// A filter chip overrides the placement for its own category: the chip's
+// pins are all drawn, on top, at any stop, and while a chip is on the dimmed
+// pins cannot be tapped.
 //
 // `print: true` marks a pin PAPER-ONLY: it exists for EMS and the fire
 // inspector (Jess, operations, 9/21), not for a visitor with a phone. The phone
@@ -57,6 +61,14 @@
 // rather than places (Ernest, round 3). The tap target is still the 44px
 // circle, and rule 1 applies to it.
 //
+// `areaLabel` marks an AREA's pin -- the Food Court and Kidlandia, the two
+// places that are a set of booths. At the Detail stop the pin gives way to
+// its booths and the area's name is drawn over the area instead, and that
+// name carries the tap: it opens the pin's card (rule area-label-tap). The
+// label sits at `labelAt` (default: the pin's own x/y), a spot where its 44px
+// target clears every booth and pin at Detail on a 375px phone -- the
+// art-market areas carry the same two fields in data/areas.js.
+//
 // `where` is the card's location line -- how someone confirms which of a
 // category's pins they tapped (Ernest, 9/22). Plain words from the map, one
 // line, on every visitor pin; the lines Ernest wrote carry TODO(Jess):
@@ -67,7 +79,7 @@
 // runs north-south (across an east-west one).
 export const PINS = [
   // Markers that carry a standing label on the map
-  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true, where: 'The car path north of the lawn, east of the Main Stage' },
+  { x: 859.7, y: 292.3, c: 'food', d: 'food', label: 'Food Court', overview: true, areaLabel: 'Food Court', labelAt: [872, 224], where: 'The car path north of the lawn, east of the Main Stage' },
   { x: 741.1, y: 288.5, c: 'stage', d: 'stageMain', label: 'Main Stage', overview: true, where: 'North end of the lawn, below the pool' },
   // The Acoustic Stage sits where the export drew it until Mell Ave moved to
   // x 938.5 (Figma, 9/21) -- exactly where the pin was. The east end of
@@ -75,7 +87,7 @@ export const PINS = [
   // Achieve with Steve 858, booth 55 at 840 (Jess, Ernest, 9/22). The
   // barricade is between the stage and Mell; Mell itself stays open (9/24).
   { x: 885.0, y: 797.9, c: 'stage', d: 'stageAcoustic', label: 'Acoustic', overview: true, where: 'On McLendon Ave at Mell Ave, the east end of the McLendon art market' },
-  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true, where: 'The west lawn, off Candler Park Dr' },
+  { x: 550.9, y: 422.3, c: 'kids', d: 'kids', label: 'Kidlandia', overview: true, areaLabel: 'Kidlandia', where: 'The west lawn, off Candler Park Dr' },
 
   // The beer stand: the main one, on the field below the Main Stage -- the
   // landmark the food chair places Mr Softee against ("to the right of the
@@ -92,15 +104,19 @@ export const PINS = [
   { x: 522.3, y: 735.3, c: 'drinks', d: 'drinks', where: 'West lawn, near the McLendon entrance' }, // TODO(Jess): confirm location
   // ...and the one just north of the Acoustic Stage, which Jess's plan pairs
   // with a water station tight against it (9/21; the water is in the water
-  // block below, held to Detail). Was the export's (897.3, 747.3); 53 units
+  // block below; at the first step the water outranks it, so the beer waits). Was the export's (897.3, 747.3); 53 units
   // from the stage pin, clear of the bike valet.
-  { x: 862.0, y: 750.0, c: 'drinks', d: 'drinks', where: 'By the Acoustic Stage' }, // TODO(Jess): confirm location
+  // Round 4 (Ernest, 10/18): moved 0.80 units west, away from the Acoustic
+  // water, from (862, 750), so its level-3 target clears the water's by the 2px
+  // --pin-gap on the 375px reference phone (they were touching, and overlapped
+  // on narrower screens).
+  { x: 861.2, y: 750.0, c: 'drinks', d: 'drinks', where: 'By the Acoustic Stage' }, // TODO(Jess): confirm location
 
   // King of Pops: two carts (Todd, 9/21), in the food colour, each opening
   // the cart's card. The Main Stage cart is in the front row on the lawn
   // beside Kidlandia, down off the white path onto the green (Ernest, round
   // 3: 693, 378; half a unit out so its Detail target is edge to edge with
-  // first aid's), waiting for Detail like the stations beside it. The
+  // first aid's); first aid outranks it, so it waits for Detail. The
   // entrance cart is by the park entrance, on the west lawn edge at the path
   // mouth -- 47 units from merch (46 is edge to edge at the first step),
   // clear of the west beer station and booth 69. Cart spots move at load-in
@@ -113,12 +129,17 @@ export const PINS = [
   // vendors.json, which is its card) and a short `tag` that tells two carts
   // of one vendor apart in the print index. The number is stored here and
   // nowhere else: the print map, the print index and the phone card read it.
-  { x: 692.5, y: 377.5, c: 'food', d: 'kingofpops', shape: 'square', n: 'C1', vendor: 'King of Pops', tag: 'Main Stage', from: 'detail', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
+  // Round 4 (Ernest, 10/18): moved 0.54 units away from first aid, from (692.5,
+  // 377.5), so its level-3 target clears first aid's by the 2px --pin-gap on the
+  // 375px reference phone (they were touching, and overlapped on narrower
+  // screens).
+  { x: 692.0, y: 377.3, c: 'food', d: 'kingofpops', shape: 'square', n: 'C1', vendor: 'King of Pops', tag: 'Main Stage', where: 'On the lawn beside Kidlandia' }, // TODO(Jess): confirm location
   { x: 583.0, y: 735.0, c: 'food', d: 'kingofpops', shape: 'square', n: 'C2', vendor: 'King of Pops', tag: 'entrance', where: 'Near the McLendon entrance' }, // TODO(Jess): confirm location
   // Mr Softee: "Add an additional food icon here (this one is Mr Softee)"
   // (Jess's markup, 9/23), a food-cart square like King of Pops, on the lawn
-  // south-west of the beer stand. Clear of everything at every stop, so on
-  // the map from the first step.
+  // south-west of the beer stand. At the first step it sits on the lawn
+  // water's spot (36 units off; the water outranks it, though it is itself
+  // waiting for the stand), so it waits for Detail.
   { x: 678.0, y: 476.0, c: 'food', d: 'mrsoftee', shape: 'square', n: 'C3', vendor: 'Mr Softee', where: 'On the lawn beside Kidlandia, south-west of the beer stand' },
 
   // Merch: the CPNO Merch Tent on Jess's 2026 site plan, on the EAST side of
@@ -164,40 +185,54 @@ export const PINS = [
   // neighbour sits edge to edge on his own bearing: the King of Pops cart
   // 0.5 units out from (693, 378), the west station 7.8 units WSW of
   // (677, 387), the east station 4 units E of (734, 391). First aid is on the
-  // map from the first zoom step; the stations and the cart wait for Detail.
+  // map from the first zoom step; the cart (and the stations, if they come
+  // back) rank below it and wait for Detail.
   //
   // Beverage stations are NOT beer (`drinks`): their own category, the cup on
   // the darker amber.
   { x: 712.0, y: 395.0, c: 'firstaid', d: 'firstaid', where: 'On the lawn below the Main Stage, beside the King of Pops cart' },
   // The two beverage stations are not on Jess's markup (9/23): hidden, not
   // deleted -- delete `hidden` to bring one back.
-  { x: 670.0, y: 391.5, c: 'beverage', d: 'beverage', from: 'detail', hidden: true, where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
-  { x: 738.0, y: 390.5, c: 'beverage', d: 'beverage', from: 'detail', hidden: true, where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 670.0, y: 391.5, c: 'beverage', d: 'beverage', hidden: true, where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
+  { x: 738.0, y: 390.5, c: 'beverage', d: 'beverage', hidden: true, where: 'On the lawn beside Kidlandia, near first aid' }, // TODO(Jess): confirm location
 
   // Water refill stations, per Jess's 2026 site plan (9/21, Ernest 9/22).
-  // Water is the lowest priority on the map, so where a station sits close
-  // to something it waits for the Detail stop (from: 'detail') -- the Water
-  // chip shows it at any stop.
+  // Water ranks with the restrooms (10/17): where a station sits close to
+  // a beer stand, info or a cart, the station keeps its spot at the first
+  // step and the other waits; near Kidlandia or first aid -- or a landmark
+  // already on the opening view (the beer stand, merch: once shown, stays
+  // shown) -- the station waits. The Water chip shows every station at any
+  // stop.
   //
   // On the lawn just above-left of the beer stand (Ernest, round 3: 712, 459).
   // His spot is 20.6 units from the stand, under the 25.5 two Detail targets
   // need, so it sits edge to edge on his bearing, 5.7 units further out:
-  // 26.3 from the stand. Detail only.
-  { x: 707.5, y: 455.5, c: 'water', d: 'water', from: 'detail', where: 'On the lawn beside Kidlandia, next to the beer stand' }, // TODO(Jess): confirm location
+  // 26.3 from the stand (26.74 since round 4, below). The stand is on the opening view and stays, so at
+  // the first step this waits for Detail.
+  // Round 4 (Ernest, 10/18): moved 0.42 units further out from the beer stand,
+  // from (707.5, 455.5), so its level-3 target clears the beer stand's by the
+  // 2px --pin-gap on the 375px reference phone (they were touching, and
+  // overlapped on narrower screens).
+  { x: 707.2, y: 455.2, c: 'water', d: 'water', where: 'On the lawn beside Kidlandia, next to the beer stand' }, // TODO(Jess): confirm location
   // The water half of the beer + water pair north of the Acoustic Stage:
-  // tight against the beer at (862, 750) -- edge to edge at Detail, 26
-  // units east (25.5 is touching on a 375px phone; half a unit of air) -- so
-  // it too waits for Detail. Ernest's 877 would overlap.
-  { x: 888.0, y: 750.0, c: 'water', d: 'water', from: 'detail', where: 'By the Acoustic Stage, next to the beer' }, // TODO(Jess): confirm location
+  // tight against the beer at (861.2, 750 since round 4) -- 26.8
+  // units east (26.7 is two targets plus the 2px gap at level 3). It
+  // outranks the beer, so at the first step the beer waits. Ernest's 877
+  // would overlap.
+  { x: 888.0, y: 750.0, c: 'water', d: 'water', where: 'By the Acoustic Stage, next to the beer' }, // TODO(Jess): confirm location
   // At the Candler Park Dr speed bump, in the break between 94/95 and
   // 111/112. Not on Jess's markup (9/23): hidden, not deleted.
   { x: 438.0, y: 585.0, c: 'water', d: 'water', hidden: true, where: 'Candler Park Dr, at the speed bump by booths 95 and 112' }, // TODO(Jess): confirm location
   // The entrance-path station (the export's 588.1, 708.3) is at the McLendon
   // entrance tucked against the merch tent's lower-right side, edge to edge
   // at Detail (26.6 units on Ernest's bearing, where 25.5 is touching on a
-  // 375px phone; his (636, 749) was 11 from merch). Hidden at the first zoom
-  // step, where it would sit on merch.
-  { x: 645.0, y: 762.0, c: 'water', d: 'water', from: 'detail', where: 'McLendon entrance, next to the merch tent' }, // TODO(Jess): confirm location
+  // 375px phone; his (636, 749) was 11 from merch). At the first zoom step it
+  // would sit on merch, which is on the opening view and stays, so this
+  // waits for Detail.
+  // Round 4 (Ernest, 10/18): moved 0.10 units away from merch, from (645, 762),
+  // so its level-3 target clears merch's by the 2px --pin-gap on the 375px
+  // reference phone (they were touching, and overlapped on narrower screens).
+  { x: 645.0, y: 762.1, c: 'water', d: 'water', where: 'McLendon entrance, next to the merch tent' }, // TODO(Jess): confirm location
 
   // Kidlandia, per Jess's plan (9/21): a water station in the north-centre
   // of the lawn -- clear of the Kidlandia pin's target at the first zoom
@@ -207,8 +242,8 @@ export const PINS = [
   // is her own legend's glyph for it, in the Kidlandia colour.
   // Kidlandia's water is south-east of the Kidlandia pin, where Jess's markup
   // put it (9/23; was the north-centre of the lawn). 38.7 units from the pin,
-  // so it waits for Detail on the phone.
-  { x: 552.0, y: 461.0, c: 'water', d: 'water', from: 'detail', where: 'Inside Kidlandia, at its south end' },
+  // so it waits for Detail on the phone: Kidlandia outranks it.
+  { x: 552.0, y: 461.0, c: 'water', d: 'water', where: 'Inside Kidlandia, at its south end' },
   // At the top of the Candler Park Dr booth run, park side of the street:
   // Jess asked for water here, not the speed bump the 9/22 round drew
   // (hidden below). Her (421, 361), one unit north so its Detail target
@@ -222,11 +257,15 @@ export const PINS = [
   // round-3 endpoint is (635, 721), 19.6 units from merch on a bearing a
   // little east of north; the two 44px targets need 25.5 at the phone's
   // Detail stop, so info sits at the closest point on that bearing where
-  // they are edge to edge: 26.4 units out. Detail only on the phone, and no
-  // longer on the desktop's opening view (there 44px is 40 units); it arrives
-  // at the desktop's first step, where 44px is 22 units. Was (630, 694), 46
+  // they are edge to edge: 26.4 units out (26.7 since round 4, below). At the phone's first step merch,
+  // on from the opening view, keeps its spot and info waits for Detail. Not
+  // on the opening view (no `overview` flag). Was (630, 694), 46
   // above merch, from 9/20 to 9/22. The export had it at (644.3, 733.3).
-  { x: 637.0, y: 714.5, c: 'info', d: 'info', from: 'detail', where: 'Just inside the McLendon entrance, east side of the path, above the merch tent' },
+  // Round 4 (Ernest, 10/18): moved 0.30 units up, away from merch, from (637,
+  // 714.5), so its level-3 target clears merch's by the 2px --pin-gap on the
+  // 375px reference phone (they were touching, and overlapped on narrower
+  // screens).
+  { x: 637.0, y: 714.2, c: 'info', d: 'info', where: 'Just inside the McLendon entrance, east side of the path, above the merch tent' },
 
   // Drawn as a placeholder red circle in the export at (702.4, 730.1); here it
   // is the Phosphor bicycle on the utility neutral, 10 units east of the
@@ -290,6 +329,25 @@ export const PINS = [
   { x: 411.5, y: 360.0, c: 'speedbump', print: true, hidden: true },
   { x: 411.5, y: 585.0, c: 'speedbump', print: true, hidden: true },
 ];
+
+// RANK: who keeps their spot when two pins' targets would overlap at a stop
+// (src/pinPlacement.js; the design system's `pin-rank` rule). 1 is highest.
+// The lower-ranked pin waits for a closer stop; two of the same rank split
+// the difference. Water ranks with the restrooms (the team, 10/17; festival
+// days' chip use: restrooms 37, water 28, first aid 23). The paper-only ops
+// marks rank last: they exist only on paper, where nothing waits, so their
+// rank only decides which of two moves.
+export const PIN_RANK = {
+  stage: 1, food: 1, kids: 1,               // labelled destinations
+  firstaid: 2,                              // first aid / EMS
+  wc: 3, water: 3,                          // restrooms and water
+  info: 4, merch: 4, bikevalet: 4, drinks: 4, // info, merch, bike valet, beer
+  beverage: 5, pta: 5, cart: 5,             // beverage stations, PTA, food carts
+  barricade: 5, generator: 5, dumpster: 5, speedbump: 5, iceTruck: 5, musicianTent: 5,
+};
+/** A pin's rank. A food cart is `c: 'food'` like the Food Court, but a cart
+ *  (it has a `vendor`), not the destination. */
+export const rankOf = (p) => PIN_RANK[p.vendor ? 'cart' : p.c];
 
 // Colours are references into the token layer, not hex literals. tokens.css is
 // the single source of truth; this file used to carry a second copy of the same

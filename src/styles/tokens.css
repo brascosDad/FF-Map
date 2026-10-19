@@ -49,6 +49,7 @@
      white glyph. Both beverage stations are hidden today. */
   --pin-beverage: #9E7200;
   --food-ink: #A86F36;    /* food orange darkened for text on ground */
+  --kids-ink: #A3506F;    /* Kidlandia rose darkened for text on ground, 5.3:1 on white */
 
   /* Structural / neutral — unchanged */
   --cat-booth: #47597A;
@@ -147,6 +148,9 @@
   --map-number: var(--slate-800);             /* booth numbers */
   --map-halo: var(--ff-white);                /* stroke behind map text */
   --map-food-label: var(--food-ink);
+  /* The AreaLabel inks: an area's name at Detail, in its own family's colour. */
+  --map-kids-label: var(--kids-ink);
+  --map-art-label: var(--cat-booth);
 
   /* Glyph sitting on a filled category dot or pin. */
   --icon-on-color: var(--ff-white);
@@ -209,6 +213,11 @@
                   and the e2e no-overlap rule measures it, at every stop. */
   --tap-min: 44px;
   --pin-hit: 44px;
+  /* The least air between two pins' hit areas at levels 2 and 3 (Ernest,
+     10/18): touching edge to edge read as one target on a phone. Not at
+     level 1, so the opening view is spaced as it was. src/pinPlacement.js
+     counts it in every collision and e2e measures it. */
+  --pin-gap: 2px;
   /* 40px, not the 28px the draft spec proposed: judged against the real map,
      where 28 read as too small. The tap area is 44 either way. ONE size at
      every zoom level: the overview used to draw pins a step smaller (34), and
