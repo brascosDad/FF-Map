@@ -19,6 +19,7 @@
     "ds": "node design-system/cli.mjs",
     "test:ds": "node --test design-system/ds.test.mjs design-system/placement.test.mjs",
     "test:review": "node --test scripts/human-review.test.mjs",
+    "test:from-to": "node --test scripts/visual-from-to.test.mjs",
     "pin-layout": "node scripts/pin-layout.mjs"
   },
   "dependencies": {
