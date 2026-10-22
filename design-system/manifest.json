@@ -1,6 +1,6 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "updated": "2026-10-18",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
@@ -2656,24 +2656,24 @@
     },
     {
       "id": "token-first",
-      "statement": "A value that isn't a token becomes a token, documented in design-system.html, before it is used. Components reference only semantic and component tokens (tiers 2 and 3); a raw hex in a component is a bug.",
+      "statement": "Use only the system's tokens and components. A value that isn't a token is not hardcoded and not added unasked: the agent asks Ernest first (what, why the existing ones don't cover it, where it would be documented); once agreed it becomes a token, documented in design-system.html, before it is used. Components reference only semantic and component tokens (tiers 2 and 3); a raw hex in a component is a bug.",
       "reason": "The design system grows alongside the build instead of being reverse-documented afterward.",
       "enforcedBy": [
         "ds: npm run ds -- check reports raw hex and px values that have a token, and tokens that do not exist (on a snippet; advisory)",
         "review"
       ],
-      "source": "CLAUDE.md › Build with components and reference the design system on every move"
+      "source": "CLAUDE.md › Use only the design system's tokens and components"
     },
     {
       "id": "one-name",
-      "statement": "One name per component, used the same way everywhere: in the code, the CSS (.ffc-<name>), the tests, the docs and the design-system page. The Names table in design-system.html §3 is the list; check it before adding a class or a word for something, and fix a stray old name when you see one. The component is ItemPager, never \"pager\", \"stepper\" or \"booth nav\".",
+      "statement": "Name things from the shared lexicon: one name per component, chosen for what it does (a role, not a nickname), used the same way in the code, the CSS (.ffc-<name>), the tests, the docs and the design-system page. The Names table in design-system.html §3 is the lexicon; check it before adding a class or a word for something, and fix a stray old name when you see one. A new name is a new component: ask first, then add its row (name, what it is, what it is not called). The component is ItemPager, never \"pager\", \"stepper\" or \"booth nav\".",
       "reason": "A person, an agent and a grep should all find the same thing under the same word.",
       "enforcedBy": [
         "ci: manifest is current",
         "ds: npm run ds -- check reports a class that is not in the Names table",
         "review"
       ],
-      "source": "CLAUDE.md › One name per component, used the same way everywhere"
+      "source": "CLAUDE.md › Name things from the shared lexicon"
     },
     {
       "id": "close-top-right",
@@ -2745,7 +2745,7 @@
         "ci: human-review parser tests",
         "review"
       ],
-      "source": "CLAUDE.md › Standing requirements — every PR, not just the one that asks › Green checks mean the rules held, not that the map is right"
+      "source": "CLAUDE.md › Standing requirements — every PR, not just the one that asks › A green check on a PR means the rules held, not that the map is right"
     }
   ]
 }
