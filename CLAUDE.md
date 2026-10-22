@@ -34,20 +34,21 @@ that's why.
 
 ## Standing requirements — every PR, not just the one that asks
 
-**1. Build with components and reference the design system on every move.** Tokens live in
+**1. Use only the design system's tokens and components** (Ernest, 10/20). Tokens live in
 `src/styles/tokens.css`, documented in `design-system.html`. No ad-hoc colors, spacing, or type
-sizes. If the value you need doesn't exist as a token, **add the token and document it** rather
-than hardcoding past it — the design system is meant to grow alongside the build, in real time,
-not be reverse-documented afterward. Ask the system instead of rereading the prose:
-`design-system/manifest.json` (generated, `npm run manifest`) answers to `npm run ds -- …` or the
+sizes. **If the work needs a new token, component or variant, stop and ask Ernest first**: say
+what you'd add, why the existing ones don't cover it, and where it would be documented. Don't
+hardcode past a missing token, and don't add one unasked. Once he agrees, add it and document it
+in the same PR — the system grows alongside the build, not reverse-documented afterward. Ask the
+system instead of rereading the prose: `design-system/manifest.json` (generated, `npm run manifest`) answers to `npm run ds -- …` or the
 `ff-design-system` MCP server in `.mcp.json`, and `check` flags raw hex/px, missing tokens and unknown
 class names in a snippet. How it changes (propose → review → adopt, versions, deprecation):
 `design-system.html` §7.
 
-**2. The data layer has to be clean and scalable, even though the dataset is small.** The test:
-a volunteer picking this up next year opens the repo and can see immediately what to change. One
-clearly named source of truth per kind of thing, a documented shape for each record, no duplicate
-copies of the same fact in two files. Propose structural changes before making them.
+**2. Keep the data easy to hand off** (Ernest, 10/20: "clean and scalable" defined). One clearly
+named source of truth per kind of thing, a documented shape for every record, no fact stored in
+two places. The test: a volunteer picking this up next year opens the repo and can see
+immediately what to change. Propose structural changes before making them.
 
 **3. Every PR carries before/after screenshots.** Phone (390px) at open, desktop, and `?print=1`,
 from `main` and from the branch. The `PR screenshots` Action does it on every pull request: it
@@ -55,8 +56,8 @@ runs `npm run pr-shots`, commits the PNGs to the branch under `docs/pr-shots/`, 
 "Screenshots" table into the PR description. Run `npm run pr-shots` yourself to look before you
 push. Don't hand-edit that table; the Action rewrites it on each push.
 
-**4. Visual changes are judged by eye, and accepted as shown.** CI diffs three renders (the phone
-at open, the phone with a bottom sheet open, the print sheet) against `tests/visual/*.png`. A
+**4. Visual changes need Ernest's sign-off, judged by eye and accepted as shown.** CI diffs three
+renders (the phone at open, the phone with a bottom sheet open, the print sheet) against `tests/visual/*.png`. A
 change fails CI, and CI posts a **from → to** comment on the PR: each change drawn on the new
 render (faded = was, solid with a dashed outline = is) and one plain line per change in
 pin-widths. That comment is what Ernest judges. The **`accept-visual-changes`** label means "I
@@ -67,25 +68,30 @@ renders, so `npm run test:visual` locally is advisory. `tests/visual/README.md` 
 
 **5. Reporting, every PR (Ernest, 9/22):** every question, open decision, skipped item and pin
 nudge goes into `docs/pr-notes.md` on the branch, overwritten each PR — the PR description can
-summarise it, the file is the record. If an answer is needed before work can continue, the chat
-reply ends with a line starting `BLOCKED:`.
+summarise it, the file is the record. **Every chat reply ends with a status line** (Ernest, 10/20),
+so a silent reply is never ambiguous: `BLOCKED:` and the question, when an answer is needed before
+work can continue; or `READY:` and what to look at, when the work is done.
 
-**6. One name per component, used the same way everywhere** (Ernest, 10/6, round 2): in the code,
-the CSS (`.ffc-<name>`), the tests, the docs and the design-system page. The **Names** table at the top
-of `design-system.html` §3 is the list (ItemPager, Handle, Header, BoothRow, ArtistLine, ScheduleRow …);
-check it before adding a class or a word for something, and fix a stray old name when you see one.
-The component is **ItemPager** — never "pager", "stepper" or "booth nav".
+**6. Name things from the shared lexicon** (Ernest, 10/6; 10/20: semantics, not just consistency).
+One name per component, **chosen for what it does** — a role, not a nickname — used the same way in
+the code, the CSS (`.ffc-<name>`), the tests, the docs and the design-system page. The **Names**
+table at the top of `design-system.html` §3 is the lexicon (ItemPager, Handle, Header, BoothRow,
+ArtistLine, ScheduleRow …): check it before adding a class or a word for something, and fix a stray
+old name when you see one. A new name is a new component, so ask first (rule 1); once agreed, it
+gets a Names row in the same PR: the name, what it is, and what it is not called. The component
+is **ItemPager** — never "pager", "stepper" or "booth nav".
 
-**7. Green checks mean the rules held, not that the map is right** (Ernest, 10/18). Every
+**7. A green check on a PR means the rules held, not that the map is right** (Ernest, 10/18). Every
 automated check has a written job and a written list of what it can't see, and the human review
 points are explicit: `docs/checks-and-review.md`. Read it before trusting a green PR.
 
-**8. Ask Ernest only what needs a human** (Ernest, 10/19). The PR's "For Ernest to look at" items
-are for judgment: does it look right on his phone, is it true on the ground, is this the call he
-wants. Anything a script, a test or CI can verify (a comment was posted, a file contains a
-passage, a count, a check ran) you check yourself and report in `docs/pr-notes.md`; don't turn it
-into a question for him. Each item says exactly where to look, with a direct link when it is a
-file. Fewer, better questions over a long list.
+**8. Keep a person in the loop for judgment calls** (Ernest, 10/19; reworded 10/20). The list of
+when a person decides is "Where Ernest looks" in `docs/checks-and-review.md`: how it looks on a
+real phone, whether it's true on the ground, which call he wants. Those go in the PR's "For Ernest
+to look at", each saying exactly where to look, with a direct link when it is a file. Anything a
+script, a test or CI can verify (a comment was posted, a file contains a passage, a count, a check
+ran) you check yourself and report in `docs/pr-notes.md`; don't turn it into a question for him.
+Fewer, better questions over a long list.
 
 ## Data — where the truth actually lives
 
