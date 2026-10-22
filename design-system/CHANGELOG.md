@@ -4,6 +4,18 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.8.0 — 2026-10-21
+
+Minor: how two rules are followed changes (CLAUDE.md's standing requirements, reworded 10/20 to
+match the case-study deck). Nothing on screen changes.
+
+- **Rule `token-first`:** a value that isn't a token is no longer added by the agent on its own.
+  It asks Ernest first (what, why the existing ones don't cover it, where it would be documented);
+  once agreed, it becomes a documented token before it is used.
+- **Rule `one-name`:** the Names table is a lexicon. Names are chosen for what a thing does; a new
+  name is a new component (ask first) and gets a row: name, what it is, what it is not called.
+- **Rule `human-review`:** `source` pointer updated to the reworded CLAUDE.md line.
+
 ## 1.7.0 — 2026-10-18
 
 Minor: a governance rule is added. Nothing on screen changes.

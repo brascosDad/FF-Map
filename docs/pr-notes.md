@@ -19,6 +19,11 @@ so the contract the deck shows has to be the contract in the repo.
 
 Rule 3 unchanged (the repo stays public, decided 10/20, so no private-repo exception).
 
+**Design system 1.8.0** (same PR, because the manifest's rules cite CLAUDE.md and CI checks every
+cited phrase): `token-first` and `one-name` statements follow the new rules 1 and 6, and three rule
+`source` pointers follow the reworded lines. Changelog entry added. `npm run manifest` is current and
+`npm run test:ds` passes (44 of 44).
+
 Checked by Cowork (not asked of Ernest, per rule 8): requirements run 1–8 once each; no paragraph
 appears twice; "Where Ernest looks" exists in `docs/checks-and-review.md`; no other file in the repo
 quotes the old rule-1 or rule-5 wording.
@@ -27,8 +32,15 @@ quotes the old rule-1 or rule-5 wording.
 
 None. No code, data or rendering changes.
 
+## Expected answers (human-review)
+
+1. Yes — "stop and ask first" is the behaviour Ernest wants for new tokens and components.
+2. Yes — `READY:` is the done signal.
+
 ## For Ernest to look at
 
-1. **Rule 1 in `CLAUDE.md`:** is "stop and ask first" the behaviour you want from Claude Code
-   for new tokens and components? It will slow small additions down on purpose.
-2. **Rule 5:** `READY:` as the done signal. Fine, or a different word?
+Judgment calls to accept for this PR:
+
+1. **Rule 1 in `CLAUDE.md`:** "stop and ask first" for new tokens and components. It slows small
+   additions down on purpose.
+2. **Rule 5:** `READY:` as the done signal.
