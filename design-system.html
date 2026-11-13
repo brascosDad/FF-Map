@@ -152,7 +152,8 @@
       <tr><th>ScheduleRow · DayHeading · ListRow</th><td>Rows in a stage lineup, its day headings, and a bulleted line.</td></tr>
       <tr><th>PoiRow</th><td>A row in the docked directory.</td></tr>
       <tr><th>Legend</th><td>The colour key.</td></tr>
-      <tr><th>WhatsOnNow</th><td>The act on one stage now and the one after it, at the top of a stage sheet. Defined, not shipped (behind <code>FESTIVAL.showNow</code>).</td></tr>
+      <tr><th>WhatsOnNow</th><td>The act on one stage now and the one after it, at the top of a stage sheet, during set times only. Not called "now playing" or "live card".</td></tr>
+      <tr><th>ArtistGallery</th><td>Photos of an artist's work in a booth's sheet, only ones the artist gave permission for. Draws nothing when a booth has none. Not called "photo strip", "booth photos" or "carousel".</td></tr>
     </table>
   </div>
 
@@ -326,6 +327,31 @@
     </table>
   </div>
 
+  <h3>ArtistGallery</h3>
+  <div class="card">
+    <div class="ffc-panel demo" style="--sheet-accent:var(--cat-booth)"><div class="ffc-panel__body">
+      <section class="ffc-artistgallery ffc-artistgallery--placeholder" aria-label="Photo placeholders">
+        <span class="ffc-artistgallery__tile"></span><span class="ffc-artistgallery__tile"></span><span class="ffc-artistgallery__tile"></span>
+      </section>
+    </div></div>
+    <table style="margin-top:var(--space-3)">
+      <tr><th>What</th><td>Photos of an artist's work, under the ArtistLine in a booth's sheet: three square tiles across the sheet, scrolling sideways when there are more. <code>.ffc-artistgallery</code> › <code>__tile</code> · <code>--placeholder</code>.</td></tr>
+      <tr><th>Data</th><td><code>src/data/artist-photos.json</code>, keyed by booth number; each photo has <code>src</code>, <code>alt</code> and <code>permission</code> (who said yes, when). Files in <code>public/artist-photos/</code>.</td></tr>
+      <tr><th>States</th><td><b>Photos</b>: the tiles. <b>No photos</b>: nothing is drawn, so the sheet is complete without it. <b>Placeholder</b>: only on a <code>?demo</code> link, neutral tiles (<code>--surface-pressed</code>, <code>--border-subtle</code>, the art glyph) for a booth with no photos yet.</td></tr>
+      <tr><th>Tokens</th><td><code>--space-2</code> (the gap) · <code>--space-3</code> · <code>--radius-sm</code> · <code>--surface-pressed</code> · <code>--border-subtle</code> · <code>--text-muted</code>. No new token.</td></tr>
+      <tr><th>Don't</th><td>Copy an image from an artist's website or social accounts; draw an empty frame or a "no photos" line for a booth with none; show placeholders to regular visitors.</td></tr>
+    </table>
+  </div>
+
+  <h3>WhatsOnNow</h3>
+  <div class="card">
+    <table>
+      <tr><th>What</th><td><code>.ffc-whatsonnow</code>: the act playing now on one stage and the next one, from <code>stages.json</code>, read on festival time (<code>FESTIVAL.days</code>, <code>FESTIVAL.timeZone</code>), at the top of the stage sheet. Shipped 11/13 (<code>FESTIVAL.showNow: true</code>). Picture at 390px: <code>docs/demo/whats-on-now-390.png</code>.</td></tr>
+      <tr><th>States</th><td><b>Now + Up next</b>, <b>Between sets + Up next</b>, <b>First up</b> before the day's first act; nothing outside the music hours, so outside the festival the stage sheet is unchanged. A <code>?demo</code> link (<code>src/demo.js</code>) runs it on a festival-day clock: <code>?demo</code> is Saturday 2:20 PM, <code>?demo=2026-10-04T13:00</code> any festival-local time.</td></tr>
+      <tr><th>Colour</th><td>The one legitimate use of <code>--current</code>: a coral bar and a coral dot beside "Now" while an act is on; the words stay navy.</td></tr>
+    </table>
+  </div>
+
   <h3>ScheduleRow, DayHeading and ListRow</h3>
   <div class="card">
     <div class="ffc-panel demo"><div class="ffc-panel__body">
@@ -374,7 +400,6 @@
   <div class="card">
     <table>
       <tr><th>--current</th><td>Coral, reserved for "now". Its only uses were you-are-here and locate-on; GPS was cut for time. Kept so "now" has a colour when something needs one — never as decoration.</td></tr>
-      <tr><th>WhatsOnNow</th><td><code>.ffc-whatsonnow</code>: the act playing now on one stage and the next one, from <code>stages.json</code>, read on festival time (<code>FESTIVAL.days</code>, <code>FESTIVAL.timeZone</code>), at the top of the stage sheet. The one legitimate use of <code>--current</code>: a coral bar and a coral dot beside "Now" while an act is on; the words stay navy. States: <b>Now + Up next</b>, <b>Between sets + Up next</b>, <b>First up</b> before the day's first act; nothing outside the music hours. Built and tested, <b>behind <code>FESTIVAL.showNow: false</code></b> — set it to <code>true</code> in <code>src/data/festival.js</code> to ship it. Picture at 390px: <code>docs/demo/whats-on-now-390.png</code>.</td></tr>
       <tr><th>.ffc-scale</th><td>Scale bar. Needs one confirmed ground measurement before it can carry a number.</td></tr>
       <tr><th>--font-display</th><td>Brice Black, the brand lockup's face and the same one the Fall Fest site uses. Shipping since 12 Sep, self-hosted as woff2. Only the Black weight loads — the masthead is the only thing that uses it.</td></tr>
     </table>

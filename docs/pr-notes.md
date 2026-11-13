@@ -1,46 +1,76 @@
-# PR notes: CLAUDE.md standing requirements reworded to match the case-study deck (slide 8)
+# PR notes: ship WhatsOnNow, add ArtistGallery, and a `?demo` link (for the case-study Loom)
 
-Docs only (Cowork's file). Ernest's 10/20 review of the deck changed what four requirements say,
-so the contract the deck shows has to be the contract in the repo.
+Ernest asked (11/13) for the live map to match the case-study Loom. Search is **not** in this PR: it
+is the next feature, and "No search bar" in CLAUDE.md stands until he changes it.
 
-1. **Rule 1, behaviour change:** use only the design system's tokens and components; a new token,
-   component or variant means **stop and ask Ernest first** (what, why the existing ones don't
-   cover it, where it would be documented). Previously: add the token and document it.
-2. **Rule 2:** "clean and scalable" defined — one source per kind of thing, a documented shape for
-   every record, no fact in two places, plus the next-year-volunteer test.
-3. **Rule 4:** leads with the plain meaning — visual changes need Ernest's sign-off. Mechanics unchanged.
-4. **Rule 5:** every chat reply ends with a status line, **`BLOCKED:`** or **`READY:`**, so a quiet
-   reply is never ambiguous.
-5. **Rule 6:** the Names table is a lexicon; names are chosen for what a thing does; a new name is a
-   new component (ask first), and gets a row: name, what it is, what it is not called.
-6. **Rule 7:** "a green check *on a PR*".
-7. **Rule 8:** reframed as keeping a person in the loop for judgment calls, pointing at "Where Ernest
-   looks" in `docs/checks-and-review.md`. Same substance.
+1. **WhatsOnNow ships** (`FESTIVAL.showNow: true`). It was built and tested in #17, behind the flag.
+   It shows only during set times on the festival days, so **on the live map today nothing
+   changes**: open a stage and the sheet looks the same as before. The name stays **WhatsOnNow**
+   (the request said "Now Playing card"; the Names table lists "now playing" as what it is *not*
+   called, so it was not renamed).
+2. **`?demo` link** (`src/demo.js`, new). `https://fall-fest-map.vercel.app/?demo` treats now as
+   **Saturday 10/3, 2:20 PM** festival time: Run Katie Run is on the Main Stage, Veronika Jackson on
+   the Acoustic. `?demo=2026-10-04T13:00` picks any festival-local time. The clock runs forward
+   from there. Regular visitors never see any of this.
+3. **ArtistGallery** (new component; Ernest approved the name 11/13). Photos of an artist's work
+   under the artist's name in a booth sheet, three square tiles across, scrolling sideways when there
+   are more. Photos come only from `src/data/artist-photos.json` (each with `src`, `alt` and
+   `permission`), files in `public/artist-photos/`. **The file has no photos yet**: no artist has
+   given permission. A booth with no photos draws **nothing**, so every sheet looks complete.
+   Placeholder tiles (sand fill, art glyph) appear **only on a `?demo` link**.
+4. **Data fix, `stages.json`:** Saturday's 3:00 Main Stage act still read "Mystery artist — revealed
+   9/26"; the file's own note said to swap in **Asydequest** on 9/26 and drop the note. Done. This
+   is the "Up next" line in the demo.
 
-Rule 3 unchanged (the repo stays public, decided 10/20, so no private-repo exception).
+**Design system 1.9.0:** Names rows for WhatsOnNow (now shipped) and ArtistGallery; WhatsOnNow moved
+from §4 ("defined but not shipped") to a §3 card; new ArtistGallery card; manifest entry
+(`notCalled`: photo strip, booth photos, carousel); CHANGELOG. **No new token:** the gallery uses
+`--space-2`, `--space-3`, `--radius-sm`, `--surface-pressed`, `--border-subtle`, `--text-muted`.
 
-**Design system 1.8.0** (same PR, because the manifest's rules cite CLAUDE.md and CI checks every
-cited phrase): `token-first` and `one-name` statements follow the new rules 1 and 6, and three rule
-`source` pointers follow the reworded lines. Changelog entry added. `npm run manifest` is current and
-`npm run test:ds` passes (44 of 44).
+Checked by Claude (not asked of Ernest, per rule 8):
 
-Checked by Cowork (not asked of Ernest, per rule 8): requirements run 1–8 once each; no paragraph
-appears twice; "Where Ernest looks" exists in `docs/checks-and-review.md`; no other file in the repo
-quotes the old rule-1 or rule-5 wording.
+- `npm run manifest` is current; `npm run test:ds` 44/44; `npm run lint` clean;
+  `npm run ds -- check` on the new CSS: no raw values, no unknown tokens.
+- e2e: new checks. During a set the stage sheet shows the card; on 11/13 it shows none; `?demo`
+  shows it; a booth with no photos draws no gallery; `?demo` shows three placeholder tiles; every
+  photo in the data file has `src`, `alt` and `permission`. Result is below, under "e2e".
+- The standard visual baselines (the phone at open, the phone with a sheet open, print) render on
+  CI's real date, outside the festival, so they should not change.
 
 ## Questions, skipped items, nudges
 
-None. No code, data or rendering changes.
+- **Not done: the Nov 9 naming-approval rule change.** It isn't on GitHub (no branch, no PR, `main`
+  unchanged since 10/21), so it is probably uncommitted on Ernest's Mac, which this session couldn't
+  reach. It goes in its own PR as soon as the Mac is connected.
+- **Skipped: tap to enlarge a photo.** The gallery shows tiles only. Worth adding once real photos
+  exist.
+- **Analytics:** a `?demo` visit counts as a visit in Umami like any other. A Loom recording adds a
+  handful of visits; not filtered.
+- No pin nudges. No print changes.
 
-## Expected answers (human-review)
+## e2e
 
-1. Yes — "stop and ask first" is the behaviour Ernest wants for new tokens and components.
-2. Yes — `READY:` is the done signal.
+`npm run test:e2e` locally: **956/956 passed**, the visual diffs included (no baseline changed).
+
+Pictures at 390px from this branch, the clock set to 11/13 (the demo link supplies festival time):
+`docs/demo/loom-stage-demo-390.png` (Main Stage, `?demo`), `docs/demo/loom-booth-demo-390.png`
+(Booth 1, `?demo`, placeholders), `docs/demo/loom-booth-plain-390.png` (Booth 1, plain link: no
+gallery, same as `main`).
 
 ## For Ernest to look at
 
-Judgment calls to accept for this PR:
+Tick one box per item (click the box on GitHub; the human-review check re-runs).
 
-1. **Rule 1 in `CLAUDE.md`:** "stop and ask first" for new tokens and components. It slows small
-   additions down on purpose.
-2. **Rule 5:** `READY:` as the done signal.
+1. **The demo on your phone:** open the Vercel preview with `?demo` on the end, tap the Main Stage
+   pin. Does the card at the top read right ("Now · Run Katie Run", "Up next · Asydequest")?
+2. **The gallery on your phone:** on the same `?demo` link, open any art booth (an art-market marker,
+   then a row). Do the three placeholder tiles under the artist's name look like they belong in the
+   sheet?
+3. **Without `?demo`:** open the same booth on the plain preview link. Does the sheet look complete,
+   with no gap where the gallery would be?
+
+## Expected answers (human-review)
+
+1. Yes
+2. Yes
+3. Yes
