@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { FESTIVAL } from '../data/festival';
 import { whatsOnNow } from '../whatsOnNow';
+import { appNow } from '../demo';
 
 /**
  * WhatsOnNow: the act on one stage right now and the one after it, at the top
  * of the stage sheet. Coral (--current) marks "now"; it is the only thing in
  * the app that does. Renders nothing outside the festival's music hours.
- * Behind FESTIVAL.showNow -- the caller checks the flag.
+ * Shipped (FESTIVAL.showNow: true). Outside festival hours it renders nothing;
+ * a `?demo` link (src/demo.js) runs it on a festival-day clock.
  */
 export default function WhatsOnNow({ stage }) {
-  const [date, setDate] = useState(() => new Date());
+  const [date, setDate] = useState(() => appNow());
   useEffect(() => {
-    const id = setInterval(() => setDate(new Date()), 30_000);
+    const id = setInterval(() => setDate(appNow()), 30_000);
     return () => clearInterval(id);
   }, []);
   const on = whatsOnNow(stage, date, FESTIVAL);

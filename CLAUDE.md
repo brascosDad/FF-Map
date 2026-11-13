@@ -164,7 +164,12 @@ with the PR link **and** the Vercel preview URL. The screenshots Action adds the
 - Tap a pin to open it; double-tap elsewhere to zoom. Booth sheets stay open on zoom-out.
   Desktop directory rows fly the map in one level.
 - Reset control is arrows-to-corners, not a locate button.
-- No search bar.
+- No search bar. (Ernest, 11/13: search is the next feature. This line stands until he changes it.)
+- **`?demo` is the walkthrough link** (Ernest, 11/13; `src/demo.js`): it runs the WhatsOnNow card on
+  a festival-day clock (`?demo` is Sat 2:20 PM; `?demo=2026-10-04T13:00` any festival-local time)
+  and shows ArtistGallery's placeholder tiles on booths with no photos. Without it, visitors see
+  neither. **Artist photos are permission-only** (`src/data/artist-photos.json`, a `permission`
+  on every photo); never copy one from an artist's site.
 - **Pins are touch targets. 44×44 CSS px is the floor.** The visible icon glyph may shrink inside
   that target; the tappable area may not. Two tap-size tokens (10/6): `--tap-min` (44px) is the floor
   for every **control** — chips, the sheet's close ×, the zoom buttons, the ItemPager's buttons, the

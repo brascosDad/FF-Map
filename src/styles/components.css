@@ -505,7 +505,7 @@
 
 /* ===== WhatsOnNow =========================================================
    The act on one stage now and the one after it, at the top of a stage sheet.
-   Defined, not shipped: behind FESTIVAL.showNow. Coral (--current) is "now"
+   Shipped 11/13 (FESTIVAL.showNow); shows only during set times. Coral (--current) is "now"
    and it is the one legitimate use of it: the bar, and the dot beside "Now"
    while an act is on. Never the text -- coral on white is under 4.5:1, so the
    words stay navy and slate. */
@@ -535,6 +535,27 @@
 .ffc-whatsonnow__act { min-width: 0; font-size: var(--text-md); font-weight: var(--weight-bold); color: var(--panel-title, var(--text-strong)); }
 .ffc-whatsonnow__row--now .ffc-whatsonnow__act { font-size: var(--text-lg); }
 .ffc-whatsonnow__time { white-space: nowrap; font-variant-numeric: tabular-nums; font-size: var(--text-sm); color: var(--panel-muted, var(--text-muted)); }
+
+/* ===== ArtistGallery =======================================================
+   Photos of an artist's work in a booth's sheet: three square tiles across the
+   sheet's width, scrolling sideways when there are more. A booth with no photos
+   draws nothing (no empty frame). Placeholder tiles exist only on a `?demo`
+   link: a quiet sand fill and the art glyph, plainly not a photo. */
+.ffc-artistgallery {
+  display: grid; grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 2 * var(--space-2)) / 3);
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-2);
+  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+}
+.ffc-artistgallery__tile {
+  aspect-ratio: 1; inline-size: 100%; display: block; scroll-snap-align: start;
+  border-radius: var(--radius-sm); object-fit: cover; background: var(--surface-pressed);
+}
+.ffc-artistgallery--placeholder .ffc-artistgallery__tile {
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-subtle);
+}
 
 /* ---- Directory (the docked panel's resting state) -------------------------- */
 .dir-section + .dir-section { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--sand-100); }
