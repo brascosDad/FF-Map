@@ -12,6 +12,7 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { FESTIVAL } from '../src/data/festival.js';
 import { whatsOnNow } from '../src/whatsOnNow.js';
+import { DEMO_DEFAULT, festivalTime } from '../src/demo.js';
 import { PINS, rankOf } from '../src/assets/pins.js';
 import { BOOTHS, UNNUMBERED } from '../src/data/booths.js';
 import { NUDGE_CAP, STAYS_RANK } from '../src/pinPlacement.js';
@@ -2813,8 +2814,9 @@ await safe('analytics: a pan is not engagement', async () => {
   await p.close();
 });
 
-// WhatsOnNow: defined, not shipped. The logic is checked against the real
-// lineup on a fixed festival clock; the built app must not show the card.
+// WhatsOnNow: shipped (11/13). The logic is checked against the real lineup on
+// a fixed festival clock; the built app shows the card during set times, shows
+// nothing outside them, and a ?demo link runs it on a festival-day clock.
 await safe('whats on now', async () => {
   const stages = JSON.parse(readFileSync(new URL('../src/data/stages.json', import.meta.url), 'utf8')).stages;
   const main = stages.find((s) => s.id === 'main-stage'), acoustic = stages.find((s) => s.id === 'acoustic-stage');
@@ -2837,16 +2839,76 @@ await safe('whats on now', async () => {
   check('whats on now: read on festival time, not the machine\'s (17:45 UTC is 1:45 PM in Atlanta)',
     act(at(main, '2026-10-03T17:45:00Z')?.now) === 'Run Katie Run');
 
-  check('whats on now: FESTIVAL.showNow is false', FESTIVAL.showNow === false);
-  const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
-  await p.clock.setFixedTime(new Date('2026-10-03T13:45:00-04:00'));
-  await p.goto(BASE, { waitUntil: 'load' });
-  await p.waitForTimeout(600);
-  await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(800);
-  const open = await p.locator('.ffc-panel .ffc-dayheading').count();
-  check('whats on now: the stage sheet opens and has no card while the flag is off',
-    open > 0 && (await p.locator('.ffc-whatsonnow').count()) === 0, `${open} day headings`);
-  await p.close();
+  check('whats on now: FESTIVAL.showNow is true (shipped 11/13)', FESTIVAL.showNow === true);
+  const demoAt = festivalTime(DEMO_DEFAULT);
+  check('demo: the default demo time is Saturday 2:20 PM festival time',
+    demoAt?.toISOString() === '2026-10-03T18:20:00.000Z', demoAt?.toISOString());
+  check('demo: a festival-local time reads in the festival\'s zone',
+    festivalTime('2026-10-04T13:00')?.toISOString() === '2026-10-04T17:00:00.000Z' && festivalTime('nonsense') === null);
+
+  const stageCard = async (url, when) => {
+    const p = await browser.newPage({ viewport: { width: 390, height: 800 }, isMobile: true, hasTouch: true });
+    await p.clock.setFixedTime(new Date(when));
+    await p.goto(url, { waitUntil: 'load' });
+    await p.waitForTimeout(600);
+    await p.locator('g.ffc-pin--stage').first().dispatchEvent('click'); await p.waitForTimeout(800);
+    const days = await p.locator('.ffc-panel .ffc-dayheading').count();
+    const card = await p.locator('.ffc-whatsonnow').count();
+    const text = card ? await p.locator('.ffc-whatsonnow').first().textContent() : '';
+    await p.close();
+    return { days, card, text };
+  };
+  const during = await stageCard(BASE, '2026-10-03T13:45:00-04:00');
+  check('whats on now: during a set, the stage sheet shows the card', during.days > 0 && during.card === 1, JSON.stringify(during));
+  const after = await stageCard(BASE, '2026-11-13T13:45:00-05:00');
+  check('whats on now: outside the festival, the stage sheet has no card', after.days > 0 && after.card === 0, JSON.stringify(after));
+  const demo = await stageCard(`${BASE}?demo`, '2026-11-13T13:45:00-05:00');
+  check('whats on now: a ?demo link shows the card on the festival-day clock',
+    demo.card === 1 && /Now/.test(demo.text) && /(Run Katie Run|Veronika Jackson)/.test(demo.text), JSON.stringify(demo));
+});
+
+// ArtistGallery: a booth with no permitted photos draws no gallery (no empty
+// frame); on a ?demo link it shows three placeholder tiles instead.
+await safe('artist gallery', async () => {
+  const photos = JSON.parse(readFileSync(new URL('../src/data/artist-photos.json', import.meta.url), 'utf8'));
+  check('artist gallery: every photo has src, alt and permission',
+    Object.values(photos.booths).flat().every((x) => x.src && x.alt && x.permission));
+  const boothSheet = async (url) => {
+    const w = 390, h = 800;
+    const p = await browser.newPage({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
+    await p.goto(url, { waitUntil: 'networkidle' });
+    await p.waitForTimeout(800);
+    await zoomIn(p);
+    let opened = false;
+    const n = await p.locator('svg.ff-map g.ff-area .ff-marker').count();
+    for (let i = 0; i < n && !opened; i++) {
+      const bb = await p.locator('svg.ff-map g.ff-area .ff-marker').nth(i).boundingBox().catch(() => null);
+      if (!bb || bb.x < 4 || bb.y < 120 || bb.x + bb.width > w - 4 || bb.y + bb.height > h - 4) continue;
+      await p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+      await p.waitForTimeout(450);
+      opened = (await p.locator('.ffc-boothrow').count()) > 0;
+    }
+    if (opened) {
+      // The first row that names an artist (a sponsor booth has no gallery).
+      const rows = p.locator('button.ffc-boothrow:has(.ffc-artistline)');
+      const num = (await rows.first().locator('.ffc-boothrow__number').textContent()).trim();
+      await rows.first().click(); await p.waitForTimeout(600);
+      const out = { opened, num, gallery: await p.locator('.sheet .ffc-artistgallery').count(),
+        tiles: await p.locator('.sheet .ffc-artistgallery__tile').count(),
+        placeholder: await p.locator('.sheet .ffc-artistgallery--placeholder').count() };
+      await p.close();
+      return out;
+    }
+    await p.close();
+    return { opened };
+  };
+  const plain = await boothSheet(BASE);
+  const has = (r) => !!photos.booths[r.num]?.length;
+  check('artist gallery: a booth with no photos draws no gallery',
+    plain.opened && (has(plain) ? plain.gallery === 1 && plain.placeholder === 0 : plain.gallery === 0), JSON.stringify(plain));
+  const demo = await boothSheet(`${BASE}?demo`);
+  check('artist gallery: on a ?demo link a booth with no photos shows three placeholder tiles',
+    demo.opened && (has(demo) ? demo.placeholder === 0 : demo.placeholder === 1 && demo.tiles === 3), JSON.stringify(demo));
 });
 
 check('no uncaught page errors', pageErrors.length === 0, pageErrors.join(' | '));

@@ -36,9 +36,10 @@ export const FESTIVAL = {
   days: { saturday: '2026-10-03', sunday: '2026-10-04' },
   timeZone: 'America/New_York',
   // The "What's on now" card at the top of a stage sheet (src/components/
-  // WhatsOnNow.jsx). Defined, NOT shipped: false keeps it out of the app.
-  // design-system.html §4 lists it under "defined but not shipped".
-  showNow: false,
+  // WhatsOnNow.jsx). Shipped 11/13: it shows only during set times on the
+  // `days` above, so outside the festival nothing appears. A `?demo` link
+  // (src/demo.js) shows it on a festival-day clock. false takes it out again.
+  showNow: true,
 };
 
 /** The featured title of a booth record ("Featured artist"), or undefined.

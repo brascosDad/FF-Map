@@ -4,6 +4,17 @@ The version is `version` in `design-system/manifest.json`. What bumps it is in
 `design-system.html`, section 7. Newest first. A change lands here in the same
 PR as the manifest, the Names table and the docs.
 
+## 1.9.0 — 2026-11-13
+
+Minor: one component ships, one is added. No new token.
+
+- **WhatsOnNow ships** (`FESTIVAL.showNow: true`). It shows only during set times, so outside the
+  festival nothing on screen changes. A `?demo` link (`src/demo.js`) runs it on a festival-day
+  clock. Moved from §4 ("defined but not shipped") to a §3 card.
+- **ArtistGallery** (new, name approved by Ernest 11/13): photos of an artist's work in a booth's
+  sheet, from `src/data/artist-photos.json` (permitted photos only). A booth with no photos draws
+  nothing; placeholder tiles appear only on a `?demo` link. Names row, §3 card, manifest entry.
+
 ## 1.8.0 — 2026-10-21
 
 Minor: how two rules are followed changes (CLAUDE.md's standing requirements, reworded 10/20 to

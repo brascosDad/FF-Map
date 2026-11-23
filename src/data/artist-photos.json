@@ -1,0 +1,15 @@
+{
+  "about": "Photos of an artist's work for ArtistGallery, in a booth's sheet. Only photos the artist has given permission for, sent by the artist or taken at the festival with their OK; never copied from an artist's website or social accounts. Keyed by booth number as the market chair numbers them (booth-numbering-2026.json); re-check the keys after any re-pull, because the chair renumbers. A booth with no entry shows no gallery: the sheet stays complete without it.",
+  "shape": {
+    "booths": {
+      "<booth number>": [
+        {
+          "src": "/artist-photos/<booth>-<n>.jpg (the file goes in public/artist-photos/; about 1200px on the long side)",
+          "alt": "what the photo shows, for screen readers: the work, not the filename",
+          "permission": "who said yes, and when (e.g. 'artist, email to fallfestvolunteers@, 2026-11-20')"
+        }
+      ]
+    }
+  },
+  "booths": {}
+}

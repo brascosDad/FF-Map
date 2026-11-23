@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import WhatsOnNow from './WhatsOnNow';
+import ArtistGallery from './ArtistGallery';
 import { ACTIVE_PINS, PIN_COLOR, SLATE } from '../assets/pins';
 import { BOOTHS, UNNUMBERED } from '../data/booths';
 import { DIRECTORY, LEGEND } from '../data/directory';
@@ -369,6 +370,9 @@ function BoothDetail({ booth, part, pushed = false }) {
         : booth.name || booth.biz
           ? <div className="ffc-listrow"><span className="ffc-listrow__bullet" /><ArtistLine booth={booth} quiet={unnumbered} /></div>
           : <div className="ffc-listrow"><span className="ffc-listrow__bullet" />Sponsor booth.</div>}
+      {/* Photos of the artist's work, when they gave permission for some. With
+          none, ArtistGallery draws nothing, so the sheet is complete without it. */}
+      {!isFood && (booth.name || booth.biz) && <ArtistGallery booth={booth} />}
       {/* No provenance line on any sheet (C3): where a booth's name and position
           came from is a data-section fact (README, CLAUDE.md), not something to
           tell a visitor. The one thing worth keeping is WHERE the two unnumbered

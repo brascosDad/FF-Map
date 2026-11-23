@@ -1,7 +1,7 @@
 {
   "name": "Fall Fest design system",
-  "version": "1.8.0",
-  "updated": "2026-10-18",
+  "version": "1.9.0",
+  "updated": "2026-11-13",
   "provenance": {
     "generatedBy": "npm run manifest (design-system/build-manifest.mjs); CI fails if this file is stale",
     "generated": [
@@ -2477,11 +2477,10 @@
     },
     {
       "name": "WhatsOnNow",
-      "description": "The act on one stage now and the one after it, at the top of a stage sheet. Defined, not shipped (behind FESTIVAL.showNow).",
+      "description": "The act on one stage now and the one after it, at the top of a stage sheet, during set times only. Not called \"now playing\" or \"live card\".",
       "cssClass": ".ffc-whatsonnow",
       "file": "src/components/WhatsOnNow.jsx",
-      "shipped": false,
-      "flag": "FESTIVAL.showNow",
+      "shipped": true,
       "inStates": [
         "S3"
       ],
@@ -2528,6 +2527,50 @@
       "doNot": [
         "Coral text: --current is the bar and the dot; the act and the times stay navy and slate (coral on white is under 4.5:1).",
         "A second copy of the schedule: the card reads the lineup in stages.json."
+      ]
+    },
+    {
+      "name": "ArtistGallery",
+      "description": "Photos of an artist's work in a booth's sheet, only ones the artist gave permission for. Draws nothing when a booth has none. Not called \"photo strip\", \"booth photos\" or \"carousel\".",
+      "cssClass": ".ffc-artistgallery",
+      "file": "src/components/ArtistGallery.jsx",
+      "shipped": true,
+      "inStates": [
+        "S6",
+        "S7"
+      ],
+      "rules": [],
+      "notCalled": [
+        "photo strip",
+        "booth photos",
+        "carousel"
+      ],
+      "states": [
+        {
+          "id": "S6",
+          "name": "List → booth (inside the sheet)"
+        },
+        {
+          "id": "S7",
+          "name": "Booth opened from the map"
+        }
+      ],
+      "cssParts": [
+        ".ffc-artistgallery__tile"
+      ],
+      "cssVariants": [],
+      "tokens": [
+        "--border-subtle",
+        "--radius-sm",
+        "--space-2",
+        "--space-3",
+        "--surface-pressed"
+      ],
+      "knobs": [],
+      "doNot": [
+        "An image copied from an artist's website or social accounts: only photos the artist gave permission for, listed with that permission in src/data/artist-photos.json.",
+        "An empty frame or a 'no photos' line for a booth with none: the gallery draws nothing.",
+        "Placeholder tiles for regular visitors: they show only on a ?demo link."
       ]
     }
   ],
