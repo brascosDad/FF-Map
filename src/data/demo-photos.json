@@ -1,0 +1,47 @@
+{
+  "about": "Stock photos for ArtistGallery on a `?demo` link ONLY, shown with an FPO stamp on booths that have no permitted artist photos (Ernest, 11/20: no real artist photos are coming). These are NOT artist photos and never stand in for one outside `?demo`; real ones stay in artist-photos.json, permission-only. Free under the Unsplash License; credit kept here. Files in public/demo-photos/, about 1200px on the long side. Owner: Cowork.",
+  "photos": [
+    {
+      "src": "/demo-photos/fpo-01.jpg",
+      "alt": "Ceramic vases in neutral tones on a wooden surface",
+      "photographer": "Chloe Bolton",
+      "source": "https://unsplash.com/photos/ceramic-vases-on-wooden-surface-R0qthXq3jec",
+      "license": "Unsplash License (https://unsplash.com/license)"
+    },
+    {
+      "src": "/demo-photos/fpo-02.jpg",
+      "alt": "Handmade ceramic bowls stacked on a brown surface",
+      "photographer": "khloe arledge",
+      "source": "https://unsplash.com/photos/assorted-bowls-on-brown-surface-ypi0l7vP0Vw",
+      "license": "Unsplash License (https://unsplash.com/license)"
+    },
+    {
+      "src": "/demo-photos/fpo-03.jpg",
+      "alt": "White clay vases on a table",
+      "photographer": "Oshin Khandelwal",
+      "source": "https://unsplash.com/photos/white-clay-vases-on-table-EQpXnijYejQ",
+      "license": "Unsplash License (https://unsplash.com/license)"
+    },
+    {
+      "src": "/demo-photos/fpo-04.jpg",
+      "alt": "A table full of colorful handmade bracelets and necklaces",
+      "photographer": "masha.uu",
+      "source": "https://unsplash.com/photos/table-full-of-colorful-handmade-bracelets-and-necklaces-AqsbCY1hClY",
+      "license": "Unsplash License (https://unsplash.com/license)"
+    },
+    {
+      "src": "/demo-photos/fpo-05.jpg",
+      "alt": "Bars of handmade soap in assorted colors",
+      "photographer": "Viktor Forgacs",
+      "source": "https://unsplash.com/photos/assorted-color-bar-soap-lot-on-white-surface-GE23cTcUXww",
+      "license": "Unsplash License (https://unsplash.com/license)"
+    },
+    {
+      "src": "/demo-photos/fpo-06.jpg",
+      "alt": "Two people browsing art and crafts at an outdoor market",
+      "photographer": "Margo Evardson",
+      "source": "https://unsplash.com/photos/two-women-browse-art-and-crafts-at-an-outdoor-market-9cIKRL9n4HY",
+      "license": "Unsplash License (https://unsplash.com/license)"
+    }
+  ]
+}
